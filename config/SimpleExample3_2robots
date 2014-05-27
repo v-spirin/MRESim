@@ -1,0 +1,3 @@
+1 BaseStation 100 300 0.0 0 300 1000 BaseStation 1 1
+2 A 120 300 0.0 100 300 1000 Relay 1 3
+3 B 160 300 3.14 100 300 1000 Explorer 2 1
