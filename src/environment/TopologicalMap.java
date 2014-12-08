@@ -441,7 +441,7 @@ public class TopologicalMap {
                         + Constants.FRONTIER_MIN_EXPLORE_TIME * Constants.DEFAULT_SPEED;
                 explorerPathLengthNew = Explorer2Frontier.getLength() + Front2NewRV.getLength()
                         + Constants.FRONTIER_MIN_EXPLORE_TIME * Constants.DEFAULT_SPEED;
-                System.out.println(agent.toString() + " frontierCentre: " + frontierCentre + ", agentLocation: " + agent.getLocation() + ", Exp2Front: " + Explorer2Frontier.getLength() + ", Front2OldRV: " + Front2OldRV.getLength() + ", Front2NewRV: " + Front2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew);
+                System.out.println(agent.toString() + " frontierCentre: " + frontierCentre + ", agentLocation: " + agent.getLocation() + ", Exp2Front: " + Explorer2Frontier.getLength() + ", Front2OldRV: " + Front2OldRV.getLength() + ", Front2NewRV: " + Front2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew + ", minExploreTime = " + Constants.FRONTIER_MIN_EXPLORE_TIME);
             } else
             {
                 result.setChildLocation(agent.getParentRendezvous().getChildLocation());

@@ -46,7 +46,7 @@ public class Constants {
     public static final int MAX_COLS = 800;
     
     // Random seed for random walk (set to a constant for testing, otherwise to System.currentTimeMillis())
-    public static final int RANDOM_SEED = (int)System.currentTimeMillis();
+    public static final int RANDOM_SEED = 4;//(int)System.currentTimeMillis();
     
     // Max time to search for a path, in ms
     public static final int MAX_PATH_SEARCH_TIME = 500;
@@ -104,7 +104,7 @@ public class Constants {
     public static final int MAX_TIME = 10000;
     
     // Percent of a territory that must be explored
-    public static final double TERRITORY_PERCENT_EXPLORED_GOAL = 0.98;
+    public static final double TERRITORY_PERCENT_EXPLORED_GOAL = 1;
     
     // Probability of new debris at each time step
     public static final double NEW_DEBRIS_LIKELIHOOD = 0.5;
@@ -134,7 +134,7 @@ public class Constants {
     public static final int WAIT_AT_RV_BEFORE_REPLAN = 20;
     
     // Minimal time an explorer should explore a frontier before delivering the information back
-    public static final int FRONTIER_MIN_EXPLORE_TIME = 300;
+    public static final int FRONTIER_MIN_EXPLORE_TIME = 75;
     
     // How often should we check if we need to rebuild topological path?
     public static final int REBUILD_TOPOLOGICAL_MAP_INTERVAL = REPLAN_INTERVAL;

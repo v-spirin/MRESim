@@ -944,7 +944,7 @@ public class SimulationFramework implements ActionListener {
                 return false;
         }
         return true;*/
-        return (((double)agent[0].getAreaKnown()/(double)totalArea) > Constants.TERRITORY_PERCENT_EXPLORED_GOAL);
+        return (((double)agent[0].getAreaKnown()/(double)totalArea) >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL);
     }
 
     private void checkRunFinish() {
