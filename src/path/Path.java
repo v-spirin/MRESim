@@ -59,12 +59,18 @@ public class Path {
     
     private void OutputPathError(OccupancyGrid agentGrid, Point startpoint, Point endpoint, String dir)
     {
-        ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
-        ShowSettingsAgent agentSettings = new ShowSettingsAgent();
-        agentSettings.showFreeSpace = true;
-        img.fullUpdatePath(agentGrid, startpoint, endpoint, agentSettings);
-        img.saveScreenshot(dir);
-        System.out.println("Outputting path debug screens to: " + dir);
+        try
+        {
+            ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
+            ShowSettingsAgent agentSettings = new ShowSettingsAgent();
+            agentSettings.showFreeSpace = true;
+            img.fullUpdatePath(agentGrid, startpoint, endpoint, agentSettings);
+            img.saveScreenshot(dir);
+            System.out.println("Outputting path debug screens to: " + dir);
+        } catch (Exception e)
+        {
+            System.out.println("Couldn't save path error screenshot, reason: " + e.getMessage());
+        }
     }
     
     private void OutputPathError(OccupancyGrid agentGrid, TopologicalMap tMap, 
@@ -72,13 +78,19 @@ public class Path {
     {
         if (Constants.OUTPUT_PATH_ERROR)
         {
-            ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
-            ShowSettingsAgent agentSettings = new ShowSettingsAgent();
-            agentSettings.showFreeSpace = true;
-            agentSettings.showTopologicalMap = true;
-            img.fullUpdatePath(agentGrid, tMap, startpoint, endpoint, agentSettings);
-            img.saveScreenshot(dir);
-            System.out.println("Outputting path debug screens to: " + dir);
+            try
+            {
+                ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
+                ShowSettingsAgent agentSettings = new ShowSettingsAgent();
+                agentSettings.showFreeSpace = true;
+                agentSettings.showTopologicalMap = true;
+                img.fullUpdatePath(agentGrid, tMap, startpoint, endpoint, agentSettings);
+                img.saveScreenshot(dir);
+                System.out.println("Outputting path debug screens to: " + dir);
+            } catch (Exception e)
+            {
+                System.out.println("Couldn't save path error screenshot, reason: " + e.getMessage());
+            }
         }
     }
 
