@@ -97,11 +97,7 @@ public class RobotPanel extends javax.swing.JPanel {
     public boolean showSafeSpace() {
         return toggleSafeSpace.isSelected();
     }
-    
-    public boolean showTestSpace() {
-        return false;
-    }
-    
+        
     public boolean showCommRange() {
         return toggleCommRange.isSelected();
     }

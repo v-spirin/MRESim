@@ -59,10 +59,8 @@ public class RealAgent extends BasicAgent implements Agent {
     double distanceTraveled;      // Distance traveled
     int areaKnown;                // How much area this agent knows about
     int areaGoal;                 // How much free space the agent needs to explore in this mission
-    int prevAreaKnown; //area known last step (needed to decided whether replanning the paths yields any utility at all
     int lastContactAreaKnown;     // How much area this agent knew at the time of last contact with base
     int newInfo;                  // How much area that we know we think is not known at base station
-    int prevNewInfo; //new info at last step
     int prevX, prevY;             // Previous position in environment
     public int timeLastDirectContactCS; // time since last contact with base station
     public int periodicReturnInterval;   // how long to wait until going back to BS
@@ -103,10 +101,7 @@ public class RealAgent extends BasicAgent implements Agent {
     
     double maxRateOfInfoGatheringBelief;
     double currentTotalKnowledgeBelief;    
-    double currentBaseKnowledgeBelief;
-    double lastTotalKnowledgeBelief;    
-    double lastBaseKnowledgeBelief;
-    int lastNewInfo;
+    double currentBaseKnowledgeBelief;  
     
     // Role-based Exploration
     
@@ -167,10 +162,7 @@ public class RealAgent extends BasicAgent implements Agent {
         
         maxRateOfInfoGatheringBelief = 0;
         currentTotalKnowledgeBelief = 0;
-        currentBaseKnowledgeBelief = 0;   
-        lastTotalKnowledgeBelief = -1;
-        lastBaseKnowledgeBelief = -1;
-        lastNewInfo = -1;
+        currentBaseKnowledgeBelief = 0;
         
 
         occGrid = new OccupancyGrid(envWidth, envHeight);
@@ -416,39 +408,12 @@ public class RealAgent extends BasicAgent implements Agent {
         return currentTotalKnowledgeBelief;
     }
     
+    // used in utility exploration
+    // returns: how much information/utility we assume the base station will already know
+    // by the time we deliver out information.
     public double getCurrentBaseKnowledgeBelief()
     {
         return currentBaseKnowledgeBelief;        
-    }
-    
-    public void setLastTotalKnowledgeBelief(double val)
-    {
-        lastTotalKnowledgeBelief = val;
-    }
-    
-    public void setLastBaseKnowledgeBelief(double val)
-    {
-        lastBaseKnowledgeBelief = val;        
-    }
-    
-    public double getLastTotalKnowledgeBelief()
-    {
-        return lastTotalKnowledgeBelief;
-    }
-    
-    public double getLastBaseKnowledgeBelief()
-    {
-        return lastBaseKnowledgeBelief;        
-    }
-    
-    public int getLastNewInfo()
-    {
-        return lastNewInfo;        
-    }
-    
-    public void setLastNewInfo(int val)
-    {
-        lastNewInfo = val;        
     }
     
     public void forceUpdateTopologicalMap()
@@ -718,7 +683,8 @@ public class RealAgent extends BasicAgent implements Agent {
 
 // <editor-fold defaultstate="collapsed" desc="Updating">
     
-    public boolean isNeedUpdatePaths()
+    // <editor-fold defaultstate="collapsed" desc="DELETE">
+    /*public boolean isNeedUpdatePaths()
     {
         return ((areaKnown != prevAreaKnown) || (newInfo != prevNewInfo) || 
                 ((getState() == ExploreState.ReturnToParent) && (newInfo == 0)));
@@ -728,6 +694,40 @@ public class RealAgent extends BasicAgent implements Agent {
     {
         return needUpdatingAreaKnown;
     }
+    
+    public double getLastTotalKnowledgeBelief()
+    {
+        return lastTotalKnowledgeBelief;
+    }
+    
+    public void setLastTotalKnowledgeBelief(double val)
+    {
+        lastTotalKnowledgeBelief = val;
+    }
+    
+    public double getLastBaseKnowledgeBelief()
+    {
+        return lastBaseKnowledgeBelief;        
+    }
+    
+    public void setLastBaseKnowledgeBelief(double val)
+    {
+        lastBaseKnowledgeBelief = val;        
+    }
+    
+    public int getLastNewInfo()
+    {
+        return lastNewInfo;        
+    }
+    
+    public void setLastNewInfo(int val)
+    {
+        lastNewInfo = val;        
+    }
+    */
+    // </editor-fold>
+    
+    
     
     public double getPercentageKnown ()
     {
@@ -740,6 +740,7 @@ public class RealAgent extends BasicAgent implements Agent {
     }
     
     // update stats of what we know about the environment
+    // TODO: we shouldn't call this every time step, this is a performance bottleneck and can be made more efficient.
     public void updateAreaKnown () {
         int counter = 0;
         int new_counter = 0;
@@ -758,12 +759,22 @@ public class RealAgent extends BasicAgent implements Agent {
                         baseCounter++;
                 }
         
-        prevAreaKnown = areaKnown;
         areaKnown = counter;
-        prevNewInfo = newInfo;
         newInfo = new_counter;
-        needUpdatingAreaKnown = false;
         percentageKnown = (double)areaKnown / (double)areaGoal;
+        
+        if (baseCounter != occGrid.getNumCellsKnownAtBase())
+            System.out.println("@@@@@@@@@@@ OccGrid baseCounter corrupted, expected " + baseCounter + 
+                    " got " + occGrid.getNumCellsKnownAtBase() + " @@@@@@@@@");
+        if (gotRelayed != occGrid.getNumRelayedCells())
+            System.out.println("@@@@@@@@@@@ OccGrid gotRelayed counter corrupted, expected " + gotRelayed + 
+                    " got " + occGrid.getNumRelayedCells() + " @@@@@@@@@");
+        if (areaKnown != occGrid.getNumFreeCells())
+            System.out.println("@@@@@@@@@@@ OccGrid freeCells counter corrupted, expected " + areaKnown + 
+                    " got " + occGrid.getNumFreeCells() + " @@@@@@@@@");
+        if (newInfo != (occGrid.getNumFreeCells() - occGrid.getNumCellsKnownAtBase() - occGrid.getNumRelayedCells()))
+            System.out.println("@@@@@@@@@@@ OccGrid newInfo calculation wrong, expected " + newInfo + 
+                    " got " + (occGrid.getNumFreeCells() - occGrid.getNumCellsKnownAtBase() - occGrid.getNumRelayedCells()) + " @@@@@@@@@");
         currentBaseKnowledgeBelief = baseCounter + gotRelayed; //can add them up, as they are disjoint;
         // may be a good idea to add a discounted value for gotRelayed, as we are not sure it is going to be delivered
         // to base soon. The reason we incorporate gotRelayed to reduce the probability of agents trying to go back to base
@@ -779,6 +790,7 @@ public class RealAgent extends BasicAgent implements Agent {
         }
     }    
     
+    // TODO: Should be able to make this more efficient.
     public void updateAreaRelayed (TeammateAgent ag) {
         if (ag.robotNumber == robotNumber) //we are the same as ag, nothing to do here
             return;
@@ -1108,11 +1120,10 @@ public class RealAgent extends BasicAgent implements Agent {
         if ((teammate.getRobotNumber() == Constants.BASE_STATION_ID) || 
                 (this.getRobotNumber() == Constants.BASE_STATION_ID))
             isBaseStation = true;
-        
-        //if (ID == teammate.relayID) amIRelay = true;
-        mergeGrid(teammate.getOccupancyGrid(), isBaseStation);
-        
-        //if (sim.getTimeElapsed() > 47) sim.verifyNoInfoGotLost2();
+                
+        //merge the occupancy grids, and add affected cells to dirty cell list to be repainted in the GUI
+        dirtyCells.addAll(
+                occGrid.mergeGrid(teammate.getOccupancyGrid(), isBaseStation));        
         
         if ((simConfig != null) && (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)
                 && (simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.UtilReturn))
@@ -1147,20 +1158,8 @@ public class RealAgent extends BasicAgent implements Agent {
         //processRelayMarks();
         //System.out.println("Complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
-        
-    private void mergeGrid(OccupancyGrid partnerOccGrid, boolean withBaseStation) {
-        for(int i=0; i<occGrid.width; i++)
-            for(int j=0; j<occGrid.height; j++) 
-                if(occGrid.getByteNoRelay(i,j) != partnerOccGrid.getByteNoRelay(i,j)) {
-                    // if the information is completely new, get all of it, including relay status
-                    // otherwise, we may be the relay! So get all new info, apart from relay status
-                    if (occGrid.getByte(i, j) == 0) occGrid.setByte(i, j, (byte)(occGrid.getByte(i,j) | partnerOccGrid.getByte(i,j)));
-                    else occGrid.setByte(i, j, (byte)(occGrid.getByte(i,j) | partnerOccGrid.getByteNoRelay(i,j)));
-                    if (withBaseStation)
-                        occGrid.setKnownAtBase(i, j);
-                    dirtyCells.add(new Point(i,j));
-                }
-    }
+    
+    
 // </editor-fold>     
 
 }

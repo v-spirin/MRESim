@@ -385,12 +385,7 @@ public class ExplorationImage {
         // Update obstacles
         if(agentSettings.showFreeSpace &&
                 agentGrid.obstacleAt(xCoord, yCoord))
-            setPixel(xCoord,yCoord,Constants.MapColor.obstacle());
-        
-        //Update test space
-        if(agentSettings.showTestSpace &&
-                agentGrid.testTrueAt(xCoord, yCoord))
-            setPixel(xCoord,yCoord,Constants.MapColor.test());
+            setPixel(xCoord,yCoord,Constants.MapColor.obstacle());        
     }
     //</editor-fold>
 

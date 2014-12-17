@@ -102,9 +102,9 @@ public class FrontierExploration {
 
         agent.timeSinceLastPlan++;
 
-        agent.setLastTotalKnowledgeBelief(agent.getCurrentTotalKnowledgeBelief());
-        agent.setLastBaseKnowledgeBelief(agent.getCurrentBaseKnowledgeBelief());
-        agent.setLastNewInfo(agent.getNewInfo());
+        //agent.setLastTotalKnowledgeBelief(agent.getCurrentTotalKnowledgeBelief());
+        //agent.setLastBaseKnowledgeBelief(agent.getCurrentBaseKnowledgeBelief());
+        //agent.setLastNewInfo(agent.getNewInfo());
 
         System.out.println(agent.toString() + "takeStep took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
         return nextStep;

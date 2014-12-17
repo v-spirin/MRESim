@@ -113,7 +113,7 @@ public class Constants {
     public static final int NEW_DEBRIS_MAX_SIZE = 50;
     
     // How often agents should recalculate how much they know, how much they are relaying etc.
-    public static final int UPDATE_AGENT_KNOWLEDGE_INTERVAL = 1;
+    public static final int UPDATE_AGENT_KNOWLEDGE_INTERVAL = 10;
     
     // Unexplored topological space ID
     public static final int UNEXPLORED_NODE_ID = Integer.MAX_VALUE;

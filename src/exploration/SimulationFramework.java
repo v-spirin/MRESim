@@ -1167,7 +1167,8 @@ public class SimulationFramework implements ActionListener {
         //System.out.println(Constants.INDENT + "Communication complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
     
-    private void verifyNoInfoGotLost()
+    // <editor-fold defaultstate="collapsed" desc="DELETE">
+    /*private void verifyNoInfoGotLost()
     {
         //build common occgrid of all agents
         int counter = 0;
@@ -1241,11 +1242,11 @@ public class SimulationFramework implements ActionListener {
                     }
                 }
                 
-                /*if ((commonGrid.freeSpaceAt(j, k)) &&
-                        !(agent[0].getOccupancyGrid().freeSpaceAt(j, k)) &&
-                        !newCellFound)
-                    System.out.println("~~~ CELL LOST: (" + j + ", " + k + ")");
-                    */
+                //if ((commonGrid.freeSpaceAt(j, k)) &&
+                //        !(agent[0].getOccupancyGrid().freeSpaceAt(j, k)) &&
+                //        !newCellFound)
+                //    System.out.println("~~~ CELL LOST: (" + j + ", " + k + ")");
+                //    
                 //check that someone is relaying information known to agents but unknown at base
                 if (commonGrid.freeSpaceAt(j, k))
                     counter_allagents++;
@@ -1255,7 +1256,8 @@ public class SimulationFramework implements ActionListener {
         } 
         int result = (counter_allagents - counter_base - newCell);
         return result;        
-    }
+    }*/
+    // </editor-fold>
     
     private static int[][] detectMultiHopLinks(int commTable[][]) {
         for(int i=0; i<commTable.length; i++)

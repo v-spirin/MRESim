@@ -33,18 +33,24 @@ package environment;
 
 import java.awt.*;
 import java.awt.geom.Line2D;
+import java.util.LinkedList;
 
 /**
  *
  * @author julh
  */
 public class OccupancyGrid {
-    public enum OccGridBit { FreeSpace, SafeSpace, Obstacle, Test, KnownAtBase, GotRelayed } // which bit does what
+    public enum OccGridBit { FreeSpace, SafeSpace, Obstacle, KnownAtBase, GotRelayed } // which bit does what
     
     private byte[][] grid;
     public int height;
     public int width;
-
+    
+    // occupancy grid information
+    private int cellsMarkedAsRelayed;
+    private int cellsMarkedAsKnownAtBase;
+    private int cellsMarkedAsFree;
+    
     public OccupancyGrid(int newWidth, int newHeight) {
         width = newWidth;
         height = newHeight;
@@ -52,6 +58,10 @@ public class OccupancyGrid {
         for(int i=0; i<width; i++)
             for(int j=0; j<height; j++)
                 grid[i][j] = 0;
+        
+        cellsMarkedAsRelayed = 0;
+        cellsMarkedAsKnownAtBase = 0;
+        cellsMarkedAsFree = 0;
     }
     
     public OccupancyGrid copy()
@@ -60,6 +70,10 @@ public class OccupancyGrid {
         for(int i=0; i<width; i++)
             for(int j=0; j<height; j++)
                 copyGrid.setByte(i, j, getByte(i, j));
+        copyGrid.cellsMarkedAsKnownAtBase = cellsMarkedAsKnownAtBase;
+        copyGrid.cellsMarkedAsRelayed = cellsMarkedAsRelayed;
+        copyGrid.cellsMarkedAsFree = cellsMarkedAsFree;
+        
         return copyGrid;
     }
     
@@ -73,6 +87,40 @@ public class OccupancyGrid {
             return false;
         
         return grid.equals(((OccupancyGrid)obj).grid);
+    }
+    
+    //TODO: should be able to make this more efficient
+    public LinkedList<Point> mergeGrid(OccupancyGrid partnerOccGrid, boolean withBaseStation) {
+        LinkedList<Point> cellsUpdated = new LinkedList();
+        for(int i=0; i<this.width; i++) {        
+            for(int j=0; j<this.height; j++) {
+                if(this.getByteNoRelay(i,j) != partnerOccGrid.getByteNoRelay(i,j)) {  
+                    if (partnerOccGrid.freeSpaceAt(i, j))
+                        this.setFreeSpaceAt(i, j);
+                    if (partnerOccGrid.safeSpaceAt(i, j))
+                        this.setSafeSpaceAt(i, j);
+                    if (partnerOccGrid.obstacleAt(i, j))
+                        this.setObstacleAt(i, j);
+                    if (partnerOccGrid.isKnownAtBase(i, j))
+                        this.setKnownAtBase(i, j);
+                        
+                    // if the information is completely new, get all of it, including relay status
+                    // otherwise, we may be the relay! So get all new info, apart from relay status
+                    if (this.getByte(i, j) == 0) {
+                        if (partnerOccGrid.isGotRelayed(i, j))
+                            this.setGotRelayed(i, j);
+                        //this.setByte(i, j, (byte)(this.getByte(i,j) | partnerOccGrid.getByte(i,j)));
+                    }
+                    /*else {
+                        this.setByte(i, j, (byte)(this.getByte(i,j) | partnerOccGrid.getByteNoRelay(i,j)));
+                    }*/
+                    if (withBaseStation)
+                        this.setKnownAtBase(i, j);
+                    cellsUpdated.add(new Point(i,j));
+                }
+            }
+        }
+        return cellsUpdated;
     }
     
     
@@ -138,6 +186,8 @@ public class OccupancyGrid {
     }
     
     public void setKnownAtBase(int xCoord, int yCoord) {
+        if (!isKnownAtBase(xCoord, yCoord))
+            cellsMarkedAsKnownAtBase++;
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.KnownAtBase, 1);
     }
     
@@ -148,15 +198,42 @@ public class OccupancyGrid {
             return false;
     }
      
+    // Marks this cell as being relayed to base by another robot
+    // Used in UtilExploration.
     public void setGotRelayed(int xCoord, int yCoord) {
+        if (!isGotRelayed(xCoord, yCoord))
+            cellsMarkedAsRelayed++;
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.GotRelayed, 1);
+        
     }
     
+    // Marks this cell as NOT being relayed to base by another robot
+    // Used in UtilExploration.
     public void setGotUnrelayed(int xCoord, int yCoord) {
+        if (isGotRelayed(xCoord, yCoord))
+            cellsMarkedAsRelayed--;
+        assert (cellsMarkedAsRelayed >= 0);
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.GotRelayed, 0);
+    }
+    
+    public int getNumRelayedCells()
+    {   
+        return cellsMarkedAsRelayed;
+    }
+    
+    public int getNumCellsKnownAtBase()
+    {
+        return cellsMarkedAsKnownAtBase;
+    }
+    
+    public int getNumFreeCells()
+    {
+        return cellsMarkedAsFree;
     }
 
     public void setFreeSpaceAt(int xCoord, int yCoord) {
+        if (!freeSpaceAt(xCoord, yCoord))
+            cellsMarkedAsFree++;
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.FreeSpace, 1);
     }
     
@@ -165,7 +242,7 @@ public class OccupancyGrid {
             setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.Obstacle, 0);
         }
         catch(ArrayIndexOutOfBoundsException  e) {
-            System.out.println(this.toString() + "Error: ArrayIndexOutOfBoundsException.  Did not set as obstacle.");
+            System.out.println(this.toString() + "Error: ArrayIndexOutOfBoundsException.  Did not set as no obstacle.");
         }
     }
 
@@ -177,6 +254,8 @@ public class OccupancyGrid {
     }
 
     public void setSafeSpaceAt(int xCoord, int yCoord) {
+        if (!freeSpaceAt(xCoord, yCoord))
+            cellsMarkedAsFree++;
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.FreeSpace, 1);
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.SafeSpace, 1);
     }
@@ -197,41 +276,12 @@ public class OccupancyGrid {
         }
     }
 
-    public boolean testTrueAt(int xCoord, int yCoord) {
-        if(getBit(xCoord, yCoord, OccGridBit.Test.ordinal()) == 1) 
-            return true;
-        else
-            return false;
-    }
-
-    public void setTestTrueAt(int xCoord, int yCoord) {
-        setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.Test, 1);
-    }
-
-    public void setByte(int x, int y, byte value) {
-        grid[x][y] = value;
-    }
-    
     public byte getByte(int x, int y) {
         return grid[x][y];
     }
     
     public byte getByteNoRelay(int x, int y) {
         return (byte) (grid[x][y] & ~(1 << OccGridBit.GotRelayed.ordinal()));
-    }
-    
-    public void setBit(int xCoord, int yCoord, OccGridBit bit, int value) {
-        setBit(xCoord, yCoord, bit.ordinal(), value);
-    }
-    
-    public void setBit(int xCoord, int yCoord, int bit, int value) {
-        int bitValue = grid[xCoord][yCoord] & (byte)(Math.pow(2,bit));
-        if(bitValue == 0)
-            if(value == 0) return;
-            else grid[xCoord][yCoord] += (byte)(Math.pow(2,bit));
-        else
-            if(value == 1) return;
-            else grid[xCoord][yCoord] -= (byte)(Math.pow(2,bit));
     }
     
     public int getBit(int xCoord, int yCoord, int bit) {
@@ -258,13 +308,6 @@ public class OccupancyGrid {
         return ("[OccupancyGrid] ");
     }
     
-    // Sets test bit in all occupancy grids to 0 -- purely for testing purposes.
-    public void initializeTestBits() {
-        for(int i=0; i<grid.length; i++)
-            for(int j=0; j<grid[0].length; j++)
-                setBit(i,j,OccGridBit.Test.ordinal(),0);
-    }
-
     public boolean locationExists(int x, int y) {
         return(x < width  && x >= 0 &&  y < height && y >= 0);
     }
@@ -372,5 +415,44 @@ public class OccupancyGrid {
         
         return counter;
     }
+    
+    private void setBit(int xCoord, int yCoord, OccGridBit bit, int value) {
+        setBit(xCoord, yCoord, bit.ordinal(), value);
+    }
+    
+    private void setBit(int xCoord, int yCoord, int bit, int value) {
+        int bitValue = grid[xCoord][yCoord] & (byte)(Math.pow(2,bit));
+        if(bitValue == 0)
+            if(value == 0) return;
+            else grid[xCoord][yCoord] += (byte)(Math.pow(2,bit));
+        else
+            if(value == 1) return;
+            else grid[xCoord][yCoord] -= (byte)(Math.pow(2,bit));
+    }
+    
+    private void setByte(int x, int y, byte value) {
+        grid[x][y] = value;
+    }
+    
+    //<editor-fold defaultstate="collapsed" desc="DELETE">
+    /*public boolean testTrueAt(int xCoord, int yCoord) {
+        if(getBit(xCoord, yCoord, OccGridBit.Test.ordinal()) == 1)
+            return true;
+        else
+            return false;
+    }
+
+    public void setTestTrueAt(int xCoord, int yCoord) {
+        setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.Test, 1);
+    }
+    
+    // Sets test bit in all occupancy grids to 0 -- purely for testing purposes.
+    public void initializeTestBits() {
+        for(int i=0; i<grid.length; i++)
+            for(int j=0; j<grid[0].length; j++)
+                setBit(i,j,OccGridBit.Test.ordinal(),0);
+    }
+    */
+    //</editor-fold>
 }
 
