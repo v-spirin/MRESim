@@ -47,8 +47,8 @@ public class OccupancyGrid {
     public int width;
     
     // occupancy grid information
-    private int cellsMarkedAsRelayed;
-    private int cellsMarkedAsKnownAtBase;
+    private int cellsMarkedAsFreeAndRelayedAndNotKnownAtBase;
+    private int cellsMarkedAsFreeAndKnownAtBase;
     private int cellsMarkedAsFree;
     
     public OccupancyGrid(int newWidth, int newHeight) {
@@ -59,8 +59,8 @@ public class OccupancyGrid {
             for(int j=0; j<height; j++)
                 grid[i][j] = 0;
         
-        cellsMarkedAsRelayed = 0;
-        cellsMarkedAsKnownAtBase = 0;
+        cellsMarkedAsFreeAndRelayedAndNotKnownAtBase = 0;
+        cellsMarkedAsFreeAndKnownAtBase = 0;
         cellsMarkedAsFree = 0;
     }
     
@@ -70,8 +70,8 @@ public class OccupancyGrid {
         for(int i=0; i<width; i++)
             for(int j=0; j<height; j++)
                 copyGrid.setByte(i, j, getByte(i, j));
-        copyGrid.cellsMarkedAsKnownAtBase = cellsMarkedAsKnownAtBase;
-        copyGrid.cellsMarkedAsRelayed = cellsMarkedAsRelayed;
+        copyGrid.cellsMarkedAsFreeAndKnownAtBase = cellsMarkedAsFreeAndKnownAtBase;
+        copyGrid.cellsMarkedAsFreeAndRelayedAndNotKnownAtBase = cellsMarkedAsFreeAndRelayedAndNotKnownAtBase;
         copyGrid.cellsMarkedAsFree = cellsMarkedAsFree;
         
         return copyGrid;
@@ -118,6 +118,7 @@ public class OccupancyGrid {
                         this.setKnownAtBase(i, j);
                     cellsUpdated.add(new Point(i,j));
                 }
+                assert (this.getByteNoRelay(i,j) == partnerOccGrid.getByteNoRelay(i,j));
             }
         }
         return cellsUpdated;
@@ -186,8 +187,12 @@ public class OccupancyGrid {
     }
     
     public void setKnownAtBase(int xCoord, int yCoord) {
-        if (!isKnownAtBase(xCoord, yCoord))
-            cellsMarkedAsKnownAtBase++;
+        if (!isKnownAtBase(xCoord, yCoord) && freeSpaceAt(xCoord, yCoord))
+        {
+            cellsMarkedAsFreeAndKnownAtBase++;
+            if (isGotRelayed(xCoord, yCoord))
+                cellsMarkedAsFreeAndRelayedAndNotKnownAtBase--;
+        }
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.KnownAtBase, 1);
     }
     
@@ -201,8 +206,8 @@ public class OccupancyGrid {
     // Marks this cell as being relayed to base by another robot
     // Used in UtilExploration.
     public void setGotRelayed(int xCoord, int yCoord) {
-        if (!isGotRelayed(xCoord, yCoord))
-            cellsMarkedAsRelayed++;
+        if (!isGotRelayed(xCoord, yCoord) && freeSpaceAt(xCoord, yCoord) && !isKnownAtBase(xCoord, yCoord))
+            cellsMarkedAsFreeAndRelayedAndNotKnownAtBase++;
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.GotRelayed, 1);
         
     }
@@ -210,20 +215,20 @@ public class OccupancyGrid {
     // Marks this cell as NOT being relayed to base by another robot
     // Used in UtilExploration.
     public void setGotUnrelayed(int xCoord, int yCoord) {
-        if (isGotRelayed(xCoord, yCoord))
-            cellsMarkedAsRelayed--;
-        assert (cellsMarkedAsRelayed >= 0);
+        if (isGotRelayed(xCoord, yCoord) && freeSpaceAt(xCoord, yCoord) && !isKnownAtBase(xCoord, yCoord))
+            cellsMarkedAsFreeAndRelayedAndNotKnownAtBase--;
+        assert (cellsMarkedAsFreeAndRelayedAndNotKnownAtBase >= 0);
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.GotRelayed, 0);
     }
     
-    public int getNumRelayedCells()
+    public int getNumFreeRelayedCells()
     {   
-        return cellsMarkedAsRelayed;
+        return cellsMarkedAsFreeAndRelayedAndNotKnownAtBase;
     }
     
-    public int getNumCellsKnownAtBase()
+    public int getNumFreeCellsKnownAtBase()
     {
-        return cellsMarkedAsKnownAtBase;
+        return cellsMarkedAsFreeAndKnownAtBase;
     }
     
     public int getNumFreeCells()
@@ -233,13 +238,34 @@ public class OccupancyGrid {
 
     public void setFreeSpaceAt(int xCoord, int yCoord) {
         if (!freeSpaceAt(xCoord, yCoord))
+        {
             cellsMarkedAsFree++;
+            if (isKnownAtBase(xCoord, yCoord))
+                cellsMarkedAsFreeAndKnownAtBase++;
+            else
+                if (isGotRelayed(xCoord, yCoord))
+                    cellsMarkedAsFreeAndRelayedAndNotKnownAtBase++;
+        }
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.FreeSpace, 1);
+    }
+    
+    public void setNoFreeSpaceAt(int xCoord, int yCoord) {
+        if (freeSpaceAt(xCoord, yCoord))
+        {
+            cellsMarkedAsFree--;
+            if (isKnownAtBase(xCoord, yCoord))
+                cellsMarkedAsFreeAndKnownAtBase--;
+            else
+                if (isGotRelayed(xCoord, yCoord))
+                    cellsMarkedAsFreeAndRelayedAndNotKnownAtBase--;
+        }
+        setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.FreeSpace, 0);
     }
     
     public void setNoObstacleAt(int xCoord, int yCoord) {
         try{
             setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.Obstacle, 0);
+            setFreeSpaceAt(xCoord, yCoord);
         }
         catch(ArrayIndexOutOfBoundsException  e) {
             System.out.println(this.toString() + "Error: ArrayIndexOutOfBoundsException.  Did not set as no obstacle.");
@@ -253,11 +279,10 @@ public class OccupancyGrid {
             return false;
     }
 
-    public void setSafeSpaceAt(int xCoord, int yCoord) {
-        if (!freeSpaceAt(xCoord, yCoord))
-            cellsMarkedAsFree++;
-        setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.FreeSpace, 1);
+    public void setSafeSpaceAt(int xCoord, int yCoord) {        
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.SafeSpace, 1);
+        // safe space has to also be free space
+        setFreeSpaceAt(xCoord, yCoord);
     }
 
     public boolean obstacleAt(int xCoord, int yCoord) {
@@ -270,6 +295,7 @@ public class OccupancyGrid {
     public void setObstacleAt(int xCoord, int yCoord) {
         try{
             setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.Obstacle, 1);
+            setNoFreeSpaceAt(xCoord, yCoord);
         }
         catch(ArrayIndexOutOfBoundsException  e) {
             System.out.println(this.toString() + "Error: ArrayIndexOutOfBoundsException.  Did not set as obstacle.");

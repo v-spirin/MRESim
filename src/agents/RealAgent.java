@@ -763,18 +763,18 @@ public class RealAgent extends BasicAgent implements Agent {
         newInfo = new_counter;
         percentageKnown = (double)areaKnown / (double)areaGoal;
         
-        if (baseCounter != occGrid.getNumCellsKnownAtBase())
+        if (baseCounter != occGrid.getNumFreeCellsKnownAtBase())
             System.out.println("@@@@@@@@@@@ OccGrid baseCounter corrupted, expected " + baseCounter + 
-                    " got " + occGrid.getNumCellsKnownAtBase() + " @@@@@@@@@");
-        if (gotRelayed != occGrid.getNumRelayedCells())
+                    " got " + occGrid.getNumFreeCellsKnownAtBase() + " @@@@@@@@@");
+        if (gotRelayed != occGrid.getNumFreeRelayedCells())
             System.out.println("@@@@@@@@@@@ OccGrid gotRelayed counter corrupted, expected " + gotRelayed + 
-                    " got " + occGrid.getNumRelayedCells() + " @@@@@@@@@");
+                    " got " + occGrid.getNumFreeRelayedCells() + " @@@@@@@@@");
         if (areaKnown != occGrid.getNumFreeCells())
             System.out.println("@@@@@@@@@@@ OccGrid freeCells counter corrupted, expected " + areaKnown + 
                     " got " + occGrid.getNumFreeCells() + " @@@@@@@@@");
-        if (newInfo != (occGrid.getNumFreeCells() - occGrid.getNumCellsKnownAtBase() - occGrid.getNumRelayedCells()))
+        if (newInfo != (occGrid.getNumFreeCells() - occGrid.getNumFreeCellsKnownAtBase() - occGrid.getNumFreeRelayedCells()))
             System.out.println("@@@@@@@@@@@ OccGrid newInfo calculation wrong, expected " + newInfo + 
-                    " got " + (occGrid.getNumFreeCells() - occGrid.getNumCellsKnownAtBase() - occGrid.getNumRelayedCells()) + " @@@@@@@@@");
+                    " got " + (occGrid.getNumFreeCells() - occGrid.getNumFreeCellsKnownAtBase() - occGrid.getNumFreeRelayedCells()) + " @@@@@@@@@");
         currentBaseKnowledgeBelief = baseCounter + gotRelayed; //can add them up, as they are disjoint;
         // may be a good idea to add a discounted value for gotRelayed, as we are not sure it is going to be delivered
         // to base soon. The reason we incorporate gotRelayed to reduce the probability of agents trying to go back to base

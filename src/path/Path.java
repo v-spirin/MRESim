@@ -129,6 +129,7 @@ public class Path {
                     startNode = topologicalNodes.get(Constants.UNEXPLORED_NODE_ID);
                 } else
                 {
+                    // there cannot be an obstacle here, as we are planning a path from this point!
                     agentGrid.setNoObstacleAt(startpoint.x, startpoint.y);
                 }
                 //System.out.println("startNode is null: " + startpoint);

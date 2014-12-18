@@ -1,4 +1,4 @@
-RoleBasedExploration
+FrontierExploration
 UtilReturn
 C:\Users\Victor\Documents\real1\98obst2\ag.txt
 PropModel1
@@ -15,4 +15,4 @@ false
 10
 false
 true
-0.5
+0.7
