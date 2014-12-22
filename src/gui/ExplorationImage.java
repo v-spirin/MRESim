@@ -282,7 +282,10 @@ public class ExplorationImage {
 
         for(int i=0; i<agents.length; i++) {
 
-
+            //Draw skeleton
+            if(agentSettings[i].showSkeleton)
+                //drawSkeleton(agents[i]);
+                drawKeyAreas(agents[i].getTopologicalMap());
             //Update agents
             if(agentSettings[i].showAgent)
                 updateAgent(agents[i]);
@@ -302,8 +305,8 @@ public class ExplorationImage {
                 agents[i].updatePathDirt(agents[i].getPath());
             }
             //Draw skeleton
-            if(agentSettings[i].showSkeleton)
-                drawSkeleton(agents[i]);
+            //if(agentSettings[i].showSkeleton)
+                //drawSkeleton(agents[i]);                
             //Draw border skeleton
             if(agentSettings[i].showBorderSkel)
                 drawBorderSkeleton(agents[i]);
@@ -573,13 +576,17 @@ public class ExplorationImage {
                         if (remainder == 0) c = Color.YELLOW;
                         if (remainder == 1) c = Color.CYAN;
                         if (remainder == 2) c = Color.GREEN;
-                        if (remainder == 3) c = Color.WHITE;
+                        if (remainder == 3) c = Color.MAGENTA;
                         if (remainder == 4) c = Color.MAGENTA;
                         if (remainder == 5) c = Color.RED;
                         if (remainder == 6) c = Color.BLUE;
-                        if (areaGrid[i][j] == Constants.UNEXPLORED_NODE_ID) c = Color.GRAY;
+                        if (areaGrid[i][j] == Constants.UNEXPLORED_NODE_ID) 
+                        {
+                            if (tMap.getGrid().freeSpaceAt(i, j)) c = Color.WHITE;
+                            else c = Color.GRAY;
+                        }
                         setPixel(i, j, c);
-                    };// else if (keyAreas[i][j] == -1) setPixel(i, j, Color.RED);
+                    } //else setPixel(i, j, Color.RED);
                 }
             for (Point p: borderPoints)
             {

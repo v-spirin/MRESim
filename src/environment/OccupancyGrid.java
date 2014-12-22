@@ -40,7 +40,9 @@ import java.util.LinkedList;
  * @author julh
  */
 public class OccupancyGrid {
-    public enum OccGridBit { FreeSpace, SafeSpace, Obstacle, KnownAtBase, GotRelayed } // which bit does what
+    public enum OccGridBit { FreeSpace, SafeSpace, Obstacle, KnownAtBase, GotRelayed, FinalTopologicalMap } // which bit does what
+    // if the FinalTopologicalMap flag is set, that means that we will no longer consider this cell when rebuilding
+    // a topological map - we will just reuse the partial topological map we already have.
     
     private byte[][] grid;
     public int height;

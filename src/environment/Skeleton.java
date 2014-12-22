@@ -460,7 +460,7 @@ public class Skeleton {
         for (Point p: keyPoints)
         {     
             index++;
-            if (areaGrid[p.x][p.y] >= 0)
+            if ((areaGrid[p.x][p.y] >= 0) && (areaGrid[p.x][p.y] < Constants.UNEXPLORED_NODE_ID))
             {
                 areaGrid[p.x][p.y] = index;
                 if (areaGrid[p.x - 1][p.y] == 0)
@@ -501,7 +501,7 @@ public class Skeleton {
                 int s = 0;
                 int se = 0;
 
-                if (areaGrid[p.x - 1][p.y - 1] > 0)
+                if ((areaGrid[p.x - 1][p.y - 1] > 0) && (areaGrid[p.x - 1][p.y - 1] < Constants.UNEXPLORED_NODE_ID))
                 {
                     if (areaGrid[p.x][p.y - 1] == areaGrid[p.x - 1][p.y - 1]) nw++;
                     if (areaGrid[p.x + 1][p.y - 1] == areaGrid[p.x - 1][p.y - 1]) nw++;
@@ -512,7 +512,7 @@ public class Skeleton {
                     if (areaGrid[p.x + 1][p.y + 1] == areaGrid[p.x - 1][p.y - 1]) nw++;
                 } else
                     nw = -1;
-                if (areaGrid[p.x][p.y - 1] > 0)
+                if ((areaGrid[p.x][p.y - 1] > 0) && (areaGrid[p.x][p.y - 1] < Constants.UNEXPLORED_NODE_ID))
                 {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x][p.y - 1]) n++;
                     if (areaGrid[p.x + 1][p.y - 1] == areaGrid[p.x][p.y - 1]) n++;
@@ -523,7 +523,7 @@ public class Skeleton {
                     if (areaGrid[p.x + 1][p.y + 1] == areaGrid[p.x][p.y - 1]) n++;
                 } else
                     n = -1;
-                if (areaGrid[p.x + 1][p.y - 1] > 0)
+                if ((areaGrid[p.x][p.y - 1] > 0) && (areaGrid[p.x][p.y - 1] < Constants.UNEXPLORED_NODE_ID))
                 {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x + 1][p.y - 1]) ne++;
                     if (areaGrid[p.x][p.y - 1] == areaGrid[p.x + 1][p.y - 1]) ne++;
@@ -534,7 +534,7 @@ public class Skeleton {
                     if (areaGrid[p.x + 1][p.y + 1] == areaGrid[p.x + 1][p.y - 1]) ne++;
                 } else
                     ne = -1;
-                if (areaGrid[p.x - 1][p.y] > 0)
+                if ((areaGrid[p.x - 1][p.y] > 0) && (areaGrid[p.x - 1][p.y] < Constants.UNEXPLORED_NODE_ID))
                 {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x - 1][p.y]) w++;
                     if (areaGrid[p.x][p.y - 1] == areaGrid[p.x - 1][p.y]) w++;
@@ -545,7 +545,7 @@ public class Skeleton {
                     if (areaGrid[p.x + 1][p.y + 1] == areaGrid[p.x - 1][p.y]) w++;
                 } else
                     w = -1;
-                if (areaGrid[p.x + 1][p.y] > 0)
+                if ((areaGrid[p.x + 1][p.y] > 0) && (areaGrid[p.x + 1][p.y] < Constants.UNEXPLORED_NODE_ID))
                 {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x + 1][p.y]) e++;
                     if (areaGrid[p.x][p.y - 1] == areaGrid[p.x + 1][p.y]) e++;
@@ -556,7 +556,7 @@ public class Skeleton {
                     if (areaGrid[p.x + 1][p.y + 1] == areaGrid[p.x + 1][p.y]) e++;
                 } else
                     e = -1;
-                if (areaGrid[p.x - 1][p.y + 1] > 0)
+                if ((areaGrid[p.x - 1][p.y + 1] > 0) && (areaGrid[p.x - 1][p.y + 1] < Constants.UNEXPLORED_NODE_ID))
                 {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x - 1][p.y + 1]) sw++;
                     if (areaGrid[p.x][p.y - 1] == areaGrid[p.x - 1][p.y + 1]) sw++;
@@ -568,7 +568,7 @@ public class Skeleton {
                 } else
                     sw = -1;
 
-                if (areaGrid[p.x][p.y + 1] > 0)
+                if ((areaGrid[p.x][p.y + 1] > 0) && (areaGrid[p.x][p.y + 1] < Constants.UNEXPLORED_NODE_ID))
                 {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x][p.y + 1]) s++;
                     if (areaGrid[p.x][p.y - 1] == areaGrid[p.x][p.y + 1]) s++;
@@ -580,7 +580,7 @@ public class Skeleton {
                 } else
                     s = -1;
 
-                if (areaGrid[p.x + 1][p.y + 1] > 0)
+                if ((areaGrid[p.x + 1][p.y + 1] > 0) && (areaGrid[p.x + 1][p.y + 1] < Constants.UNEXPLORED_NODE_ID))
                 {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x + 1][p.y + 1]) se++;
                     if (areaGrid[p.x][p.y - 1] == areaGrid[p.x + 1][p.y + 1]) se++;
@@ -620,7 +620,7 @@ public class Skeleton {
                     }
                 }*/
 
-                if (pointsOfInterest.size() < 1000000)
+                if (pointsOfInterest.size() < 10000000)
                 {
                     if (areaGrid[p.x - 1][p.y] == 0)
                         pointsOfInterest.add(new Point(p.x - 1, p.y));
