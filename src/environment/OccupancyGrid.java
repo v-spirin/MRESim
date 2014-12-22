@@ -50,6 +50,9 @@ public class OccupancyGrid {
     private int cellsMarkedAsFreeAndRelayedAndNotKnownAtBase;
     private int cellsMarkedAsFreeAndKnownAtBase;
     private int cellsMarkedAsFree;
+    // List of cells that are free, not known at base and are not being relayed
+    // these are the cells that we are currently "responsible" for delivering to base
+    private LinkedList<Point> cellsFreeNotKnownAtBaseNotRelayed;
     
     public OccupancyGrid(int newWidth, int newHeight) {
         width = newWidth;
@@ -62,6 +65,8 @@ public class OccupancyGrid {
         cellsMarkedAsFreeAndRelayedAndNotKnownAtBase = 0;
         cellsMarkedAsFreeAndKnownAtBase = 0;
         cellsMarkedAsFree = 0;
+        
+        cellsFreeNotKnownAtBaseNotRelayed = new LinkedList();
     }
     
     public OccupancyGrid copy()
@@ -73,6 +78,8 @@ public class OccupancyGrid {
         copyGrid.cellsMarkedAsFreeAndKnownAtBase = cellsMarkedAsFreeAndKnownAtBase;
         copyGrid.cellsMarkedAsFreeAndRelayedAndNotKnownAtBase = cellsMarkedAsFreeAndRelayedAndNotKnownAtBase;
         copyGrid.cellsMarkedAsFree = cellsMarkedAsFree;
+        
+        copyGrid.cellsFreeNotKnownAtBaseNotRelayed = (LinkedList<Point>)cellsFreeNotKnownAtBaseNotRelayed.clone();
         
         return copyGrid;
     }
@@ -187,11 +194,18 @@ public class OccupancyGrid {
     }
     
     public void setKnownAtBase(int xCoord, int yCoord) {
-        if (!isKnownAtBase(xCoord, yCoord) && freeSpaceAt(xCoord, yCoord))
-        {
+        if (!isKnownAtBase(xCoord, yCoord) && freeSpaceAt(xCoord, yCoord)) {
             cellsMarkedAsFreeAndKnownAtBase++;
             if (isGotRelayed(xCoord, yCoord))
                 cellsMarkedAsFreeAndRelayedAndNotKnownAtBase--;
+            else {
+                if (freeSpaceAt(xCoord, yCoord)) {
+                    boolean success = cellsFreeNotKnownAtBaseNotRelayed.remove(new Point(xCoord, yCoord));
+                    if (!success)
+                        System.out.println("@@@@@@@@@@ Tried to remove cellsFreeNotKnownAtBaseNotRelayed element "
+                                + "that is not in the list! xCoord = " + xCoord + ", yCoord = " + yCoord);
+                }
+            }
         }
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.KnownAtBase, 1);
     }
@@ -206,17 +220,28 @@ public class OccupancyGrid {
     // Marks this cell as being relayed to base by another robot
     // Used in UtilExploration.
     public void setGotRelayed(int xCoord, int yCoord) {
-        if (!isGotRelayed(xCoord, yCoord) && freeSpaceAt(xCoord, yCoord) && !isKnownAtBase(xCoord, yCoord))
+        setGotRelayed(xCoord, yCoord, true);
+    }
+    public void setGotRelayed(int xCoord, int yCoord, boolean updateOwnedCellsList) {
+        if (!isGotRelayed(xCoord, yCoord) && freeSpaceAt(xCoord, yCoord) && !isKnownAtBase(xCoord, yCoord)) {
             cellsMarkedAsFreeAndRelayedAndNotKnownAtBase++;
+            if (updateOwnedCellsList && freeSpaceAt(xCoord, yCoord) && !isKnownAtBase(xCoord, yCoord)) {
+                boolean success = cellsFreeNotKnownAtBaseNotRelayed.remove(new Point(xCoord, yCoord));
+                if (!success)
+                    System.out.println("@@@@@@@@@@ Tried to remove cellsFreeNotKnownAtBaseNotRelayed element "
+                            + "that is not in the list! xCoord = " + xCoord + ", yCoord = " + yCoord);
+            }
+        }
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.GotRelayed, 1);
-        
     }
     
     // Marks this cell as NOT being relayed to base by another robot
     // Used in UtilExploration.
     public void setGotUnrelayed(int xCoord, int yCoord) {
-        if (isGotRelayed(xCoord, yCoord) && freeSpaceAt(xCoord, yCoord) && !isKnownAtBase(xCoord, yCoord))
+        if (isGotRelayed(xCoord, yCoord) && freeSpaceAt(xCoord, yCoord) && !isKnownAtBase(xCoord, yCoord)) {
             cellsMarkedAsFreeAndRelayedAndNotKnownAtBase--;
+            cellsFreeNotKnownAtBaseNotRelayed.add(new Point(xCoord, yCoord));
+        }
         assert (cellsMarkedAsFreeAndRelayedAndNotKnownAtBase >= 0);
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.GotRelayed, 0);
     }
@@ -242,9 +267,13 @@ public class OccupancyGrid {
             cellsMarkedAsFree++;
             if (isKnownAtBase(xCoord, yCoord))
                 cellsMarkedAsFreeAndKnownAtBase++;
-            else
+            else {
                 if (isGotRelayed(xCoord, yCoord))
                     cellsMarkedAsFreeAndRelayedAndNotKnownAtBase++;
+                else
+                    cellsFreeNotKnownAtBaseNotRelayed.add(new Point(xCoord, yCoord));
+            }
+                    
         }
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.FreeSpace, 1);
     }
@@ -255,9 +284,16 @@ public class OccupancyGrid {
             cellsMarkedAsFree--;
             if (isKnownAtBase(xCoord, yCoord))
                 cellsMarkedAsFreeAndKnownAtBase--;
-            else
+            else {
                 if (isGotRelayed(xCoord, yCoord))
                     cellsMarkedAsFreeAndRelayedAndNotKnownAtBase--;
+                else {
+                    boolean success = cellsFreeNotKnownAtBaseNotRelayed.remove(new Point(xCoord, yCoord));
+                    if (!success)
+                        System.out.println("@@@@@@@@@@ Tried to remove cellsFreeNotKnownAtBaseNotRelayed element "
+                            + "that is not in the list! xCoord = " + xCoord + ", yCoord = " + yCoord);
+                }
+            }
         }
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.FreeSpace, 0);
     }
@@ -300,6 +336,29 @@ public class OccupancyGrid {
         catch(ArrayIndexOutOfBoundsException  e) {
             System.out.println(this.toString() + "Error: ArrayIndexOutOfBoundsException.  Did not set as obstacle.");
         }
+    }
+    
+    // List of cells that are free, not known at base and are not being relayed
+    // these are the cells that we are currently "responsible" for delivering to base
+    // Used in UtilityExploration to decide who should be the new agent responsible for delivery of the map cells
+    public LinkedList<Point> getOwnedCells() {
+        return cellsFreeNotKnownAtBaseNotRelayed;
+    }
+    
+    // Makes our robot not responsible for delivery of any cells to the base station
+    // Returns number of cells affected
+    // Used in UtilityExploration
+    public int setOwnedCellsRelayed() {
+        for (Point point : getOwnedCells())
+            setGotRelayed(point.x, point.y, false);
+        int counter = getOwnedCells().size();
+        resetOwnedCells();
+        return counter;
+    }
+    
+    // Used for UtilityExploration
+    private void resetOwnedCells() {
+        cellsFreeNotKnownAtBaseNotRelayed.clear();
     }
 
     public byte getByte(int x, int y) {

@@ -35,6 +35,7 @@ import agents.RealAgent;
 import config.Constants;
 import java.util.*;
 import java.awt.Point;
+import path.Path;
 
 /**
  *
@@ -110,6 +111,10 @@ public class RandomWalk {
             
             counter++;
         }
+        Path path = new Path();
+        path.setStartPoint(new Point(agent.getX(), agent.getY()));
+        path.setGoalPoint(new Point(newX, newY));
+        agent.setPath(path);
         
         return(new Point(newX, newY));
     }

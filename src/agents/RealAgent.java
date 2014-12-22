@@ -742,40 +742,48 @@ public class RealAgent extends BasicAgent implements Agent {
     // update stats of what we know about the environment
     // TODO: we shouldn't call this every time step, this is a performance bottleneck and can be made more efficient.
     public void updateAreaKnown () {
-        int counter = 0;
+        //<editor-fold defaultstate="collapsed" desc="Commented out - "brute force" way of calculating map stats">
+        /*int counter = 0;
         int new_counter = 0;
         int gotRelayed = 0;
         int baseCounter = 0;
         for(int i=0; i<occGrid.width; i++)
-            for(int j=0; j<occGrid.height; j++)
-                if (occGrid.freeSpaceAt(i,j))
-                {
-                    counter++;
-                    if ((!occGrid.isKnownAtBase(i, j)) && (!occGrid.isGotRelayed(i, j)))
-                        new_counter++;
-                    if ((!occGrid.isKnownAtBase(i, j)) && (occGrid.isGotRelayed(i, j)))
-                        gotRelayed++;
-                    if (occGrid.isKnownAtBase(i, j))/* || occGrid.isGotRelayed(i, j))*/
-                        baseCounter++;
-                }
+        for(int j=0; j<occGrid.height; j++)
+        if (occGrid.freeSpaceAt(i,j))
+        {
+        counter++;
+        if ((!occGrid.isKnownAtBase(i, j)) && (!occGrid.isGotRelayed(i, j)))
+        new_counter++;
+        if ((!occGrid.isKnownAtBase(i, j)) && (occGrid.isGotRelayed(i, j)))
+        gotRelayed++;
+        if (occGrid.isKnownAtBase(i, j))// || occGrid.isGotRelayed(i, j))
+        baseCounter++;
+        }
         
         areaKnown = counter;
         newInfo = new_counter;
         percentageKnown = (double)areaKnown / (double)areaGoal;
         
         if (baseCounter != occGrid.getNumFreeCellsKnownAtBase())
-            System.out.println("@@@@@@@@@@@ OccGrid baseCounter corrupted, expected " + baseCounter + 
-                    " got " + occGrid.getNumFreeCellsKnownAtBase() + " @@@@@@@@@");
+        System.out.println("@@@@@@@@@@@ OccGrid baseCounter corrupted, expected " + baseCounter +
+        " got " + occGrid.getNumFreeCellsKnownAtBase() + " @@@@@@@@@");
         if (gotRelayed != occGrid.getNumFreeRelayedCells())
-            System.out.println("@@@@@@@@@@@ OccGrid gotRelayed counter corrupted, expected " + gotRelayed + 
-                    " got " + occGrid.getNumFreeRelayedCells() + " @@@@@@@@@");
+        System.out.println("@@@@@@@@@@@ OccGrid gotRelayed counter corrupted, expected " + gotRelayed +
+        " got " + occGrid.getNumFreeRelayedCells() + " @@@@@@@@@");
         if (areaKnown != occGrid.getNumFreeCells())
-            System.out.println("@@@@@@@@@@@ OccGrid freeCells counter corrupted, expected " + areaKnown + 
-                    " got " + occGrid.getNumFreeCells() + " @@@@@@@@@");
+        System.out.println("@@@@@@@@@@@ OccGrid freeCells counter corrupted, expected " + areaKnown +
+        " got " + occGrid.getNumFreeCells() + " @@@@@@@@@");
         if (newInfo != (occGrid.getNumFreeCells() - occGrid.getNumFreeCellsKnownAtBase() - occGrid.getNumFreeRelayedCells()))
-            System.out.println("@@@@@@@@@@@ OccGrid newInfo calculation wrong, expected " + newInfo + 
-                    " got " + (occGrid.getNumFreeCells() - occGrid.getNumFreeCellsKnownAtBase() - occGrid.getNumFreeRelayedCells()) + " @@@@@@@@@");
-        currentBaseKnowledgeBelief = baseCounter + gotRelayed; //can add them up, as they are disjoint;
+        System.out.println("@@@@@@@@@@@ OccGrid newInfo calculation wrong, expected " + newInfo +
+        " got " + (occGrid.getNumFreeCells() - occGrid.getNumFreeCellsKnownAtBase() - occGrid.getNumFreeRelayedCells()) + " @@@@@@@@@");*/
+//</editor-fold>
+        
+        areaKnown = occGrid.getNumFreeCells();
+        newInfo = (occGrid.getNumFreeCells() - occGrid.getNumFreeCellsKnownAtBase() - occGrid.getNumFreeRelayedCells());
+        percentageKnown = (double)areaKnown / (double)areaGoal;
+        
+        currentBaseKnowledgeBelief = occGrid.getNumFreeCellsKnownAtBase() + occGrid.getNumFreeRelayedCells(); 
+        // ^^^ can add them up, as they are disjoint;
         // may be a good idea to add a discounted value for gotRelayed, as we are not sure it is going to be delivered
         // to base soon. The reason we incorporate gotRelayed to reduce the probability of agents trying to go back to base
         // before the ratio is hit, and then having to go back to exploring when they learn that base station knows more
@@ -792,6 +800,7 @@ public class RealAgent extends BasicAgent implements Agent {
     
     // TODO: Should be able to make this more efficient.
     public void updateAreaRelayed (TeammateAgent ag) {
+        //long timer = System.currentTimeMillis();
         if (ag.robotNumber == robotNumber) //we are the same as ag, nothing to do here
             return;
         if (getID() == Constants.BASE_STATION_ID) //base station
@@ -803,46 +812,26 @@ public class RealAgent extends BasicAgent implements Agent {
         else
             System.out.println(ag.name + " relaying for " + toString() + " (" + ag.timeToBase() + " vs " + timeToBase() + ")");
         */
-        if (iAmCloserToBase) 
-        {
-           for(int i=0; i<ag.occGrid.width; i++)
-                for(int j=0; j<ag.occGrid.height; j++)
-                {
-                    if ((ag.occGrid.freeSpaceAt(i, j))
-                        && (!ag.occGrid.isKnownAtBase(i, j))
-                            && (!ag.occGrid.isGotRelayed(i, j)))
-                    {
-                        if (occGrid.isGotRelayed(i, j))
-                        {
-                            occGrid.setGotUnrelayed(i, j);
-                            new_counter++;
-                        }
-                    }
-                } 
-           if (new_counter > 0)
-           {
+        if (iAmCloserToBase) {           
+            for (Point point : ag.occGrid.getOwnedCells()) {
+                if (occGrid.isGotRelayed(point.x, point.y)) {
+                    occGrid.setGotUnrelayed(point.x, point.y);
+                    new_counter++;
+                }
+            }
+           if (new_counter > 0) {
                if (newInfo == 0) newInfo = 1;
                System.out.println(toString() + "setGotUnrelayed: " + new_counter);
            }
-        } else
-        {        
-            if (newInfo > 0)
-            {
-                for(int i=0; i<occGrid.width; i++)
-                    for(int j=0; j<occGrid.height; j++)
-                    {
-                        if ((occGrid.freeSpaceAt(i, j))
-                            && (!occGrid.isKnownAtBase(i, j))
-                                && (!occGrid.isGotRelayed(i, j)))
-                        {
-                            occGrid.setGotRelayed(i, j);
-                            new_counter++;
-                        }
-                    }
+        } else {        
+            if (newInfo > 0) {
+                // Need to iterate over a copy of getOwnedCells list, as the list gets changed by setGotRelayed.
+                new_counter = occGrid.setOwnedCellsRelayed();
                 if (new_counter > 0)
                     System.out.println(toString() + "setGotRelayed: " + new_counter);
             }
         }
+        //System.out.println(this.toString() + "updateAreaRelayed took " + (System.currentTimeMillis()-timer) + "ms.\n");
     }
     
     protected void updateGrid(double sensorData[]) {

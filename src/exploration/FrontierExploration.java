@@ -181,7 +181,9 @@ public class FrontierExploration {
         // utility, no need to recalculate
         
         // Check that we have a path, otherwise take random step
-        if ((agent.getPath() == null) || agent.getPath().getPoints().size() == 0)
+        if ((agent.getPath() == null) || 
+                agent.getPath().getPoints() == null ||
+                agent.getPath().getPoints().isEmpty())
         {
             nextStep = RandomWalk.takeStep(agent);
             agent.setTimeSinceLastPlan(0);
