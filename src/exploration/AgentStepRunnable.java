@@ -66,7 +66,7 @@ public class AgentStepRunnable implements Runnable{
         Point nextStep;
         double[] sensorData;
         double distance_left = agent.getSpeed();
-        //benchmarking
+        //profiling
         long realtimeStartAgentCycle = System.currentTimeMillis();
         
         //<editor-fold defaultstate="collapsed" desc="Continue along the path, until we have exhausted agent 'speed' per cycle or run out of path">

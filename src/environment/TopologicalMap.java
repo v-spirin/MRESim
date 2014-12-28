@@ -81,8 +81,12 @@ public class TopologicalMap {
     
     public void generateSkeleton()
     {
+        long realtimeStart = System.currentTimeMillis();
         skeletonGrid = Skeleton.skeletonize(Skeleton.findSkeleton(occGrid));
+        System.out.println("Skeletonize & findSkeleton took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        realtimeStart = System.currentTimeMillis();
         skeletonPoints = Skeleton.gridToList(skeletonGrid);
+        System.out.println("Skeletonize gridToList took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
     
     public void findKeyPoints()
@@ -123,7 +127,9 @@ public class TopologicalMap {
     
     public void generateKeyAreas()
     {
-        areaGrid = Skeleton.fillKeyAreas(occGrid, keyPoints);
+        // declare topological nodes (we will define relations between them later)
+        // each node has one keypoint which is rougly in the center of the node region
+        // this keypoint is used to pre-calculate occupancy grid paths between nodes.
         topologicalNodes = new HashMap<Integer, TopologicalNode>();
         
         int index = 0;
@@ -134,10 +140,17 @@ public class TopologicalMap {
         }
         topologicalNodes.put(Constants.UNEXPLORED_NODE_ID, new TopologicalNode(Constants.UNEXPLORED_NODE_ID, new Point(-1, -1)));
         
-        //find node neighbours
+        // calculate the areas for each node
         long realtimeStart = System.currentTimeMillis();
+        areaGrid = Skeleton.fillKeyAreas(occGrid, keyPoints, topologicalNodes);        
+        System.out.println("FillKeyAreas took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        //find node neighbours
+        realtimeStart = System.currentTimeMillis();
         //System.out.println("Generating node neighbour relationships...");
         generateBorderPoints();
+        System.out.println("GenerateBorderPoints took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        
+        long timeSpentOnPaths = 0;
         for (Point p: getBorderPoints())
         {
             if (areaGrid[p.x][p.y] > 0)
@@ -156,17 +169,28 @@ public class TopologicalMap {
                                 if ((curCell != Constants.UNEXPLORED_NODE_ID)
                                         && (areaGrid[p.x+i][p.y+j] != Constants.UNEXPLORED_NODE_ID))
                                 {
+                                    realtimeStart = System.currentTimeMillis();
                                     Path pathToNode = new Path();
                                     pathToNode.setStartPoint(node.getPosition());
                                     pathToNode.setGoalPoint(neighbourNode.getPosition());
                                     pathToNode.getAStarPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
                                     //pathToNode.getJumpPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
+                                    timeSpentOnPaths += (System.currentTimeMillis()-realtimeStart);
                                     node.addNeighbour(neighbourNode, pathToNode);                                
                                     neighbourNode.addNeighbour(node, pathToNode.generateReversePath());
                                 } else
                                 {
+                                    
                                     node.addNeighbour(neighbourNode, null);
                                     neighbourNode.addNeighbour(node, null);
+                                    if (areaGrid[p.x+i][p.y+j] == Constants.UNEXPLORED_NODE_ID)
+                                        for (Point nodeCell : node.getCellList()) {
+                                            occGrid.unsetFinalTopologicalMapCell(nodeCell.x, nodeCell.y);
+                                        }
+                                    else
+                                        for (Point nodeCell : neighbourNode.getCellList()) {
+                                            occGrid.unsetFinalTopologicalMapCell(nodeCell.x, nodeCell.y);
+                                        }
                                 }
                             }
                         }  
@@ -174,7 +198,7 @@ public class TopologicalMap {
                 }
             }
         }
-        //System.out.println("Done, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        System.out.println("Time spent calculating paths between regions: " + timeSpentOnPaths + "ms.");
         
     }
     

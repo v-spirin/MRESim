@@ -40,7 +40,9 @@ import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.LinkedList;
+import path.TopologicalNode;
 
 /**
  *
@@ -216,6 +218,7 @@ public class Skeleton {
     }
 
      static int[][] skeletonize(int [][] grid, int max) {
+        long realtimeStart = System.currentTimeMillis();
         int width = grid.length;
         int height = grid[0].length;
 
@@ -243,9 +246,10 @@ public class Skeleton {
                                           u2[i][j] = 0;
                                           found = true;
                     }
-            if(!found || counter==max)
+            if(!found || counter==max) {
+                System.out.println("skeletonize method took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
                 return u2;
-            
+            }
             for(int i=2; i<width-2; i++)
                 for(int j=2; j<height-2; j++) 
                     u1[i][j] = u2[i][j];
@@ -253,57 +257,8 @@ public class Skeleton {
             counter++;
         }
 
-       return null;         
-
-        /*for(int i=0; i<width; i++)
-            for(int j=0; j<height; j++) {
-                if(i==0 || j==0 || i==width-1 || j==height-1) {
-                    matrix[i][j] = 0;
-                    continue;
-                }
-                // The below run a kernel over the image, works ok but not perfect
-                else if( (grid[i-1][j] == grid[i][j]-1 || grid[i-1][j] == grid[i][j]) &&
-                         (grid[i][j-1] == grid[i][j]-1 || grid[i][j-1] == grid[i][j]) &&
-                         (grid[i+1][j] == grid[i][j]-1 || grid[i+1][j] == grid[i][j]) &&
-                         (grid[i][j+1] == grid[i][j]-1 || grid[i][j+1] == grid[i][j]))
-                    matrix[i][j] = 1;
-                else 
-                    matrix[i][j] = 0;
-
-                // Try to add to is pixel superiority
-               /* int psi_gen = 0;
-                for(int v=i-1; v<=i+1; v++)
-                        for(int w=j-1; w<=j+1; w++)
-                            if(grid[v][w] < grid[i][j])
-                                psi_gen++;
-                  if(psi_gen >= 7) 
-                      matrix[i][j] = 2;*/
-                
-                /* The below is pixel-superiority-index method */
-               /* else {
-                    int psi_gen = 0;
-                    int psi_spe = 0;
-                    for(int v=i-1; v<=i+1; v++)
-                        for(int w=j-1; w<=j+1; w++)
-                            if(grid[v][w] <= grid[i][j])
-                                psi_gen++;
-                    if(psi_gen >= 8) {
-                        //We know that this is a skeleton pixel, but is it a special one?
-                        /*for(int v=i-1; v<=i+1; v++)
-                            for(int w=j-1; w<=j+1; w++)
-                                if(grid[v][w] < grid[i][j])
-                                    psi_spe++;
-                        if(psi_spe < 3)
-                            matrix[i][j] = 2;
-                        else*/
-                    /*        matrix[i][j] = 1;
-                    }
-                    else
-                        matrix[i][j] = 0;
-                }*/
-           // }*/
-        
-        //return matrix;
+        System.out.println("skeletonize method took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        return null;
      }
      
      public static LinkedList<Point> gridToList(int[][] grid) {
@@ -347,6 +302,7 @@ public class Skeleton {
      
      public static int[][] findSkeleton(OccupancyGrid grid, boolean treatWideOpenSpaceAsObstacle,
              boolean skeletonNearBorders) {
+         long realtimeStart = System.currentTimeMillis();
          int[][] freeSpaceGrid = new int[grid.width][grid.height];
          
          for(int i=0; i<grid.width; i++)
@@ -370,6 +326,7 @@ public class Skeleton {
              skeleton = skeletonize(freeSpaceGrid);
          else
              skeleton = skeletonizeNearBorders(freeSpaceGrid);
+         System.out.println("findSkeleton took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
          return skeleton;
      }
      
@@ -443,7 +400,7 @@ public class Skeleton {
         return rvPts;
     }
     
-    public static int[][] fillKeyAreas(OccupancyGrid occGrid, LinkedList<Point> keyPoints)
+    public static int[][] fillKeyAreas(OccupancyGrid occGrid, LinkedList<Point> keyPoints, HashMap<Integer, TopologicalNode> nodes)
     {
         int[][] areaGrid = new int[occGrid.width][occGrid.height];
         LinkedList<Point> pointsOfInterest = new LinkedList<Point>();
@@ -609,6 +566,11 @@ public class Skeleton {
                 else if (se >= nw && se >= n && se >= ne && se >= w && se >= e && se >= sw && se>= s)
                     areaGrid[p.x][p.y] = areaGrid[p.x + 1][p.y + 1];
                 if (areaGrid[p.x][p.y] == -1) areaGrid[p.x][p.y] = 0;
+                else if ((areaGrid[p.x][p.y] > 0) && (areaGrid[p.x][p.y] < Constants.UNEXPLORED_NODE_ID)) {
+                    occGrid.setFinalTopologicalMapCell(p.x, p.y);
+                    nodes.get(areaGrid[p.x][p.y]).addCell(p);
+                }
+                    
 
                 /*if (pointsOfInterest.size() > 1000000)
                 {
@@ -620,7 +582,7 @@ public class Skeleton {
                     }
                 }*/
 
-                if (pointsOfInterest.size() < 10000000)
+                if (pointsOfInterest.size() < 50000000)
                 {
                     if (areaGrid[p.x - 1][p.y] == 0)
                         pointsOfInterest.add(new Point(p.x - 1, p.y));

@@ -43,6 +43,7 @@ public class TopologicalNode {
     private Point position;
     private LinkedList<TopologicalNode> neighbours;
     private LinkedList<Path> neighbour_paths;
+    private LinkedList<Point> cells; //occupancy grid cells allocated to this node
     
     public TopologicalNode(int ID, Point position)
     {
@@ -50,6 +51,7 @@ public class TopologicalNode {
         this.position = position;
         neighbours = new LinkedList<TopologicalNode>();
         neighbour_paths = new LinkedList<Path>();
+        cells = new LinkedList<Point>();
     }
     
     public int getID()
@@ -89,5 +91,13 @@ public class TopologicalNode {
         {
             return null;
         }
+    }
+    
+    public void addCell(Point p) {
+        cells.add(p);
+    }
+    
+    public LinkedList<Point> getCellList() {
+        return cells;
     }
 }

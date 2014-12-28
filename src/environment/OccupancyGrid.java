@@ -187,13 +187,21 @@ public class OccupancyGrid {
             return false;
     }
     
+    public boolean isFinalTopologicalMapCell(int xCoord, int yCoord) {
+        return (getBit(xCoord, yCoord, OccGridBit.FinalTopologicalMap.ordinal()) == 1);
+    }
+    
+    public void setFinalTopologicalMapCell(int xCoord, int yCoord) {
+        setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.FinalTopologicalMap, 1);
+    }
+    
+    public void unsetFinalTopologicalMapCell(int xCoord, int yCoord) {
+        setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.FinalTopologicalMap, 0);
+    }
         
     public boolean isKnownAtBase(int xCoord, int yCoord) {
-        if(getBit(xCoord, yCoord, OccGridBit.KnownAtBase.ordinal()) == 1)
-            return true;
-        else
-            return false;
-    }
+        return (getBit(xCoord, yCoord, OccGridBit.KnownAtBase.ordinal()) == 1);
+    }   
     
     public void setKnownAtBase(int xCoord, int yCoord) {
         if (!isKnownAtBase(xCoord, yCoord) && freeSpaceAt(xCoord, yCoord)) {

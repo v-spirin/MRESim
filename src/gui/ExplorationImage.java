@@ -579,12 +579,13 @@ public class ExplorationImage {
                         if (remainder == 3) c = Color.MAGENTA;
                         if (remainder == 4) c = Color.MAGENTA;
                         if (remainder == 5) c = Color.RED;
-                        if (remainder == 6) c = Color.BLUE;
+                        if (remainder == 6) c = Color.CYAN;
                         if (areaGrid[i][j] == Constants.UNEXPLORED_NODE_ID) 
                         {
                             if (tMap.getGrid().freeSpaceAt(i, j)) c = Color.WHITE;
                             else c = Color.GRAY;
                         }
+                        if (tMap.getGrid().isFinalTopologicalMapCell(i, j)) c = Color.BLUE;
                         setPixel(i, j, c);
                     } //else setPixel(i, j, Color.RED);
                 }
