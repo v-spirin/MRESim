@@ -39,6 +39,7 @@ import config.RobotConfig;
 import exploration.RVLocation;
 import java.awt.Point;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.LinkedList;
 import path.Path;
@@ -62,6 +63,9 @@ public class TopologicalMap {
     private LinkedList<Point> skeletonPointsBorder;
     private LinkedList<Point> keyPointsBorder;
     private LinkedList<Point> secondKeyPointsBorder;
+    
+    //cached paths between nodes; first param is two points, start and finish
+    private static HashMap<Rectangle, Path> pathCache = new HashMap<Rectangle, Path>();
     
     public TopologicalMap(OccupancyGrid occGrid)
     {
@@ -168,12 +172,28 @@ public class TopologicalMap {
                             {
                                 if ((curCell != Constants.UNEXPLORED_NODE_ID)
                                         && (areaGrid[p.x+i][p.y+j] != Constants.UNEXPLORED_NODE_ID))
-                                {
+                                {                                    
                                     realtimeStart = System.currentTimeMillis();
-                                    Path pathToNode = new Path();
-                                    pathToNode.setStartPoint(node.getPosition());
-                                    pathToNode.setGoalPoint(neighbourNode.getPosition());
-                                    pathToNode.getAStarPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
+                                    Path pathToNode;
+                                    //check path cache
+                                    Rectangle pathCoords = new Rectangle(node.getPosition().x, node.getPosition().y, 
+                                            neighbourNode.getPosition().x, neighbourNode.getPosition().y);
+                                    if (pathCache.containsKey(pathCoords)) {
+                                        System.out.println("Retrieved from cache path from " + node.getPosition() + " to " + neighbourNode.getPosition());
+                                        pathToNode = pathCache.get(pathCoords);
+                                    } else {
+                                        pathToNode = new Path();
+                                        pathToNode.setStartPoint(node.getPosition());
+                                        pathToNode.setGoalPoint(neighbourNode.getPosition());
+
+                                        System.out.println("Generating path from " + node.getPosition() + " to " + neighbourNode.getPosition());
+                                        pathToNode.getAStarPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
+                                        pathCache.put(pathCoords, pathToNode);
+                                        Path reversePath = pathToNode.generateReversePath();
+                                        Rectangle reversePathCoords = new Rectangle(neighbourNode.getPosition().x, neighbourNode.getPosition().y, 
+                                            node.getPosition().x, node.getPosition().y);
+                                        pathCache.put(reversePathCoords, reversePath);
+                                    }
                                     //pathToNode.getJumpPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
                                     timeSpentOnPaths += (System.currentTimeMillis()-realtimeStart);
                                     node.addNeighbour(neighbourNode, pathToNode);                                

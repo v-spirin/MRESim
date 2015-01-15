@@ -88,6 +88,7 @@ public class AgentStepRunnable implements Runnable{
             if(env.directLinePossible(agent.getX(), agent.getY(), nextStep.x, nextStep.y)) {
                 //check here we don't 'teleport'
                 double dist = agent.getLocation().distance(nextStep);
+                System.out.println(agent.toString() + "1 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
                 //<editor-fold defaultstate="collapsed" desc="If we don't have enough 'speed' left to reach nextPoint, go as far as we can and add keep nextPoint in the path">
                 if (dist > distance_left) {
                     //System.out.println(agent.toString() + " exceeded speed. Distance left: " + distance_left + ", dist to next path point: " + dist);
@@ -109,8 +110,11 @@ public class AgentStepRunnable implements Runnable{
                 {
                     distance_left = distance_left - dist;
                 }
+                System.out.println(agent.toString() + "2 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
                 sensorData = simFramework.findSensorData(agent, nextStep);
+                System.out.println(agent.toString() + "3 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
                 agent.writeStep(nextStep, sensorData);
+                System.out.println(agent.toString() + "4 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
             }
             else
             {

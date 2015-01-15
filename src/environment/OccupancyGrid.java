@@ -31,6 +31,7 @@
  */
 package environment;
 
+import config.Constants;
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.util.LinkedList;
@@ -56,6 +57,10 @@ public class OccupancyGrid {
     // these are the cells that we are currently "responsible" for delivering to base
     private LinkedList<Point> cellsFreeNotKnownAtBaseNotRelayed;
     
+    //this is a flag that can be used to check if occupancy grid has changed since it was last set to 'false'
+    //used primarily to decide if we need to rebuild topological map
+    private int mapCellsChanged; 
+    
     public OccupancyGrid(int newWidth, int newHeight) {
         width = newWidth;
         height = newHeight;
@@ -69,6 +74,8 @@ public class OccupancyGrid {
         cellsMarkedAsFree = 0;
         
         cellsFreeNotKnownAtBaseNotRelayed = new LinkedList();
+        
+        mapCellsChanged = Constants.MAP_CHANGED_THRESHOLD + 1;
     }
     
     public OccupancyGrid copy()
@@ -82,6 +89,8 @@ public class OccupancyGrid {
         copyGrid.cellsMarkedAsFree = cellsMarkedAsFree;
         
         copyGrid.cellsFreeNotKnownAtBaseNotRelayed = (LinkedList<Point>)cellsFreeNotKnownAtBaseNotRelayed.clone();
+        
+        copyGrid.mapCellsChanged = mapCellsChanged;
         
         return copyGrid;
     }
@@ -187,6 +196,15 @@ public class OccupancyGrid {
             return false;
     }
     
+    //we must not be able to set it to True from outside
+    public void setMapHasChangedToFalse() {
+        mapCellsChanged = 0;   
+    }
+    
+    public boolean hasMapChanged() {
+        return (mapCellsChanged > Constants.MAP_CHANGED_THRESHOLD);
+    }
+    
     public boolean isFinalTopologicalMapCell(int xCoord, int yCoord) {
         return (getBit(xCoord, yCoord, OccGridBit.FinalTopologicalMap.ordinal()) == 1);
     }
@@ -274,6 +292,9 @@ public class OccupancyGrid {
     public void setFreeSpaceAt(int xCoord, int yCoord) {
         if (!freeSpaceAt(xCoord, yCoord))
         {
+            boolean wasObstacle = obstacleAt(xCoord, yCoord);
+            if (!wasObstacle) mapCellsChanged++; //only count map changes if we learn previously unknown map cell
+            // We only recalculate topological map if some new cells of the occupancy grid have been learned.
             cellsMarkedAsFree++;
             if (isKnownAtBase(xCoord, yCoord))
                 cellsMarkedAsFreeAndKnownAtBase++;
@@ -291,6 +312,7 @@ public class OccupancyGrid {
     public void setNoFreeSpaceAt(int xCoord, int yCoord) {
         if (freeSpaceAt(xCoord, yCoord))
         {
+            //mapCellsChanged++;
             cellsMarkedAsFree--;
             if (isKnownAtBase(xCoord, yCoord))
                 cellsMarkedAsFreeAndKnownAtBase--;
@@ -310,6 +332,7 @@ public class OccupancyGrid {
     
     public void setNoObstacleAt(int xCoord, int yCoord) {
         try{
+            //if (obstacleAt(xCoord, yCoord)) mapCellsChanged++;
             setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.Obstacle, 0);
             setFreeSpaceAt(xCoord, yCoord);
         }
@@ -340,6 +363,7 @@ public class OccupancyGrid {
 
     public void setObstacleAt(int xCoord, int yCoord) {
         try{
+            //if (!obstacleAt(xCoord, yCoord) && freeSpaceAt(xCoord, yCoord)) mapCellsChanged++;
             setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.Obstacle, 1);
             setNoFreeSpaceAt(xCoord, yCoord);
         }

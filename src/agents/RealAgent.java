@@ -416,19 +416,26 @@ public class RealAgent extends BasicAgent implements Agent {
         return currentBaseKnowledgeBelief;        
     }
     
+    //This method checks if occupancy grid has changed since last update of topological map,
+    //and rebuilds the map if necessary
     public void forceUpdateTopologicalMap()
     {
-        System.out.println(this + " Updating topological map");
-        long timeStart = System.currentTimeMillis();
-        topologicalMap.setGrid(occGrid);   
-        System.out.println(toString() + "setGrid, " + (System.currentTimeMillis()-timeStart) + "ms.");
-        topologicalMap.generateSkeleton();
-        System.out.println(toString() + "generateSkeleton, " + (System.currentTimeMillis()-timeStart) + "ms.");
-        topologicalMap.findKeyPoints();
-        System.out.println(toString() + "findKeyPoints, " + (System.currentTimeMillis()-timeStart) + "ms.");
-        topologicalMap.generateKeyAreas();
-        timeTopologicalMapUpdated = timeElapsed;
-        System.out.println(toString() + "generated topological map, " + (System.currentTimeMillis()-timeStart) + "ms.");
+        if (occGrid.hasMapChanged()) {
+            System.out.println(this + " Updating topological map");
+            long timeStart = System.currentTimeMillis();
+            topologicalMap.setGrid(occGrid);   
+            System.out.println(toString() + "setGrid, " + (System.currentTimeMillis()-timeStart) + "ms.");
+            topologicalMap.generateSkeleton();
+            System.out.println(toString() + "generateSkeleton, " + (System.currentTimeMillis()-timeStart) + "ms.");
+            topologicalMap.findKeyPoints();
+            System.out.println(toString() + "findKeyPoints, " + (System.currentTimeMillis()-timeStart) + "ms.");
+            topologicalMap.generateKeyAreas();
+            timeTopologicalMapUpdated = timeElapsed;
+            System.out.println(toString() + "generated topological map, " + (System.currentTimeMillis()-timeStart) + "ms.");
+            occGrid.setMapHasChangedToFalse();
+        } else {
+            System.out.println(this + " Occupancy Grid not changed since last update, skipping topological map update");
+        }
     }
 
 // </editor-fold>    
@@ -623,10 +630,16 @@ public class RealAgent extends BasicAgent implements Agent {
         // OLD METHOD RAY TRACING
         // Safe space slightly narrower than free space to make sure frontiers
         // are created along farthest edges of sensor radial polygon
+        realtimeStart = System.currentTimeMillis();
         newFreeSpace = findRadialPolygon(sensorData, sensRange, 0, 180);
         newSafeSpace = findRadialPolygon(sensorData, safeRange, 0, 180);
+        System.out.println(this.toString() + "findRadialPolygon(x2) took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        realtimeStart = System.currentTimeMillis();
         updateObstacles(newFreeSpace);
+        System.out.println(this.toString() + "updateObstacles took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        realtimeStart = System.currentTimeMillis();
         updateFreeAndSafeSpace(newFreeSpace, newSafeSpace);
+        System.out.println(this.toString() + "updateFreeAndSafeSpace took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         
         // NEW METHOD FLOOD FILL
         //updateGrid(sensorData);

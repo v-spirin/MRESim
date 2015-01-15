@@ -41,6 +41,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import path.TopologicalNode;
 
@@ -135,79 +136,79 @@ public class Skeleton {
     }
          
          
-     private static int findmin(int num1,int num2)//,int num3,int num4)
-     {
-        int min=4000;
-        if(min>num1)min=num1;
-        if(min>num2)min=num2;
-        //if(min>num3)min=num3;
-        //if(min>num4)min=num4;
-        return(min);
-     }
-     
-     public static int numNonzeroNeighbors(int[][] grid, int x, int y) {
-         int num = 0;
-         if(grid[x][y-1] != 0) num++;
-         if(grid[x+1][y-1] != 0) num++;
-         if(grid[x+1][y] != 0) num++;
-         if(grid[x+1][y+1] != 0) num++;
-         if(grid[x][y+1] != 0) num++;
-         if(grid[x-1][y+1] != 0) num++;
-         if(grid[x-1][y] != 0) num++;
-         if(grid[x-1][y-1] != 0) num++;
-         
-         return num;
-     }
-     
-     public static int neighborTraversal(int [][] grid, int x, int y) {
-         int numChanges = 0;
-         
-         if(grid[x][y-1]==0 && grid[x+1][y-1]!=0) numChanges++;
-         if(grid[x+1][y-1]==0 && grid[x+1][y]!=0) numChanges++;
-         if(grid[x+1][y]==0 && grid[x+1][y+1]!=0) numChanges++;
-         if(grid[x+1][y+1]==0 && grid[x][y+1]!=0) numChanges++;
-         if(grid[x][y+1]==0 && grid[x-1][y+1]!=0) numChanges++;
-         if(grid[x-1][y+1]==0 && grid[x-1][y]!=0) numChanges++;
-         if(grid[x-1][y]==0 && grid[x-1][y-1]!=0) numChanges++;
-         if(grid[x-1][y-1]==0 && grid[x][y-1]!=0) numChanges++;
+    private static int findmin(int num1,int num2)//,int num3,int num4)
+    {
+       int min=4000;
+       if(min>num1)min=num1;
+       if(min>num2)min=num2;
+       //if(min>num3)min=num3;
+       //if(min>num4)min=num4;
+       return(min);
+    }
 
-         return numChanges;
-     }
-     
-     static int[][] skeletonize(int [][] grid) {
-         return skeletonize(grid, Integer.MAX_VALUE);
-     }
-     
-     static int[][] findCSpace(int [][] grid) {
-         return skeletonize(grid, 0);
-     }
-     
-     // this method finds the points that are within a margin of the obstacles
-     static int[][] skeletonizeNearBorders(int [][] grid)
-     {
-         int[][] cspace = findCSpace(grid);
-         
-         int width = cspace.length;
-         int height = cspace[0].length;
-         int skeleton[][] = new int[width][height];
-         
-         //lets find border points
-         for (int i = 0; i < width; i++)
-         {
-             for (int j = 0; j < height; j++)
-             {
-                 //if we are in cspace and are bordering at least one non-cspace cell
-                 if ((cspace[i][j] == 1) && (numNonzeroNeighbors(cspace, i, j) < 8))
-                     skeleton[i][j] = 1;
-                 else
-                     skeleton[i][j] = 0;
-             }
-         }
-         
-         return skeleton;
-     }
+    public static int numNonzeroNeighbors(int[][] grid, int x, int y) {
+        int num = 0;
+        if(grid[x][y-1] != 0) num++;
+        if(grid[x+1][y-1] != 0) num++;
+        if(grid[x+1][y] != 0) num++;
+        if(grid[x+1][y+1] != 0) num++;
+        if(grid[x][y+1] != 0) num++;
+        if(grid[x-1][y+1] != 0) num++;
+        if(grid[x-1][y] != 0) num++;
+        if(grid[x-1][y-1] != 0) num++;
 
-     public static boolean obstacleWithinDistance(OccupancyGrid grid, int x, int y, int minDistance) {
+        return num;
+    }
+
+    public static int neighborTraversal(int [][] grid, int x, int y) {
+        int numChanges = 0;
+
+        if(grid[x][y-1]==0 && grid[x+1][y-1]!=0) numChanges++;
+        if(grid[x+1][y-1]==0 && grid[x+1][y]!=0) numChanges++;
+        if(grid[x+1][y]==0 && grid[x+1][y+1]!=0) numChanges++;
+        if(grid[x+1][y+1]==0 && grid[x][y+1]!=0) numChanges++;
+        if(grid[x][y+1]==0 && grid[x-1][y+1]!=0) numChanges++;
+        if(grid[x-1][y+1]==0 && grid[x-1][y]!=0) numChanges++;
+        if(grid[x-1][y]==0 && grid[x-1][y-1]!=0) numChanges++;
+        if(grid[x-1][y-1]==0 && grid[x][y-1]!=0) numChanges++;
+
+        return numChanges;
+    }
+
+    static int[][] skeletonize(int [][] grid) {
+        return skeletonize(grid, Integer.MAX_VALUE);
+    }
+
+    static int[][] findCSpace(int [][] grid) {
+        return skeletonize(grid, 0);
+    }
+
+    // this method finds the points that are within a margin of the obstacles
+    static int[][] skeletonizeNearBorders(int [][] grid)
+    {
+        int[][] cspace = findCSpace(grid);
+
+        int width = cspace.length;
+        int height = cspace[0].length;
+        int skeleton[][] = new int[width][height];
+
+        //lets find border points
+        for (int i = 0; i < width; i++)
+        {
+            for (int j = 0; j < height; j++)
+            {
+                //if we are in cspace and are bordering at least one non-cspace cell
+                if ((cspace[i][j] == 1) && (numNonzeroNeighbors(cspace, i, j) < 8))
+                    skeleton[i][j] = 1;
+                else
+                    skeleton[i][j] = 0;
+            }
+        }
+
+        return skeleton;
+    }
+
+    public static boolean obstacleWithinDistance(OccupancyGrid grid, int x, int y, int minDistance) {
         for(int i=x-minDistance; i<=x+minDistance; i++)
             for(int j=y-minDistance; j<=y+minDistance; j++)
                 if(i>=0 && j>=0 && i<grid.width && j<grid.height &&
@@ -217,134 +218,135 @@ public class Skeleton {
         return false;
     }
 
-     static int[][] skeletonize(int [][] grid, int max) {
+    static int[][] skeletonize(int [][] grid, int max) {
+       long realtimeStart = System.currentTimeMillis();
+       int width = grid.length;
+       int height = grid[0].length;
+
+       int u1[][] = new int[width][height];
+       int u2[][] = new int[width][height];
+
+       for(int i=0; i<width; i++)
+           for(int j=0; j<height; j++){
+               u1[i][j] = grid[i][j];
+               u2[i][j] = grid[i][j];
+           }
+
+       boolean found = true;
+       int counter = 0;
+
+       while(found){
+           found = false;
+           for(int i=2; i<width-2; i++)
+               for(int j=2; j<height-2; j++) 
+                   if(u1[i][j] == 1)
+                       if((numNonzeroNeighbors(u1, i, j) >= 2) && (numNonzeroNeighbors(u1, i, j) <= 6))
+                              if(neighborTraversal(u1, i, j) == 1)
+                                  if(u1[i][j-1]*u1[i-1][j]*u1[i+1][j] == 0  ||  neighborTraversal(u1,i,j-1) != 1)
+                                      if(u1[i][j-1]*u1[i-1][j]*u1[i][j+1] == 0  ||  neighborTraversal(u1,i-1,j) != 1) {
+                                         u2[i][j] = 0;
+                                         found = true;
+                   }
+           if(!found || counter==max) {
+               System.out.println("skeletonize method took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+               return u2;
+           }
+           for(int i=2; i<width-2; i++)
+               for(int j=2; j<height-2; j++) 
+                   u1[i][j] = u2[i][j];
+
+           counter++;
+       }
+
+       System.out.println("skeletonize method took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+       return null;
+    }
+
+    public static LinkedList<Point> gridToList(int[][] grid) {
+       LinkedList<Point> sk = new LinkedList<Point>();
+
+        for(int j=0; j<grid[0].length; j++)
+           for(int i=0; i<grid.length; i++)
+               if(grid[i][j] == 1)
+                   sk.add(new Point(i,j));
+        return sk;
+    }
+
+    static void printMatrix(int[][] mat) {
+       for(int j=0; j<mat[0].length; j++) {
+           for(int i=0; i<mat.length; i++)
+               System.out.print(mat[i][j] + " ");
+           System.out.println();
+       }
+       System.out.println();
+       System.out.println();
+    }
+
+    private static boolean inWideOpenSpace(int[][] grid, int x, int y) {
+        for(int i=Math.max(0, x-50); i<=Math.min(grid.length-1, x+50); i++)
+            for(int j=Math.max(0, y-50); j<=Math.min(grid[0].length-1, y+50); j++)
+                if(grid[i][j] == 0)
+                    return false;
+
+        return true;
+    }
+
+
+    //<editor-fold defaultstate="collapsed" desc="Find Skeleton">
+    public static int[][] findSkeleton(OccupancyGrid grid) {
+        return findSkeleton(grid, true, false);
+    }
+
+    public static int[][] findSkeletonNearBorders(OccupancyGrid grid) {
+        return findSkeleton(grid, false, true);
+    }
+
+    public static int[][] findSkeleton(OccupancyGrid grid, boolean treatWideOpenSpaceAsObstacle,
+            boolean skeletonNearBorders) {
         long realtimeStart = System.currentTimeMillis();
-        int width = grid.length;
-        int height = grid[0].length;
+        int[][] freeSpaceGrid = new int[grid.width][grid.height];
 
-        int u1[][] = new int[width][height];
-        int u2[][] = new int[width][height];
-        
-        for(int i=0; i<width; i++)
-            for(int j=0; j<height; j++){
-                u1[i][j] = grid[i][j];
-                u2[i][j] = grid[i][j];
-            }
-        
-        boolean found = true;
-        int counter = 0;
+        for(int i=0; i<grid.width; i++)
+            for(int j=0; j<grid.height; j++)
+                if(grid.freeSpaceAt(i, j) && (!skeletonNearBorders || (!obstacleWithinDistance(grid, i, j, 5))))
+                    freeSpaceGrid[i][j] = 1;
+                else
+                    freeSpaceGrid[i][j] = 0;
 
-        while(found){
-            found = false;
-            for(int i=2; i<width-2; i++)
-                for(int j=2; j<height-2; j++) 
-                    if(u1[i][j] == 1)
-                        if((numNonzeroNeighbors(u1, i, j) >= 2) && (numNonzeroNeighbors(u1, i, j) <= 6))
-                               if(neighborTraversal(u1, i, j) == 1)
-                                   if(u1[i][j-1]*u1[i-1][j]*u1[i+1][j] == 0  ||  neighborTraversal(u1,i,j-1) != 1)
-                                       if(u1[i][j-1]*u1[i-1][j]*u1[i][j+1] == 0  ||  neighborTraversal(u1,i-1,j) != 1) {
-                                          u2[i][j] = 0;
-                                          found = true;
-                    }
-            if(!found || counter==max) {
-                System.out.println("skeletonize method took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-                return u2;
-            }
-            for(int i=2; i<width-2; i++)
-                for(int j=2; j<height-2; j++) 
-                    u1[i][j] = u2[i][j];
-
-            counter++;
+        if (treatWideOpenSpaceAsObstacle)
+        {
+            for(int i=0; i<grid.width; i++)
+                for(int j=0; j<grid.height; j++)
+                    if(freeSpaceGrid[i][j] == 1 && inWideOpenSpace(freeSpaceGrid, i, j))
+                        freeSpaceGrid[i][j] = 0;
         }
 
-        System.out.println("skeletonize method took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-        return null;
-     }
-     
-     public static LinkedList<Point> gridToList(int[][] grid) {
-        LinkedList<Point> sk = new LinkedList<Point>();
-         
-         for(int j=0; j<grid[0].length; j++)
-            for(int i=0; i<grid.length; i++)
-                if(grid[i][j] == 1)
-                    sk.add(new Point(i,j));
-         return sk;
-     }
-     
-     static void printMatrix(int[][] mat) {
-        for(int j=0; j<mat[0].length; j++) {
-            for(int i=0; i<mat.length; i++)
-                System.out.print(mat[i][j] + " ");
-            System.out.println();
-        }
-        System.out.println();
-        System.out.println();
-     }
+        //skeleton = distanceTransform(skeleton);
+        int[][] skeleton;
+        if (!skeletonNearBorders)
+            skeleton = skeletonize(freeSpaceGrid);
+        else
+            skeleton = skeletonizeNearBorders(freeSpaceGrid);
+        System.out.println("findSkeleton took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        return skeleton;
+    }
 
-     private static boolean inWideOpenSpace(int[][] grid, int x, int y) {
-         for(int i=Math.max(0, x-50); i<=Math.min(grid.length-1, x+50); i++)
-             for(int j=Math.max(0, y-50); j<=Math.min(grid[0].length-1, y+50); j++)
-                 if(grid[i][j] == 0)
-                     return false;
-            
-         return true;
-     }
-        
-    
-     //<editor-fold defaultstate="collapsed" desc="Find Skeleton">
-     public static int[][] findSkeleton(OccupancyGrid grid) {
-         return findSkeleton(grid, true, false);
-     }
-     
-     public static int[][] findSkeletonNearBorders(OccupancyGrid grid) {
-         return findSkeleton(grid, false, true);
-     }
-     
-     public static int[][] findSkeleton(OccupancyGrid grid, boolean treatWideOpenSpaceAsObstacle,
-             boolean skeletonNearBorders) {
-         long realtimeStart = System.currentTimeMillis();
-         int[][] freeSpaceGrid = new int[grid.width][grid.height];
-         
-         for(int i=0; i<grid.width; i++)
-             for(int j=0; j<grid.height; j++)
-                 if(grid.freeSpaceAt(i, j) && (!skeletonNearBorders || (!obstacleWithinDistance(grid, i, j, 5))))
-                     freeSpaceGrid[i][j] = 1;
-                 else
-                     freeSpaceGrid[i][j] = 0;
-         
-         if (treatWideOpenSpaceAsObstacle)
-         {
-             for(int i=0; i<grid.width; i++)
-                 for(int j=0; j<grid.height; j++)
-                     if(freeSpaceGrid[i][j] == 1 && inWideOpenSpace(freeSpaceGrid, i, j))
-                         freeSpaceGrid[i][j] = 0;
-         }
-         
-         //skeleton = distanceTransform(skeleton);
-         int[][] skeleton;
-         if (!skeletonNearBorders)
-             skeleton = skeletonize(freeSpaceGrid);
-         else
-             skeleton = skeletonizeNearBorders(freeSpaceGrid);
-         System.out.println("findSkeleton took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-         return skeleton;
-     }
-     
-     public static int[][] findSkeleton(Environment.Status[][] status, int max) {
-         int[][] freeSpaceGrid = new int[status.length][status[0].length];
-         
-         for(int i=0; i<status.length; i++)
-             for(int j=0; j<status[0].length; j++)
-                 if(status[i][j] == Environment.Status.unexplored)
-                     freeSpaceGrid[i][j] = 1;
-                 else
-                     freeSpaceGrid[i][j] = 0;
-         
-         //skeleton = distanceTransform(skeleton);
-         int[][] skeleton = skeletonize(freeSpaceGrid, max);
-         return skeleton;
-     }
-     //</editor-fold>
+
+    public static int[][] findSkeleton(Environment.Status[][] status, int max) {
+        int[][] freeSpaceGrid = new int[status.length][status[0].length];
+
+        for(int i=0; i<status.length; i++)
+            for(int j=0; j<status[0].length; j++)
+                if(status[i][j] == Environment.Status.unexplored)
+                    freeSpaceGrid[i][j] = 1;
+                else
+                    freeSpaceGrid[i][j] = 0;
+
+        //skeleton = distanceTransform(skeleton);
+        int[][] skeleton = skeletonize(freeSpaceGrid, max);
+        return skeleton;
+    }
+    //</editor-fold>
     
     public static LinkedList<Point> findKeyPoints(int[][] skeleton, OccupancyGrid occGrid) {
         LinkedList<Point> rvPts = new LinkedList<Point>();
@@ -403,8 +405,9 @@ public class Skeleton {
     public static int[][] fillKeyAreas(OccupancyGrid occGrid, LinkedList<Point> keyPoints, HashMap<Integer, TopologicalNode> nodes)
     {
         int[][] areaGrid = new int[occGrid.width][occGrid.height];
-        LinkedList<Point> pointsOfInterest = new LinkedList<Point>();
+        LinkedHashMap<Point, Boolean> pointsOfInterest = new LinkedHashMap<Point, Boolean>();
         
+        //Initialize areaGrid - set unexplored areas to UNEXPLORED_NODE_ID, obstacles to -1, free space to 0.
         for (int i = 0; i < areaGrid.length; i++)
             for (int j = 0; j < areaGrid[0].length; j++)
                 if ((occGrid.obstacleAt(i, j)) /*|| ((!occGrid.obstacleAt(i, j)) && (!occGrid.freeSpaceAt(i, j)))*/ || (i == 0) || (j == 0) || (i == (areaGrid.length - 1)) || (j == (areaGrid[0].length - 1))) 
@@ -413,6 +416,7 @@ public class Skeleton {
                     areaGrid[i][j] = Constants.UNEXPLORED_NODE_ID; //unexplored space
                 else areaGrid[i][j] = 0;
         
+        // initialize the keypoint of each Node to the node's ID; add the immediate neighbour cells to "points of interest" list
         int index = 0;
         for (Point p: keyPoints)
         {     
@@ -421,21 +425,21 @@ public class Skeleton {
             {
                 areaGrid[p.x][p.y] = index;
                 if (areaGrid[p.x - 1][p.y] == 0)
-                    pointsOfInterest.add(new Point(p.x - 1, p.y));
+                    pointsOfInterest.put(new Point(p.x - 1, p.y), true);
                 if (areaGrid[p.x + 1][p.y] == 0)
-                    pointsOfInterest.add(new Point(p.x + 1, p.y));
+                    pointsOfInterest.put(new Point(p.x + 1, p.y), true);
                 if (areaGrid[p.x][p.y - 1] == 0)
-                    pointsOfInterest.add(new Point(p.x, p.y - 1));
+                    pointsOfInterest.put(new Point(p.x, p.y - 1), true);
                 if (areaGrid[p.x][p.y + 1] == 0)
-                    pointsOfInterest.add(new Point(p.x, p.y + 1));
+                    pointsOfInterest.put(new Point(p.x, p.y + 1), true);
                 if (areaGrid[p.x - 1][p.y - 1] == 0)
-                    pointsOfInterest.add(new Point(p.x - 1, p.y - 1));
+                    pointsOfInterest.put(new Point(p.x - 1, p.y - 1), true);
                 if (areaGrid[p.x - 1][p.y + 1] == 0)
-                    pointsOfInterest.add(new Point(p.x - 1, p.y + 1));
+                    pointsOfInterest.put(new Point(p.x - 1, p.y + 1), true);
                 if (areaGrid[p.x + 1][p.y + 1] == 0)
-                    pointsOfInterest.add(new Point(p.x + 1, p.y + 1));
+                    pointsOfInterest.put(new Point(p.x + 1, p.y + 1), true);
                 if (areaGrid[p.x + 1][p.y - 1] == 0)
-                    pointsOfInterest.add(new Point(p.x + 1, p.y - 1));
+                    pointsOfInterest.put(new Point(p.x + 1, p.y - 1), true);
             }
         }
         int maxQueueSize;
@@ -445,8 +449,9 @@ public class Skeleton {
         {
             if (pointsOfInterest.size() > maxQueueSize)
                 maxQueueSize = pointsOfInterest.size();
-            Point p = pointsOfInterest.pop();
-            if (areaGrid[p.x][p.y] == 0)
+            Point p = pointsOfInterest.keySet().iterator().next();
+            pointsOfInterest.remove(p);
+            if (areaGrid[p.x][p.y] == 0) //cell unassigned to any node
             {
                 // calculate what area most surrounding cells belong to
                 int nw = 0;
@@ -480,7 +485,7 @@ public class Skeleton {
                     if (areaGrid[p.x + 1][p.y + 1] == areaGrid[p.x][p.y - 1]) n++;
                 } else
                     n = -1;
-                if ((areaGrid[p.x][p.y - 1] > 0) && (areaGrid[p.x][p.y - 1] < Constants.UNEXPLORED_NODE_ID))
+                if ((areaGrid[p.x + 1][p.y - 1] > 0) && (areaGrid[p.x + 1][p.y - 1] < Constants.UNEXPLORED_NODE_ID))
                 {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x + 1][p.y - 1]) ne++;
                     if (areaGrid[p.x][p.y - 1] == areaGrid[p.x + 1][p.y - 1]) ne++;
@@ -582,31 +587,31 @@ public class Skeleton {
                     }
                 }*/
 
-                if (pointsOfInterest.size() < 50000000)
+                if (pointsOfInterest.size() < 10000000)
                 {
                     if (areaGrid[p.x - 1][p.y] == 0)
-                        pointsOfInterest.add(new Point(p.x - 1, p.y));
+                        pointsOfInterest.put(new Point(p.x - 1, p.y), true);
                     if (areaGrid[p.x + 1][p.y] == 0)
-                        pointsOfInterest.add(new Point(p.x + 1, p.y));
+                        pointsOfInterest.put(new Point(p.x + 1, p.y), true);
                     if (areaGrid[p.x][p.y - 1] == 0)
-                        pointsOfInterest.add(new Point(p.x, p.y - 1));
+                        pointsOfInterest.put(new Point(p.x, p.y - 1), true);
                     if (areaGrid[p.x][p.y + 1] == 0)
-                        pointsOfInterest.add(new Point(p.x, p.y + 1));
+                        pointsOfInterest.put(new Point(p.x, p.y + 1), true);
                     if (areaGrid[p.x - 1][p.y - 1] == 0)
-                        pointsOfInterest.add(new Point(p.x - 1, p.y - 1));
+                        pointsOfInterest.put(new Point(p.x - 1, p.y - 1), true);
                     if (areaGrid[p.x - 1][p.y + 1] == 0)
-                        pointsOfInterest.add(new Point(p.x - 1, p.y + 1));
+                        pointsOfInterest.put(new Point(p.x - 1, p.y + 1), true);
                     if (areaGrid[p.x + 1][p.y - 1] == 0)
-                        pointsOfInterest.add(new Point(p.x + 1, p.y - 1));
+                        pointsOfInterest.put(new Point(p.x + 1, p.y - 1), true);
                     if (areaGrid[p.x + 1][p.y + 1] == 0)
-                        pointsOfInterest.add(new Point(p.x + 1, p.y + 1));
+                        pointsOfInterest.put(new Point(p.x + 1, p.y + 1), true);
                 } else
                 {
                     System.out.println("!!!!TOPOLOGICAL map might contain errors, pointsofinterest queue exhausted!");
                 }
             }
         }
-        //System.out.println("Max queue size: " + maxQueueSize);
+        System.out.println("Max queue size: " + maxQueueSize);
 
         //Are there some areas we haven't assigned to a node yet?
         /*for (int i = 1; i < areaGrid.length-1; i++)

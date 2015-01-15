@@ -139,6 +139,9 @@ public class Constants {
     // How often should we check if we need to rebuild topological path?
     public static final int REBUILD_TOPOLOGICAL_MAP_INTERVAL = REPLAN_INTERVAL;
     
+    // How many cells in the occupancy grid need to change for us to rebuild topological map
+    public static final int MAP_CHANGED_THRESHOLD = 100;
+    
     // How many steps should we initialize for
     public static final int INIT_CYCLES = 3;
     

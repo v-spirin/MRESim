@@ -114,9 +114,12 @@ public class FrontierExploration {
         Point nextStep;
         
         agent.setTimeSinceLastPlan(0);
+        System.out.println(agent.toString() + "starting replan");
         long realtimeStart = System.currentTimeMillis();
                      
         calculateFrontiers(agent, frontierExpType);
+        
+        System.out.println(agent.toString() + "calculateFrontiers took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
 
         //<editor-fold defaultstate="collapsed" desc="If no frontiers found, or reached exploration goal, return to ComStation">
         if ((agent.getFrontiers().isEmpty()) || (agent.getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL)) {
@@ -133,8 +136,10 @@ public class FrontierExploration {
         }
         //</editor-fold>
 
+        long realtimeStart2 = System.currentTimeMillis();
         boolean foundFrontier = chooseFrontier(agent, true);
-
+        System.out.println(agent.toString() + "chooseFrontier took " + (System.currentTimeMillis()-realtimeStart2) + "ms.");
+        
         //<editor-fold defaultstate="collapsed" desc="If could not find frontier, try to disregard other agents when planning">
         if (!foundFrontier)
         {
@@ -497,7 +502,8 @@ public class FrontierExploration {
             agent.addDirtyCells(f.getPolygonOutline());
         
         LinkedList <LinkedList> contours = ContourTracer.findAllContours(agent.getOccupancyGrid());
-        //System.out.print("Found " + contours.size() + " contours, ");
+        System.out.print("Found " + contours.size() + " contours, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        realtimeStart = System.currentTimeMillis();
         PriorityQueue<Frontier> frontiers = new PriorityQueue();
         Frontier currFrontier;
 
@@ -518,7 +524,7 @@ public class FrontierExploration {
         }
         agent.setFrontiers(frontiers);
 
-        //System.out.print("retained " + contourCounter + " of them. ");
+        System.out.print("retained " + contourCounter + " of them. Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 // </editor-fold> 

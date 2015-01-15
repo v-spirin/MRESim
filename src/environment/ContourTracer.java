@@ -153,19 +153,25 @@ public class ContourTracer {
         boolean hasFrontierCell;
         int maxGap, currGap;
         
+        long realtimeStart = System.currentTimeMillis();
+        
         int[][] labels = new int[occGrid.width][occGrid.height];
         int componentIndex = 1;
         
         for(int i=0; i<labels.length; i++)
             for(int j=0; j<labels[0].length; j++)
                 labels[i][j] = 0;
+        System.out.print("[findAllContours] labels init took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        realtimeStart = System.currentTimeMillis();
         
+        int contourCounter = 0;
         // Assume that topline of occGrid is empty, i.e. no frontier cells.
         for(int j=0; j<occGrid.height; j++) 
             for(int i=0; i<occGrid.width; i++){
                 if(occGrid.frontierCellAt(i, j) && 
                    (!occGrid.locationExists(i, j-1) || !occGrid.frontierCellAt(i,j-1)) && 
                    labels[i][j]==0) {
+                    contourCounter++;
                     // We must have found external contour of new component
                     currContour = traceContour(occGrid, labels, i, j, direction.NE, componentIndex);
                     
@@ -199,6 +205,8 @@ public class ContourTracer {
                 }
                 
             }
+        System.out.print("[findAllContours] contours processed: " + contourCounter);
+        System.out.print("[findAllContours] main loop took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         
         return contourList;
     }
