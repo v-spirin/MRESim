@@ -63,8 +63,8 @@ public class AgentStepRunnable implements Runnable{
     @Override
     public void run() 
     {
-        Point nextStep;
-        double[] sensorData;
+        Point nextStep = null;
+        double[] sensorData = null;
         double distance_left = agent.getSpeed();
         //profiling
         long realtimeStartAgentCycle = System.currentTimeMillis();
@@ -89,7 +89,7 @@ public class AgentStepRunnable implements Runnable{
                 //check here we don't 'teleport'
                 double dist = agent.getLocation().distance(nextStep);
                 System.out.println(agent.toString() + "1 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
-                //<editor-fold defaultstate="collapsed" desc="If we don't have enough 'speed' left to reach nextPoint, go as far as we can and add keep nextPoint in the path">
+                //<editor-fold defaultstate="collapsed" desc="If we don't have enough 'speed' left to reach nextPoint, go as far as we can and keep nextPoint in the path">
                 if (dist > distance_left) {
                     //System.out.println(agent.toString() + " exceeded speed. Distance left: " + distance_left + ", dist to next path point: " + dist);
                     //Add nextStep back to path, as we will not reach it yet
@@ -110,16 +110,20 @@ public class AgentStepRunnable implements Runnable{
                 {
                     distance_left = distance_left - dist;
                 }
+                // we only process sensor data once at the end of each time step, to speed the simulation up
+                // if agents cover too much distance in each timestep, we may need to process it more frequently
                 System.out.println(agent.toString() + "2 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
-                sensorData = simFramework.findSensorData(agent, nextStep);
+                //sensorData = simFramework.findSensorData(agent, nextStep);
                 System.out.println(agent.toString() + "3 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
-                agent.writeStep(nextStep, sensorData);
+                agent.writeStep(nextStep, sensorData, false);
                 System.out.println(agent.toString() + "4 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
             }
             else
             {
                 System.out.println(agent + " !!! setting envError because direct line not possible between " 
                         + agent.getLocation() + " and " + nextStep);
+                nextStep.x = agent.getX();
+                nextStep.y = agent.getY();
                 agent.setEnvError(true);
             }
             //</editor-fold>
@@ -139,10 +143,14 @@ public class AgentStepRunnable implements Runnable{
             //</editor-fold>
         }
         //</editor-fold>
-
+        if (nextStep != null) {
+            sensorData = simFramework.findSensorData(agent, nextStep);
+            agent.writeStep(nextStep, sensorData, true);
+        }
         /*if (simConfig.getExpAlgorithm() != SimulatorConfig.exptype.RunFromLog)
             agent.updateTrueAreaKnown(env);*/
         //benchmark
+        agent.incrementTimeLastCentralCommand();
         System.out.println(agent.toString() + "Agent cycle complete, took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
     }
 

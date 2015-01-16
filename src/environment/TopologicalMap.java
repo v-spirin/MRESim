@@ -363,7 +363,7 @@ public class TopologicalMap {
             double explorerPathLengthNew = 0;
             
             //<editor-fold defaultstate="collapsed" desc="let's find the point, where RV will actually communicate with base">
-            Point baseLoc = agent.getTeammate(Constants.BASE_STATION_ID).getLocation();
+            Point baseLoc = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
             Point relayLoc = agent.getParentTeammate().getLocation();
             Point baseComm = baseLoc;
             

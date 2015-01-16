@@ -212,6 +212,10 @@ public class RealAgent extends BasicAgent implements Agent {
         return this.timeLastCentralCommand;
     }
     
+    public void incrementTimeLastCentralCommand() {
+        timeLastCentralCommand++;
+    }
+    
     public double getDistanceTraveled() {
         return this.distanceTraveled;
     }
@@ -610,6 +614,10 @@ public class RealAgent extends BasicAgent implements Agent {
     }
     
     public void writeStep(Point nextLoc, double[] sensorData) {
+        writeStep(nextLoc, sensorData, true);
+    }
+    
+    public void writeStep(Point nextLoc, double[] sensorData, boolean updateSensorData) {
         long realtimeStart = System.currentTimeMillis();
         //System.out.print(this.toString() + "Writing step ... ");
         
@@ -630,23 +638,25 @@ public class RealAgent extends BasicAgent implements Agent {
         // OLD METHOD RAY TRACING
         // Safe space slightly narrower than free space to make sure frontiers
         // are created along farthest edges of sensor radial polygon
-        realtimeStart = System.currentTimeMillis();
-        newFreeSpace = findRadialPolygon(sensorData, sensRange, 0, 180);
-        newSafeSpace = findRadialPolygon(sensorData, safeRange, 0, 180);
-        System.out.println(this.toString() + "findRadialPolygon(x2) took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-        realtimeStart = System.currentTimeMillis();
-        updateObstacles(newFreeSpace);
-        System.out.println(this.toString() + "updateObstacles took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-        realtimeStart = System.currentTimeMillis();
-        updateFreeAndSafeSpace(newFreeSpace, newSafeSpace);
-        System.out.println(this.toString() + "updateFreeAndSafeSpace took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        if (updateSensorData) {
+            realtimeStart = System.currentTimeMillis();
+            newFreeSpace = findRadialPolygon(sensorData, sensRange, 0, 180);
+            newSafeSpace = findRadialPolygon(sensorData, safeRange, 0, 180);
+            System.out.println(this.toString() + "findRadialPolygon(x2) took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+            realtimeStart = System.currentTimeMillis();
+            updateObstacles(newFreeSpace);
+            System.out.println(this.toString() + "updateObstacles took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+            realtimeStart = System.currentTimeMillis();
+            updateFreeAndSafeSpace(newFreeSpace, newSafeSpace);
+            System.out.println(this.toString() + "updateFreeAndSafeSpace took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        }
         
         // NEW METHOD FLOOD FILL
         //updateGrid(sensorData);
 
         //batteryPower--;
         batteryPower = newInfo;
-        timeLastCentralCommand++;
+        //timeLastCentralCommand++;
         
         //System.out.println(this.toString() + "WriteStep complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
@@ -816,7 +826,7 @@ public class RealAgent extends BasicAgent implements Agent {
         //long timer = System.currentTimeMillis();
         if (ag.robotNumber == robotNumber) //we are the same as ag, nothing to do here
             return;
-        if (getID() == Constants.BASE_STATION_ID) //base station
+        if (getID() == Constants.BASE_STATION_TEAMMATE_ID) //base station
             return;
         int new_counter = 0;
         boolean iAmCloserToBase = (ag.timeToBase() > timeToBase());
@@ -1111,7 +1121,7 @@ public class RealAgent extends BasicAgent implements Agent {
         teammate.setParentRendezvous(msg.parentRendezvous);
         teammate.setFrontierCentre(msg.frontierCentre);
         //System.out.println(toString() + "Communicating...");
-        if(teammate.ID == child && teammate.ID != Constants.BASE_STATION_ID) {
+        if(teammate.ID == child && teammate.ID != Constants.BASE_STATION_TEAMMATE_ID) {
             this.childRendezvous = msg.parentRendezvous;
             this.childBackupRendezvous = msg.parentBackupRendezvous;
             this.missionComplete = msg.missionComplete;
@@ -1119,8 +1129,8 @@ public class RealAgent extends BasicAgent implements Agent {
         
         teammate.setTimeSinceLastComm(0);
         boolean isBaseStation = false;
-        if ((teammate.getRobotNumber() == Constants.BASE_STATION_ID) || 
-                (this.getRobotNumber() == Constants.BASE_STATION_ID))
+        if ((teammate.getRobotNumber() == Constants.BASE_STATION_TEAMMATE_ID) || 
+                (this.getRobotNumber() == Constants.BASE_STATION_TEAMMATE_ID))
             isBaseStation = true;
                 
         //merge the occupancy grids, and add affected cells to dirty cell list to be repainted in the GUI

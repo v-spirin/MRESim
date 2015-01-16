@@ -131,7 +131,7 @@ public class UtilityExploration {
         double infoRatio = (double)agent.getCurrentBaseKnowledgeBelief() / 
                 (double)(agent.getCurrentBaseKnowledgeBelief() + totalNewInfo);
         
-        if ((!agent.getTeammate(Constants.BASE_STATION_ID).isInRange()) && (infoRatio < simConfig.TARGET_INFO_RATIO))
+        if ((!agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) && (infoRatio < simConfig.TARGET_INFO_RATIO))
         {
             //System.out.println(agent.toString() + " Decided to return.");     
             agent.setState(ExploreState.ReturnToParent);
@@ -153,7 +153,7 @@ public class UtilityExploration {
             if (nextStep == null) nextStep = agent.getLocation();
 
             agent.setTimeSinceLastPlan(0);
-            agent.setCurrentGoal(agent.getTeammate(Constants.BASE_STATION_ID).getLocation());
+            agent.setCurrentGoal(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
             return nextStep;
         }
         // </editor-fold>   
@@ -167,7 +167,7 @@ public class UtilityExploration {
         //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
         if ((agent.getFrontiers().isEmpty() || (agent.getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
             agent.setMissionComplete();
-            Point baseLocation = agent.getTeammate(Constants.BASE_STATION_ID).getLocation();
+            Point baseLocation = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
             Path path = agent.calculatePath(agent.getLocation(), baseLocation);
             agent.setPath(path);
@@ -191,11 +191,16 @@ public class UtilityExploration {
     
     private static Point takeStep_ReturnToParent(RealAgent agent, SimulatorConfig simConfig) { 
         //<editor-fold defaultstate="collapsed" desc="If base is in range, go back to exploring">
-        if(agent.getTeammate(Constants.BASE_STATION_ID).isInRange()) {
+        if(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
             agent.setState(RealAgent.ExploreState.Explore);
             agent.setStateTimer(0);
             return takeStep_Explore(agent, simConfig);
         }
+        //</editor-fold>
+        
+        //<editor-fold defaultstate="collapsed" desc="If mission complete and we have path, keep going">
+        if(agent.isMissionComplete() && !agent.getPath().getPoints().isEmpty())
+            return((Point)agent.getPath().getPoints().remove(0));
         //</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="If newInfo goes under ratio, go exploring (can happen if we meet a relay)">
@@ -209,12 +214,7 @@ public class UtilityExploration {
         }
         //</editor-fold>
 
-        //<editor-fold defaultstate="collapsed" desc="If mission complete and we have path, keep going">
-        if(agent.isMissionComplete() && !agent.getPath().getPoints().isEmpty())
-            return((Point)agent.getPath().getPoints().remove(0));
-        //</editor-fold>
-        
-        Point baseLocation = agent.getTeammate(Constants.BASE_STATION_ID).getLocation();
+        Point baseLocation = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
         //<editor-fold defaultstate="collapsed" desc="Recalculate path every PATH_RECALC_PARENT_INTERVAL steps, if fail try A*, if that fails try using existing path, if that fails take random step">
         Path existingPath = agent.getPath();
         if((agent.getStateTimer() % Constants.PATH_RECALC_PARENT_INTERVAL) == (Constants.PATH_RECALC_PARENT_INTERVAL - 1)) {

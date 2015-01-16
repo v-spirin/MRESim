@@ -2,8 +2,8 @@ FrontierExploration
 UtilReturn
 C:\Users\Victor\Documents\real1\98obst2\ag.txt
 PropModel1
-false
-C:\Users\Victor\Documents\real1\ag.txt
+true
+C:\Users\Victor\Documents\testag.txt
 false
 C:\Users\Victor\Documents\real1\sim.txt
 false

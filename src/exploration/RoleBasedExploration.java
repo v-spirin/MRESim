@@ -172,7 +172,7 @@ public class RoleBasedExploration {
             agent.setTimeUntilRendezvous(agent.getTimeUntilRendezvous() - 1);
         // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="Every CHECK_INTERVAL_TIME_TO_RV steps, check if we're due to meet our parent again (unless parent is basestation, in which case explore continuously)">
-        if (agent.getParent() != Constants.BASE_STATION_ID
+        if (agent.getParent() != Constants.BASE_STATION_TEAMMATE_ID
                 && (agent.getStateTimer() % Constants.CHECK_INTERVAL_TIME_TO_RV) == (Constants.CHECK_INTERVAL_TIME_TO_RV - 1)) 
         {
             System.out.println(agent.toString() + "Checking if it's time to rendezvous ... ");
@@ -395,8 +395,8 @@ public class RoleBasedExploration {
         // We've exchanged info, what's next
         //<editor-fold defaultstate="collapsed" desc="If mission complete, make ComStation parent, return to it">
         if(agent.isMissionComplete()) {
-            agent.setParent(Constants.BASE_STATION_ID);
-            agent.setParentRendezvous(new RVLocation(agent.getTeammate(Constants.BASE_STATION_ID).getLocation()));
+            agent.setParent(Constants.BASE_STATION_TEAMMATE_ID);
+            agent.setParentRendezvous(new RVLocation(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation()));
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
             Path path = agent.calculatePath(agent.getLocation(), agent.getParentRendezvous().getChildLocation());
             agent.setPath(path);
@@ -443,7 +443,7 @@ public class RoleBasedExploration {
 //</editor-fold>
             
             //<editor-fold defaultstate="collapsed" desc="Case 2: Relay with another relay as parent">
-            else if(agent.getParent() != Constants.BASE_STATION_ID) {
+            else if(agent.getParent() != Constants.BASE_STATION_TEAMMATE_ID) {
                 calculateRendezvous2(agent);
                 agent.setStateTimer(1);
                 
@@ -856,7 +856,7 @@ public class RoleBasedExploration {
             // calculate path from base station to own childrendezvous
             // NOTE this is for branch depth 3, greater depth needs to calculate
             // path from parent's parentrendezvous (must be communicated) to own childrendezvous
-            Path pathToChild = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_ID).getLocation(), 
+            Path pathToChild = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), 
                     agent.getChildRendezvous().getParentLocation());
             Point middle = (Point)pathToChild.getPoints().get((int)(pathToChild.getPoints().size()/2));
             double pathCost;
@@ -888,7 +888,7 @@ public class RoleBasedExploration {
         System.out.println(agent.toString() + "Calculating time to next rendezvous...");
         
         //<editor-fold defaultstate="collapsed" desc="let's find the point, where RV will actually communicate with base">
-            Point baseLoc = agent.getTeammate(Constants.BASE_STATION_ID).getLocation();
+            Point baseLoc = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
             Point relayLoc = agent.getParentTeammate().getLocation();
             Point baseComm = baseLoc;
             OccupancyGrid occGrid = agent.getOccupancyGrid();
@@ -931,7 +931,7 @@ public class RoleBasedExploration {
         //<editor-fold defaultstate="collapsed" desc="Couldn't find pathCSToRV - approximate">
         if ((pathCSToRendezvous.getLength() == 0) &&
                 (!agent.getParentRendezvous().getParentLocation().equals(
-                        agent.getTeammate(Constants.BASE_STATION_ID).getLocation())))
+                        agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation())))
         {
             System.out.println("Could not calculate pathCSToRendezvous!!!!");
             //let's at least set it to a rough approximation - better than setting it to 0!
@@ -1014,7 +1014,7 @@ public class RoleBasedExploration {
         //System.out.println(agent.toString() + "Calculating time to next rendezvous...");
         
         //<editor-fold defaultstate="collapsed" desc="let's find the point, where RV will actually communicate with base">
-            Point baseLoc = agent.getTeammate(Constants.BASE_STATION_ID).getLocation();
+            Point baseLoc = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
             Point relayLoc = agent.getLocation();
             Point baseComm = baseLoc;
             OccupancyGrid occGrid = agent.getOccupancyGrid();
@@ -1057,7 +1057,7 @@ public class RoleBasedExploration {
         //<editor-fold defaultstate="collapsed" desc="Couldn't find pathCSToRV - approximate">
         if ((pathCSToRendezvous.getLength() == 0) &&
                 (!agent.getChildRendezvous().getParentLocation().equals(
-                        agent.getTeammate(Constants.BASE_STATION_ID).getLocation())))
+                        agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation())))
         {
             System.out.println("Could not calculate pathCSToRendezvous!!!!");
             //let's at least set it to a rough approximation - better than setting it to 0!
@@ -1149,7 +1149,7 @@ public class RoleBasedExploration {
         System.out.println(" 2 Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         realtimeStart = System.currentTimeMillis();
         
-        agent.getTopologicalMap().findSecondKeyPointsBorder(agent.getTeammate(Constants.BASE_STATION_ID).getLocation(), 
+        agent.getTopologicalMap().findSecondKeyPointsBorder(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), 
                 agent);
         
         System.out.println(" 3 Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");

@@ -54,7 +54,7 @@ public class FrontierExploration {
         Point nextStep = new Point(agent.getX(), agent.getY());
 
         //<editor-fold defaultstate="collapsed" desc="If base station is in range, update timeLastDirectContactCS and lastContactAreaKnown">
-        if(agent.getTeammate(Constants.BASE_STATION_ID).isInRange()) {
+        if(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
             agent.timeLastDirectContactCS = 1;
             agent.setLastContactAreaKnown(agent.getAreaKnown());
         }

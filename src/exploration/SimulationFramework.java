@@ -247,9 +247,9 @@ public class SimulationFramework implements ActionListener {
         //timer = System.currentTimeMillis();
         
         //System.out.println(this.toString() + "updateAgentKnowledgeData took " + (System.currentTimeMillis()-timer) + "ms.\n");
-        //timer = System.currentTimeMillis();
+        timer = System.currentTimeMillis();
         updateGUI();                // update GUI
-        //System.out.println(this.toString() + "updateGUI took " + (System.currentTimeMillis()-timer) + "ms.\n");
+        System.out.println(this.toString() + "updateGUI took " + (System.currentTimeMillis()-timer) + "ms.\n");
         //timer = System.currentTimeMillis();
         logging();                  // perform logging as required
         //if ((timeElapsed % 10) == 0) verifyNoInfoGotLost(); //verify relaying works fine
@@ -1428,9 +1428,9 @@ public class SimulationFramework implements ActionListener {
                        agent2.isExplorer() && agent2.getState() == ExploreState.Explore) {
 
                         Path rv1ToCS = agent1.calculatePath(agent1.getParentRendezvous().getParentLocation(), 
-                                agent1.getTeammate(Constants.BASE_STATION_ID).getLocation());
+                                agent1.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
                         Path rv2ToCS = agent2.calculatePath(agent2.getParentRendezvous().getParentLocation(), 
-                                agent2.getTeammate(Constants.BASE_STATION_ID).getLocation());
+                                agent2.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
 
                         Path a1ToRV2 = agent1.calculatePath(agent1.getLocation(), 
                                 agent2.getParentRendezvous().getChildLocation());
@@ -1602,7 +1602,7 @@ public class SimulationFramework implements ActionListener {
         long realtimeStart = System.currentTimeMillis();
         //System.out.print(this.toString() + "Updating Global Data ... ");
         timeElapsed++;
-        pctAreaKnown = 100 * (double)agent[Constants.BASE_STATION_ID].getAreaKnown() / (double)totalArea;
+        pctAreaKnown = 100 * (double)agent[Constants.BASE_STATION_AGENT_ID].getAreaKnown() / (double)totalArea;
         if(simConfig.logData()) {
             avgAgentKnowledge = 0;
             avgTimeLastCommand = 0;
@@ -1611,9 +1611,9 @@ public class SimulationFramework implements ActionListener {
 
             if ((timeElapsed % Constants.RECALC_JOINT_AREA) == 1)
                 jointAreaKnown = getTrueJointAreaKnown();
-            else jointAreaKnown = Math.max(agent[Constants.BASE_STATION_ID].getAreaKnown(), jointAreaKnown);
+            else jointAreaKnown = Math.max(agent[Constants.BASE_STATION_AGENT_ID].getAreaKnown(), jointAreaKnown);
             
-            jointAreaKnown = Math.max(agent[Constants.BASE_STATION_ID].getAreaKnown(), jointAreaKnown);
+            jointAreaKnown = Math.max(agent[Constants.BASE_STATION_AGENT_ID].getAreaKnown(), jointAreaKnown);
 
             for(int i=1; i<agent.length; i++) {
                 avgAgentKnowledge += agent[i].getAreaKnown();
