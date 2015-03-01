@@ -110,12 +110,12 @@ public class AgentStepRunnable implements Runnable{
                 {
                     distance_left = distance_left - dist;
                 }
-                // we only process sensor data once at the end of each time step, to speed the simulation up
+                // comment below out to process sensor data once at the end of each time step, to speed the simulation up
                 // if agents cover too much distance in each timestep, we may need to process it more frequently
                 System.out.println(agent.toString() + "2 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
-                //sensorData = simFramework.findSensorData(agent, nextStep);
+                sensorData = simFramework.findSensorData(agent, nextStep);
                 System.out.println(agent.toString() + "3 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
-                agent.writeStep(nextStep, sensorData, false);
+                agent.writeStep(nextStep, sensorData, true);
                 System.out.println(agent.toString() + "4 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
             }
             else
@@ -143,10 +143,10 @@ public class AgentStepRunnable implements Runnable{
             //</editor-fold>
         }
         //</editor-fold>
-        if (nextStep != null) {
+        /*if (nextStep != null) {
             sensorData = simFramework.findSensorData(agent, nextStep);
             agent.writeStep(nextStep, sensorData, true);
-        }
+        }*/
         /*if (simConfig.getExpAlgorithm() != SimulatorConfig.exptype.RunFromLog)
             agent.updateTrueAreaKnown(env);*/
         //benchmark

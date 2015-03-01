@@ -1137,7 +1137,7 @@ public class RoleBasedExploration {
         long realtimeStart = System.currentTimeMillis();
         System.out.println(agent.toString() + "Calculating RV Through Walls");
         
-        agent.forceUpdateTopologicalMap();
+        agent.forceUpdateTopologicalMap(true);
         
         agent.getTopologicalMap().generateSkeletonNearBorders();
         

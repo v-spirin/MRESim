@@ -158,14 +158,20 @@ public class Environment{
         double angle = Math.atan2(y2 - y1, x2 - x1);
         int distance = (int)(Math.sqrt(Math.pow(y2-y1, 2) + Math.pow(x2-x1, 2)));
         int currX, currY;
+        boolean insideWall = false; //flag to make sure a thick wall counts as one obstacle
         
         for(int i=0; i<=distance; i++) {
             currX = x1 + (int)(Math.cos(angle) * i);
             currY = y1 + (int)(Math.sin(angle) * i);
             
             if(this.statusAt(currX, currY) == Status.obstacle){
-                counter++;
-                i++;  // To prevent the same pixel counting as an obstacle twice.
+                if (!insideWall) {
+                    counter++;
+                    insideWall = true;
+                }
+            } else
+            {
+                insideWall = false;
             }
         }
         

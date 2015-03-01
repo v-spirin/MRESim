@@ -41,12 +41,12 @@ public class PropModel1 {
     
     // Values easy to change depending on model, see e.g.
     // Bahl & Padmanabhan:  RADAR: An In-Building RF-based User Location and Tracking System
-    private static final double REF_SIGNAL = -92; //-82;
+    private static final double REF_SIGNAL = -93; //-82;
     private static final int PATHLOSS_FACTOR = 1;
     //private static final double REF_DISTANCE = 1;
     private static final double WALL_ATTENUATION = 5;
     private static final int MAX_WALLS = 4;
-    private static final double CUTOFF = -92;
+    private static final double CUTOFF = -93;
     
     public static Polygon getRange(Environment env, BasicAgent agent) {
         double INCREMENT = Math.PI / 64;
@@ -146,18 +146,20 @@ public class PropModel1 {
     }
     
     //<editor-fold defaultstate="collapsed" desc="Signal Strength">
+    //For use by simulation
     private static double signalStrength(int agentRange, Environment env, Point p1, Point p2) {
         int numWalls = Math.min(MAX_WALLS, env.numObstaclesOnLine(p1.x, p1.y, p2.x, p2.y));
         double distance = p1.distance(p2);
         
-        return (REF_SIGNAL - 10 * PATHLOSS_FACTOR * Math.log(distance / /*REF_DISTANCE*/agentRange) - numWalls * WALL_ATTENUATION);
+        return (REF_SIGNAL - 10 * PATHLOSS_FACTOR * Math.log10(distance / /*REF_DISTANCE*/agentRange) - numWalls * WALL_ATTENUATION);
     }
     
+    //For use by individual robots
     private static double signalStrength(int agentRange, OccupancyGrid occGrid, Point p1, Point p2) {
         int numWalls = Math.min(MAX_WALLS, occGrid.numPossibleObstaclesOnLine(p1.x, p1.y, p2.x, p2.y));
         double distance = p1.distance(p2);
         
-        return (REF_SIGNAL - 10 * PATHLOSS_FACTOR * Math.log(distance / /*REF_DISTANCE*/agentRange) - numWalls * WALL_ATTENUATION);
+        return (REF_SIGNAL - 10 * PATHLOSS_FACTOR * Math.log10(distance / /*REF_DISTANCE*/agentRange) - numWalls * WALL_ATTENUATION);
     }
     //</editor-fold>
     

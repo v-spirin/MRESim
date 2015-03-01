@@ -422,9 +422,9 @@ public class RealAgent extends BasicAgent implements Agent {
     
     //This method checks if occupancy grid has changed since last update of topological map,
     //and rebuilds the map if necessary
-    public void forceUpdateTopologicalMap()
+    public void forceUpdateTopologicalMap(boolean mustUpdate)
     {
-        if (occGrid.hasMapChanged()) {
+        if (occGrid.hasMapChanged() || mustUpdate) {
             System.out.println(this + " Updating topological map");
             long timeStart = System.currentTimeMillis();
             topologicalMap.setGrid(occGrid);   
@@ -675,7 +675,11 @@ public class RealAgent extends BasicAgent implements Agent {
         if (timeTopologicalMapUpdated < 0) timeTopologicalMapUpdated = timeElapsed - rebuild_topological_map_interval;
         if (timeElapsed - timeTopologicalMapUpdated >= rebuild_topological_map_interval)
         {
-            forceUpdateTopologicalMap();
+            forceUpdateTopologicalMap(false);
+        }
+        if (timeElapsed - timeTopologicalMapUpdated >= Constants.MUST_REBUILD_TOPOLOGICAL_MAP_INTERVAL)
+        {
+            forceUpdateTopologicalMap(true);
         }
         topologicalMap.setPathStart(startPoint);
         topologicalMap.setPathGoal(goalPoint);
