@@ -1135,6 +1135,7 @@ public class RealAgent extends BasicAgent implements Agent {
 // <editor-fold defaultstate="collapsed" desc="Communicate">
 
     public void receiveMessage(DataMessage msg) {
+        long realtimeStartAgentCycle = System.currentTimeMillis();
         TeammateAgent teammate = teammates.get(msg.ID);
         
         teammate.setInRange(true);
@@ -1165,10 +1166,14 @@ public class RealAgent extends BasicAgent implements Agent {
                 (this.getRobotNumber() == Constants.BASE_STATION_TEAMMATE_ID))
             isBaseStation = true;
                 
+        System.out.println(this + "simulateCommunication with " + teammate + " setting variables took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
+        realtimeStartAgentCycle = System.currentTimeMillis();
         //merge the occupancy grids, and add affected cells to dirty cell list to be repainted in the GUI
         dirtyCells.addAll(
                 occGrid.mergeGrid(teammate.getOccupancyGrid(), isBaseStation));        
         
+        System.out.println(this + "simulateCommunication with " + teammate + " mergeGrid took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
+        realtimeStartAgentCycle = System.currentTimeMillis();
         //Merge bad frontier information
         for (Frontier badFrontier: msg.badFrontiers) {
             if (!this.isBadFrontier(badFrontier))
@@ -1187,6 +1192,7 @@ public class RealAgent extends BasicAgent implements Agent {
         double rateOfInfoGatheringBelief = msg.maxRateOfInfoGatheringBelief;
         if (rateOfInfoGatheringBelief > maxRateOfInfoGatheringBelief)
             maxRateOfInfoGatheringBelief = rateOfInfoGatheringBelief;
+        System.out.println(this + "simulateCommunication with " + teammate + " misc took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
     }
     
     public boolean isCommunicating() {

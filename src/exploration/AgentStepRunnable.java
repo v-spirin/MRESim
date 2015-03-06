@@ -129,7 +129,8 @@ public class AgentStepRunnable implements Runnable{
             //</editor-fold>
                         
             //<editor-fold defaultstate="collapsed" desc="Conditions for breaking even if we have 'speed' left">
-            boolean canContinueOnPath = (agent.getPath() != null) && (agent.getPath().getPoints().size() > 0);
+            boolean canContinueOnPath = (agent.getPath() != null) && (agent.getPath().getPoints() != null) && 
+                    (agent.getPath().getPoints().size() > 0);
             if (!canContinueOnPath)
                 break;
             
