@@ -34,7 +34,11 @@ package environment;
 import config.Constants;
 import java.awt.*;
 import java.awt.geom.Line2D;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.LinkedList;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -105,6 +109,24 @@ public class OccupancyGrid {
             return false;
         
         return grid.equals(((OccupancyGrid)obj).grid);
+    }
+    
+    public void saveToPNG(String filename) {
+        try {
+            // retrieve image
+            BufferedImage bi = new BufferedImage(800, 600, BufferedImage.TYPE_INT_RGB);
+            //Graphics g = bi.getGraphics();
+            for (int i = 0; i < 800; i++) {
+                for (int j = 0; j < 600; j++) {
+                    if (freeSpaceAt(i, j)) bi.setRGB(i, j, Color.WHITE.getRGB());
+                    else bi.setRGB(i, j, Color.BLACK.getRGB());
+                }
+            }
+            File outputfile = new File(filename);
+            ImageIO.write(bi, "png", outputfile);
+        } catch (IOException e) {
+            
+        }
     }
     
     //TODO: should be able to make this more efficient
@@ -290,23 +312,26 @@ public class OccupancyGrid {
     }
 
     public void setFreeSpaceAt(int xCoord, int yCoord) {
-        if (!freeSpaceAt(xCoord, yCoord))
-        {
-            boolean wasObstacle = obstacleAt(xCoord, yCoord);
-            if (!wasObstacle) mapCellsChanged++; //only count map changes if we learn previously unknown map cell
-            // We only recalculate topological map if some new cells of the occupancy grid have been learned.
-            cellsMarkedAsFree++;
-            if (isKnownAtBase(xCoord, yCoord))
-                cellsMarkedAsFreeAndKnownAtBase++;
-            else {
-                if (isGotRelayed(xCoord, yCoord))
-                    cellsMarkedAsFreeAndRelayedAndNotKnownAtBase++;
-                else
-                    cellsFreeNotKnownAtBaseNotRelayed.add(new Point(xCoord, yCoord));
+        boolean wasObstacle = obstacleAt(xCoord, yCoord);
+        if (!wasObstacle) {
+            if (!freeSpaceAt(xCoord, yCoord))
+            {
+
+                if (!wasObstacle) mapCellsChanged++; //only count map changes if we learn previously unknown map cell
+                // We only recalculate topological map if some new cells of the occupancy grid have been learned.
+                cellsMarkedAsFree++;
+                if (isKnownAtBase(xCoord, yCoord))
+                    cellsMarkedAsFreeAndKnownAtBase++;
+                else {
+                    if (isGotRelayed(xCoord, yCoord))
+                        cellsMarkedAsFreeAndRelayedAndNotKnownAtBase++;
+                    else
+                        cellsFreeNotKnownAtBaseNotRelayed.add(new Point(xCoord, yCoord));
+                }
+
             }
-                    
+            setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.FreeSpace, 1);
         }
-        setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.FreeSpace, 1);
     }
     
     public void setNoFreeSpaceAt(int xCoord, int yCoord) {

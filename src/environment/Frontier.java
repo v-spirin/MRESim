@@ -85,6 +85,28 @@ public class Frontier implements Comparable<Frontier>  {
             return -1;
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Frontier other = (Frontier) obj;
+        
+        return this.centre.equals(other.centre) &&
+                this.area == other.area;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 41 * hash + (this.centre != null ? this.centre.hashCode() : 0);
+        hash = 41 * hash + (int) (Double.doubleToLongBits(this.area) ^ (Double.doubleToLongBits(this.area) >>> 32));
+        return hash;
+    }
+    
 // </editor-fold>     
 
 // <editor-fold defaultstate="collapsed" desc="Get and set">
@@ -260,7 +282,7 @@ public class Frontier implements Comparable<Frontier>  {
         if (area < area_crescent_limit)
             return temp;*/
         //otherwise, return a random polygon point
-        Random rnd = new Random();
+        Random rnd = new Random(Constants.RANDOM_SEED);
         int index = rnd.nextInt(areaPolygon.npoints);
         return new Point(areaPolygon.xpoints[index], areaPolygon.ypoints[index]);
     }

@@ -55,7 +55,7 @@ public class Constants {
     public static final int AGENT_RADIUS = 4; // default 4;
     
     // Distance that the grid is partitioned into for A* path planning
-    public static final int STEP_SIZE = 3; // default 3;
+    public static final int STEP_SIZE = 1; // default 3;
     
     // Target ratio of info known at base to total info known at agents
     //public static final double TARGET_INFO_RATIO = 1; 

@@ -479,8 +479,10 @@ public class FrontierExploration {
                 for(Utility u : utilities)
                     if(u.frontier == best.frontier)
                         removal.add(u);
-                for(Utility r : removal)
-                    utilities.remove(r);
+                for(Utility r : removal) {                
+                    utilities.remove(r);                    
+                }
+                agent.addBadFrontier(best.frontier);
             }
             else
                 utilities.add(best);
@@ -510,16 +512,18 @@ public class FrontierExploration {
         int contourCounter = 0;
         for(LinkedList<Point> currContour : contours) {
             currFrontier = new Frontier(agent.getX(), agent.getY(), currContour);
-            // only consider frontiers that are big enough and reachable
-            if(currFrontier.getArea() >= Constants.MIN_FRONTIER_SIZE){
-                if (!agent.getOccupancyGrid().safeSpaceAt(currFrontier.getCentre().x, currFrontier.getCentre().y))
+            if (!agent.isBadFrontier(currFrontier)) {
+                // only consider frontiers that are big enough and reachable
+                if(currFrontier.getArea() >= Constants.MIN_FRONTIER_SIZE){
+                    if (!agent.getOccupancyGrid().safeSpaceAt(currFrontier.getCentre().x, currFrontier.getCentre().y))
+                    {
+                        frontiers.add(currFrontier);
+                        contourCounter++;
+                    }
+                } else
                 {
-                    frontiers.add(currFrontier);
-                    contourCounter++;
+                    //System.out.println("Disregarding a contour as it's smaller than min_frontier_size which is " + Constants.MIN_FRONTIER_SIZE);
                 }
-            } else
-            {
-                //System.out.println("Disregarding a contour as it's smaller than min_frontier_size which is " + Constants.MIN_FRONTIER_SIZE);
             }
         }
         agent.setFrontiers(frontiers);

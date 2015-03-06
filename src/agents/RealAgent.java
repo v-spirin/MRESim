@@ -90,6 +90,9 @@ public class RealAgent extends BasicAgent implements Agent {
     //history to backtrack if we get lost
     LinkedList<Point> backtrackPoints;
     
+    //Frontiers that are impossible to reach, so should be discarded
+    HashMap<Frontier, Boolean> badFrontiers;
+    
     int relayMarks;
 
     // Path
@@ -170,6 +173,7 @@ public class RealAgent extends BasicAgent implements Agent {
         dirtyCells = new LinkedList<Point>();
         pathTaken = new LinkedList<Point>();
         backtrackPoints = new LinkedList<Point>();
+        badFrontiers = new HashMap<Frontier, Boolean>();
         
         childRendezvous = new RVLocation(new Point(x, y));
         
@@ -207,6 +211,14 @@ public class RealAgent extends BasicAgent implements Agent {
         if (res == null) return false;
         return res.equals(goal);
     }*/
+    
+    public void addBadFrontier(Frontier f) {
+        badFrontiers.put(f, true);
+    }
+    
+    public boolean isBadFrontier(Frontier f) {
+        return badFrontiers.containsKey(f);
+    }
     
     public int getTimeLastCentralCommand() {
         return this.timeLastCentralCommand;

@@ -187,7 +187,8 @@ public class TopologicalMap {
                                         pathToNode.setGoalPoint(neighbourNode.getPosition());
 
                                         System.out.println("Generating path from " + node.getPosition() + " to " + neighbourNode.getPosition());
-                                        pathToNode.getAStarPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
+                                        //pathToNode.getAStarPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
+                                        pathToNode.getJumpPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
                                         pathCache.put(pathCoords, pathToNode);
                                         Path reversePath = pathToNode.generateReversePath();
                                         Rectangle reversePathCoords = new Rectangle(neighbourNode.getPosition().x, neighbourNode.getPosition().y, 
