@@ -359,7 +359,7 @@ public class RealAgent extends BasicAgent implements Agent {
     }
     
     public Path getPathToBaseStation() {
-        if ((pathToBase != null) && pathToBase.getPoints().isEmpty())
+        if ((pathToBase != null) && ((pathToBase.getPoints() == null) || pathToBase.getPoints().isEmpty()))
             pathToBase = null;
         if ((pathToBase == null) || (pathToBase.getStartPoint().distance(this.getLocation()) > (Constants.DEFAULT_SPEED * 2))) 
             computePathToBaseStation();
