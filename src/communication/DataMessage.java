@@ -33,9 +33,11 @@ package communication;
 
 import agents.BasicAgent.ExploreState;
 import agents.RealAgent;
+import environment.Frontier;
 import environment.OccupancyGrid;
 import exploration.RVLocation;
 import java.awt.Point;
+import java.util.Set;
 
 /**
  *
@@ -61,6 +63,7 @@ public class DataMessage {
     public int relayID;
     public double maxRateOfInfoGatheringBelief;
     public Point frontierCentre;
+    public Set<Frontier> badFrontiers;
     
     public DataMessage(RealAgent agent, int direct) {
         ID = agent.getID();
@@ -90,6 +93,7 @@ public class DataMessage {
         speed = agent.getSpeed();
         relayID = agent.getID();
         maxRateOfInfoGatheringBelief = agent.getMaxRateOfInfoGatheringBelief();
+        badFrontiers = agent.getBadFrontiers();
         
         if(agent.getLastFrontier() != null)
             frontierCentre = new Point(agent.getLastFrontier().getClosestPoint(agent.getLocation(), agent.getOccupancyGrid()));

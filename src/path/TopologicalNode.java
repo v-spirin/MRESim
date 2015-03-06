@@ -48,7 +48,7 @@ public class TopologicalNode {
     public TopologicalNode(int ID, Point position)
     {
         this.ID = ID;
-        this.position = position;
+        this.position = (Point)position.clone();
         neighbours = new LinkedList<TopologicalNode>();
         neighbour_paths = new LinkedList<Path>();
         cells = new LinkedList<Point>();

@@ -178,17 +178,21 @@ public class TopologicalMap {
                                     //check path cache
                                     Rectangle pathCoords = new Rectangle(node.getPosition().x, node.getPosition().y, 
                                             neighbourNode.getPosition().x, neighbourNode.getPosition().y);
-                                    if (pathCache.containsKey(pathCoords)) {
-                                        System.out.println("Retrieved from cache path from " + node.getPosition() + " to " + neighbourNode.getPosition());
+                                    if (pathCache.containsKey(pathCoords)) {                                        
                                         pathToNode = pathCache.get(pathCoords);
+                                        System.out.println("Retrieved from cache path from " + node.getPosition() + " to " + neighbourNode.getPosition() + ". Path start = " + pathToNode.getStartPoint() + ", path goal = " + pathToNode.getGoalPoint());
                                     } else {
                                         pathToNode = new Path();
-                                        pathToNode.setStartPoint(node.getPosition());
-                                        pathToNode.setGoalPoint(neighbourNode.getPosition());
+                                        pathToNode.setStartPoint((Point)node.getPosition().clone());
+                                        pathToNode.setGoalPoint((Point)neighbourNode.getPosition().clone());
 
                                         System.out.println("Generating path from " + node.getPosition() + " to " + neighbourNode.getPosition());
                                         //pathToNode.getAStarPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
-                                        pathToNode.getJumpPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
+                                        pathToNode.getJumpPath(occGrid, (Point)node.getPosition().clone(), (Point)neighbourNode.getPosition().clone(), false);
+                                        if (!pathToNode.getStartPoint().equals(node.getPosition()) ||
+                                                !pathToNode.getGoalPoint().equals(neighbourNode.getPosition())) {
+                                            System.out.println("CATASTROPHIC ERROR!! Path from " + node.getPosition() + " to " + neighbourNode.getPosition() + ". Path start = " + pathToNode.getStartPoint() + ", path goal = " + pathToNode.getGoalPoint());
+                                        }
                                         pathCache.put(pathCoords, pathToNode);
                                         Path reversePath = pathToNode.generateReversePath();
                                         Rectangle reversePathCoords = new Rectangle(neighbourNode.getPosition().x, neighbourNode.getPosition().y, 

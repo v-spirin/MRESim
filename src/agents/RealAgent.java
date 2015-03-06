@@ -211,6 +211,13 @@ public class RealAgent extends BasicAgent implements Agent {
         if (res == null) return false;
         return res.equals(goal);
     }*/
+    public void resetBadFrontiers() {
+        badFrontiers.clear();
+    }
+    
+    public Set<Frontier> getBadFrontiers() {
+        return badFrontiers.keySet();
+    }
     
     public void addBadFrontier(Frontier f) {
         badFrontiers.put(f, true);
@@ -340,6 +347,10 @@ public class RealAgent extends BasicAgent implements Agent {
         setPath(getPathToBaseStation());
     }
     
+    public void resetPathToBaseStation() {
+        pathToBase = null;
+    }
+    
     public void computePathToBaseStation()
     {
         long realtimeStartAgentCycle = System.currentTimeMillis();
@@ -348,6 +359,8 @@ public class RealAgent extends BasicAgent implements Agent {
     }
     
     public Path getPathToBaseStation() {
+        if ((pathToBase != null) && pathToBase.getPoints().isEmpty())
+            pathToBase = null;
         if ((pathToBase == null) || (pathToBase.getStartPoint().distance(this.getLocation()) > (Constants.DEFAULT_SPEED * 2))) 
             computePathToBaseStation();
         return pathToBase;
@@ -682,6 +695,7 @@ public class RealAgent extends BasicAgent implements Agent {
     }
     public Path calculatePath(Point startPoint, Point goalPoint, boolean pureAStar)
     {
+        
         //topologicalMap = new TopologicalMap(occGrid);
         int rebuild_topological_map_interval = Constants.REBUILD_TOPOLOGICAL_MAP_INTERVAL;
         if (timeTopologicalMapUpdated < 0) timeTopologicalMapUpdated = timeElapsed - rebuild_topological_map_interval;
@@ -697,9 +711,11 @@ public class RealAgent extends BasicAgent implements Agent {
         topologicalMap.setPathGoal(goalPoint);
         if (!pureAStar)
         {
+            System.out.println(this + "calculating topological path from " + startPoint + " to " + goalPoint);
             topologicalMap.getTopologicalPath();
         } else
         {
+            System.out.println(this + "calculating jump path from " + startPoint + " to " + goalPoint);
             topologicalMap.getJumpPath();
             if (topologicalMap.getPath() == null)
                 System.out.println("!!!! CATASTROPHIC FAILURE !!!!!");
@@ -1152,6 +1168,12 @@ public class RealAgent extends BasicAgent implements Agent {
         //merge the occupancy grids, and add affected cells to dirty cell list to be repainted in the GUI
         dirtyCells.addAll(
                 occGrid.mergeGrid(teammate.getOccupancyGrid(), isBaseStation));        
+        
+        //Merge bad frontier information
+        for (Frontier badFrontier: msg.badFrontiers) {
+            if (!this.isBadFrontier(badFrontier))
+                this.addBadFrontier(badFrontier);
+        }
         
         if ((simConfig != null) && (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)
                 && (simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.UtilReturn))

@@ -97,6 +97,9 @@ public class Constants {
     // Minimum size a frontier must have to be considered as part of exploration
     public static final int MIN_FRONTIER_SIZE = 3; // default 20; was 3
     
+    // How long should we assume that the teammate is exploring the frontier that he last told us he was to explore?
+    public static final int REMEMBER_TEAMMATE_FRONTIER_PERIOD = 500;
+    
     // Probability of going out of service at any given time
     public static final double PROB_OUT_OF_SERVICE = 0.002;
     

@@ -272,8 +272,8 @@ public class Path {
             }
             return;
         }
-        Path p1 = new Path(agentGrid, startpoint, pathNodes.get(1).getPosition(), false, true);
-        Path p2 = new Path(agentGrid, pathNodes.get(pathNodes.size() - 2).getPosition(), endpoint, false, true);
+        Path p1 = new Path(agentGrid, startpoint, (Point)pathNodes.get(1).getPosition().clone(), false, true);
+        Path p2 = new Path(agentGrid, (Point)pathNodes.get(pathNodes.size() - 2).getPosition().clone(), endpoint, false, true);
         pathPoints = new LinkedList<Point>();
         int index = 0;
         if (p0 != null)
@@ -299,7 +299,7 @@ public class Path {
             if (!n.equals(startNode) && !n.equals(goalNode) && !pathNodes.get(index+1).equals(goalNode))
             {
                 for (Point p : n.getPathToNeighbour(pathNodes.get(index+1)).getPoints())
-                    pathPoints.add(p);
+                    pathPoints.add((Point)p.clone());
             }
             
             if (n.equals(goalNode))
@@ -512,7 +512,7 @@ public class Path {
         }*/
         
         long realtimeStart = System.currentTimeMillis();
-        System.out.print(Constants.INDENT + "Planning path from " + start.x + "," + start.y + " to " + goal.x + "," + goal.y + ". ");
+        System.out.print(Constants.INDENT + "Planning jump path from " + start.x + "," + start.y + " to " + goal.x + "," + goal.y + ". ");
         if ((goal.x == 0) && (goal.y == 0)) //something went really wrong and it takes forever to calculate/fail
         {
             System.out.print("Goal is (0, 0), something went wrong, aborting path planning...");
@@ -596,7 +596,6 @@ public class Path {
             System.out.print(pathPoints.size() + " points, length " + (int)length + ". ");
             if ((length < 1) && (pathPoints.size() < 1)) {
                 //Something went wrong!
-                agentGrid.saveToPNG("C:\\Users\\Victor\\Sources\\University\\MRESim\\GIT\\MRESim\\patherror\\jumperror.png");
             }
         }
         
