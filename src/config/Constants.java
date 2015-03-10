@@ -100,6 +100,10 @@ public class Constants {
     // How long should we assume that the teammate is exploring the frontier that he last told us he was to explore?
     public static final int REMEMBER_TEAMMATE_FRONTIER_PERIOD = 500;
     
+    // Minimum wait time until attempting to communicate with the Base Station again. This is to ensure when in range
+    // with the base station we do not try to transfer big maps every step, resulting in slowdown.
+    public static final int MIN_COMM_WITH_CS_PERIOD = 10;
+    
     // Probability of going out of service at any given time
     public static final double PROB_OUT_OF_SERVICE = 0.002;
     

@@ -1134,23 +1134,26 @@ public class SimulationFramework implements ActionListener {
         for(int i=0; i<numRobots-1; i++)
             for(int j=i+1; j<numRobots; j++)
                 if(multihopCommTable[i][j] == 1) {
-                        //realtimeStart2 = System.currentTimeMillis();
-                        DataMessage msgFromFirst = new DataMessage(agent[i], directCommTable[i][j]);
-                        DataMessage msgFromSecond = new DataMessage(agent[j], directCommTable[i][j]);
-                                                
-                        agent[i].receiveMessage(msgFromSecond);
-                        agent[j].receiveMessage(msgFromFirst);
-                        
-                        //System.out.println(Constants.INDENT + "Communication between " +
-                        //                    agent[i].getName() + " and " +
-                        //                    agent[j].getName() + " took " +
-                        //                    (System.currentTimeMillis() - realtimeStart2) + "ms.");
-                        // For periodic return frontier exp
-                        if(simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration &&
-                           simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.PeriodicReturn &&
-                           i == 0 && agent[j].frontierPeriodicState == 1) {
-                            agent[j].frontierPeriodicState = 0;
-                            agent[j].periodicReturnInterval += 10;
+                        if ((agent[i].getID() != Constants.BASE_STATION_TEAMMATE_ID) || 
+                                (agent[j].timeLastDirectContactCS > Constants.MIN_COMM_WITH_CS_PERIOD)) {
+                            //realtimeStart2 = System.currentTimeMillis();
+                            DataMessage msgFromFirst = new DataMessage(agent[i], directCommTable[i][j]);
+                            DataMessage msgFromSecond = new DataMessage(agent[j], directCommTable[i][j]);
+
+                            agent[i].receiveMessage(msgFromSecond);
+                            agent[j].receiveMessage(msgFromFirst);
+
+                            //System.out.println(Constants.INDENT + "Communication between " +
+                            //                    agent[i].getName() + " and " +
+                            //                    agent[j].getName() + " took " +
+                            //                    (System.currentTimeMillis() - realtimeStart2) + "ms.");
+                            // For periodic return frontier exp
+                            if(simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration &&
+                               simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.PeriodicReturn &&
+                               i == 0 && agent[j].frontierPeriodicState == 1) {
+                                agent[j].frontierPeriodicState = 0;
+                                agent[j].periodicReturnInterval += 10;
+                            }
                         }
                     }
 
