@@ -165,14 +165,14 @@ public class Environment{
             currY = y1 + (int)(Math.sin(angle) * i);
             
             if(this.statusAt(currX, currY) == Status.obstacle){
-                if (!insideWall) {
+                //if (!insideWall) {
                     counter++;
-                    insideWall = true;
-                }
-            } else
+                //    insideWall = true;
+                //}
+            }/* else
             {
                 insideWall = false;
-            }
+            }*/
         }
         
         return counter;
