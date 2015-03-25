@@ -711,11 +711,11 @@ public class RealAgent extends BasicAgent implements Agent {
         topologicalMap.setPathGoal(goalPoint);
         if (!pureAStar)
         {
-            System.out.println(this + "calculating topological path from " + startPoint + " to " + goalPoint);
+            //System.out.println(this + "calculating topological path from " + startPoint + " to " + goalPoint);
             topologicalMap.getTopologicalPath();
         } else
         {
-            System.out.println(this + "calculating jump path from " + startPoint + " to " + goalPoint);
+            //System.out.println(this + "calculating jump path from " + startPoint + " to " + goalPoint);
             topologicalMap.getJumpPath();
             if (topologicalMap.getPath() == null)
                 System.out.println("!!!! CATASTROPHIC FAILURE !!!!!");

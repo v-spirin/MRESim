@@ -31,8 +31,9 @@
  */
 package exploration;
 
-import config.Constants;
+import communication.CommLink;
 import java.awt.Point;
+import java.util.LinkedList;
 
 /**
  *
@@ -40,15 +41,47 @@ import java.awt.Point;
  */
     public class NearRVPoint extends Point implements Comparable<NearRVPoint> {
         public double distanceToFrontier;
+        public double distanceToParent = java.lang.Double.MAX_VALUE;
         public int degree;
         public double utility;
+        public NearRVPoint parentPoint;
+        public CommLink commLinkClosestToBase;
+        
+        public LinkedList<CommLink> commLinks = new LinkedList<CommLink>(); //connected points
+        
+        public NearRVPoint (int newX, int newY) {
+            this.x = newX;
+            this.y = newY;
+            this.distanceToFrontier = 0;
+            this.degree = 1;
+            this.utility = 0;
+        }
         
         public NearRVPoint (int newX, int newY, double d) {
             this.x = newX;
             this.y = newY;
             this.distanceToFrontier = d;
             this.degree = 1;
-            this.utility = 1 / d * 10000;
+            this.utility = calcUtility();
+        }
+        
+        private double calcUtility() {
+            return 10000 / this.distanceToFrontier;
+        }
+        
+        public static double getFullRVUtility(double distToFrontier, double distToBase, int numObstacles) {
+            double weight1 = 2.0;
+            double weight2 = 1.0;
+            double nonLineOfSightRiskFactor = 0.9;
+            
+            if (numObstacles == 0) nonLineOfSightRiskFactor = 1.0;
+            
+            return 10000 / (weight1 * distToFrontier + weight2 * distToBase) * nonLineOfSightRiskFactor;
+        }
+        
+        public void setDistanceToFrontier(double d) {
+            this.distanceToFrontier = d;
+            this.utility = calcUtility();
         }
 
         public NearRVPoint (int newX, int newY, double d, int dg) {
@@ -56,7 +89,7 @@ import java.awt.Point;
             this.y = newY;
             this.distanceToFrontier = d;
             this.degree = dg;
-            this.utility = Math.pow(dg, 2) / d * 10000;
+            this.utility = Math.pow(dg, 2) * calcUtility();
             //System.out.println(Constants.INDENT + "Point at " + x + "," + y + " has utility " + (int)utility);
         }
 

@@ -35,6 +35,7 @@ import gui.ShowSettings.ShowSettings;
 import config.*;
 import agents.*;
 import environment.*;
+import exploration.NearRVPoint;
 import gui.ShowSettings.ShowSettingsAgent;
 import java.awt.*;
 import java.awt.image.*;
@@ -44,7 +45,6 @@ import java.awt.geom.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import path.Path;
-import path.TopologicalNode;
 
     /**
  *
@@ -228,6 +228,51 @@ public class ExplorationImage {
         drawLine(startpoint, endpoint, Color.yellow);
         setPixel(startpoint.x, startpoint.y, Color.GREEN);
         setPixel(endpoint.x, endpoint.y, Color.RED);
+    }
+    
+    //draw RV generation process
+    public void fullUpdateRVPoints(OccupancyGrid agentGrid, PriorityQueue<NearRVPoint> rvPoints, 
+            LinkedList<NearRVPoint> generatedPoints, Point frontierCenter,
+            ShowSettingsAgent agentSettings) {
+        setG2D();
+        
+        //<editor-fold defaultstate="collapsed" desc="Draw agent grid according to agentSettings">
+        for(int i=0; i<agentGrid.width; i++)
+            for(int j=0; j<agentGrid.height; j++)
+            {
+                setPixel(i, j, Constants.MapColor.background());
+                updatePixelAgent(agentSettings, agentGrid, i, j);
+            }
+        //</editor-fold>
+        
+        for(Point p: generatedPoints) {
+            g2D.setPaint(Color.MAGENTA);
+            g2D.fillOval(p.x-2, p.y-2, 4, 4);
+        }
+        
+        int counter = 0;
+        while (!rvPoints.isEmpty()) {
+            NearRVPoint p = rvPoints.poll();
+            Color c = Color.cyan;
+            if (counter == 0) c = Color.RED;
+            if (counter == 1) c = Color.GREEN;
+            if (counter == 2) c = Color.BLUE;
+            g2D.setPaint(c);
+            g2D.fillOval(p.x-2, p.y-2, 4, 4);
+            if (counter < 3) {
+                NearRVPoint p1 = p.commLinkClosestToBase.getRemotePoint();
+                g2D.fillRect(p1.x-2, p1.y-2, 4, 4);
+                drawLine(p, p1, c);
+                NearRVPoint p2 = p1.parentPoint;
+                g2D.drawOval(p2.x-2, p2.y-2, 4, 4);
+                drawLine(p1, p2, c);            
+                g2D.setPaint(Color.BLACK);
+                g2D.drawString(Double.toString(Math.round(p.utility)), p.x - 5, p.y - 5);
+            }
+            counter++;
+        }
+        g2D.setPaint(Color.RED);
+        g2D.drawOval(frontierCenter.x-5, frontierCenter.y-5, 10, 10);
     }
     
     //draws agent grid, topological map, start point and endpoint

@@ -512,7 +512,7 @@ public class Path {
         }*/
         
         long realtimeStart = System.currentTimeMillis();
-        System.out.print(Constants.INDENT + "Planning jump path from " + start.x + "," + start.y + " to " + goal.x + "," + goal.y + ". ");
+        //System.out.print(Constants.INDENT + "Planning jump path from " + start.x + "," + start.y + " to " + goal.x + "," + goal.y + ". ");
         if ((goal.x == 0) && (goal.y == 0)) //something went really wrong and it takes forever to calculate/fail
         {
             System.out.print("Goal is (0, 0), something went wrong, aborting path planning...");
@@ -593,13 +593,13 @@ public class Path {
             }
             
             this.recalcLength();
-            System.out.print(pathPoints.size() + " points, length " + (int)length + ". ");
+            //System.out.print(pathPoints.size() + " points, length " + (int)length + ". ");
             if ((length < 1) && (pathPoints.size() < 1)) {
                 //Something went wrong!
             }
         }
         
-        System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         return !limit_hit;
     }
     

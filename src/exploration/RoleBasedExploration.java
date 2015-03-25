@@ -34,17 +34,22 @@ package exploration;
 
 import agents.BasicAgent;
 import agents.RealAgent;
+import communication.CommLink;
 import communication.PropModel1;
 import config.Constants;
 import config.RobotConfig;
 import config.SimulatorConfig;
 import environment.*;
+import gui.ExplorationImage;
+import gui.ShowSettings.ShowSettingsAgent;
 import java.util.*;
 import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import path.Path;
+import org.apache.commons.math3.*;
+import org.apache.commons.math3.random.SobolSequenceGenerator;
 
 /**
  *
@@ -425,7 +430,7 @@ public class RoleBasedExploration {
                 
                 // Second, calculate rendezvous, but stick around for one time step to communicate
                 if(useImprovedRendezvous) {
-                    calculateRendezvous(agent);
+                    calculateRendezvousRandomSampling(agent);
                     if (rvThroughWalls && timeElapsed > 100) {
                         if (agent.getTimeSinceLastRVCalc() == 0)
                             agent.setTimeSinceLastRVCalc(100);
@@ -433,8 +438,16 @@ public class RoleBasedExploration {
                         calculateRVThroughWalls(agent);
                     }
                 }
-                else
-                    agent.setParentRendezvous(agent.getChildRendezvous());  
+                else {
+                    calculateRendezvous(agent);
+                    if (rvThroughWalls && timeElapsed > 100) {
+                        if (agent.getTimeSinceLastRVCalc() == 0)
+                            agent.setTimeSinceLastRVCalc(100);
+                        agent.setParentBackupRendezvous(agent.getParentRendezvous());
+                        calculateRVThroughWalls(agent);
+                    }                    
+                }
+                    //agent.setParentRendezvous(agent.getChildRendezvous());  
                 
                 agent.setStateTimer(1);
                 
@@ -673,6 +686,7 @@ public class RoleBasedExploration {
     
 // <editor-fold defaultstate="collapsed" desc="Calculate rendezvous">
     
+    //Relay RV with Explorer
     private static void calculateRendezvous(RealAgent agent) {
         // Only calculate rv every several time steps at most
         if(agent.getTimeSinceLastRVCalc() < 15)
@@ -836,6 +850,7 @@ public class RoleBasedExploration {
         }
     }
     
+    //For the case of Relay having an RV with another relay
     private static void calculateRendezvous2(RealAgent agent) {
         long realtimeStart = System.currentTimeMillis();
         System.out.println(agent.toString() + "Calculating next rendezvous2 ... ");
@@ -880,6 +895,210 @@ public class RoleBasedExploration {
         System.out.print(" -Chose RV at " + agent.getParentRendezvous().getChildLocation().x + "," + 
                 agent.getParentRendezvous().getChildLocation().y + ". ");
         System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+    }
+    
+    private static LinkedList<NearRVPoint> generateSobolPoints(OccupancyGrid grid) {
+        SobolSequenceGenerator sobolGen = new SobolSequenceGenerator(2);
+        
+        //int numPointsToGenerate = grid.getNumFreeCells() * 150 / 432000;
+        int numPointsToGenerate = grid.getNumFreeCells() / 400; //roughly every 20 sq. cells
+        System.out.println("Generating " + numPointsToGenerate + " Sobol points");
+        
+        LinkedList<NearRVPoint> generatedPoints = new LinkedList<NearRVPoint>();
+        
+        for (int i = 0; i < numPointsToGenerate; i++) {
+            int x = 0;
+            int y = 0;
+            double[] vector;
+            do {
+                vector = sobolGen.nextVector();
+                x = (int)(vector[0] * grid.width);
+                y = (int)(vector[1] * grid.height);
+            } while(!grid.freeSpaceAt(x, y));
+            
+            NearRVPoint pd = new NearRVPoint(x, y);
+            
+            /*simConfig.getEnv().setPathStart(pd.point);
+            simConfig.getEnv().setPathGoal(expLocation);
+            simConfig.getEnv().getTopologicalPath(false);
+            pd.distance1 = simConfig.getEnv().getPath().getLength();
+            
+            simConfig.getEnv().setPathStart(pd.point);
+            simConfig.getEnv().setPathGoal(relLocation);
+            simConfig.getEnv().getTopologicalPath(false);
+            pd.distance2 = simConfig.getEnv().getPath().getLength();*/
+            
+            generatedPoints.add(pd);
+            //freeSpace.remove(index);
+        }
+        
+        return generatedPoints;
+    }
+    
+    private static void calculateRendezvousRandomSampling(RealAgent agent) {
+        // Only calculate rv every several time steps at most
+        if(agent.getTimeSinceLastRVCalc() < 15)
+            return;
+        else
+            agent.setTimeSinceLastRVCalc(0);
+
+        long realtimeStart = System.currentTimeMillis();
+        long intermediateTime1, intermediateTime2, intermediateTime3, intermediateTime4;
+        System.out.println(agent.toString() + "Calculating next rendezvous ... ");
+
+        intermediateTime1 = System.currentTimeMillis();
+        System.out.print(Constants.INDENT + "Generating random points ... ");
+
+        LinkedList<NearRVPoint> generatedPoints = generateSobolPoints(agent.getOccupancyGrid());
+        //add base station to it. Could also add any special points here as well
+        NearRVPoint base = new NearRVPoint(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getX(), 
+                agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getY());
+        generatedPoints.add(base);
+
+        intermediateTime2 = System.currentTimeMillis();
+        System.out.println("complete, took " + (intermediateTime2 - intermediateTime1) + " ms.");
+
+        System.out.print(Constants.INDENT + "Finding commlinks ... ");
+        LinkedList<CommLink> commLinks = new LinkedList<CommLink>();
+        LinkedList<NearRVPoint> pointsConnectedToBase = new LinkedList<NearRVPoint>();
+        
+        for (NearRVPoint p1: generatedPoints) {
+            for (NearRVPoint p2: generatedPoints) {
+                if (p1.distance(p2) <= PropModel1.getMaxRange()) {
+                    //TODO: range should be min of ours and our teammate's
+                    if (PropModel1.isConnected(agent.getOccupancyGrid(), agent.getCommRange(), (Point)p1, (Point)p2)) {
+                        //check if connection is line of sight?
+                        int numWalls = agent.getOccupancyGrid().numObstaclesOnLine(p1.x, p1.y, p2.x, p2.y);
+                        if (p1 == base) {
+                            System.out.println("Base is " + p1 + ", adding connected point " + p2);
+                            pointsConnectedToBase.add(p2);
+                        }
+                        CommLink link = new CommLink(p1, p2);
+                        link.numObstacles = numWalls;
+                        commLinks.add(link);
+                        p1.commLinks.add(link);
+                        //commLinks.add(new CommLink(p2, p1, null, null));
+                    }
+                }
+            }
+        }
+
+        intermediateTime3 = System.currentTimeMillis();
+        System.out.println("complete, took " + (intermediateTime3 - intermediateTime2) + " ms.");
+        System.out.println(Constants.INDENT + "Choosing specific RV point ... ");
+        
+        PriorityQueue<NearRVPoint> pointsNearFrontier = new PriorityQueue<NearRVPoint>();
+        Point frontierCentre;
+        if(agent.getLastFrontier() != null)
+            frontierCentre = agent.getLastFrontier().getCentre();//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
+        else
+        {
+            System.out.println(agent + " !!!! getLastFrontier returned null, setting frontierCentre to " + agent.getLocation());
+            frontierCentre = agent.getLocation();
+        }
+            
+        System.out.println(agent + " frontierCentre is " + frontierCentre);
+        // create priority queue of all potential rvpoints within given straight line distance
+        for(NearRVPoint p: generatedPoints) {
+            double dist = p.distance(frontierCentre);
+            if(dist > 600)
+                continue;
+            p.setDistanceToFrontier(dist);
+            pointsNearFrontier.add(p);
+        }
+        
+        intermediateTime3 = System.currentTimeMillis();
+        System.out.println(agent + " pointsConnectedToBase count is " + pointsConnectedToBase.size());
+        
+        int pathsCalculated = 0;
+        //Now for top K points, let's calculate p' distances to base, and find the nearest point connected to base
+        PriorityQueue<NearRVPoint> pointsNearFrontierReal = new PriorityQueue<NearRVPoint>();
+        for (int k = 0; (k < 5) && !pointsNearFrontier.isEmpty(); k++) {
+            NearRVPoint p = pointsNearFrontier.poll();
+            double minDistToBase = Double.MAX_VALUE;
+            
+            for(CommLink link: p.commLinks) {
+                NearRVPoint connectedPoint = link.getRemotePoint();
+                // only calculate nearest base point for connectedPoint if we haven't already.
+                if (connectedPoint.distanceToParent == Double.MAX_VALUE) {
+                    for(NearRVPoint basePoint: pointsConnectedToBase) {
+                        pathsCalculated++;
+                        Path pathToBase = agent.calculatePath(connectedPoint, basePoint);
+                        double pathLen = Double.MAX_VALUE;
+                        if (pathToBase.found)
+                            pathLen = pathToBase.getLength();
+                        if (pathLen < connectedPoint.distanceToParent) {
+                            connectedPoint.distanceToParent = pathLen;
+                            connectedPoint.parentPoint = basePoint;
+                        }
+                    }
+                }
+                if (connectedPoint.distanceToParent < minDistToBase) {
+                    minDistToBase = connectedPoint.distanceToParent;
+                    p.commLinkClosestToBase = link;
+                }
+            }
+            //At this point, for p, we know:
+            //  1. Connected point p' that is nearest to comm range of Base
+            //  2. Distance from p' to comm range of Base
+            //  3. Nearest point from p' that is within comm range of Base
+            //So we know how long each point p will have to wait for relay, and so can estimate
+            //where explorer will be at the time, to calculate regret accurately.
+            
+            //For now, just calculate accurate distance to next frontier:
+            Path pathToFrontier = agent.calculatePath(p, frontierCentre);
+            double distToFrontier = Double.MAX_VALUE;
+            if (pathToFrontier.found)
+                distToFrontier = pathToFrontier.getLength();
+            pathsCalculated++;
+            p.setDistanceToFrontier(distToFrontier);
+            p.utility = NearRVPoint.getFullRVUtility(p.distanceToFrontier, 
+                    p.commLinkClosestToBase.getRemotePoint().distanceToParent, p.commLinkClosestToBase.numObstacles);
+            System.out.println(agent + " utility is " + p.utility + " for point " + p + " linked to " + 
+                    p.commLinkClosestToBase.getRemotePoint() + "; distToFrontier: " + p.distanceToFrontier + 
+                    ", distToParent: " + p.commLinkClosestToBase.getRemotePoint().distanceToParent);
+            pointsNearFrontierReal.add(p);
+        }
+        System.out.println(agent + "complete, took " + (System.currentTimeMillis() - intermediateTime3) + 
+                " ms., paths calculated: " + pathsCalculated);
+        
+        
+        //Now just need to retrieve the best point
+
+        NearRVPoint bestPoint = pointsNearFrontierReal.peek();
+        
+        RVLocation meetingLocation = new RVLocation(bestPoint);
+        meetingLocation.setParentLocation(bestPoint.commLinkClosestToBase.getRemotePoint());
+        
+        
+        agent.setParentRendezvous(meetingLocation);
+        
+        //Output the process as an image
+        try
+        {
+            OccupancyGrid agentGrid = agent.getOccupancyGrid();
+            ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
+            ShowSettingsAgent agentSettings = new ShowSettingsAgent();
+            agentSettings.showFreeSpace = true;
+            img.fullUpdateRVPoints(agentGrid, pointsNearFrontierReal, generatedPoints, frontierCentre, agentSettings);
+            img.saveScreenshot("c:\\Temp\\rvgen\\");
+            System.out.println("Outputting path debug screens");
+        } catch (Exception e)
+        {
+            System.out.println("Couldn't save path error screenshot, reason: " + e.getMessage());
+        }
+
+            /* THIS LINE TEMP FOR SIMPLE ENVS */
+            //agent.setParentRendezvous(agent.getLastFrontier().getClosestPoint(agent.getLocation(), agent.getOccupancyGrid()));
+        //}
+        intermediateTime4 = System.currentTimeMillis();
+
+        System.out.print(Constants.INDENT + "Choosing complete, chose " + 
+                agent.getParentRendezvous().getChildLocation().x + "," + 
+                agent.getParentRendezvous().getChildLocation().y + ". ");
+        System.out.println("Took " + (intermediateTime4 - intermediateTime3) + "ms.");
+        System.out.println(Constants.INDENT + "Complete RV calculation process took " + 
+                (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
     
     //Calculate time to next RV with parent, taking parent communication range into account (using simple circle model)

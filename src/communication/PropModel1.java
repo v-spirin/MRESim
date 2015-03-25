@@ -41,11 +41,17 @@ public class PropModel1 {
     
     // Values easy to change depending on model, see e.g.
     // Bahl & Padmanabhan:  RADAR: An In-Building RF-based User Location and Tracking System
-    private static final double REF_SIGNAL = -93; //-82;
-    private static final int PATHLOSS_FACTOR = 1;
-    //private static final double REF_DISTANCE = 1;
-    private static final double WALL_ATTENUATION = 5;
-    private static final int MAX_WALLS = 4;
+    private static final double REF_SIGNAL = -93; //-41
+    private static final double PATHLOSS_FACTOR = 2.5; //2.5
+    private static final double REF_DISTANCE = 150; // 1m = -41dbm, 100
+    private static final double WALL_ATTENUATION_SIM = 0.2; //3.1 this is per wall pixel on map, so should generally be a low value.
+                                                      //We currently only have one attenuation factor for all obstacle types
+                                                      //In real life, this could vary depending on wall material.
+                                                      //This should be a different value for the simulator and for robots
+                                                      //As robots cannot sense how thick a wall is.
+    private static final double WALL_ATTENUATION_AGENT = 0.2; //this should probably be higher for agent than for simulator, as agents
+                                                            //don't know how thick the walls are generally.
+    private static final int MAX_WALLS = 125; //maximum combined wall "thickness" after which attenuation stops making a difference
     private static final double CUTOFF = -93;
     
     public static Polygon getRange(Environment env, BasicAgent agent) {
@@ -72,6 +78,11 @@ public class PropModel1 {
         }
         
         return range;
+    }
+    
+    public static double getMaxRange() {
+        if (REF_SIGNAL <= CUTOFF) return REF_DISTANCE;
+        else return (Math.pow(10, (REF_SIGNAL - CUTOFF) / (10 * PATHLOSS_FACTOR)) * REF_DISTANCE);
     }
     
     public static Polygon getRangeForRV(OccupancyGrid occGrid, BasicAgent agent) {
@@ -145,21 +156,30 @@ public class PropModel1 {
         return range;
     }
     
+    public static boolean isConnected(Environment env, RealAgent ag1, RealAgent ag2) {
+        return (signalStrength(Math.min(ag1.getCommRange(), ag2.getCommRange()), env, ag1.getLocation(), 
+                ag2.getLocation()) >= CUTOFF);
+    }
+    
+    public static boolean isConnected(OccupancyGrid grid, double agentRange, Point p1, Point p2) {
+        return (signalStrength(agentRange, grid, p1, p2) >= CUTOFF);
+    }
+    
     //<editor-fold defaultstate="collapsed" desc="Signal Strength">
     //For use by simulation
-    private static double signalStrength(int agentRange, Environment env, Point p1, Point p2) {
+    private static double signalStrength(double agentRange, Environment env, Point p1, Point p2) {
         int numWalls = Math.min(MAX_WALLS, env.numObstaclesOnLine(p1.x, p1.y, p2.x, p2.y));
         double distance = p1.distance(p2);
         
-        return (REF_SIGNAL - 10 * PATHLOSS_FACTOR * Math.log10(distance / /*REF_DISTANCE*/agentRange) - numWalls * WALL_ATTENUATION);
+        return (REF_SIGNAL - 10 * PATHLOSS_FACTOR * Math.log10(distance / /*REF_DISTANCE*/agentRange) - numWalls * WALL_ATTENUATION_SIM);
     }
     
     //For use by individual robots
-    private static double signalStrength(int agentRange, OccupancyGrid occGrid, Point p1, Point p2) {
+    private static double signalStrength(double agentRange, OccupancyGrid occGrid, Point p1, Point p2) {
         int numWalls = Math.min(MAX_WALLS, occGrid.numPossibleObstaclesOnLine(p1.x, p1.y, p2.x, p2.y));
         double distance = p1.distance(p2);
         
-        return (REF_SIGNAL - 10 * PATHLOSS_FACTOR * Math.log10(distance / /*REF_DISTANCE*/agentRange) - numWalls * WALL_ATTENUATION);
+        return (REF_SIGNAL - 10 * PATHLOSS_FACTOR * Math.log10(distance / /*REF_DISTANCE*/agentRange) - numWalls * WALL_ATTENUATION_AGENT);
     }
     //</editor-fold>
     
