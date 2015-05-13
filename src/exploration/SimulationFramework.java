@@ -151,11 +151,11 @@ public class SimulationFramework implements ActionListener {
         agentRange = new Polygon[numRobots];
         
         // Create ComStation
-        agent[0] = new ComStation(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(1));
+        agent[0] = new ComStation(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(1), simConfig);
         teammate[0] = new TeammateAgent(robotTeamConfig.getRobotTeam().get(1));
         
         for(int i=1; i<numRobots; i++) {
-            agent[i] = new RealAgent(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(i+1));
+            agent[i] = new RealAgent(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(i+1), simConfig);
             agentRange[i] = null;
             teammate[i] = new TeammateAgent(robotTeamConfig.getRobotTeam().get(i+1));
         }

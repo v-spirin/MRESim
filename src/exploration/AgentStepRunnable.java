@@ -36,8 +36,6 @@ import agents.RealAgent;
 import config.SimulatorConfig;
 import environment.Environment;
 import java.awt.Point;
-import exploration.*;
-import config.*;
 
 /**
  *
@@ -73,7 +71,7 @@ public class AgentStepRunnable implements Runnable{
         while (distance_left > 0)
         {
             //<editor-fold defaultstate="collapsed" desc="Get next step">
-            nextStep = agent.takeStep(timeElapsed, simConfig);
+            nextStep = agent.takeStep(timeElapsed);
             if(nextStep == null) {
                 nextStep = agent.getLocation();
                 System.out.println(agent + " !!! setting envError because nextStep is null, distance_left is " + distance_left);

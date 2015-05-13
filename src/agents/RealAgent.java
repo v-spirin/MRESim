@@ -123,7 +123,7 @@ public class RealAgent extends BasicAgent implements Agent {
     private SimulatorConfig simConfig;
 
     
-    public RealAgent(int envWidth, int envHeight, RobotConfig robot) {
+    public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig) {
         super(robot.getRobotNumber(), 
               robot.getName(), 
               robot.getRobotNumber(), 
@@ -176,6 +176,7 @@ public class RealAgent extends BasicAgent implements Agent {
         
         missionComplete = false;
         
+        this.simConfig = simConfig;
         rendezvousAgentData = new RendezvousAgentData(this);
         SinglePointRendezvousStrategySettings rvSettings = new SinglePointRendezvousStrategySettings();
         rvSettings.allowReplanning = simConfig.replanningAllowed();
@@ -473,8 +474,8 @@ public class RealAgent extends BasicAgent implements Agent {
         //occGrid.initializeTestBits();
     }
 
-    public Point takeStep(int timeElapsed, SimulatorConfig simConfig) {
-        this.simConfig = simConfig;
+    public Point takeStep(int timeElapsed) {
+        //this.simConfig = simConfig;
         long realtimeStartAgentStep = System.currentTimeMillis(); 
         Point nextStep = new Point(0,0);
         

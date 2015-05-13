@@ -22,7 +22,9 @@ public class RendezvousAgentData {
     
     public RendezvousAgentData(BasicAgent agent) {
         childRendezvous = new Rendezvous(agent.getLocation());
+        childBackupRendezvous = new Rendezvous(agent.getLocation());
         parentRendezvous = new Rendezvous(agent.getLocation());
+        parentBackupRendezvous = new Rendezvous(agent.getLocation());
         timeUntilRendezvous = 0;
         timeSinceLastRVCalc = 0;
         timeSinceLastRoleSwitch = 0;
