@@ -337,7 +337,7 @@ public class RobotPanel extends javax.swing.JPanel {
 
         toggleSkeleton.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         toggleSkeleton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/skeletonOff.png"))); // NOI18N
-        toggleSkeleton.setToolTipText("Skeleton");
+        toggleSkeleton.setToolTipText("Show information on how the RV location was selected");
         toggleSkeleton.setBorderPainted(false);
         toggleSkeleton.setContentAreaFilled(false);
         toggleSkeleton.setFocusable(false);

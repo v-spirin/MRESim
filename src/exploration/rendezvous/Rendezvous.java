@@ -29,7 +29,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
-package exploration;
+package exploration.rendezvous;
 
 import agents.BasicAgent;
 import agents.RealAgent;
@@ -43,40 +43,43 @@ import java.awt.Polygon;
 import java.util.LinkedList;
 
 /**
- * RVLocation describes a rendezvous location, and includes information about where each agent
+ * Rendezvous describes a rendezvous location, and includes information about where each agent
  * should head to.
  * @author Victor
  */
-public class RVLocation {
+public class Rendezvous {
     private Point childLocation; // where the child of the two agents meeting up should go
     private Point parentLocation; //where the parent of the two agents meeting up should go
     private int timeMeeting; //when they agree to meet up
-    private int minTimeMeeting; //time from which relay will be at the meeting point
+    //private int minTimeMeeting; //time from which relay will be at the meeting point
     private int timeWait; //how long they agree to wait for partner at RV point
+    public Rendezvous parentsRVLocation; //this is the RV location for our parent to meet with its parent (we calculate it).
     
-    public RVLocation(Point location) {
+    public Rendezvous(Point location) {
         childLocation = location;
         parentLocation = location;
         timeMeeting = Constants.MAX_TIME; //meeting time not agreed
         timeWait = Constants.MAX_TIME; //wait indefinitely
-        minTimeMeeting = Constants.MAX_TIME;
+        //minTimeMeeting = Constants.MAX_TIME;
     }
     
-    public RVLocation copy() {
-        RVLocation locCopy = new RVLocation(childLocation);
+    public Rendezvous copy() {
+        Rendezvous locCopy = new Rendezvous(childLocation);
         locCopy.setChildLocation(new Point(childLocation));
         locCopy.setParentLocation(new Point(parentLocation));
         locCopy.setTimeMeeting(timeMeeting);
         locCopy.setTimeWait(timeWait);
-        locCopy.setMinTimeMeeting(minTimeMeeting);
+        //locCopy.setMinTimeMeeting(minTimeMeeting);
+        if (parentsRVLocation != null)
+            locCopy.parentsRVLocation = parentsRVLocation.copy();
         return locCopy;
     }
     
     @Override
     public boolean equals(Object that) {
         if (this == that) return true;
-        if ( !(that instanceof RVLocation)) return false;
-        RVLocation other = (RVLocation)that;
+        if ( !(that instanceof Rendezvous)) return false;
+        Rendezvous other = (Rendezvous)that;
         return
                 this.getChildLocation().equals(other.getChildLocation()) &&
                 this.getParentLocation().equals(other.getParentLocation());
@@ -189,12 +192,17 @@ public class RVLocation {
     }
     
     public void setTimeMeeting(int timeMeeting) {
+        System.out.println("Setting meeting time to " + timeMeeting);
         this.timeMeeting = timeMeeting;
     }
     
-    public void setMinTimeMeeting(int minTimeMeeting) {
+    /*public void setMinTimeMeeting(int minTimeMeeting) {
         this.minTimeMeeting = minTimeMeeting;
     }
+    
+    public int getMinTimeMeeting() {
+        return minTimeMeeting;
+    }*/
     
     public void setTimeWait(int timeWait) {
         this.timeWait = timeWait;
@@ -212,9 +220,7 @@ public class RVLocation {
         return timeMeeting;
     }
     
-    public int getMinTimeMeeting() {
-        return minTimeMeeting;
-    }
+    
     
     public int getTimeWait() {
         return timeWait;

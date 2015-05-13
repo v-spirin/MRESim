@@ -48,7 +48,7 @@ public class FrontierExploration {
     
     // Returns new X, Y of RealAgent
     public static Point takeStep(RealAgent agent, int timeElapsed, 
-            SimulatorConfig.frontiertype frontierExpType, SimulatorConfig simConfig) {
+            SimulatorConfig.frontiertype frontierExpType) {
         long realtimeStartAgentCycle = System.currentTimeMillis();
         
         Point nextStep = new Point(agent.getX(), agent.getY());
@@ -90,14 +90,14 @@ public class FrontierExploration {
         //<editor-fold defaultstate="collapsed" desc="CHECK 3: Agent isn't stuck. Is it time to replan? Have we moved on to next time cycle?">
         else if(agent.getTimeSinceLastPlan() >= Constants.REPLAN_INTERVAL)
         {
-            nextStep = replan(agent, frontierExpType, timeElapsed, simConfig);
+            nextStep = replan(agent, frontierExpType, timeElapsed);
         }
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="CHECK 4: Agent isn't stuck, not yet time to replan, but we have no points left">
         else
         {
-            nextStep = replan(agent, frontierExpType, timeElapsed, simConfig);
+            nextStep = replan(agent, frontierExpType, timeElapsed);
         }
         //</editor-fold>
 
@@ -111,7 +111,7 @@ public class FrontierExploration {
         return nextStep;
     }   
 
-    public static Point replan(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, int timeElapsed, SimulatorConfig simConfig) {
+    public static Point replan(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, int timeElapsed) {
         Point nextStep;
         
         agent.setTimeSinceLastPlan(0);
@@ -124,7 +124,7 @@ public class FrontierExploration {
 
         //<editor-fold defaultstate="collapsed" desc="If no frontiers found, or reached exploration goal, return to ComStation">
         if ((agent.getFrontiers().isEmpty()) || (agent.getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL)) {
-            agent.setMissionComplete();
+            agent.setMissionComplete(true);
             agent.setPathToBaseStation();
             nextStep = agent.getNextPathPoint();
             while ((nextStep != null) && (nextStep.equals(agent.getLocation())))
@@ -158,7 +158,7 @@ public class FrontierExploration {
             return nextStep;*/
             // mission complete
             System.out.println(agent.toString() + " could not find frontier, proceeding to BaseStation (Mission Complete).");
-            agent.setMissionComplete();
+            agent.setMissionComplete(true);
             agent.setPathToBaseStation();
             nextStep = agent.getNextPathPoint();
             while ((nextStep != null) && (nextStep.equals(agent.getLocation())))

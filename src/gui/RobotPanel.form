@@ -358,7 +358,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/resources/skeletonOff.png"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Skeleton"/>
+            <Property name="toolTipText" type="java.lang.String" value="Show information on how the RV location was selected"/>
             <Property name="borderPainted" type="boolean" value="false"/>
             <Property name="contentAreaFilled" type="boolean" value="false"/>
             <Property name="focusable" type="boolean" value="false"/>

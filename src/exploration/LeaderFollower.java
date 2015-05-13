@@ -80,7 +80,7 @@ public class LeaderFollower {
     }
 
     public static Point takeStep_Relay(RealAgent agent, int timeElapsed) {
-        agent.setMissionComplete(); // to stop scripted runs when all agents complete mission
+        agent.setMissionComplete(true); // to stop scripted runs when all agents complete mission
         Point nextStep = new Point(agent.getX(), agent.getY());
 
         // CHECK 0
@@ -104,7 +104,7 @@ public class LeaderFollower {
         }
 
         // Check 1.5, make sure parent is in range
-        if(!agent.getParentTeammate().isInRange()) {
+        else if(!agent.getParentTeammate().isInRange()) {
             agent.setTimeSinceLastPlan(0);
             return (new Point(agent.getPrevX(), agent.getPrevY()));
         }
@@ -254,7 +254,7 @@ public class LeaderFollower {
         // If no frontiers found, return to ComStation
         if(agent.getFrontiers().isEmpty()) {
             System.out.println(agent.toString() + "No frontiers found, returning home.");
-            agent.setMissionComplete();
+            agent.setMissionComplete(true);
             agent.setPathToBaseStation();
             nextStep = agent.getNextPathPoint();
             agent.setTimeSinceLastPlan(0);

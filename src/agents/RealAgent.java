@@ -37,7 +37,10 @@ import environment.*;
 import config.*;
 
 import config.RobotConfig.roletype;
-import environment.Environment.Status;
+import exploration.rendezvous.IRendezvousStrategy;
+import exploration.rendezvous.RendezvousAgentData;
+import exploration.rendezvous.SinglePointRendezvousStrategy;
+import exploration.rendezvous.SinglePointRendezvousStrategySettings;
 import java.util.*;
 import java.awt.*;
 import path.Path;
@@ -51,8 +54,7 @@ import path.Path;
 
 public class RealAgent extends BasicAgent implements Agent {
 
-// <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">
-    
+// <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">    
     // Data
     int timeLastCentralCommand;   /* units of time elapsed since command 
                                      received from ComStation */
@@ -84,11 +86,6 @@ public class RealAgent extends BasicAgent implements Agent {
     // Frontiers
     PriorityQueue<Frontier> frontiers;
     Frontier lastFrontier;          // Keep track of last frontier of interest
-    //goal history to prevent dejavue
-    Hashtable<Point,Point> positionGoals;
-    
-    //history to backtrack if we get lost
-    LinkedList<Point> backtrackPoints;
     
     //Frontiers that are impossible to reach, so should be discarded
     HashMap<Frontier, Boolean> badFrontiers;
@@ -100,29 +97,23 @@ public class RealAgent extends BasicAgent implements Agent {
     Path pathToBase;
     
     // Teammates
-    Hashtable<Integer,TeammateAgent> teammates;
+    HashMap<Integer,TeammateAgent> teammates;
     
     double maxRateOfInfoGatheringBelief;
     double currentTotalKnowledgeBelief;    
     double currentBaseKnowledgeBelief;  
     
     // Role-based Exploration
+    private RendezvousAgentData rendezvousAgentData;
+    private IRendezvousStrategy rendezvousStrategy;
     
-    private int timeSinceLastRoleSwitch;  // keeps track of time since last switch
-    private int timeSinceLastRVCalc;  // keeps track of time since last rendezvous calculation
-    private RVLocation parentRendezvous;  // location of parent rendezvous
-    private RVLocation parentBackupRendezvous; // location of parent backup rendezvous
-    private RVLocation childRendezvous;   // location of child rendezvous
-    private RVLocation childBackupRendezvous;   // location of child backup rendezvous
-    private int timeUntilRendezvous; // estimated time left until due to rendezvous
     private boolean missionComplete; // true only when mission complete (env fully explored)
     private double percentageKnown;
 
     // rendezvous Points and Skeleton
-    private LinkedList<Point> skeleton;
-    private LinkedList<Point> rvPoints;
     
-    private TopologicalMap topologicalMap;
+    
+    private final TopologicalMap topologicalMap;
     int timeTopologicalMapUpdated;
     
 
@@ -172,27 +163,25 @@ public class RealAgent extends BasicAgent implements Agent {
         topologicalMap = new TopologicalMap(null);
         dirtyCells = new LinkedList<Point>();
         pathTaken = new LinkedList<Point>();
-        backtrackPoints = new LinkedList<Point>();
         badFrontiers = new HashMap<Frontier, Boolean>();
         
-        childRendezvous = new RVLocation(new Point(x, y));
-        
-        positionGoals = new Hashtable<Point, Point>();
         
         frontiers = new PriorityQueue();
         
         path = new Path();
         
-        teammates = new Hashtable<Integer,TeammateAgent>();
+        teammates = new HashMap<Integer,TeammateAgent>();
 
-        setState(BasicAgent.ExploreState.Initial);
-        timeUntilRendezvous = 0;
+        setState(RealAgent.ExploreState.Initial);
+        
         missionComplete = false;
         
-        skeleton = new LinkedList<Point>();
-        rvPoints = new LinkedList<Point>();
-        timeSinceLastRVCalc = 0;
-
+        rendezvousAgentData = new RendezvousAgentData(this);
+        SinglePointRendezvousStrategySettings rvSettings = new SinglePointRendezvousStrategySettings();
+        rvSettings.allowReplanning = simConfig.replanningAllowed();
+        rvSettings.useImprovedRendezvous = simConfig.useImprovedRendezvous();
+        rendezvousStrategy = new SinglePointRendezvousStrategy(this, rvSettings);
+        
         currentGoal = new Point(x,y);
     }
   
@@ -200,17 +189,6 @@ public class RealAgent extends BasicAgent implements Agent {
 
     
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
-    /*public void addPoistionGoal(Point pos, Point goal)
-    {
-        positionGoals.put(pos, goal);
-    }
-    
-    public boolean seenPositionGoal(Point pos, Point goal)
-    {
-        Point res = positionGoals.get(pos);
-        if (res == null) return false;
-        return res.equals(goal);
-    }*/
     public void resetBadFrontiers() {
         badFrontiers.clear();
     }
@@ -237,9 +215,7 @@ public class RealAgent extends BasicAgent implements Agent {
     
     public double getDistanceTraveled() {
         return this.distanceTraveled;
-    }
-    
-            
+    }     
     
     public int getAreaKnown() {
         return this.areaKnown;
@@ -365,53 +341,13 @@ public class RealAgent extends BasicAgent implements Agent {
             computePathToBaseStation();
         return pathToBase;
     }
-    
-    public int getTimeSinceLastRoleSwitch() {
-        return timeSinceLastRoleSwitch;
-    }
-
-    public void setTimeSinceLastRoleSwitch(int t) {
-        timeSinceLastRoleSwitch = t;
-    }
-
-    public int getTimeSinceLastRVCalc() {
-        return timeSinceLastRVCalc;
-    }
-
-    public void setTimeSinceLastRVCalc(int t) {
-        timeSinceLastRVCalc = t;
-    }
 
     public boolean isMissionComplete() {
         return missionComplete;
     }
     
-    public void setMissionComplete() {
-        missionComplete = true;
-    }
-    
-    public int getTimeUntilRendezvous() {
-        return timeUntilRendezvous;
-    }
-    
-    public void setTimeUntilRendezvous(int n) {
-        timeUntilRendezvous = n;
-    }
- 
-    public LinkedList<Point> getSkeleton() {
-        return skeleton;
-    }
-    
-    public void setSkeleton(LinkedList<Point> list) {
-        skeleton = list;
-    }
- 
-    public LinkedList<Point> getRVPoints() {
-        return rvPoints;
-    }
-    
-    public void setRVPoints(LinkedList<Point> list) {
-        rvPoints = list;
+    public void setMissionComplete(boolean missionComplete) {
+        this.missionComplete = missionComplete;
     }
 
     public Point getCurrentGoal() {
@@ -430,6 +366,11 @@ public class RealAgent extends BasicAgent implements Agent {
     public double getMaxRateOfInfoGatheringBelief()
     {
         return maxRateOfInfoGatheringBelief;
+    }
+    
+    public void setMaxRateOfInfoGatheringBelief(double rate)
+    {
+        maxRateOfInfoGatheringBelief = rate;
     }
     
     public double getCurrentTotalKnowledgeBelief()
@@ -467,26 +408,16 @@ public class RealAgent extends BasicAgent implements Agent {
         }
     }
 
+    public RendezvousAgentData getRendezvousAgentData() {
+        return rendezvousAgentData;
+    }
+    
+    public IRendezvousStrategy getRendezvousStrategy() {
+        return rendezvousStrategy;
+    }
 // </editor-fold>    
     
 // <editor-fold defaultstate="collapsed" desc="Parent and Child">
-    
-    public RVLocation getChildRendezvous() {
-        return childRendezvous;
-    }
-
-    public void setChildRendezvous(RVLocation r) {
-        childRendezvous = r;
-    }
-    
-    public RVLocation getChildBackupRendezvous() {
-        return childBackupRendezvous;
-    }
-
-    public void setChildBackupRendezvous(RVLocation r) {
-        childBackupRendezvous = r;
-    }
-
     public TeammateAgent getParentTeammate() {
         return getTeammate(parent);
     }
@@ -506,23 +437,6 @@ public class RealAgent extends BasicAgent implements Agent {
     public boolean isExplorer() {
         return (role==roletype.Explorer);
     }
-    
-    public RVLocation getParentRendezvous() {
-        return parentRendezvous;
-    }
-    
-    public void setParentRendezvous(RVLocation r) {
-        parentRendezvous = r;
-    }
- 
-    public RVLocation getParentBackupRendezvous() {
-        return parentBackupRendezvous;
-    }
-    
-    public void setParentBackupRendezvous(RVLocation r) {
-        parentBackupRendezvous = r;
-    }
- 
 // </editor-fold>     
 
 // <editor-fold defaultstate="collapsed" desc="Teammates">
@@ -540,7 +454,7 @@ public class RealAgent extends BasicAgent implements Agent {
         return teammates.remove(n);
     }
     
-    public Hashtable<Integer, TeammateAgent> getAllTeammates() {
+    public HashMap<Integer, TeammateAgent> getAllTeammates() {
         return teammates;
     }
     
@@ -604,13 +518,12 @@ public class RealAgent extends BasicAgent implements Agent {
                 case FrontierExploration:    
                                              if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.ReturnWhenComplete))
                                                 nextStep = FrontierExploration.takeStep(this, 
-                                                        timeElapsed, simConfig.getFrontierAlgorithm(), simConfig);
+                                                        timeElapsed, simConfig.getFrontierAlgorithm());
                                              if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn))
                                                 nextStep = UtilityExploration.takeStep(this, timeElapsed, simConfig);
                                              break;
                 case RoleBasedExploration:   
-                                             nextStep = RoleBasedExploration.takeStep(this, timeElapsed, 
-                                                     simConfig.useImprovedRendezvous(), simConfig.replanningAllowed(), simConfig);
+                                             nextStep = RoleBasedExploration.takeStep(this, timeElapsed, rendezvousStrategy);
                                              break;
                 default:                     break;
             }
@@ -667,13 +580,13 @@ public class RealAgent extends BasicAgent implements Agent {
             realtimeStart = System.currentTimeMillis();
             newFreeSpace = findRadialPolygon(sensorData, sensRange, 0, 180);
             newSafeSpace = findRadialPolygon(sensorData, safeRange, 0, 180);
-            System.out.println(this.toString() + "findRadialPolygon(x2) took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+            //System.out.println(this.toString() + "findRadialPolygon(x2) took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
             realtimeStart = System.currentTimeMillis();
             updateObstacles(newFreeSpace);
-            System.out.println(this.toString() + "updateObstacles took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+            //System.out.println(this.toString() + "updateObstacles took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
             realtimeStart = System.currentTimeMillis();
             updateFreeAndSafeSpace(newFreeSpace, newSafeSpace);
-            System.out.println(this.toString() + "updateFreeAndSafeSpace took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+            //System.out.println(this.toString() + "updateFreeAndSafeSpace took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         }
         
         // NEW METHOD FLOOD FILL
@@ -1135,64 +1048,24 @@ public class RealAgent extends BasicAgent implements Agent {
 // <editor-fold defaultstate="collapsed" desc="Communicate">
 
     public void receiveMessage(DataMessage msg) {
-        long realtimeStartAgentCycle = System.currentTimeMillis();
         TeammateAgent teammate = teammates.get(msg.ID);
         
-        teammate.setInRange(true);
-        teammate.setInDirectRange(msg.directComm);
-        teammate.setX(msg.x);
-        teammate.setY(msg.y);
-        teammate.setOccupancyGrid(msg.occGrid);
-        teammate.setTimeLastCentralCommand(msg.timeLastCentralCommand);
-        teammate.setPathLength(msg.pathLength);
-        teammate.setState(msg.state);
-        teammate.setDistanceToBase(msg.distToBase);
-        teammate.setSpeed(msg.speed);
-        teammate.lastContactAreaKnown = msg.timeLastCentralCommand;
-        teammate.relayID = msg.relayID;
-        teammate.setChildRendezvous(msg.childRendezvous);
-        teammate.setParentRendezvous(msg.parentRendezvous);
-        teammate.setFrontierCentre(msg.frontierCentre);
-        //System.out.println(toString() + "Communicating...");
-        if(teammate.ID == child && teammate.ID != Constants.BASE_STATION_TEAMMATE_ID) {
-            this.childRendezvous = msg.parentRendezvous;
-            this.childBackupRendezvous = msg.parentBackupRendezvous;
-            this.missionComplete = msg.missionComplete;
-        }
+        msg.receiveMessage(this, teammate);
         
-        teammate.setTimeSinceLastComm(0);
         boolean isBaseStation = false;
         if ((teammate.getRobotNumber() == Constants.BASE_STATION_TEAMMATE_ID) || 
                 (this.getRobotNumber() == Constants.BASE_STATION_TEAMMATE_ID))
             isBaseStation = true;
-                
-        System.out.println(this + "simulateCommunication with " + teammate + " setting variables took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
-        realtimeStartAgentCycle = System.currentTimeMillis();
+        
         //merge the occupancy grids, and add affected cells to dirty cell list to be repainted in the GUI
         dirtyCells.addAll(
-                occGrid.mergeGrid(teammate.getOccupancyGrid(), isBaseStation));        
-        
-        System.out.println(this + "simulateCommunication with " + teammate + " mergeGrid took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
-        realtimeStartAgentCycle = System.currentTimeMillis();
-        //Merge bad frontier information
-        for (Frontier badFrontier: msg.badFrontiers) {
-            if (!this.isBadFrontier(badFrontier))
-                this.addBadFrontier(badFrontier);
-        }
+                occGrid.mergeGrid(teammate.getOccupancyGrid(), isBaseStation));
         
         if ((simConfig != null) && (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)
                 && (simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.UtilReturn))
             updateAreaRelayed(teammate);
-        if(teammate.getTimeLastCentralCommand() < timeLastCentralCommand)
-            timeLastCentralCommand = teammate.getTimeLastCentralCommand();
-        if (teammate.lastContactAreaKnown > lastContactAreaKnown)
-            lastContactAreaKnown = teammate.lastContactAreaKnown;
-        needUpdatingAreaKnown = true;
         
-        double rateOfInfoGatheringBelief = msg.maxRateOfInfoGatheringBelief;
-        if (rateOfInfoGatheringBelief > maxRateOfInfoGatheringBelief)
-            maxRateOfInfoGatheringBelief = rateOfInfoGatheringBelief;
-        System.out.println(this + "simulateCommunication with " + teammate + " misc took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
+        needUpdatingAreaKnown = true;
     }
     
     public boolean isCommunicating() {
@@ -1214,8 +1087,6 @@ public class RealAgent extends BasicAgent implements Agent {
         //processRelayMarks();
         //System.out.println("Complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
-    
-    
 // </editor-fold>     
 
 }

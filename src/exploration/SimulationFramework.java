@@ -31,6 +31,7 @@
  */
 package exploration;
 
+import exploration.rendezvous.Rendezvous;
 import agents.*;
 import agents.BasicAgent.ExploreState;
 import environment.*;
@@ -152,16 +153,10 @@ public class SimulationFramework implements ActionListener {
         // Create ComStation
         agent[0] = new ComStation(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(1));
         teammate[0] = new TeammateAgent(robotTeamConfig.getRobotTeam().get(1));
-        agent[0].setChild(1);
-        agent[0].setState(RealAgent.ExploreState.GetInfoFromChild);
-
+        
         for(int i=1; i<numRobots; i++) {
             agent[i] = new RealAgent(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(i+1));
             agentRange[i] = null;
-            agent[i].setChildRendezvous(new RVLocation(agent[0].getLocation()));
-            agent[i].setParentRendezvous(new RVLocation(agent[0].getLocation()));
-            agent[i].setState(RealAgent.ExploreState.Initial);
-            
             teammate[i] = new TeammateAgent(robotTeamConfig.getRobotTeam().get(i+1));
         }
         
@@ -225,9 +220,9 @@ public class SimulationFramework implements ActionListener {
                                 agent[i].setStateTimer(0);
                                 agent[i].addDirtyCells(agent[i].getPath().getAllPathPixels());
                                 //System.out.println("\nSecondary switch: " + agent[i].getName() + " and " + agent[j].getName() + "\n");
-                                Path path = agent[i].calculatePath(agent[i].getLocation(), agent[i].getChildRendezvous().getParentLocation());
+                                Path path = agent[i].calculatePath(agent[i].getLocation(), agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
                                 agent[i].setPath(path);
-                                agent[i].setCurrentGoal(agent[i].getChildRendezvous().getParentLocation());
+                                agent[i].setCurrentGoal(agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
                         }
             //System.out.println(this.toString() + "Second switch roles check took " + (System.currentTimeMillis()-timer) + "ms.\n");
 
@@ -1320,14 +1315,14 @@ public class SimulationFramework implements ActionListener {
         agent2.setFrontiers(tempFrontiers);
         
         // exchange childRV
-        RVLocation tempChildRV = agent1.getChildRendezvous();
-        agent1.setChildRendezvous(agent2.getChildRendezvous());
-        agent2.setChildRendezvous(tempChildRV);
+        Rendezvous tempChildRV = agent1.getRendezvousAgentData().getChildRendezvous();
+        agent1.getRendezvousAgentData().setChildRendezvous(agent2.getRendezvousAgentData().getChildRendezvous());
+        agent2.getRendezvousAgentData().setChildRendezvous(tempChildRV);
 
         // exchange parentRV
-        RVLocation tempParentRV = agent1.getParentRendezvous();
-        agent1.setParentRendezvous(agent2.getParentRendezvous());
-        agent2.setParentRendezvous(tempParentRV);
+        Rendezvous tempParentRV = agent1.getRendezvousAgentData().getParentRendezvous();
+        agent1.getRendezvousAgentData().setParentRendezvous(agent2.getRendezvousAgentData().getParentRendezvous());
+        agent2.getRendezvousAgentData().setParentRendezvous(tempParentRV);
 
         // exchange exploreState
         ExploreState tempExploreState = agent1.getState();
@@ -1376,8 +1371,8 @@ public class SimulationFramework implements ActionListener {
         RealAgent agent1 = agent[first];
         RealAgent agent2 = agent[second];
         
-        if(agent1.getTimeSinceLastRoleSwitch() < 4 ||
-           agent2.getTimeSinceLastRoleSwitch() < 4)
+        if(agent1.getRendezvousAgentData().getTimeSinceLastRoleSwitch() < 4 ||
+           agent2.getRendezvousAgentData().getTimeSinceLastRoleSwitch() < 4)
             return false;
 
         // Specific scenario which leads to oscillation must be avoided
@@ -1427,18 +1422,18 @@ public class SimulationFramework implements ActionListener {
                     if(agent1.isExplorer() && agent1.getState() == ExploreState.Explore &&
                        agent2.isExplorer() && agent2.getState() == ExploreState.Explore) {
 
-                        Path rv1ToCS = agent1.calculatePath(agent1.getParentRendezvous().getParentLocation(), 
+                        Path rv1ToCS = agent1.calculatePath(agent1.getRendezvousAgentData().getParentRendezvous().getParentLocation(), 
                                 agent1.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
-                        Path rv2ToCS = agent2.calculatePath(agent2.getParentRendezvous().getParentLocation(), 
+                        Path rv2ToCS = agent2.calculatePath(agent2.getRendezvousAgentData().getParentRendezvous().getParentLocation(), 
                                 agent2.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
 
                         Path a1ToRV2 = agent1.calculatePath(agent1.getLocation(), 
-                                agent2.getParentRendezvous().getChildLocation());
+                                agent2.getRendezvousAgentData().getParentRendezvous().getChildLocation());
                         Path a2ToRV1 = agent2.calculatePath(agent2.getLocation(), 
-                                agent1.getParentRendezvous().getChildLocation());
+                                agent1.getRendezvousAgentData().getParentRendezvous().getChildLocation());
 
-                        double noRoleSwitch = Math.max(  agent1.getTimeUntilRendezvous()+rv1ToCS.getLength(),
-                                                         agent2.getTimeUntilRendezvous()+rv2ToCS.getLength());
+                        double noRoleSwitch = Math.max(  agent1.getRendezvousAgentData().getTimeUntilRendezvous()+rv1ToCS.getLength(),
+                                                         agent2.getRendezvousAgentData().getTimeUntilRendezvous()+rv2ToCS.getLength());
                         double yesRoleSwitch = Math.min( a1ToRV2.getLength() + rv2ToCS.getLength(),
                                                          a2ToRV1.getLength() + rv1ToCS.getLength());
 
@@ -1460,8 +1455,8 @@ public class SimulationFramework implements ActionListener {
 
             // If we reach this point, we want to switch roles.
             switchRoles(agent1, agent2, path_a1g2, path_a2g1);
-            agent1.setTimeSinceLastRoleSwitch(0);
-            agent2.setTimeSinceLastRoleSwitch(0);
+            agent1.getRendezvousAgentData().setTimeSinceLastRoleSwitch(0);
+            agent2.getRendezvousAgentData().setTimeSinceLastRoleSwitch(0);
             return true;
         }
         catch(NullPointerException e) {

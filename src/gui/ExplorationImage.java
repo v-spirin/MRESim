@@ -74,6 +74,14 @@ public class ExplorationImage {
         
         resetImage();
     }
+    
+    public int getWidth() {
+        return width;
+    }
+    
+    public int getHeight() {
+        return height;
+    }
 
     public void setPixel(int row, int column, int color) {
         if ((row < 0) || (column < 0)) return;
@@ -147,15 +155,8 @@ public class ExplorationImage {
                 if(agent.getOccupancyGrid().locationExists(i,j))
                     agent.getDirtyCells().add(new Point(i,j));
         
-        // Erase old skeleton
-        for(Point p: agent.getSkeleton())
-            agent.getDirtyCells().add(p);
-        
-        // Erase old RV points
-        for(Point rv: agent.getRVPoints()) 
-            for(int i=Math.max(rv.x-4,0); i<=Math.min(rv.x+4,width-1); i++)
-                for(int j=Math.max(rv.y-4,0); j<=Math.min(rv.y+4,height-1); j++)
-                    agent.getDirtyCells().add(new Point(i,j));
+        agent.getDirtyCells().addAll(
+                agent.getRendezvousStrategy().getRendezvousDisplayData().getDirtyCells(this, agent));
     }
     
     private void addDirtyCommRangeCells(RealAgent agent) {
@@ -328,9 +329,9 @@ public class ExplorationImage {
         for(int i=0; i<agents.length; i++) {
 
             //Draw skeleton
-            if(agentSettings[i].showSkeleton)
-                //drawSkeleton(agents[i]);
-                drawKeyAreas(agents[i].getTopologicalMap());
+            if(agentSettings[i].showRVCandidatePointInfo)
+                drawRVCandidatePointInfo(agents[i]);
+                //(agents[i].getTopologicalMap());
             //Update agents
             if(agentSettings[i].showAgent)
                 updateAgent(agents[i]);
@@ -592,16 +593,8 @@ public class ExplorationImage {
         }
     }
 
-    public void drawSkeleton(RealAgent agent) {
-        try{
-            for(Point p: agent.getSkeleton())
-                setPixel(p.x, p.y, Constants.MapColor.skeleton());
-            
-            for(Point p: agent.getRVPoints())
-                drawPoint(p.x, p.y, Constants.MapColor.rvPoints());
-        }
-        catch(java.lang.NullPointerException e) {
-        }
+    public void drawRVCandidatePointInfo(RealAgent agent) {
+        agent.getRendezvousStrategy().getRendezvousDisplayData().drawCandidatePointInfo(this);
     }
     
     public void drawKeyAreas(TopologicalMap tMap)
@@ -644,30 +637,7 @@ public class ExplorationImage {
     }
     
     public void drawRendezvous(RealAgent agent) {    
-        int x,y;
-        // Draw Child RV
-        try{
-            x = (int)agent.getChildRendezvous().getParentLocation().getX();
-            y = (int)agent.getChildRendezvous().getParentLocation().getY();
-            drawPoint(x, y, Constants.MapColor.childRV());
-            for(int i=Math.max(0,x-4); i<=Math.min(x+4,width-1); i++)
-                for(int j=Math.max(0,y-4); j<=Math.min(y+4,height-1); j++)
-                    agent.getDirtyCells().add(new Point(i,j));
-        }
-        catch(java.lang.NullPointerException e) {
-        }
-        
-        // Draw Parent RV
-        try{
-            x = (int)agent.getParentRendezvous().getChildLocation().getX();
-            y = (int)agent.getParentRendezvous().getChildLocation().getY();
-            drawPoint(x, y, Constants.MapColor.parentRV());
-            for(int i=Math.max(0,x-4); i<=Math.min(x+4,width-1); i++)
-                for(int j=Math.max(0,y-4); j<=Math.min(y+4,height-1); j++)
-                    agent.getDirtyCells().add(new Point(i,j));
-        }
-        catch(java.lang.NullPointerException e) {
-        }
+        agent.getRendezvousStrategy().getRendezvousDisplayData().drawRendezvousLocation(this, agent);
     }
     
     public void drawWalls(Environment.Status[][] status) {
@@ -793,7 +763,7 @@ public class ExplorationImage {
             setPixel(p.x, p.y, color);
     }
 
-    private void drawPoint(int x, int y, Color c) {
+    public void drawPoint(int x, int y, Color c) {
         Shape innerCircle, outerCircle;
         
         outerCircle = new Ellipse2D.Float(x - 4, y - 4, 8, 8);

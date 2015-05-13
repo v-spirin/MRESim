@@ -40,7 +40,7 @@ public class ShowSettingsAgent {
     public boolean showCommRange;
     public boolean showFrontiers;
     public boolean showPath;
-    public boolean showSkeleton;
+    public boolean showRVCandidatePointInfo;
     public boolean showTopologicalMap;
     public boolean showRendezvous;
     public boolean showFreeSpace;
@@ -56,7 +56,7 @@ public class ShowSettingsAgent {
         showCommRange = false;
         showFrontiers = false;
         showPath = false;
-        showSkeleton = false;
+        showRVCandidatePointInfo = false;
         showTopologicalMap = false;
         showRendezvous = false;
         showFreeSpace = false;

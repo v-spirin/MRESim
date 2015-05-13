@@ -36,7 +36,7 @@ import agents.RealAgent;
 import communication.PropModel1;
 import config.Constants;
 import config.RobotConfig;
-import exploration.RVLocation;
+import exploration.rendezvous.Rendezvous;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.Rectangle;
@@ -299,8 +299,8 @@ public class TopologicalMap {
         secondKeyPointsBorder = Skeleton.findSecondBorderRVPoints(keyPointsBorder, agent, goal);
     }
     
-    public RVLocation findNearestBorderKeyPoint(Point otherPoint, RealAgent agent) {
-        RVLocation result = new RVLocation(otherPoint);
+    public Rendezvous findNearestBorderKeyPoint(Point otherPoint, RealAgent agent) {
+        Rendezvous result = new Rendezvous(otherPoint);
         
         double minDistance = 10000;
         int minElement = -1;
@@ -403,7 +403,7 @@ public class TopologicalMap {
             //</editor-fold>
             
             //<editor-fold defaultstate="collapsed" desc="let's find the point, where RV will actually communicate with explorer">
-            Point oldRV = agent.getParentRendezvous().getParentLocation();
+            Point oldRV = agent.getRendezvousAgentData().getParentRendezvous().getParentLocation();
             Point oldComm = oldRV;
             
             /*commPoly = PropModel1.getRangeForRV(occGrid,
@@ -453,8 +453,8 @@ public class TopologicalMap {
             
             if (!Relay2Base.found || !Base2OldRV.found || !Base2NewRV.found)
             {
-                result.setChildLocation(agent.getParentRendezvous().getChildLocation());
-                result.setParentLocation(agent.getParentRendezvous().getParentLocation());
+                result.setChildLocation(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+                result.setParentLocation(agent.getRendezvousAgentData().getParentRendezvous().getParentLocation());
                 System.out.println(agent.toString() + " using conventional RV point !!!!! Relay1Base.found is " + Relay2Base.found + " Base2OldRV.found is " + Base2OldRV.found + " Base2NewRV.found is " + Base2NewRV.found);
                 System.out.println(agent.toString() + " baseComm: " + baseComm + ", oldComm: " + oldComm);
                 return result;
@@ -475,14 +475,14 @@ public class TopologicalMap {
             if (frontierCentre != null)
             {                
                 Path Explorer2Frontier = agent.calculatePath(agent.getLocation(), frontierCentre);
-                Path Front2OldRV = agent.calculatePath(frontierCentre, agent.getParentRendezvous().getChildLocation());
+                Path Front2OldRV = agent.calculatePath(frontierCentre, agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
                 Path Front2NewRV = agent.calculatePath(frontierCentre, result.getChildLocation());
                 
                 if (!Explorer2Frontier.found || !Front2NewRV.found || !Front2NewRV.found)
                 {
                     System.out.println(agent.toString() + " using conventional RV point !!!!! Explorer2Frontier.found is " + Explorer2Frontier.found + " Front2NewRV.found is " + Front2NewRV.found + " Front2NewRV.found is " + Front2NewRV.found);
-                    result.setChildLocation(agent.getParentRendezvous().getChildLocation());
-                    result.setParentLocation(agent.getParentRendezvous().getParentLocation());
+                    result.setChildLocation(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+                    result.setParentLocation(agent.getRendezvousAgentData().getParentRendezvous().getParentLocation());
                     return result;
                 }
                 
@@ -493,8 +493,8 @@ public class TopologicalMap {
                 System.out.println(agent.toString() + " frontierCentre: " + frontierCentre + ", agentLocation: " + agent.getLocation() + ", Exp2Front: " + Explorer2Frontier.getLength() + ", Front2OldRV: " + Front2OldRV.getLength() + ", Front2NewRV: " + Front2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew + ", minExploreTime = " + Constants.FRONTIER_MIN_EXPLORE_TIME);
             } else
             {
-                result.setChildLocation(agent.getParentRendezvous().getChildLocation());
-                result.setParentLocation(agent.getParentRendezvous().getParentLocation());
+                result.setChildLocation(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+                result.setParentLocation(agent.getRendezvousAgentData().getParentRendezvous().getParentLocation());
                 System.out.println(agent.toString() + " using conventional RV point !!!!! frontierCenter is null");
                 return result;
                 //explorerPathLengthOld = agent.calculatePath(agent.getLocation(), agent.getParentRendezvous().getChildLocation()).getLength();
@@ -509,8 +509,8 @@ public class TopologicalMap {
             {
                 System.out.println(agent.toString() + " using conventional RV point");
                 System.out.println(agent.toString() + " overallTimeNew: " + overallTimeNew + ", overallTimeOld: " + overallTimeOld + ", relay2Base: " + Relay2Base.getLength() + ", Base2OldRV: " + Base2OldRV.getLength() + ", Base2NewRV: " + Base2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew);
-                result.setChildLocation(agent.getParentRendezvous().getChildLocation());
-                result.setParentLocation(agent.getParentRendezvous().getParentLocation());
+                result.setChildLocation(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+                result.setParentLocation(agent.getRendezvousAgentData().getParentRendezvous().getParentLocation());
             } else
             {
                 System.out.println(agent.toString() + " is meeting the relay through the wall!!");

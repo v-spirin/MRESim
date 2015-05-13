@@ -45,7 +45,9 @@ public class ComStation extends RealAgent implements Agent {
 
 
     public ComStation(int envWidth, int envHeight, RobotConfig robot) {
-        super(envWidth, envHeight, robot);      
+        super(envWidth, envHeight, robot);
+        this.setChild(1);
+        this.setState(RealAgent.ExploreState.GetInfoFromChild);
     }
 // </editor-fold>   
 

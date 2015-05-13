@@ -33,17 +33,20 @@ package communication;
 
 import agents.BasicAgent.ExploreState;
 import agents.RealAgent;
+import agents.TeammateAgent;
+import config.Constants;
 import environment.Frontier;
 import environment.OccupancyGrid;
-import exploration.RVLocation;
 import java.awt.Point;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 /**
  *
  * @author julh
  */
-public class DataMessage {
+public class DataMessage implements IDataMessage {
     public int ID;
     public int x;
     public int y;
@@ -51,10 +54,6 @@ public class DataMessage {
     public int timeLastCentralCommand;
     public int lastContactAreaKnown;
     public double pathLength;
-    public RVLocation parentRendezvous;
-    public RVLocation childRendezvous;
-    public RVLocation parentBackupRendezvous;
-    public RVLocation childBackupRendezvous;
     public boolean missionComplete;
     public boolean directComm;
     public ExploreState state;
@@ -64,6 +63,8 @@ public class DataMessage {
     public double maxRateOfInfoGatheringBelief;
     public Point frontierCentre;
     public Set<Frontier> badFrontiers;
+    //TODO: the above need to be encapsulated into ...DataMessage classes by group, and made final, like below
+    public final List<IDataMessage> messages;
     
     public DataMessage(RealAgent agent, int direct) {
         ID = agent.getID();
@@ -76,19 +77,10 @@ public class DataMessage {
         if(agent.getPath() != null)
             pathLength = agent.getPath().getLength();
         else
-            pathLength = 0;
-        if (agent.getParentRendezvous() != null)
-            parentRendezvous = agent.getParentRendezvous().copy();
-        if (agent.getChildRendezvous() != null)
-            childRendezvous = agent.getChildRendezvous().copy();
-        if (agent.getParentBackupRendezvous() != null)
-            parentBackupRendezvous = agent.getParentBackupRendezvous().copy();
-        if (agent.getChildBackupRendezvous() != null)
-            childBackupRendezvous = agent.getChildBackupRendezvous().copy();
+            pathLength = 0;        
         missionComplete = agent.isMissionComplete();
         state = agent.getState();
-        if(direct==1) directComm = true;
-        else directComm = false;
+        directComm = (direct==1);
         distToBase = agent.distanceToBase();
         speed = agent.getSpeed();
         relayID = agent.getID();
@@ -99,6 +91,50 @@ public class DataMessage {
             frontierCentre = new Point(agent.getLastFrontier().getClosestPoint(agent.getLocation(), agent.getOccupancyGrid()));
         else
             frontierCentre = new Point(agent.getLocation());
+        
+        messages = new LinkedList<IDataMessage>();
+        RendezvousDataMessage rvDataMessage = new RendezvousDataMessage(agent.getRendezvousAgentData());
+        messages.add(rvDataMessage);
+    }
+
+    public void receiveMessage(RealAgent agent, TeammateAgent teammate) {
+        teammate.setInRange(true);
+        teammate.setInDirectRange(directComm);
+        teammate.setX(x);
+        teammate.setY(y);
+        teammate.setOccupancyGrid(occGrid);
+        teammate.setTimeLastCentralCommand(timeLastCentralCommand);
+        teammate.setPathLength(pathLength);
+        teammate.setState(state);
+        teammate.setDistanceToBase(distToBase);
+        teammate.setSpeed(speed);
+        teammate.setLastContactAreaKnown(lastContactAreaKnown);
+        teammate.setRelayID(relayID);
+        teammate.setFrontierCentre(frontierCentre);
+        if(teammate.getID() == agent.getChild() && teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
+            agent.setMissionComplete(missionComplete);
+        }
+        teammate.setTimeSinceLastComm(0);
+        
+        //Merge bad frontier information
+        for (Frontier badFrontier: badFrontiers) {
+            if (!agent.isBadFrontier(badFrontier))
+                agent.addBadFrontier(badFrontier);
+        }
+        
+        if(teammate.getTimeLastCentralCommand() < timeLastCentralCommand)
+            timeLastCentralCommand = teammate.getTimeLastCentralCommand();
+        if (teammate.getLastContactAreaKnown() > agent.getLastContactAreaKnown())
+            agent.setLastContactAreaKnown(teammate.getLastContactAreaKnown());
+        
+        double rateOfInfoGatheringBelief = maxRateOfInfoGatheringBelief;
+        if (rateOfInfoGatheringBelief > agent.getMaxRateOfInfoGatheringBelief())
+            agent.setMaxRateOfInfoGatheringBelief(rateOfInfoGatheringBelief);
+        
+        //Process other messages
+        for (IDataMessage msg: messages) {
+            msg.receiveMessage(agent, teammate);
+        }
     }
 
 }

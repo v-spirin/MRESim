@@ -35,7 +35,7 @@ package environment;
 import agents.RealAgent;
 import config.Constants;
 import config.SimulatorConfig;
-import exploration.RVLocation;
+import exploration.rendezvous.Rendezvous;
 import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -787,65 +787,13 @@ public class Skeleton {
         for (Point rvPoint : borderRVPoints)
         {
             //System.out.println("Processing: " + counter + " / " + borderRVPoints.size());
-            secondRVPoints.add(RVLocation.findSecondRVPoint(agent, rvPoint, goal, Constants.MIN_RV_THROUGH_WALL_ACCEPT_RATIO));
+            secondRVPoints.add(Rendezvous.findSecondRVPoint(agent, rvPoint, goal, Constants.MIN_RV_THROUGH_WALL_ACCEPT_RATIO));
             counter++;
         }
         System.out.println("Checked all candidate points, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         return secondRVPoints;
     }
     
-    public static LinkedList<Point> findRendezvousPoints(int[][] skeleton, OccupancyGrid occGrid) {
-        LinkedList<Point> rvPts = new LinkedList<Point>();
-        boolean add;
-        
-        // Pass 1:  find key points (junctions)
-        for(int i=2; i<skeleton.length-2; i++)
-            for(int j=2; j<skeleton[0].length-2; j++)
-                if(numNonzeroNeighbors(skeleton, i, j) >= 3 && neighborTraversal(skeleton, i, j) >= 3)
-                    rvPts.add(new Point(i,j));
-
-        
-        // Pass 2:  fill in gaps
-        LinkedList<Point> pts = gridToList(skeleton);
-        boolean addToRVlist;
-        for(Point p: pts) {
-            // First check if it's an endpoint
-            if(numNonzeroNeighbors(skeleton, p.x, p.y) < 2) {
-                rvPts.add(p);
-                continue;
-            }
-                    
-            // Second check if it's far away from all other rv points
-            addToRVlist = true;
-            for(Point q: rvPts)
-                if(p.distance(q) < 50) {
-                    addToRVlist = false;
-                    break;
-                }
-            if(addToRVlist)
-                rvPts.add(p);
-        }
-
-        Point p;
-        // Pass 3:  prune points too close to another rv point or too close to an obstacle
-        for(int i=rvPts.size()-1; i>=0; i--) {
-            p = rvPts.get(i);
-            if(occGrid.obstacleWithinDistance(p.x, p.y, Constants.WALL_DISTANCE)) {
-                rvPts.remove(i);
-                continue;
-            }
-            for(int j=rvPts.size()-1; j>=0; j--)
-                if(p.distance(rvPts.get(j)) < 20 && i!=j) {
-                    rvPts.remove(i);
-                    break;
-                }
-        }
-
-        //System.out.println("---  Removed " + counter + "rvPts that were too close");
-
-        return rvPts;
-    }
-
     public static void writeToFile(int[][] grid) {
         try{
             PrintWriter outFile = new PrintWriter(new FileWriter("skeleton1.txt"));

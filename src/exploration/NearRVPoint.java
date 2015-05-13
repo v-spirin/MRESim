@@ -42,7 +42,6 @@ import java.util.LinkedList;
     public class NearRVPoint extends Point implements Comparable<NearRVPoint> {
         public double distanceToFrontier;
         public double distanceToParent = java.lang.Double.MAX_VALUE;
-        public int degree;
         public double utility;
         public NearRVPoint parentPoint;
         public CommLink commLinkClosestToBase;
@@ -53,16 +52,13 @@ import java.util.LinkedList;
             this.x = newX;
             this.y = newY;
             this.distanceToFrontier = 0;
-            this.degree = 1;
             this.utility = 0;
         }
         
-        public NearRVPoint (int newX, int newY, double d) {
+        public NearRVPoint (int newX, int newY, double utility) {
             this.x = newX;
             this.y = newY;
-            this.distanceToFrontier = d;
-            this.degree = 1;
-            this.utility = calcUtility();
+            this.utility = utility;
         }
         
         private double calcUtility() {
@@ -83,16 +79,6 @@ import java.util.LinkedList;
             this.distanceToFrontier = d;
             this.utility = calcUtility();
         }
-
-        public NearRVPoint (int newX, int newY, double d, int dg) {
-            this.x = newX;
-            this.y = newY;
-            this.distanceToFrontier = d;
-            this.degree = dg;
-            this.utility = Math.pow(dg, 2) * calcUtility();
-            //System.out.println(Constants.INDENT + "Point at " + x + "," + y + " has utility " + (int)utility);
-        }
-
         
         public int compareTo(NearRVPoint other) {
             if(other.utility > this.utility)

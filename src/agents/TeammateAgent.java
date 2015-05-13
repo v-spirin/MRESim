@@ -35,7 +35,8 @@ import config.Constants;
 import config.RobotConfig;
 import config.RobotConfig.roletype;
 import environment.OccupancyGrid;
-import exploration.RVLocation;
+import exploration.rendezvous.Rendezvous;
+import exploration.rendezvous.RendezvousAgentData;
 import java.awt.Point;
 
 /**
@@ -53,12 +54,14 @@ public class TeammateAgent extends BasicAgent implements Agent {
 
     private int timeSinceLastComm;
     OccupancyGrid occGrid;
-    private RVLocation childRendezvous;
-    private RVLocation parentRendezvous;
+    private Rendezvous childRendezvous;
+    private Rendezvous parentRendezvous;
     private Point frontierCentre;
     private double pathLength;
     int relayID;
     public int newInfo;
+    
+    private RendezvousAgentData rendezvousAgentData;
 
     public TeammateAgent(RobotConfig robot) {
         super(robot.getRobotNumber(), 
@@ -78,6 +81,7 @@ public class TeammateAgent extends BasicAgent implements Agent {
         inRange = false;
         timeSinceLastComm = 0;
         pathLength = 0;
+        rendezvousAgentData = new RendezvousAgentData(this);
     }
     
     public TeammateAgent(TeammateAgent toCopy) {
@@ -98,6 +102,7 @@ public class TeammateAgent extends BasicAgent implements Agent {
         this.parentRendezvous = toCopy.parentRendezvous;
         this.timeLastCentralCommand = toCopy.timeLastCentralCommand;
         this.lastContactAreaKnown = toCopy.lastContactAreaKnown;
+        this.rendezvousAgentData = new RendezvousAgentData(toCopy.rendezvousAgentData);
 
     }
 
@@ -157,24 +162,6 @@ public class TeammateAgent extends BasicAgent implements Agent {
         role = roletype.Relay;
     }
     
-    public void setParentRendezvous(RVLocation parentRendezvous) {
-        this.parentRendezvous = parentRendezvous;
-    }
-    
-    public void setChildRendezvous(RVLocation childRendezvous) {
-        this.childRendezvous = childRendezvous;
-    }
-    
-    public RVLocation getParentRendezvous()
-    {
-        return parentRendezvous;
-    }
-    
-    public RVLocation getChildRendezvous()
-    {
-        return childRendezvous;
-    }
-    
     public Point getFrontierCentre() {
         return frontierCentre;
     }
@@ -189,5 +176,25 @@ public class TeammateAgent extends BasicAgent implements Agent {
     
     public void setPathLength(double lgth) {
         pathLength = lgth;
+    }
+    
+    public RendezvousAgentData getRendezvousAgentData() {
+        return rendezvousAgentData;
+    }
+    
+    public void setLastContactAreaKnown(int lastContactArea) {
+        lastContactAreaKnown = lastContactArea;
+    }
+    
+    public int getLastContactAreaKnown() {
+        return lastContactAreaKnown;
+    }
+    
+    public void setRelayID(int relayID) {
+        this.relayID = relayID;
+    }
+    
+    public int getID() {
+        return ID;
     }
 }

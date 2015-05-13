@@ -78,6 +78,9 @@ public class Constants {
     // Replan every ... steps
     public static final int REPLAN_INTERVAL = 15;
     
+    // Min time between RV replan
+    public static final int RV_REPLAN_INTERVAL = REPLAN_INTERVAL;
+    
     // Difference in milliseconds between increments in simulation rate slider bar
     public static final int TIME_INCREMENT = 111;
     

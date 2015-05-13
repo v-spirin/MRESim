@@ -263,7 +263,7 @@ public class MainGUI extends javax.swing.JFrame {
                 showSettingsAgents[i].showPath = getRobotPanel(i).showPath();
                 showSettingsAgents[i].showRendezvous = getRobotPanel(i).showRendezvous();
                 showSettingsAgents[i].showSafeSpace = getRobotPanel(i).showSafeSpace();
-                showSettingsAgents[i].showSkeleton = getRobotPanel(i).showSkeleton();
+                showSettingsAgents[i].showRVCandidatePointInfo = getRobotPanel(i).showSkeleton();
                 showSettingsAgents[i].showBorderSkel = getRobotPanel(i).showBorderSkel();
                 showSettingsAgents[i].showRVWalls = getRobotPanel(i).showRVWalls();
            }

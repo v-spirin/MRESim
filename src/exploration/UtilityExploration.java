@@ -44,7 +44,7 @@ import path.Path;
 
 /**
  *
- * @author julh
+ * @author Victor
  */
 
 public class UtilityExploration {
@@ -100,7 +100,8 @@ public class UtilityExploration {
      
         // <editor-fold defaultstate="collapsed" desc="Increment state timers">
         agent.setStateTimer(agent.getStateTimer() + 1);
-        agent.setTimeSinceLastRoleSwitch(agent.getTimeSinceLastRoleSwitch() + 1);
+        //TODO: Should this be in UtilityExploration?
+        agent.getRendezvousAgentData().setTimeSinceLastRoleSwitch(agent.getRendezvousAgentData().getTimeSinceLastRoleSwitch() + 1);
         //</editor-fold>
         System.out.println(agent.toString() + " takeStep " + agent.getState() + ", took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         return nextStep;
@@ -162,11 +163,11 @@ public class UtilityExploration {
         //make sure we replan, if we just entered Explore state
         if (agent.getStateTimer() == 0)
             agent.timeSinceLastPlan = Constants.REPLAN_INTERVAL + 1;
-        nextStep = FrontierExploration.takeStep(agent, timeElapsed, SimulatorConfig.frontiertype.ReturnWhenComplete, simConfig);
+        nextStep = FrontierExploration.takeStep(agent, timeElapsed, SimulatorConfig.frontiertype.ReturnWhenComplete);
         
         //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
         if ((agent.getFrontiers().isEmpty() || (agent.getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
-            agent.setMissionComplete();
+            agent.setMissionComplete(true);
             Point baseLocation = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
             Path path = agent.calculatePath(agent.getLocation(), baseLocation);
