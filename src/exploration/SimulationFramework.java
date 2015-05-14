@@ -193,13 +193,13 @@ public class SimulationFramework implements ActionListener {
             for (int i = 0; i < numRobots; i++)
                 agent[i].setGoalArea(env.getTotalFreeSpace());
         }
-        
+        detectCommunication();
         agentSteps();               // move agents, simulate sensor data
         System.out.println(this.toString() + "agentSteps took " + (System.currentTimeMillis()-realtimeStartCycle) + "ms.\n");
         //if(timeElapsed % 7 == 0 || timeElapsed % 7 == 1) {
-        long timer = System.currentTimeMillis();
+        long localTimer = System.currentTimeMillis();
         simulateCommunication();    // simulate communication
-        System.out.println(this.toString() + "simulateCommunication took " + (System.currentTimeMillis()-timer) + "ms.\n");
+        System.out.println(this.toString() + "simulateCommunication took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
         //timer = System.currentTimeMillis();
         if ((simConfig != null) && (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RoleBasedExploration)
                 && (simConfig.roleSwitchAllowed()))
@@ -230,7 +230,7 @@ public class SimulationFramework implements ActionListener {
         //timer = System.currentTimeMillis();   
         simulateDebris();           // simulate dynamic environment
         //System.out.println(this.toString() + "simulateDebris took " + (System.currentTimeMillis()-timer) + "ms.\n");
-        timer = System.currentTimeMillis();
+        localTimer = System.currentTimeMillis();
         if (timeElapsed % Constants.UPDATE_AGENT_KNOWLEDGE_INTERVAL == 0)
         {
             updateAgentKnowledgeData();
@@ -238,13 +238,13 @@ public class SimulationFramework implements ActionListener {
         updateGlobalData();         // update data
         //System.out.println(this.toString() + "updateGlobalData took " + (System.currentTimeMillis()-realtimeStartCycle) + "ms.\n");
        
-        System.out.println(this.toString() + "updateGlobalData took " + (System.currentTimeMillis()-timer) + "ms.\n");
+        System.out.println(this.toString() + "updateGlobalData took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
         //timer = System.currentTimeMillis();
         
         //System.out.println(this.toString() + "updateAgentKnowledgeData took " + (System.currentTimeMillis()-timer) + "ms.\n");
-        timer = System.currentTimeMillis();
+        localTimer = System.currentTimeMillis();
         updateGUI();                // update GUI
-        System.out.println(this.toString() + "updateGUI took " + (System.currentTimeMillis()-timer) + "ms.\n");
+        System.out.println(this.toString() + "updateGUI took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
         //timer = System.currentTimeMillis();
         logging();                  // perform logging as required
         //if ((timeElapsed % 10) == 0) verifyNoInfoGotLost(); //verify relaying works fine
@@ -1122,7 +1122,7 @@ public class SimulationFramework implements ActionListener {
         //long realtimeStart2;
         //System.out.println(this.toString() + "Simulating communication ... ");
 
-        detectCommunication();
+        
         //System.out.println(Constants.INDENT + "detectCommunication took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
 
         // Exchange data

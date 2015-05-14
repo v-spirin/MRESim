@@ -35,23 +35,14 @@ package exploration;
 import exploration.rendezvous.Rendezvous;
 import agents.BasicAgent;
 import agents.RealAgent;
-import agents.TeammateAgent;
-import communication.CommLink;
-import communication.PropModel1;
 import config.Constants;
-import config.RobotConfig;
 import config.SimulatorConfig;
 import environment.*;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.RendezvousAgentData;
-import exploration.rendezvous.SinglePointRendezvousStrategy;
-import gui.ExplorationImage;
-import gui.ShowSettings.ShowSettingsAgent;
 import java.util.*;
 import java.awt.*;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.util.concurrent.atomic.AtomicReference;
 import path.Path;
 import org.apache.commons.math3.random.SobolSequenceGenerator;
 
@@ -165,11 +156,12 @@ public class RoleBasedExploration {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         RendezvousAgentData parentRvd = agent.getParentTeammate().getRendezvousAgentData();
         boolean haveNewRVDetailsForParent = !rvd.getParentRendezvous().equals(parentRvd.getChildRendezvous());
+        boolean noRVAgreed = (rvd.getParentRendezvous().getTimeMeeting() == Constants.MAX_TIME);
         // <editor-fold defaultstate="collapsed" desc="If parent is in range, and we have been exploring for longer than MIN_TIME_IN_EXPLORE_STATE, give parent info.">
         if (agent.getParentTeammate().isInRange()) {
             if ((agent.getStateTimer() > Constants.MIN_TIME_IN_EXPLORE_STATE) || 
                     // we have a new RV point, and must communicate it to the parent - otherwise the parent will be waiting at the old RV forever!
-                    haveNewRVDetailsForParent) 
+                    haveNewRVDetailsForParent || noRVAgreed) 
             { 
                 agent.setState(RealAgent.ExploreState.GiveParentInfo);
                 agent.setStateTimer(0);
@@ -184,19 +176,27 @@ public class RoleBasedExploration {
                 && (agent.getStateTimer() % Constants.CHECK_INTERVAL_TIME_TO_RV) == (Constants.CHECK_INTERVAL_TIME_TO_RV - 1)) 
         {
             Path pathToParentRendezvous = null; //output parameter
-            if (isDueToReturnToRV(agent, pathToParentRendezvous)) {
-                
+            AtomicReference<Path> outPathRef = new AtomicReference<Path>();
+            if (isDueToReturnToRV(agent, outPathRef)) {
+                pathToParentRendezvous = outPathRef.get();
                 rvStrategy.processExplorerStartsHeadingToRV();
                 
                 if (agent.getPath() != null) {
                     agent.addDirtyCells(agent.getPath().getAllPathPixels());
                 }
                 
-                agent.setPath(pathToParentRendezvous);
-                agent.setState(RealAgent.ExploreState.ReturnToParent);
-                agent.setStateTimer(0);
-                agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
-                return ((Point) agent.getPath().getPoints().remove(0));
+               if ((pathToParentRendezvous == null) || (!pathToParentRendezvous.found) ||
+                       (pathToParentRendezvous.getPoints().isEmpty())) {
+                   //take random step and try again
+                   agent.setStateTimer(Constants.CHECK_INTERVAL_TIME_TO_RV - 2);
+                   return RandomWalk.takeStep(agent);
+               } else {                
+                    agent.setPath(pathToParentRendezvous);
+                    agent.setState(RealAgent.ExploreState.ReturnToParent);
+                    agent.setStateTimer(0);
+                    agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
+                    return ((Point) agent.getPath().getPoints().remove(0));
+               }
             }
             // relay must be waiting for us, we are near rv, have new info - try to comm with relay
             /*else if (((pathToParentRendezvous.getLength() / Constants.DEFAULT_SPEED) + timeElapsed) >= 
@@ -496,7 +496,7 @@ public class RoleBasedExploration {
     public static Point takeStep_GoToChild(RealAgent agent) {      
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="Check if we are in range of child. If yes, GetInfoFromChild">
-        if((agent.getChildTeammate().isInRange()) && !agent.getParentTeammate().isInRange()) {
+        if((agent.getChildTeammate().isInRange()) /*&& !agent.getParentTeammate().isInRange()*/) {
             agent.setState(RealAgent.ExploreState.GetInfoFromChild);
             agent.setStateTimer(0);
             
@@ -658,7 +658,7 @@ public class RoleBasedExploration {
     
 // </editor-fold>  
     
-    private static boolean isDueToReturnToRV(RealAgent agent, Path outPathToParentRendezvous) {
+    private static boolean isDueToReturnToRV(RealAgent agent, AtomicReference<Path> outPathToParentRendezvous) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         System.out.println(agent.toString() + "Checking if it's time to rendezvous ... ");
         Path pathToParentRendezvous = agent.calculatePath(agent.getLocation(), rvd.getParentRendezvous().getChildLocation());
@@ -668,7 +668,7 @@ public class RoleBasedExploration {
 
         // If we are due to meet parent again, return to last agreed rendezvous point
         if (pathToParentRendezvous.found) {
-            outPathToParentRendezvous = pathToParentRendezvous;
+            outPathToParentRendezvous.set(pathToParentRendezvous);
             if (((pathToParentRendezvous.getLength() / Constants.DEFAULT_SPEED) + timeElapsed) >= 
                     agent.getRendezvousAgentData().getParentRendezvous().getTimeMeeting()) {
                 return true;

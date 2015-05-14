@@ -330,7 +330,7 @@ public class ExplorationImage {
 
             //Draw skeleton
             if(agentSettings[i].showRVCandidatePointInfo)
-                drawRVCandidatePointInfo(agents[i]);
+                drawRVSelectionInfo(agents[i]);
                 //(agents[i].getTopologicalMap());
             //Update agents
             if(agentSettings[i].showAgent)
@@ -593,7 +593,7 @@ public class ExplorationImage {
         }
     }
 
-    public void drawRVCandidatePointInfo(RealAgent agent) {
+    public void drawRVSelectionInfo(RealAgent agent) {
         agent.getRendezvousStrategy().getRendezvousDisplayData().drawCandidatePointInfo(this);
     }
     
@@ -761,6 +761,12 @@ public class ExplorationImage {
     private void drawLine(Point start, Point end, Color color) {
         for(Point p : pointsAlongSegment(start, end))
             setPixel(p.x, p.y, color);
+    }
+    
+    public void drawText(String text, int x, int y, Color c) {
+        setG2D();
+        g2D.setPaint(c);
+        g2D.drawString(text, x, y);
     }
 
     public void drawPoint(int x, int y, Color c) {

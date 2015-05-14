@@ -151,12 +151,12 @@ public class LeaderFollower {
 
         // total hack:  for leader-follower, use "parent" value as number of robots between this relay and comstation, including self
         if(agent.getChildTeammate().getLocation().distance(agent.getTeammate(1).getLocation()) <=
-           (agent.getParent() * agent.getCommRange() - 2*Constants.STEP_SIZE - 20)) {
+           (agent.getParent() * agent.getCommRange() - 2*Constants.DEFAULT_SPEED - 20)) {
                 agent.setPath(agent.calculatePath(agent.getLocation(), agent.getChildTeammate().getLocation()));
-                System.out.println("LeaderFollower: my child is still in my allowed range (" + (agent.getParent() * agent.getCommRange() - 2*Constants.STEP_SIZE) + ")");
+                System.out.println("LeaderFollower: my child is still in my allowed range (" + (agent.getParent() * agent.getCommRange() - 2*Constants.DEFAULT_SPEED) + ")");
         }
         else {
-            System.out.println("LeaderFollower: my child is no longer in my allowed range (" + (agent.getParent() * agent.getCommRange() - 2*Constants.STEP_SIZE) + ")");
+            System.out.println("LeaderFollower: my child is no longer in my allowed range (" + (agent.getParent() * agent.getCommRange() - 2*Constants.DEFAULT_SPEED) + ")");
             double cDist = 1000000;
             Point cPoint = new Point(agent.getX(), agent.getY());
             // find closest point within allowed range that is near parent
@@ -165,7 +165,7 @@ public class LeaderFollower {
                     if(agent.getOccupancyGrid().locationExists(i, j) &&
                        //agent.getOccupancyGrid().freeSpaceAt(i, j) &&
                       !agent.getOccupancyGrid().obstacleWithinDistance(i, j, Constants.WALL_DISTANCE) &&
-                       agent.getTeammate(1).getLocation().distance(new Point(i,j)) < agent.getParent() * agent.getCommRange() - 2*Constants.STEP_SIZE &&
+                       agent.getTeammate(1).getLocation().distance(new Point(i,j)) < agent.getParent() * agent.getCommRange() - 2*Constants.DEFAULT_SPEED &&
                        //(new Path(agent, new Point(i,j), agent.getTeammate(1).getLocation())).getLength() < agent.getParent() * agent.getCommRange() - 2*Constants.STEP_SIZE &&
                        agent.getChildTeammate().getLocation().distance(new Point(i,j)) < cDist) {
                             cPoint = new Point(i,j);

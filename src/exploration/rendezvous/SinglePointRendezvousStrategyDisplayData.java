@@ -8,6 +8,7 @@ package exploration.rendezvous;
 import agents.RealAgent;
 import config.Constants;
 import gui.ExplorationImage;
+import java.awt.Color;
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.List;
@@ -53,6 +54,12 @@ public class SinglePointRendezvousStrategyDisplayData implements IRendezvousDisp
                 for(int j=Math.max(rv.y-4,0); j<=Math.min(rv.y+4,image.getHeight()-1); j++)
                    dirtyCells.add(new Point(i,j));
         
+        //Erase text over agents
+        for(int i=agent.getX(); i<=agent.getX() + 100; i++)
+            for(int j=agent.getY() - Constants.AGENT_RADIUS - 25; j<=agent.getY() - Constants.AGENT_RADIUS; j++)
+                if(agent.getOccupancyGrid().locationExists(i,j))
+                    agent.getDirtyCells().add(new Point(i,j));
+        
         return dirtyCells;
     }
 
@@ -79,6 +86,9 @@ public class SinglePointRendezvousStrategyDisplayData implements IRendezvousDisp
             for(int i=Math.max(0,x-4); i<=Math.min(x+4,image.getWidth()-1); i++)
                 for(int j=Math.max(0,y-4); j<=Math.min(y+4,image.getHeight()-1); j++)
                     agent.getDirtyCells().add(new Point(i,j));
+            image.drawText("c:" + rvd.getChildRendezvous().getTimeMeeting() + ":" + rvd.getChildRendezvous().getTimeWait(), 
+                    agent.getLocation().x, agent.getLocation().y - 10, Constants.MapColor.text());
+            
         }
         catch(java.lang.NullPointerException e) {
         }
@@ -91,8 +101,11 @@ public class SinglePointRendezvousStrategyDisplayData implements IRendezvousDisp
             for(int i=Math.max(0,x-4); i<=Math.min(x+4,image.getWidth()-1); i++)
                 for(int j=Math.max(0,y-4); j<=Math.min(y+4,image.getHeight()-1); j++)
                     agent.getDirtyCells().add(new Point(i,j));
+            image.drawText("p:" + rvd.getParentRendezvous().getTimeMeeting() + ":" + rvd.getParentRendezvous().getTimeWait(), 
+                    agent.getLocation().x, agent.getLocation().y - 20, Constants.MapColor.text());
         }
         catch(java.lang.NullPointerException e) {
         }
+        
     }
 }

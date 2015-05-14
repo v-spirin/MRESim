@@ -6,6 +6,7 @@
 package exploration.rendezvous;
 
 import agents.BasicAgent;
+import config.Constants;
 
 /**
  *
@@ -26,7 +27,7 @@ public class RendezvousAgentData {
         parentRendezvous = new Rendezvous(agent.getLocation());
         parentBackupRendezvous = new Rendezvous(agent.getLocation());
         timeUntilRendezvous = 0;
-        timeSinceLastRVCalc = 0;
+        timeSinceLastRVCalc = Constants.MAX_TIME;
         timeSinceLastRoleSwitch = 0;
     }
     
@@ -78,7 +79,9 @@ public class RendezvousAgentData {
     }
     
     public void setChildBackupRendezvous(Rendezvous r) {
-        childBackupRendezvous = r.copy();
+        if (r != null)
+            childBackupRendezvous = r.copy();
+        else childBackupRendezvous = null;
     }
     
     public Rendezvous getParentRendezvous() {
@@ -94,7 +97,9 @@ public class RendezvousAgentData {
     }
     
     public void setParentBackupRendezvous(Rendezvous r) {
-        parentBackupRendezvous = r.copy();
+        if (r != null)
+            parentBackupRendezvous = r.copy();
+        else parentBackupRendezvous = null;
     }
 //</editor-fold>
  
