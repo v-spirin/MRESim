@@ -71,16 +71,19 @@ public class RendezvousAgentData {
     }
     
     public void setChildRendezvous(Rendezvous r) {
+        System.out.println("Setting child RV to " + r);
         childRendezvous = r;
     }
     
-    public Rendezvous getChildBackupRendezvous() {
+    public Rendezvous getChildBackupRendezvous() {        
         return childBackupRendezvous;
     }
     
     public void setChildBackupRendezvous(Rendezvous r) {
-        if (r != null)
+        if (r != null) {
+            System.out.println("Setting child backupRV to " + r);
             childBackupRendezvous = r.copy();
+        }            
         else childBackupRendezvous = null;
     }
     
@@ -89,6 +92,7 @@ public class RendezvousAgentData {
     }
     
     public void setParentRendezvous(Rendezvous r) {
+        System.out.println("Setting parent RV to " + r);
         parentRendezvous = r;
     }
     
@@ -97,8 +101,10 @@ public class RendezvousAgentData {
     }
     
     public void setParentBackupRendezvous(Rendezvous r) {
-        if (r != null)
+        if (r != null) {
+            System.out.println("Setting parent backupRV to " + r);
             parentBackupRendezvous = r.copy();
+        }
         else parentBackupRendezvous = null;
     }
 //</editor-fold>

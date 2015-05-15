@@ -1136,10 +1136,9 @@ public class SimulationFramework implements ActionListener {
                     agent[i].receiveMessage(msgFromSecond);
                     agent[j].receiveMessage(msgFromFirst);
 
-                    //System.out.println(Constants.INDENT + "Communication between " +
-                    //                    agent[i].getName() + " and " +
-                    //                    agent[j].getName() + " took " +
-                    //                    (System.currentTimeMillis() - realtimeStart2) + "ms.");
+                    System.out.println(Constants.INDENT + "Communication between " +
+                                        agent[i].getName() + " and " +
+                                        agent[j].getName());
                     // For periodic return frontier exp
                     if(simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration &&
                        simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.PeriodicReturn &&
@@ -1557,6 +1556,8 @@ public class SimulationFramework implements ActionListener {
         //System.out.print(this.toString() + "Updating GUI ... ");
         
         mainGUI.updateFromData(agent, timeElapsed, pctAreaKnown, avgCycleTime);
+        
+        //if (timeElapsed % 10 == 1)
         updateImage(false); //was false
         
         //System.out.println(this.toString() + "GUI Update complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");

@@ -111,7 +111,7 @@ public class Path {
     public Path(OccupancyGrid agentGrid, TopologicalMap tMap, 
             Point startpoint, Point endpoint, boolean limit) 
     {   
-        //System.out.println("PLANNING PATH FROM " + startpoint + " TO " + endpoint);
+        System.out.println("PLANNING PATH FROM " + startpoint + " TO " + endpoint);
         int [][] areaGrid = tMap.getAreaGrid();
         HashMap<Integer, TopologicalNode> topologicalNodes = tMap.getTopologicalNodes();
         
@@ -131,16 +131,22 @@ public class Path {
                 {
                     // there cannot be an obstacle here, as we are planning a path from this point!
                     agentGrid.setNoObstacleAt(startpoint.x, startpoint.y);
+                    System.out.println("There was an obstacle at startpoint! Aborting.");
+                    return;
                 }
-                //System.out.println("startNode is null: " + startpoint);
+                System.out.println("startNode is null: " + startpoint + ", aborting");
             }
             if (goalNode == null) 
             {
                 if (!agentGrid.obstacleAt(endpoint.x, endpoint.y))
                 {
                     goalNode = topologicalNodes.get(Constants.UNEXPLORED_NODE_ID);
+                } else
+                {
+                    System.out.println("There was an obstacle at goalpoint! Aborting.");
+                    return;
                 }
-                //System.out.println("goalNode is null: " + endpoint);
+                System.out.println("goalNode is null: " + endpoint + ", aborting");
             }
             return;
         }
@@ -198,7 +204,7 @@ public class Path {
         
         if (startNode.getID() == Constants.UNEXPLORED_NODE_ID)
         {
-            //System.out.println("Start point " + startpoint + " in unexplored space!");
+            System.out.println("Start point " + startpoint + " in unexplored space!");
             findNearestExploredNode(agentGrid, areaGrid, startpoint, endpoint, topologicalNodes);
             List<Point> pathToExploredPoints = pathPoints;
             if (pathPoints.size() == 0)
@@ -211,7 +217,7 @@ public class Path {
         }
         if (goalNode.getID() == Constants.UNEXPLORED_NODE_ID)
         {
-            //System.out.println("Goal point " + endpoint + " in unexplored space!");
+            System.out.println("Goal point " + endpoint + " in unexplored space!");
             findNearestExploredNode(agentGrid, areaGrid, endpoint, startpoint, topologicalNodes);
             List<Point> pathToExploredPoints = pathPoints;
             if (pathPoints.size() == 0)
@@ -274,6 +280,19 @@ public class Path {
         }
         Path p1 = new Path(agentGrid, startpoint, (Point)pathNodes.get(1).getPosition().clone(), false, true);
         Path p2 = new Path(agentGrid, (Point)pathNodes.get(pathNodes.size() - 2).getPosition().clone(), endpoint, false, true);
+        
+        if (!p1.found) {
+            System.out.println("Could not find p1! From " + startpoint + " to " + (Point)pathNodes.get(1).getPosition());
+            OutputPathError(agentGrid, startpoint, (Point)pathNodes.get(1).getPosition().clone(), Constants.DEFAULT_PATH_LOG_DIRECTORY);
+        }
+        
+        if (!p2.found) {
+            System.out.println("Could not find p2! From " + (Point)pathNodes.get(pathNodes.size() - 2).getPosition() +
+                    " to " + endpoint);
+            OutputPathError(agentGrid, (Point)pathNodes.get(pathNodes.size() - 2).getPosition().clone(), 
+                    endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
+        }
+        
         pathPoints = new LinkedList<Point>();
         int index = 0;
         if (p0 != null)
@@ -359,6 +378,7 @@ public class Path {
             if (current.equals(goalNode))
             {
                 //came_from.put(goalNode, current);
+                System.out.println("Found topological node path, reconstructing...");
                 reconstructPath(came_from, goalNode);
                 break;
             }

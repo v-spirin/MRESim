@@ -100,6 +100,10 @@ public class ContourTracer {
     }
     
     private static LinkedList <Point> traceContour(OccupancyGrid occGrid, int[][] label, int startX, int startY, direction startDir, int componentIndex) {
+        if (!occGrid.frontierCellAt(startX, startY)) {
+            System.out.println("This cannot happen!");
+        }
+            
         Point currPixel, nextPixel;
         direction searchStart;
         LinkedList<Point> pts = new LinkedList<Point>();

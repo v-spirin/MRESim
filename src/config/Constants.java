@@ -64,10 +64,10 @@ public class Constants {
     public static final int DEFAULT_SPEED = 10;
     
     // Safe distance for each relay's Safe Range, percentage of Free Space Range
-    public static final int SAFE_RANGE = 80;
+    public static final int SAFE_RANGE = 10;
     
     // How thick should the agent mark the obstacles/walls in the OccGrid
-    public static final int WALL_THICKNESS = 3;
+    public static final int WALL_THICKNESS = 3; //was 3
     
     // How often should we calculate area known by all the agents? (Takes around 200ms)
     public static final int RECALC_JOINT_AREA = 10;
@@ -142,7 +142,7 @@ public class Constants {
     public static final int PATH_RECALC_CHILD_INTERVAL = 8;
     
     // How long should we wait at RV, before we make alternative arrangements
-    public static final int WAIT_AT_RV_BEFORE_REPLAN = 20;
+    public static final int WAIT_AT_RV_BEFORE_REPLAN = 60;
     
     // Minimal time an explorer should explore a frontier before delivering the information back
     public static final int FRONTIER_MIN_EXPLORE_TIME = 75;
@@ -165,8 +165,8 @@ public class Constants {
     // Maximum time we're allowed to search for distance by skeleton, in ms
     public static final long MAX_TIME_DISTANCE_BY_SKELETON = 100;
     
-    public static final boolean OUTPUT_PATH_ERROR = false;
-    public static final String DEFAULT_PATH_LOG_DIRECTORY = System.getProperty("user.dir") + "\\patherror\\";
+    public static final boolean OUTPUT_PATH_ERROR = true;
+    public static final String DEFAULT_PATH_LOG_DIRECTORY = "C:\\Users\\Victor\\Sources\\University\\MRESim\\GIT\\MRESim\\patherror\\";//System.getProperty("user.dir") + "\\patherror\\";
     
     // Colors to be used on map
     public static class MapColor {

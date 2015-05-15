@@ -45,6 +45,10 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         this.settings = settings;
     }
     
+    public RealAgent getAgent() {
+        return agent;
+    }
+    
     private static LinkedList<Point> findRendezvousPoints(int[][] skeleton, OccupancyGrid occGrid) {
         LinkedList<Point> rvPts = new LinkedList<Point>();
         
@@ -110,6 +114,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
     
     //calculate simple utility by distance
     private double UtilityDist(double dist) {
+        if (dist == 0) return Integer.MAX_VALUE;
         return 10000 / dist;
     }
     
@@ -125,7 +130,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
 
         PriorityQueue<NearRVPoint> nearRVPoints = new PriorityQueue<NearRVPoint>();
         if(agent.getLastFrontier() != null)
-            frontierCentre = agent.getLastFrontier().getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
+            frontierCentre = agent.getLastFrontier().getCentre();//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
         else
         {
             System.out.println(agent + " !!!! getLastFrontier returned null, setting frontierCentre to " + agent.getLocation());
@@ -151,9 +156,12 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         for(int i=0; i<POINTS_NEAR_FRONTIER_TO_CONSIDER; i++)
             if(pts.size() > 0) {
                 tempPoint = pts.remove();
-                pathCost = agent.calculatePath(tempPoint, frontierCentre).getLength();
-                degree = Skeleton.neighborTraversal(skeletonGrid, tempPoint.x, tempPoint.y);
-                prunedNearRvPts.add(new NearRVPoint(tempPoint.x, tempPoint.y, UtilityDegree(pathCost, degree)));
+                Path p = agent.calculatePath(tempPoint, frontierCentre);
+                if (p.found) {
+                    pathCost = p.getLength();
+                    degree = Skeleton.neighborTraversal(skeletonGrid, tempPoint.x, tempPoint.y);
+                    prunedNearRvPts.add(new NearRVPoint(tempPoint.x, tempPoint.y, UtilityDegree(pathCost, degree)));
+                }
             }
         return prunedNearRvPts;
     }
@@ -273,14 +281,14 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
                 bestPoint = utilityPts.remove();
             else
             {
-                System.out.println(agent + " !!!!! error pruning - bestpoint is set to " + agent.getParentTeammate().getLocation());
-                bestPoint = agent.getParentTeammate().getLocation();
+                System.out.println(agent + " !!!!! error pruning - bestpoint is set to " + agent.getLocation());
+                bestPoint = agent.getLocation();
             }
 
             rvd.setParentRendezvous(new Rendezvous(bestPoint));
         }
         
-        System.out.print(Constants.INDENT + "Choosing complete, chose " + 
+        System.out.print(Constants.INDENT + agent + "Choosing complete, chose " + 
                 rvd.getParentRendezvous().getChildLocation().x + "," + 
                 rvd.getParentRendezvous().getChildLocation().y + ". ");
         

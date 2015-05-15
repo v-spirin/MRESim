@@ -263,6 +263,7 @@ public class RealAgent extends BasicAgent implements Agent {
     }
     
     public LinkedList<Point> getDirtyCells() {
+        if (dirtyCells == null) dirtyCells = new LinkedList<Point>();
         return dirtyCells;
     }
 
@@ -392,20 +393,20 @@ public class RealAgent extends BasicAgent implements Agent {
     public void forceUpdateTopologicalMap(boolean mustUpdate)
     {
         if (occGrid.hasMapChanged() || mustUpdate) {
-            System.out.println(this + " Updating topological map");
+            //System.out.println(this + " Updating topological map");
             long timeStart = System.currentTimeMillis();
             topologicalMap.setGrid(occGrid);   
-            System.out.println(toString() + "setGrid, " + (System.currentTimeMillis()-timeStart) + "ms.");
+            //System.out.println(toString() + "setGrid, " + (System.currentTimeMillis()-timeStart) + "ms.");
             topologicalMap.generateSkeleton();
-            System.out.println(toString() + "generateSkeleton, " + (System.currentTimeMillis()-timeStart) + "ms.");
+            //System.out.println(toString() + "generateSkeleton, " + (System.currentTimeMillis()-timeStart) + "ms.");
             topologicalMap.findKeyPoints();
-            System.out.println(toString() + "findKeyPoints, " + (System.currentTimeMillis()-timeStart) + "ms.");
+            //System.out.println(toString() + "findKeyPoints, " + (System.currentTimeMillis()-timeStart) + "ms.");
             topologicalMap.generateKeyAreas();
             timeTopologicalMapUpdated = timeElapsed;
             System.out.println(toString() + "generated topological map, " + (System.currentTimeMillis()-timeStart) + "ms.");
             occGrid.setMapHasChangedToFalse();
         } else {
-            System.out.println(this + " Occupancy Grid not changed since last update, skipping topological map update");
+            //System.out.println(this + " Occupancy Grid not changed since last update, skipping topological map update");
         }
     }
 
@@ -563,6 +564,13 @@ public class RealAgent extends BasicAgent implements Agent {
         int safeRange = (int)(sensRange * Constants.SAFE_RANGE / 100);
         Polygon newFreeSpace, newSafeSpace;
 
+        //Points between our old location and new location are definitely safe, as we are moving through them now!
+        LinkedList<Point> safePoints = getOccupancyGrid().pointsAlongSegment(x, y, nextLoc.x, nextLoc.y);
+        for (Point p: safePoints) {            
+            getOccupancyGrid().setFreeSpaceAt(p.x, p.y);
+            getOccupancyGrid().setSafeSpaceAt(p.x, p.y);
+            getOccupancyGrid().setNoObstacleAt(p.x, p.y);
+        }
 
         x = nextLoc.x;
         y = nextLoc.y;
@@ -612,7 +620,8 @@ public class RealAgent extends BasicAgent implements Agent {
         
         //topologicalMap = new TopologicalMap(occGrid);
         int rebuild_topological_map_interval = Constants.REBUILD_TOPOLOGICAL_MAP_INTERVAL;
-        if (timeTopologicalMapUpdated < 0) timeTopologicalMapUpdated = timeElapsed - rebuild_topological_map_interval;
+        if (timeTopologicalMapUpdated < 0) timeTopologicalMapUpdated = 
+                timeElapsed - Constants.MUST_REBUILD_TOPOLOGICAL_MAP_INTERVAL;
         if (timeElapsed - timeTopologicalMapUpdated >= rebuild_topological_map_interval)
         {
             forceUpdateTopologicalMap(false);
@@ -621,15 +630,25 @@ public class RealAgent extends BasicAgent implements Agent {
         {
             forceUpdateTopologicalMap(true);
         }
+        boolean topologicalMapUpdated = (timeTopologicalMapUpdated == timeElapsed);
         topologicalMap.setPathStart(startPoint);
         topologicalMap.setPathGoal(goalPoint);
         if (!pureAStar)
         {
-            //System.out.println(this + "calculating topological path from " + startPoint + " to " + goalPoint);
+            System.out.println(this + "calculating topological path from " + startPoint + " to " + goalPoint);
             topologicalMap.getTopologicalPath();
+            if (!topologicalMap.getPath().found && !topologicalMapUpdated) {
+                System.out.println(this + "Trying to rebuild topological map and replan path " + startPoint + " to " + goalPoint);
+                timeTopologicalMapUpdated = -1;
+                return calculatePath(startPoint, goalPoint);
+            } else if (!topologicalMap.getPath().found) {
+                System.out.println(this + "failed to plan path " + startPoint + " to " + goalPoint + ", not retrying; " +
+                        "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed + 
+                        ", mapCellsChanged: " + occGrid.getMapCellsChanged() + "/" + Constants.MAP_CHANGED_THRESHOLD);
+            } 
         } else
         {
-            //System.out.println(this + "calculating jump path from " + startPoint + " to " + goalPoint);
+            System.out.println(this + "calculating jump path from " + startPoint + " to " + goalPoint);
             topologicalMap.getJumpPath();
             if (topologicalMap.getPath() == null)
                 System.out.println("!!!! CATASTROPHIC FAILURE !!!!!");
@@ -967,8 +986,10 @@ public class RealAgent extends BasicAgent implements Agent {
             for(int j=newFreeSpace.getBounds().y; j<=newFreeSpace.getBounds().y+newFreeSpace.getBounds().height; j++)
                 if(occGrid.locationExists(i, j)) {
                     if(newFreeSpace.contains(i,j) && !occGrid.freeSpaceAt(i,j)) {
-                       occGrid.setFreeSpaceAt(i, j);
-                       dirtyCells.add(new Point(i,j));
+                        if (!occGrid.obstacleAt(i, j)) {
+                            occGrid.setFreeSpaceAt(i, j);
+                            dirtyCells.add(new Point(i,j));
+                        }
                     }
                     if(newSafeSpace.contains(i,j)){
                         // double for loop to prevent empty-safe boundary (which
@@ -979,6 +1000,7 @@ public class RealAgent extends BasicAgent implements Agent {
                                     continue innerloop;
                         if(!occGrid.safeSpaceAt(i,j)) {                             
                             occGrid.setSafeSpaceAt(i, j);
+                            occGrid.setNoObstacleAt(i, j);
                             dirtyCells.add(new Point(i,j));
                         }
                     }
@@ -988,7 +1010,7 @@ public class RealAgent extends BasicAgent implements Agent {
     protected void updateObstacles(Polygon newFreeSpace) {
         // Update obstacles -- all those bits for which radial polygon < sensRange
         // Ignore first point in radial polygon as this is the robot itself.
-        Point first, second;
+        Point first, second = new Point(0,0);
         double angle;
         int currX, currY;
         
@@ -1004,12 +1026,35 @@ public class RealAgent extends BasicAgent implements Agent {
                     currX = first.x + (int)(j * (Math.cos(angle)));
                     currY = first.y + (int)(j * (Math.sin(angle)));
                     double angleDepth = Math.atan2(currY - y, currX - x);
-                    for (int k = 0; k < Constants.WALL_THICKNESS; k++)
-                        occGrid.setObstacleAt(currX + (int)(k * Math.cos(angleDepth)), currY + (int)(k * Math.sin(angleDepth)));
-                    dirtyCells.add(new Point(currX, currY));
+                    for (int k = 0; k < Constants.WALL_THICKNESS; k++) {
+                        int newX = currX + (int)(k * Math.cos(angleDepth));
+                        int newY = currY + (int)(k * Math.sin(angleDepth));
+                        //free space is final,
+                        //otherwise, we can get inaccessible pockets of free space in our map that are actually
+                        //accessible. This can lead to frontiers or RV points we cannot plan a path to, which can lead
+                        //to all sorts of tricky problems.
+                        if (!occGrid.safeSpaceAt(newX, newY)) {
+                            occGrid.setObstacleAt(newX, newY);
+                            //if (k == 0) occGrid.setSafeSpaceAt(newX, newY); //mark obstacles that we know for sure are there
+                            dirtyCells.add(new Point(currX, currY));
+                        }
+                    }                    
+                }
+            } 
+            if (first.distance(x,y) < (sensRange-2)) {
+                if (!occGrid.safeSpaceAt(first.x, first.y)) {
+                    occGrid.setObstacleAt(first.x, first.y);
+                    occGrid.setSafeSpaceAt(first.x, first.y);
+                    dirtyCells.add(new Point(first.x, first.y));
                 }
             }
         }
+        /*if (second.distance(x,y) < (sensRange-2)) {
+            if (!occGrid.safeSpaceAt(second.x, second.y)) {
+                occGrid.setObstacleAt(second.x, second.y);
+                dirtyCells.add(new Point(second.x, second.y));
+            }
+        }*/
     }
 
     
@@ -1024,10 +1069,13 @@ public class RealAgent extends BasicAgent implements Agent {
         if(sensorData == null)
             return radialPolygon;
     
+        Point prevPoint = new Point(x, y);
+        Point curPoint;
         //For every degree
         for(int i=startAngle; i<=finishAngle; i+=1) {
             currRayAngle = heading - Math.PI/2 + Math.PI/180*i;
-            
+            //sensorData[i]--;
+            //maxRange--;
             if(sensorData[i] >= maxRange) {
                 currRayX = x + (int)Math.round(maxRange*(Math.cos(currRayAngle)));
                 currRayY = y + (int)Math.round(maxRange*(Math.sin(currRayAngle)));
@@ -1036,8 +1084,12 @@ public class RealAgent extends BasicAgent implements Agent {
                 currRayX = x + (int)Math.round(sensorData[i]*(Math.cos(currRayAngle)));
                 currRayY = y + (int)Math.round(sensorData[i]*(Math.sin(currRayAngle)));
             }
+            curPoint = new Point(currRayX, currRayY);
+            //if (curPoint.distance(prevPoint) >= 5)
+            //    radialPolygon.addPoint(x, y);
             
-            radialPolygon.addPoint(currRayX, currRayY);
+            radialPolygon.addPoint(currRayX, currRayY);    
+            prevPoint = curPoint; 
         }
        
         

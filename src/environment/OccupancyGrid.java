@@ -136,13 +136,45 @@ public class OccupancyGrid {
         LinkedList<Point> cellsUpdated = new LinkedList();
         for(int i=0; i<this.width; i++) {        
             for(int j=0; j<this.height; j++) {
-                if(this.getByteNoRelay(i,j) != partnerOccGrid.getByteNoRelay(i,j)) {  
-                    if (partnerOccGrid.freeSpaceAt(i, j))
+                if(this.getByteNoRelay(i,j) != partnerOccGrid.getByteNoRelay(i,j)) {
+                    if (partnerOccGrid.safeSpaceAt(i, j)) {
+                        if (partnerOccGrid.freeSpaceAt(i, j)) {
+                            if (this.safeSpaceAt(i, j) && (this.obstacleAt(i, j))) {
+                                //assume we have the right information, do nothing
+                            } else {                                
+                                this.setFreeSpaceAt(i, j);
+                                this.setNoObstacleAt(i, j);
+                                this.setSafeSpaceAt(i, j);
+                            }
+                        }
+                        if (partnerOccGrid.obstacleAt(i, j)) {
+                            this.setNoFreeSpaceAt(i, j);
+                            this.setObstacleAt(i, j);
+                            this.setSafeSpaceAt(i, j);
+                        }                        
+                    } else {
+                        if (partnerOccGrid.freeSpaceAt(i, j)) {
+                            if (this.safeSpaceAt(i, j)) {
+                                // Do nothing, safe space always overrides unsafe space
+                            } else {
+                                if (this.obstacleAt(i, j)) {
+                                    // Do nothing
+                                } else {
+                                    this.setFreeSpaceAt(i, j);
+                                }
+                            }
+                        }
+                        if (partnerOccGrid.obstacleAt(i, j)) {
+                            this.setNoFreeSpaceAt(i, j);
+                            this.setObstacleAt(i, j);
+                        }
+                    }
+                    /*   
+                    if (partnerOccGrid.freeSpaceAt(i, j) && (!this.obstacleAt(i, j))) {
                         this.setFreeSpaceAt(i, j);
-                    if (partnerOccGrid.safeSpaceAt(i, j))
-                        this.setSafeSpaceAt(i, j);
-                    if (partnerOccGrid.obstacleAt(i, j))
-                        this.setObstacleAt(i, j);
+                    }
+                    if (partnerOccGrid.obstacleAt(i, j) && !this.safeSpaceAt(i, j))
+                        this.setObstacleAt(i, j);*/
                     if (partnerOccGrid.isKnownAtBase(i, j))
                         this.setKnownAtBase(i, j);
                         
@@ -217,8 +249,10 @@ public class OccupancyGrid {
     }
 
     public boolean freeSpaceAt(int xCoord, int yCoord) {
-        if(getBit(xCoord, yCoord, OccGridBit.FreeSpace.ordinal()) == 1)
+        if(getBit(xCoord, yCoord, OccGridBit.FreeSpace.ordinal()) == 1) {
+            assert(!obstacleAt(xCoord, yCoord));
             return true;
+        }
         else
             return false;
     }
@@ -230,6 +264,10 @@ public class OccupancyGrid {
     
     public boolean hasMapChanged() {
         return (mapCellsChanged > Constants.MAP_CHANGED_THRESHOLD);
+    }
+    
+    public int getMapCellsChanged() {
+        return mapCellsChanged;
     }
     
     public boolean isFinalTopologicalMapCell(int xCoord, int yCoord) {
@@ -383,6 +421,12 @@ public class OccupancyGrid {
         // safe space has to also be free space
         setFreeSpaceAt(xCoord, yCoord);
     }
+    
+    public void setNoSafeSpaceAt(int xCoord, int yCoord) {        
+        setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.SafeSpace, 0);
+        // safe space has to also be free space
+        //setFreeSpaceAt(xCoord, yCoord);
+    }
 
     public boolean obstacleAt(int xCoord, int yCoord) {
         if(getBit(xCoord, yCoord, OccGridBit.Obstacle.ordinal()) == 1)
@@ -418,6 +462,17 @@ public class OccupancyGrid {
         int counter = getOwnedCells().size();
         resetOwnedCells();
         return counter;
+    }
+    
+    public LinkedList<Point> pointsAlongSegment(int x1, int y1, int x2, int y2) {
+        LinkedList<Point> pts = new LinkedList<Point>();
+        
+        for(int i=Math.min(x1, x2); i<=Math.max(x1, x2); i++)
+            for(int j=Math.min(y1, y2); j<=Math.max(y1, y2); j++)
+                if(distPointToLine(x1, y1, x2, y2, i, j) < 0.5)
+                    pts.add(new Point(i,j));
+                   
+        return pts;
     }
     
     // Used for UtilityExploration

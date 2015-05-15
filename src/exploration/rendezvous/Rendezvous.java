@@ -181,6 +181,12 @@ public class Rendezvous {
         return secondRV;        
     }
     
+    @Override
+    public String toString() {
+        return "parentLoc: " + parentLocation + ", childLoc: " + childLocation + 
+                ", timeMeeting: " + timeMeeting + ", timeWait: " + timeWait;
+    }
+    
     
     //<editor-fold defaultstate="collapsed" desc="Getters and setters">
     public void setChildLocation(Point childLocation) {

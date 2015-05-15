@@ -88,7 +88,7 @@ public class DataMessage implements IDataMessage {
         badFrontiers = agent.getBadFrontiers();
         
         if(agent.getLastFrontier() != null)
-            frontierCentre = new Point(agent.getLastFrontier().getClosestPoint(agent.getLocation(), agent.getOccupancyGrid()));
+            frontierCentre = new Point(agent.getLastFrontier().getCentre());//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid()));
         else
             frontierCentre = new Point(agent.getLocation());
         

@@ -36,6 +36,7 @@ import agents.RealAgent;
 import config.SimulatorConfig;
 import environment.Environment;
 import java.awt.Point;
+import java.util.LinkedList;
 
 /**
  *
@@ -91,7 +92,8 @@ public class AgentStepRunnable implements Runnable{
                 if (dist > distance_left) {
                     //System.out.println(agent.toString() + " exceeded speed. Distance left: " + distance_left + ", dist to next path point: " + dist);
                     //Add nextStep back to path, as we will not reach it yet
-                    agent.getPath().getPoints().add(0, nextStep);
+                    if ((agent.getPath() != null) && (agent.getPath().getPoints() != null))
+                        agent.getPath().getPoints().add(0, nextStep);
                     double ratio = distance_left / dist;
                     nextStep.x = agent.getX() + (int)Math.round((nextStep.x - agent.getX()) * ratio);
                     nextStep.y = agent.getY() + (int)Math.round((nextStep.y - agent.getY()) * ratio);
@@ -120,6 +122,12 @@ public class AgentStepRunnable implements Runnable{
             {
                 System.out.println(agent + " !!! setting envError because direct line not possible between " 
                         + agent.getLocation() + " and " + nextStep);
+                //Remove safe space status for the points along the line, so that obstacles can be sensed there
+                LinkedList<Point> ptsNonSafe = 
+                        agent.getOccupancyGrid().pointsAlongSegment(agent.getLocation().x, agent.getLocation().y, 
+                                nextStep.x, nextStep.y);
+                for (Point p: ptsNonSafe)
+                    agent.getOccupancyGrid().setNoSafeSpaceAt(p.x, p.y);
                 nextStep.x = agent.getX();
                 nextStep.y = agent.getY();
                 agent.setEnvError(true);
@@ -128,7 +136,7 @@ public class AgentStepRunnable implements Runnable{
                         
             //<editor-fold defaultstate="collapsed" desc="Conditions for breaking even if we have 'speed' left">
             boolean canContinueOnPath = (agent.getPath() != null) && (agent.getPath().getPoints() != null) && 
-                    (agent.getPath().getPoints().size() > 0);
+                    (agent.getPath().getPoints().size() > 0) && (!agent.getEnvError());
             if (!canContinueOnPath)
                 break;
             

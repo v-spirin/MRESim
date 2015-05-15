@@ -466,7 +466,7 @@ public class TopologicalMap {
             //<editor-fold defaultstate="collapsed" desc="Check time for explorer to reach frontier, to make sure he has time to explore before returning">
             Point frontierCentre = null;
             if(agent.getLastFrontier() != null)
-                frontierCentre = agent.getLastFrontier().getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
+                frontierCentre = agent.getLastFrontier().getCentre();//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
             else
             {
                 System.out.println(agent + " setting frontierCentre to agentLoc");

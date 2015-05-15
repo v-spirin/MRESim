@@ -63,4 +63,6 @@ public interface IRendezvousStrategy {
     void processAfterGetInfoFromChild();
     
     IRendezvousDisplayData getRendezvousDisplayData();
+    
+    RealAgent getAgent();
 }

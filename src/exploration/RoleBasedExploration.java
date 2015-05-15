@@ -343,16 +343,19 @@ public class RoleBasedExploration {
                 (rvd.getParentRendezvous().getTimeMeeting() + rvd.getParentRendezvous().getTimeWait()));
         
         if (canStillWait) {
+            System.out.println(agent + "rvStrategy agent is " + rvStrategy.getAgent());
             return rvStrategy.processWaitForParent();
         } else
         {
             //Go to backup RV if available. We wil go into Explore state which will head to backup RV to arrive there
             //at the pre-arranged time.
             if (rvd.getParentBackupRendezvous() != null) {
+                System.out.println(agent + " heading to backup rendezvous: " + rvd.getParentBackupRendezvous());
                 rvd.setParentRendezvous(rvd.getParentBackupRendezvous());
                 rvd.setTimeUntilRendezvous(rvd.getParentRendezvous().getTimeMeeting() - timeElapsed);
                 agent.getRendezvousAgentData().setParentBackupRendezvous(null);
             }
+            System.out.println(agent + " has no backup RV, exploring.");
             agent.setState(RealAgent.ExploreState.Explore);
             agent.setStateTimer(0);
             return takeStep_Explore(agent);
