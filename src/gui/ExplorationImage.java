@@ -217,6 +217,8 @@ public class ExplorationImage {
     {
         setG2D();
         
+        
+        
         //<editor-fold defaultstate="collapsed" desc="Draw agent grid according to agentSettings">
         for(int i=0; i<agentGrid.width; i++)
             for(int j=0; j<agentGrid.height; j++)
@@ -226,7 +228,7 @@ public class ExplorationImage {
             }
         //</editor-fold>
         
-        drawLine(startpoint, endpoint, Color.yellow);
+        //drawLine(startpoint, endpoint, Color.yellow);
         setPixel(startpoint.x, startpoint.y, Color.GREEN);
         setPixel(endpoint.x, endpoint.y, Color.RED);
     }

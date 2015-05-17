@@ -84,7 +84,7 @@ public class AgentStepRunnable implements Runnable{
             System.out.println(agent.toString() + "Get next step took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
                         
             //<editor-fold defaultstate="collapsed" desc="Check to make sure step is legal">
-            if(env.directLinePossible(agent.getX(), agent.getY(), nextStep.x, nextStep.y)) {
+            if(env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y)) {
                 //check here we don't 'teleport'
                 double dist = agent.getLocation().distance(nextStep);
                 //System.out.println(agent.toString() + "1 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
@@ -97,7 +97,7 @@ public class AgentStepRunnable implements Runnable{
                     double ratio = distance_left / dist;
                     nextStep.x = agent.getX() + (int)Math.round((nextStep.x - agent.getX()) * ratio);
                     nextStep.y = agent.getY() + (int)Math.round((nextStep.y - agent.getY()) * ratio);
-                    if (!env.directLinePossible(agent.getX(), agent.getY(), nextStep.x, nextStep.y))
+                    if (!env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y))
                     {
                         nextStep.x = agent.getX();
                         nextStep.y = agent.getY();
@@ -123,11 +123,20 @@ public class AgentStepRunnable implements Runnable{
                 System.out.println(agent + " !!! setting envError because direct line not possible between " 
                         + agent.getLocation() + " and " + nextStep);
                 //Remove safe space status for the points along the line, so that obstacles can be sensed there
-                LinkedList<Point> ptsNonSafe = 
-                        agent.getOccupancyGrid().pointsAlongSegment(agent.getLocation().x, agent.getLocation().y, 
-                                nextStep.x, nextStep.y);
-                for (Point p: ptsNonSafe)
-                    agent.getOccupancyGrid().setNoSafeSpaceAt(p.x, p.y);
+                if (nextStep.distance(agent.getLocation()) == 1) {
+                    //We are bordering next step, and because we cannot move there it must be an obstacle
+                    agent.getOccupancyGrid().setObstacleAt(nextStep.x, nextStep.y);
+                    agent.getOccupancyGrid().setNoFreeSpaceAt(nextStep.x, nextStep.y);
+                    agent.getOccupancyGrid().setSafeSpaceAt(nextStep.x, nextStep.y);
+                } else {
+                    //there are several points between us and nextStep, so we don't know which one exactly has obstacle
+                    LinkedList<Point> ptsNonSafe = 
+                            agent.getOccupancyGrid().pointsAlongSegment(agent.getLocation().x, agent.getLocation().y, 
+                                    nextStep.x, nextStep.y);
+                    for (Point p: ptsNonSafe)
+                        if (!p.equals(agent.getLocation()))
+                            agent.getOccupancyGrid().setNoSafeSpaceAt(p.x, p.y);
+                }
                 nextStep.x = agent.getX();
                 nextStep.y = agent.getY();
                 agent.setEnvError(true);

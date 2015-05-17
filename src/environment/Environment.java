@@ -138,6 +138,26 @@ public class Environment{
         return true;
     }
     
+    public boolean legalMove(int sourceX, int sourceY, int destX, int destY) {
+        int dx = destX - sourceX;
+        int dy = destY - sourceY;
+        
+        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) return directLinePossible(sourceX, sourceY, destX, destY);
+        
+        if (dx != 0 && dy != 0) {
+            //diagonal move
+            if (locationExists(sourceX + dx, sourceY) && !obstacleAt(sourceX + dx, sourceY) &&
+                locationExists(sourceX, sourceY + dy) && !obstacleAt(sourceX, sourceY + dy) &&
+                    locationExists(destX, destY) && !obstacleAt(destX, destY))
+                return true;
+            else return false;
+        } else {
+            //horizontal or vertical move
+            return locationExists(destX, destY) && !obstacleAt(destX, destY);
+        }
+        
+    }
+    
     // This function finds the shortest distance from P3 to the line between P1 and P2
     public double distPointToLine(int x1, int y1, int x2, int y2, int x3, int y3) {
         if((x3 == x1 && y3 == y1)  || (x3 == x2 && y3 == y2)) return 0;

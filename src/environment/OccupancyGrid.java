@@ -140,7 +140,9 @@ public class OccupancyGrid {
                     if (partnerOccGrid.safeSpaceAt(i, j)) {
                         if (partnerOccGrid.freeSpaceAt(i, j)) {
                             if (this.safeSpaceAt(i, j) && (this.obstacleAt(i, j))) {
-                                //assume we have the right information, do nothing
+                                //Both think it's safe space, partner thinks it's free, we think it's obstacle
+                                this.setFreeSpaceAt(i, j);
+                                this.setNoObstacleAt(i, j);
                             } else {                                
                                 this.setFreeSpaceAt(i, j);
                                 this.setNoObstacleAt(i, j);
@@ -148,9 +150,13 @@ public class OccupancyGrid {
                             }
                         }
                         if (partnerOccGrid.obstacleAt(i, j)) {
-                            this.setNoFreeSpaceAt(i, j);
-                            this.setObstacleAt(i, j);
-                            this.setSafeSpaceAt(i, j);
+                            if (this.safeSpaceAt(i, j) && (!this.obstacleAt(i, j))) {
+                                //Both think it's safe space, partner thinks it's obstacle, we think it's free                                
+                            } else {                                
+                                this.setNoFreeSpaceAt(i, j);
+                                this.setObstacleAt(i, j);
+                                this.setSafeSpaceAt(i, j);
+                            }                            
                         }                        
                     } else {
                         if (partnerOccGrid.freeSpaceAt(i, j)) {
@@ -158,15 +164,23 @@ public class OccupancyGrid {
                                 // Do nothing, safe space always overrides unsafe space
                             } else {
                                 if (this.obstacleAt(i, j)) {
-                                    // Do nothing
+                                    this.setFreeSpaceAt(i, j);
                                 } else {
                                     this.setFreeSpaceAt(i, j);
                                 }
                             }
                         }
                         if (partnerOccGrid.obstacleAt(i, j)) {
-                            this.setNoFreeSpaceAt(i, j);
-                            this.setObstacleAt(i, j);
+                            if (this.safeSpaceAt(i, j)) {
+                                // Do nothing, safe space always overrides unsafe space
+                            } else {
+                                if (this.freeSpaceAt(i, j)) {
+                                    //do nothing, free space has priority
+                                } else {
+                                    this.setNoFreeSpaceAt(i, j);
+                                    this.setObstacleAt(i, j);
+                                }
+                            }
                         }
                     }
                     /*   
