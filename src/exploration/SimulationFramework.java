@@ -219,7 +219,7 @@ public class SimulationFramework implements ActionListener {
                                 agent[i].setState(ExploreState.GoToChild);
                                 agent[i].setStateTimer(0);
                                 agent[i].addDirtyCells(agent[i].getPath().getAllPathPixels());
-                                //System.out.println("\nSecondary switch: " + agent[i].getName() + " and " + agent[j].getName() + "\n");
+                                System.out.println("\nSecondary switch: " + agent[i].getName() + " and " + agent[j].getName() + "\n");
                                 Path path = agent[i].calculatePath(agent[i].getLocation(), agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
                                 agent[i].setPath(path);
                                 agent[i].setCurrentGoal(agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
@@ -1129,7 +1129,7 @@ public class SimulationFramework implements ActionListener {
         for(int i=0; i<numRobots-1; i++)
             for(int j=i+1; j<numRobots; j++)
                 if(multihopCommTable[i][j] == 1) {                        
-                    //realtimeStart2 = System.currentTimeMillis();
+                    long realtimeStart2 = System.currentTimeMillis();
                     DataMessage msgFromFirst = new DataMessage(agent[i], directCommTable[i][j]);
                     DataMessage msgFromSecond = new DataMessage(agent[j], directCommTable[i][j]);
 
@@ -1138,7 +1138,8 @@ public class SimulationFramework implements ActionListener {
 
                     System.out.println(Constants.INDENT + "Communication between " +
                                         agent[i].getName() + " and " +
-                                        agent[j].getName());
+                                        agent[j].getName() + " took " + 
+                            (System.currentTimeMillis()-realtimeStart2) + "ms.");
                     // For periodic return frontier exp
                     if(simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration &&
                        simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.PeriodicReturn &&
@@ -1289,7 +1290,7 @@ public class SimulationFramework implements ActionListener {
 // <editor-fold defaultstate="collapsed" desc="Role Switch">
     
     private void switchRoles(RealAgent agent1, RealAgent agent2, Path p1, Path p2) {
-        //System.out.println(this.toString() + "Switching " + agent1.getName() + " and " + agent2.getName() + "... ");
+        System.out.println(this.toString() + "Switching " + agent1.getName() + " and " + agent2.getName() + "... ");
 
         // create temp copy of each agent for teammate maintenance
         TeammateAgent copyAgent1 = agent2.getTeammate(agent1.getID()).copy();
@@ -1436,15 +1437,15 @@ public class SimulationFramework implements ActionListener {
                         double yesRoleSwitch = Math.min( a1ToRV2.getLength() + rv2ToCS.getLength(),
                                                          a2ToRV1.getLength() + rv1ToCS.getLength());
 
-                            //System.out.println("\n\n\n\n\n*********************************");
-                            //System.out.println("     No role switch: " + noRoleSwitch);
-                            //System.out.println("    Yes role switch: " + yesRoleSwitch);
-                            //System.out.println("*********************************\n\n\n\n");
+                            System.out.println("\n\n\n\n\n*********************************");
+                            System.out.println("     No role switch: " + noRoleSwitch);
+                            System.out.println("    Yes role switch: " + yesRoleSwitch);
+                            System.out.println("*********************************\n\n\n\n");
 
                         if(noRoleSwitch <= yesRoleSwitch) {
-                            //System.out.println("\n\n*********************************");
-                            //System.out.println("    SWITCH DENIED");
-                            //System.out.println("*********************************\n");
+                            System.out.println("\n\n*********************************");
+                            System.out.println("    SWITCH DENIED");
+                            System.out.println("*********************************\n");
                             return false;
                         }
                     }
@@ -1470,7 +1471,7 @@ public class SimulationFramework implements ActionListener {
             return;
         
         long realtimeStart = System.currentTimeMillis();
-        //System.out.println(this.toString() + "Checking for role switch ... ");
+        System.out.println(this.toString() + "Checking for role switch ... ");
 
         // Note, need timeout on number of swaps a robot can do (at least 3 timestep gap?)
         if(timeElapsed > 5 && timeElapsed % 10 == 0)

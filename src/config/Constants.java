@@ -165,7 +165,7 @@ public class Constants {
     // Maximum time we're allowed to search for distance by skeleton, in ms
     public static final long MAX_TIME_DISTANCE_BY_SKELETON = 100;
     
-    public static final boolean OUTPUT_PATH_ERROR = true;
+    public static final boolean OUTPUT_PATH_ERROR = false;
     public static final String DEFAULT_PATH_LOG_DIRECTORY = "C:\\Users\\Victor\\Sources\\University\\MRESim\\GIT\\MRESim\\patherror\\";//System.getProperty("user.dir") + "\\patherror\\";
     
     // Colors to be used on map

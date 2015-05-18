@@ -134,9 +134,12 @@ public class OccupancyGrid {
     //TODO: should be able to make this more efficient
     public LinkedList<Point> mergeGrid(OccupancyGrid partnerOccGrid, boolean withBaseStation) {
         LinkedList<Point> cellsUpdated = new LinkedList();
+        int totalCellsTransferred = 0;
+        int cellsSetKnownAtBase = 0;
         for(int i=0; i<this.width; i++) {        
             for(int j=0; j<this.height; j++) {
                 if(this.getByteNoRelay(i,j) != partnerOccGrid.getByteNoRelay(i,j)) {
+                    totalCellsTransferred++;
                     if (partnerOccGrid.safeSpaceAt(i, j)) {
                         if (partnerOccGrid.freeSpaceAt(i, j)) {
                             if (this.safeSpaceAt(i, j) && (this.obstacleAt(i, j))) {
@@ -189,8 +192,10 @@ public class OccupancyGrid {
                     }
                     if (partnerOccGrid.obstacleAt(i, j) && !this.safeSpaceAt(i, j))
                         this.setObstacleAt(i, j);*/
-                    if (partnerOccGrid.isKnownAtBase(i, j))
+                    if (partnerOccGrid.isKnownAtBase(i, j)) {
+                        cellsSetKnownAtBase++;
                         this.setKnownAtBase(i, j);
+                    }
                         
                     // if the information is completely new, get all of it, including relay status
                     // otherwise, we may be the relay! So get all new info, apart from relay status
@@ -204,14 +209,17 @@ public class OccupancyGrid {
                     }*/
                     if (withBaseStation)
                     {
-                        if (!this.isKnownAtBase(i, j))
+                        if (!this.isKnownAtBase(i, j)) {
+                            cellsSetKnownAtBase++;
                             this.setKnownAtBase(i, j);
+                        }
                     }
                     cellsUpdated.add(new Point(i,j));
                 }
                 assert (this.getByteNoRelay(i,j) == partnerOccGrid.getByteNoRelay(i,j));
             }
         }
+        System.out.println("Cells transerred: " + totalCellsTransferred + ", set known at base: " + cellsSetKnownAtBase);
         return cellsUpdated;
     }
     
@@ -499,7 +507,8 @@ public class OccupancyGrid {
     }
     
     public byte getByteNoRelay(int x, int y) {
-        return (byte) (grid[x][y] & ~(1 << OccGridBit.GotRelayed.ordinal()));
+        return (byte) (grid[x][y] & ~(1 << OccGridBit.GotRelayed.ordinal()) 
+                & ~(1 << OccGridBit.FinalTopologicalMap.ordinal()));
     }
     
     public int getBit(int xCoord, int yCoord, int bit) {
