@@ -59,18 +59,21 @@ public class Path {
     
     private void OutputPathError(OccupancyGrid agentGrid, Point startpoint, Point endpoint, String dir)
     {
-        try
+        if (Constants.OUTPUT_PATH_ERROR)
         {
-            ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
-            ShowSettingsAgent agentSettings = new ShowSettingsAgent();
-            agentSettings.showFreeSpace = true;
-            agentSettings.showBaseSpace = false;
-            img.fullUpdatePath(agentGrid, startpoint, endpoint, agentSettings);
-            img.saveScreenshot(dir);
-            System.out.println("Outputting path debug screens to: " + dir);
-        } catch (Exception e)
-        {
-            System.out.println("Couldn't save path error screenshot, reason: " + e.getMessage());
+            try
+            {
+                ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
+                ShowSettingsAgent agentSettings = new ShowSettingsAgent();
+                agentSettings.showFreeSpace = true;
+                agentSettings.showBaseSpace = false;
+                img.fullUpdatePath(agentGrid, startpoint, endpoint, agentSettings);
+                img.saveScreenshot(dir);
+                System.out.println("Outputting path debug screens to: " + dir);
+            } catch (Exception e)
+            {
+                System.out.println("Couldn't save path error screenshot, reason: " + e.getMessage());
+            }
         }
     }
     
@@ -661,7 +664,7 @@ public class Path {
         int dy = y - py;
         Point jx, jy;
 
-        if (!(grid.locationExists(x, y) && !grid.obstacleAt(x, y))) {
+        if (!(grid.locationExists(x, y) && grid.freeSpaceAt(x, y))) {
             return null;
         }
         else if (neighbour.distance(goal) <= 1) {
@@ -678,8 +681,8 @@ public class Path {
                 return new Point(x, y);
             }*/ //This should never happen anyway as we are not cutting corners
             //Instead, check if the move is allowed, i.e. we are not cutting corners
-            if (!(grid.locationExists(x - dx, y) && !grid.obstacleAt(x - dx, y)) ||
-                !(grid.locationExists(x, y - dy) && !grid.obstacleAt(x, y - dy))) {
+            if (!(grid.locationExists(x - dx, y) && grid.freeSpaceAt(x - dx, y)) ||
+                !(grid.locationExists(x, y - dy) && grid.freeSpaceAt(x, y - dy))) {
                 return null;
             }
         }
@@ -692,23 +695,23 @@ public class Path {
                         !(grid.locationExists(x, y - 1) && !grid.obstacleAt(x, y - 1)))) {
                     return new Point(x, y);
                 }*/
-                if((((grid.locationExists(x + dx, y + 1) && !grid.obstacleAt(x + dx, y + 1)) ||
-                        (grid.locationExists(x, y + 1) && !grid.obstacleAt(x, y + 1)))
+                if((((grid.locationExists(x + dx, y + 1) && grid.freeSpaceAt(x + dx, y + 1)) ||
+                        (grid.locationExists(x, y + 1) && grid.freeSpaceAt(x, y + 1)))
                         && 
-                        !(grid.locationExists(x-dx, y + 1) && !grid.obstacleAt(x-dx, y + 1))) ||
-                (((grid.locationExists(x + dx, y - 1) && !grid.obstacleAt(x + dx, y - 1)) ||
-                        (grid.locationExists(x, y - 1) && !grid.obstacleAt(x, y - 1)))&& 
-                        !(grid.locationExists(x-dx, y - 1) && !grid.obstacleAt(x-dx, y - 1)))) {
+                        !(grid.locationExists(x-dx, y + 1) && grid.freeSpaceAt(x-dx, y + 1))) ||
+                (((grid.locationExists(x + dx, y - 1) && grid.freeSpaceAt(x + dx, y - 1)) ||
+                        (grid.locationExists(x, y - 1) && grid.freeSpaceAt(x, y - 1)))&& 
+                        !(grid.locationExists(x-dx, y - 1) && grid.freeSpaceAt(x-dx, y - 1)))) {
                     return new Point(x, y);
                 }
             }
             else {
-                if((((grid.locationExists(x + 1, y + dy) && !grid.obstacleAt(x + 1, y + dy)) ||
-                        (grid.locationExists(x + 1, y) && !grid.obstacleAt(x + 1, y)))&& 
-                        !(grid.locationExists(x + 1, y-dy) && !grid.obstacleAt(x + 1, y-dy))) ||
-                (((grid.locationExists(x - 1, y + dy) && !grid.obstacleAt(x - 1, y + dy)) ||
-                        (grid.locationExists(x - 1, y) && !grid.obstacleAt(x - 1, y)))&& 
-                        !(grid.locationExists(x - 1, y-dy) && !grid.obstacleAt(x - 1, y-dy)))) {
+                if((((grid.locationExists(x + 1, y + dy) && grid.freeSpaceAt(x + 1, y + dy)) ||
+                        (grid.locationExists(x + 1, y) && grid.freeSpaceAt(x + 1, y)))&& 
+                        !(grid.locationExists(x + 1, y-dy) && grid.freeSpaceAt(x + 1, y-dy))) ||
+                (((grid.locationExists(x - 1, y + dy) && grid.freeSpaceAt(x - 1, y + dy)) ||
+                        (grid.locationExists(x - 1, y) && grid.freeSpaceAt(x - 1, y)))&& 
+                        !(grid.locationExists(x - 1, y-dy) && grid.freeSpaceAt(x - 1, y-dy)))) {
                     return new Point(x, y);
                 }
             }
@@ -725,8 +728,8 @@ public class Path {
 
         // moving diagonally, must make sure both of the vertical/horizontal
         // neighbors is open to allow the path
-        if ((grid.locationExists(x + dx, y) && !grid.obstacleAt(x + dx, y)) && 
-                (grid.locationExists(x, y + dy) && !grid.obstacleAt(x, y + dy))) {
+        if ((grid.locationExists(x + dx, y) && grid.freeSpaceAt(x + dx, y)) && 
+                (grid.locationExists(x, y + dy) && grid.freeSpaceAt(x, y + dy))) {
             return jump(new Point(x + dx, y + dy), new Point(x, y));
         } else {
             return null;
@@ -748,14 +751,14 @@ public class Path {
         
         // search diagonally
         if (dx != 0 && dy != 0) {
-            if (grid.locationExists(nodeX, nodeY + dy) && !grid.obstacleAt(nodeX, nodeY + dy)) {
+            if (grid.locationExists(nodeX, nodeY + dy) && grid.freeSpaceAt(nodeX, nodeY + dy)) {
                 validNeighbours.add(new Point(nodeX, nodeY + dy));
             }
-            if (grid.locationExists(nodeX + dx, nodeY) && !grid.obstacleAt(nodeX + dx, nodeY)) {
+            if (grid.locationExists(nodeX + dx, nodeY) && grid.freeSpaceAt(nodeX + dx, nodeY)) {
                 validNeighbours.add(new Point(nodeX + dx, nodeY));
             }
-            if ((grid.locationExists(nodeX, nodeY + dy) && !grid.obstacleAt(nodeX, nodeY + dy)) && 
-                    (grid.locationExists(nodeX + dx, nodeY) && !grid.obstacleAt(nodeX + dx, nodeY))) {
+            if ((grid.locationExists(nodeX, nodeY + dy) && grid.freeSpaceAt(nodeX, nodeY + dy)) && 
+                    (grid.locationExists(nodeX + dx, nodeY) && grid.freeSpaceAt(nodeX + dx, nodeY))) {
                 validNeighbours.add(new Point(nodeX + dx, nodeY + dy));
             }
             /*if (!(grid.locationExists(nodeX - dx, nodeY) && !grid.obstacleAt(nodeX - dx, nodeY)) && 
@@ -770,16 +773,16 @@ public class Path {
         // search horizontally/vertically
         else {
             if(dx == 0) {
-                if (grid.locationExists(nodeX, nodeY + dy) && !grid.obstacleAt(nodeX, nodeY + dy)) {
+                if (grid.locationExists(nodeX, nodeY + dy) && grid.freeSpaceAt(nodeX, nodeY + dy)) {
                     //if (grid.locationExists(nodeX, nodeY + dy) && !grid.obstacleAt(nodeX, nodeY + dy)) {
                         validNeighbours.add(new Point(nodeX, nodeY + dy));
                 }
-                if (!(grid.locationExists(nodeX + 1, nodeY-dy) && !grid.obstacleAt(nodeX + 1, nodeY-dy))/* &&
+                if (!(grid.locationExists(nodeX + 1, nodeY-dy) && grid.freeSpaceAt(nodeX + 1, nodeY-dy))/* &&
                         (grid.locationExists(nodeX + 1, nodeY) && !grid.obstacleAt(nodeX + 1, nodeY))*/) {                        
                     validNeighbours.add(new Point(nodeX + 1, nodeY + dy));
                     validNeighbours.add(new Point(nodeX + 1, nodeY));
                 }
-                if (!(grid.locationExists(nodeX - 1, nodeY-dy) && !grid.obstacleAt(nodeX - 1, nodeY-dy))/* &&
+                if (!(grid.locationExists(nodeX - 1, nodeY-dy) && grid.freeSpaceAt(nodeX - 1, nodeY-dy))/* &&
                         (grid.locationExists(nodeX - 1, nodeY) && !grid.obstacleAt(nodeX - 1, nodeY))*/) {
                     validNeighbours.add(new Point(nodeX - 1, nodeY + dy));
                     validNeighbours.add(new Point(nodeX - 1, nodeY));
@@ -787,16 +790,16 @@ public class Path {
                 
             }
             else {
-                if (grid.locationExists(nodeX + dx, nodeY) && !grid.obstacleAt(nodeX + dx, nodeY)) {
+                if (grid.locationExists(nodeX + dx, nodeY) && grid.freeSpaceAt(nodeX + dx, nodeY)) {
                 //if (grid.locationExists(nodeX + dx, nodeY) && !grid.obstacleAt(nodeX + dx, nodeY)) {
                     validNeighbours.add(new Point(nodeX + dx, nodeY));
                 }
-                if (!(grid.locationExists(nodeX-dx, nodeY + 1) && !grid.obstacleAt(nodeX-dx, nodeY + 1))/* &&
+                if (!(grid.locationExists(nodeX-dx, nodeY + 1) && grid.freeSpaceAt(nodeX-dx, nodeY + 1))/* &&
                         (grid.locationExists(nodeX, nodeY + 1) && !grid.obstacleAt(nodeX, nodeY + 1))*/) {
                     validNeighbours.add(new Point(nodeX + dx, nodeY + 1));
                     validNeighbours.add(new Point(nodeX, nodeY + 1));
                 }
-                if (!(grid.locationExists(nodeX-dx, nodeY - 1) && !grid.obstacleAt(nodeX-dx, nodeY - 1))/* &&
+                if (!(grid.locationExists(nodeX-dx, nodeY - 1) && grid.freeSpaceAt(nodeX-dx, nodeY - 1))/* &&
                         (grid.locationExists(nodeX, nodeY - 1) && !grid.obstacleAt(nodeX, nodeY - 1))*/) {
                     validNeighbours.add(new Point(nodeX + dx, nodeY - 1));
                     validNeighbours.add(new Point(nodeX, nodeY - 1));

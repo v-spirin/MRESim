@@ -98,6 +98,7 @@ public class SimulationFramework implements ActionListener {
     double avgTimeLastCommand;
     double totalDistanceTraveled;
     int numSwaps;
+    long time1 = 0, time2 = 0, time3 = 0, time4 = 0, time5 = 0;
 
     RobotTeamConfig robotTeamConfig;
     
@@ -196,10 +197,12 @@ public class SimulationFramework implements ActionListener {
         detectCommunication();
         agentSteps();               // move agents, simulate sensor data
         System.out.println(this.toString() + "agentSteps took " + (System.currentTimeMillis()-realtimeStartCycle) + "ms.\n");
+        time1 += (System.currentTimeMillis()-realtimeStartCycle);
         //if(timeElapsed % 7 == 0 || timeElapsed % 7 == 1) {
         long localTimer = System.currentTimeMillis();
         simulateCommunication();    // simulate communication
         System.out.println(this.toString() + "simulateCommunication took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
+        time2 += (System.currentTimeMillis()-localTimer);
         //timer = System.currentTimeMillis();
         if ((simConfig != null) && (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RoleBasedExploration)
                 && (simConfig.roleSwitchAllowed()))
@@ -239,12 +242,14 @@ public class SimulationFramework implements ActionListener {
         //System.out.println(this.toString() + "updateGlobalData took " + (System.currentTimeMillis()-realtimeStartCycle) + "ms.\n");
        
         System.out.println(this.toString() + "updateGlobalData took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
+        time3 += (System.currentTimeMillis()-localTimer);
         //timer = System.currentTimeMillis();
         
         //System.out.println(this.toString() + "updateAgentKnowledgeData took " + (System.currentTimeMillis()-timer) + "ms.\n");
         localTimer = System.currentTimeMillis();
         updateGUI();                // update GUI
         System.out.println(this.toString() + "updateGUI took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
+        time4 += (System.currentTimeMillis()-localTimer);
         //timer = System.currentTimeMillis();
         logging();                  // perform logging as required
         //if ((timeElapsed % 10) == 0) verifyNoInfoGotLost(); //verify relaying works fine
@@ -255,6 +260,7 @@ public class SimulationFramework implements ActionListener {
         checkPause();               // check whether user wanted to pause
         avgCycleTime = (int)(System.currentTimeMillis() - simStartTime) / timeElapsed;
         checkRunFinish();           // for scripting multiple runs, to max number of cycles
+        System.out.println("Time1 = " + time1 + ", time2 = " + time2 + ", time3 = " + time3 +", time4 = " + time4);
     }
     
 // </editor-fold>     
