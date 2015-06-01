@@ -54,7 +54,6 @@ import org.apache.commons.math3.random.SobolSequenceGenerator;
 public class RoleBasedExploration {    
 
 // <editor-fold defaultstate="collapsed" desc="Take Step">
-    public static IRendezvousStrategy rvStrategy;
     public static boolean rvCommRange;
     public static boolean rvThroughWalls;
     public static int timeElapsed;
@@ -64,8 +63,7 @@ public class RoleBasedExploration {
     public static Point takeStep(RealAgent agent, int curTime, IRendezvousStrategy rendezvousStrategy) {
         long realtimeStart = System.currentTimeMillis();
         //<editor-fold defaultstate="collapsed" desc="Assign local variables">
-        timeElapsed = curTime;
-        rvStrategy = rendezvousStrategy;        
+        timeElapsed = curTime;   
         
         Point nextStep = null;
         //</editor-fold>
@@ -162,7 +160,9 @@ public class RoleBasedExploration {
             if ((agent.getStateTimer() > Constants.MIN_TIME_IN_EXPLORE_STATE) || 
                     // we have a new RV point, and must communicate it to the parent - otherwise the parent will be waiting at the old RV forever!
                     haveNewRVDetailsForParent || noRVAgreed) 
-            { 
+            {
+                System.out.println(agent + "[" + agent.getID() + "]" + " is in range with parent " + agent.getParentTeammate() +
+                        ", switching state to GiveParentInfo");
                 agent.setState(RealAgent.ExploreState.GiveParentInfo);
                 agent.setStateTimer(0);
                 return(takeStep_GiveParentInfo(agent));
@@ -179,7 +179,7 @@ public class RoleBasedExploration {
             AtomicReference<Path> outPathRef = new AtomicReference<Path>();
             if (isDueToReturnToRV(agent, outPathRef)) {
                 pathToParentRendezvous = outPathRef.get();
-                rvStrategy.processExplorerStartsHeadingToRV();
+                agent.getRendezvousStrategy().processExplorerStartsHeadingToRV();
                 
                 if (agent.getPath() != null) {
                     agent.addDirtyCells(agent.getPath().getAllPathPixels());
@@ -278,7 +278,7 @@ public class RoleBasedExploration {
                 agent.addDirtyCells(existingPath.getAllPathPixels());
             //</editor-fold>
             
-            rvStrategy.processReturnToParentReplan();
+            agent.getRendezvousStrategy().processReturnToParentReplan();
             
             Path path = agent.calculatePath(agent.getLocation(), rvd.getParentRendezvous().getChildLocation());
             //<editor-fold defaultstate="collapsed" desc="If path not found, try A*">
@@ -343,8 +343,8 @@ public class RoleBasedExploration {
                 (rvd.getParentRendezvous().getTimeMeeting() + rvd.getParentRendezvous().getTimeWait()));
         
         if (canStillWait) {
-            System.out.println(agent + "rvStrategy agent is " + rvStrategy.getAgent());
-            return rvStrategy.processWaitForParent();
+            System.out.println(agent + "rvStrategy agent is " + agent.getRendezvousStrategy().getAgent());
+            return agent.getRendezvousStrategy().processWaitForParent();
         } else
         {
             //Go to backup RV if available. We wil go into Explore state which will head to backup RV to arrive there
@@ -431,7 +431,8 @@ public class RoleBasedExploration {
         
         //<editor-fold defaultstate="collapsed" desc="If we just got into range, recalc next RV, exchange info">
         if(agent.getStateTimer() == 0) {
-            return rvStrategy.processJustGotIntoParentRange();
+            System.out.println(agent + "give parent info.");
+            return agent.getRendezvousStrategy().processJustGotIntoParentRange();
         }
         //</editor-fold>
 
@@ -439,7 +440,7 @@ public class RoleBasedExploration {
         else {
             //<editor-fold defaultstate="collapsed" desc="Explorer - process & go into Explore state">
             if(agent.isExplorer()) {
-                rvStrategy.processAfterGiveParentInfoExplorer();
+                agent.getRendezvousStrategy().processAfterGiveParentInfoExplorer();
                 
                 agent.setState(RealAgent.ExploreState.Explore);
                 agent.setStateTimer(0);               
@@ -449,7 +450,7 @@ public class RoleBasedExploration {
             //</editor-fold>
             //<editor-fold defaultstate="collapsed" desc="Relay - process & go to child">
             else {
-                rvStrategy.processAfterGiveParentInfoRelay();
+                agent.getRendezvousStrategy().processAfterGiveParentInfoRelay();
                 
                 agent.setState(RealAgent.ExploreState.GoToChild);
                 agent.setStateTimer(0);
@@ -513,7 +514,7 @@ public class RoleBasedExploration {
             if (existingPath != null)
                 agent.addDirtyCells(existingPath.getAllPathPixels());
             
-            rvStrategy.processGoToChildReplan();
+            agent.getRendezvousStrategy().processGoToChildReplan();
             
             Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
             //<editor-fold defaultstate="collapsed" desc="Could not find full path! Trying pure A*">
@@ -580,7 +581,7 @@ public class RoleBasedExploration {
                 (rvd.getChildRendezvous().getTimeMeeting() + rvd.getChildRendezvous().getTimeWait()));
         
         if (canStillWait) {
-            return rvStrategy.processWaitForChild();
+            return agent.getRendezvousStrategy().processWaitForChild();
         } else
         {
             //Go to backup RV if available. Otherwise do what the strategy requires us to do, e.g. become an explorer.
@@ -591,7 +592,7 @@ public class RoleBasedExploration {
                 agent.setStateTimer(0);
                 return takeStep_GoToChild(agent);
             } else {
-                return rvStrategy.processWaitForChildTimeoutNoBackup();
+                return agent.getRendezvousStrategy().processWaitForChildTimeoutNoBackup();
             }
         }
         

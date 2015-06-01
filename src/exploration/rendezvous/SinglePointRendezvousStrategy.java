@@ -288,6 +288,10 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
             rvd.setParentRendezvous(new Rendezvous(bestPoint));
         }
         
+        //required by the interface contract - where our relay will meet its parent
+        Rendezvous parentsRVLocation = new Rendezvous(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
+        rvd.getParentRendezvous().parentsRVLocation = parentsRVLocation;
+        
         System.out.print(Constants.INDENT + agent + "Choosing complete, chose " + 
                 rvd.getParentRendezvous().getChildLocation().x + "," + 
                 rvd.getParentRendezvous().getChildLocation().y + ". ");

@@ -414,6 +414,10 @@ public class RealAgent extends BasicAgent implements Agent {
         return rendezvousAgentData;
     }
     
+    public void setRendezvousAgentData(RendezvousAgentData data) {
+        this.rendezvousAgentData = data;
+    }
+    
     public IRendezvousStrategy getRendezvousStrategy() {
         return rendezvousStrategy;
     }

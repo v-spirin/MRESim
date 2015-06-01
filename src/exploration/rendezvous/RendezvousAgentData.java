@@ -41,6 +41,14 @@ public class RendezvousAgentData {
         this.childBackupRendezvous = toCopy.childBackupRendezvous.copy();
     }
     
+    @Override
+    public String toString() {
+        return "pR: " + parentRendezvous + ", cR: " + childRendezvous 
+                + ", pBR: " + parentBackupRendezvous + ", cBR: " + childBackupRendezvous 
+                + ", tUR: " + timeUntilRendezvous + ", tSLRS: " + timeSinceLastRoleSwitch
+                + ", tSLRVC: " + timeSinceLastRVCalc; 
+    }
+    
     //<editor-fold defaultstate="collapsed" desc="Getters and setters">
     public int getTimeUntilRendezvous() {
         return timeUntilRendezvous;

@@ -31,7 +31,6 @@
  */
 package exploration;
 
-import exploration.rendezvous.Rendezvous;
 import agents.*;
 import agents.BasicAgent.ExploreState;
 import environment.*;
@@ -41,6 +40,7 @@ import communication.*;
 import config.RobotConfig.roletype;
 import config.SimulatorConfig.exptype;
 import environment.Environment.Status;
+import exploration.rendezvous.RendezvousAgentData;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -1302,10 +1302,12 @@ public class SimulationFramework implements ActionListener {
         TeammateAgent copyAgent1 = agent2.getTeammate(agent1.getID()).copy();
         TeammateAgent copyAgent2 = agent1.getTeammate(agent2.getID()).copy();
 
+        System.out.println("Before switch: agent1 is " + agent1 + ", agent2 is " + agent2);
         // switch ID
         int tempID = agent1.getID();
         agent1.setID(agent2.getID());
         agent2.setID(tempID);
+        System.out.println("After: agent1 is " + agent1 + ", agent2 is " + agent2);
 
         // reinit time since last plan 
         //agent1.setTimeSinceLastPlan(15);
@@ -1321,14 +1323,23 @@ public class SimulationFramework implements ActionListener {
         agent2.setFrontiers(tempFrontiers);
         
         // exchange childRV
-        Rendezvous tempChildRV = agent1.getRendezvousAgentData().getChildRendezvous();
+        /*Rendezvous tempChildRV = agent1.getRendezvousAgentData().getChildRendezvous();
         agent1.getRendezvousAgentData().setChildRendezvous(agent2.getRendezvousAgentData().getChildRendezvous());
         agent2.getRendezvousAgentData().setChildRendezvous(tempChildRV);
 
         // exchange parentRV
         Rendezvous tempParentRV = agent1.getRendezvousAgentData().getParentRendezvous();
         agent1.getRendezvousAgentData().setParentRendezvous(agent2.getRendezvousAgentData().getParentRendezvous());
-        agent2.getRendezvousAgentData().setParentRendezvous(tempParentRV);
+        agent2.getRendezvousAgentData().setParentRendezvous(tempParentRV);*/
+        
+        // exchange RendezvousAgentData
+        System.out.println("Before exchange RV data: agent1: " + agent1.getRendezvousAgentData() 
+                + ", agent2: " + agent2.getRendezvousAgentData());
+        RendezvousAgentData tempData = agent1.getRendezvousAgentData();
+        agent1.setRendezvousAgentData(agent2.getRendezvousAgentData());
+        agent2.setRendezvousAgentData(tempData);
+        System.out.println("After exchange RV data: agent1: " + agent1.getRendezvousAgentData() 
+                + ", agent2: " + agent2.getRendezvousAgentData());
 
         // exchange exploreState
         ExploreState tempExploreState = agent1.getState();
@@ -1336,11 +1347,15 @@ public class SimulationFramework implements ActionListener {
         agent2.setState(tempExploreState);
 
         // exchange parent
+        System.out.println("Before exchange parent: agent1: " + agent1.getParentTeammate()
+                + ", agent2: " + agent2.getParentTeammate());
         int tempParent = agent1.getParent();
         agent1.setParent(agent2.getParent());
         agent2.setParent(tempParent);
 
         // exchange child
+        System.out.println("Before exchange child: agent1: " + agent1.getChildTeammate()
+                + ", agent2: " + agent2.getChildTeammate());
         int tempChild = agent1.getChild();
         agent1.setChild(agent2.getChild());
         agent2.setChild(tempChild);
@@ -1371,6 +1386,11 @@ public class SimulationFramework implements ActionListener {
         agent1.addTeammate(copyAgent1);
         agent2.removeTeammate(agent1.getID());
         agent2.addTeammate(copyAgent2);
+        
+        System.out.println("After exchange parent: agent1: " + agent1.getParentTeammate()
+                + ", agent2: " + agent2.getParentTeammate());
+        System.out.println("After exchange child: agent1: " + agent1.getChildTeammate()
+                + ", agent2: " + agent2.getChildTeammate());
     }
 
     private boolean checkRoleSwitch(int first, int second) {

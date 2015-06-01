@@ -857,9 +857,11 @@ public class ExplorationImage {
     
     //Adds all points in list2 to list1 (duplicates allowed), returns merged list.
     public LinkedList<Point> mergeLists(LinkedList<Point> list1, LinkedList<Point> list2) {
-        for(Point p : list2)
-            list1.add(p);
-        
+        if (list1 == list2) return list1;
+        try {
+            for(Point p : list2)
+                list1.add(p);
+        } catch (Exception e) {};
         return list1;
     }
     
