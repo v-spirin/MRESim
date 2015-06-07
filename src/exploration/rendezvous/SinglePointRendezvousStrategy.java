@@ -7,13 +7,11 @@ package exploration.rendezvous;
 
 import agents.RealAgent;
 import config.Constants;
-import config.SimulatorConfig;
 import environment.OccupancyGrid;
 import environment.Skeleton;
 import static environment.Skeleton.gridToList;
 import static environment.Skeleton.neighborTraversal;
 import static environment.Skeleton.numNonzeroNeighbors;
-import exploration.FrontierExploration;
 import exploration.NearRVPoint;
 import static exploration.RoleBasedExploration.timeElapsed;
 import java.awt.Point;
@@ -21,7 +19,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
 import path.Path;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  *
@@ -43,10 +40,6 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         this.agent = agent;
         displayData = new SinglePointRendezvousStrategyDisplayData();
         this.settings = settings;
-    }
-    
-    public RealAgent getAgent() {
-        return agent;
     }
     
     private static LinkedList<Point> findRendezvousPoints(int[][] skeleton, OccupancyGrid occGrid) {
@@ -304,7 +297,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
     
     //For the case of Relay having an RV with another relay
     public void calculateRendezvousRelayWithRelay() {
-        throw new NotImplementedException();
+        throw new UnsupportedOperationException("Not supported yet.");
         /*long realtimeStart = System.currentTimeMillis();
         System.out.println(agent.toString() + "Calculating next rendezvous2 ... ");
 
@@ -371,13 +364,10 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         return new Point(agent.getX(), agent.getY());
     }
     
-    public Point processJustGotIntoParentRange() {
+    public void processJustGotIntoParentRange() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="Case 1: Explorer">
         if(agent.isExplorer()) {
-            // First, plan next frontier, as we need this for rendezvous point calculation
-            FrontierExploration.replan(agent, SimulatorConfig.frontiertype.ReturnWhenComplete, 0);
-
             // Second, calculate rendezvous, but stick around for one time step to communicate
             if(settings.useImprovedRendezvous) {
                 calculateRendezvousExplorerWithRelay();                    
@@ -399,28 +389,21 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
                     calculateRVThroughWalls(agent);
                 }*/                   
             } 
-
-            agent.setStateTimer(1);
-
-            return agent.getLocation();
         }
         //</editor-fold>
             
         //<editor-fold defaultstate="collapsed" desc="Case 2: Relay with another relay as parent">
         else if(agent.getParent() != Constants.BASE_STATION_TEAMMATE_ID) {
             calculateRendezvousRelayWithRelay();
-            agent.setStateTimer(1);
-
-            return agent.getLocation();
         }
         //</editor-fold>
             
         //<editor-fold defaultstate="collapsed" desc="Case 3: Relay with base station as parent, no need to recalculate rv">
-        else {
-            agent.setStateTimer(1);
-            return agent.getLocation();
+        else {            
+            
         }
         //</editor-fold>
+        
     }
     
     public void processAfterGiveParentInfoExplorer() {
@@ -445,5 +428,9 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
 
     public IRendezvousDisplayData getRendezvousDisplayData() {
         return displayData;
+    }
+    
+    public RealAgent getAgent() {
+        return agent;
     }
 }

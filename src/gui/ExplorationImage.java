@@ -113,6 +113,10 @@ public class ExplorationImage {
         return image;
     }
     
+    public Graphics2D getG2D() {
+        return g2D;
+    }
+    
     public void setG2D() {
         g2D = image.createGraphics();
     }
@@ -234,7 +238,7 @@ public class ExplorationImage {
     }
     
     //draw RV generation process
-    public void fullUpdateRVPoints(OccupancyGrid agentGrid, PriorityQueue<NearRVPoint> rvPoints, 
+    /*public void fullUpdateRVPoints(OccupancyGrid agentGrid, PriorityQueue<NearRVPoint> rvPoints, 
             LinkedList<NearRVPoint> generatedPoints, Point frontierCenter,
             ShowSettingsAgent agentSettings) {
         setG2D();
@@ -276,7 +280,7 @@ public class ExplorationImage {
         }
         g2D.setPaint(Color.RED);
         g2D.drawOval(frontierCenter.x-5, frontierCenter.y-5, 10, 10);
-    }
+    }*/
     
     //draws agent grid, topological map, start point and endpoint
     public void fullUpdatePath(OccupancyGrid agentGrid, TopologicalMap tMap, Point startpoint, Point endpoint, ShowSettingsAgent agentSettings)
@@ -744,7 +748,7 @@ public class ExplorationImage {
     
 // <editor-fold defaultstate="collapsed" desc="Helper functions">    
 
-    private void drawRange(Environment env, RealAgent agent, Polygon range, Color color) {
+    public void drawRange(Environment env, RealAgent agent, Polygon range, Color color) {
         for(Point p : polygonPoints(range))
             if(env.locationExists(p.x, p.y)) {
                 setPixel(p.x,p.y,color);
@@ -752,7 +756,7 @@ public class ExplorationImage {
             }
     }
     
-    private void drawCircle(RealAgent agent, Color color) {
+    public void drawCircle(RealAgent agent, Color color) {
         for(Point p : circlePoints(agent.getX(), agent.getY(), agent.getCommRange()))
             if(agent.getOccupancyGrid().locationExists(p.x, p.y)) {
                 setPixel(p.x,p.y,color);
@@ -760,7 +764,7 @@ public class ExplorationImage {
             }
     }
     
-    private void drawLine(Point start, Point end, Color color) {
+    public void drawLine(Point start, Point end, Color color) {
         for(Point p : pointsAlongSegment(start, end))
             setPixel(p.x, p.y, color);
     }
@@ -815,7 +819,7 @@ public class ExplorationImage {
         return allPoints;
     }
 
-    private LinkedList<Point> pointsAlongSegment(Point p1, Point p2) {
+    public LinkedList<Point> pointsAlongSegment(Point p1, Point p2) {
         LinkedList<Point> pts = new LinkedList<Point>();
         int x, y;
         double angle = Math.atan2(p2.y-p1.y, p2.x-p1.x);

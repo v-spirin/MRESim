@@ -39,6 +39,7 @@ import config.*;
 import config.RobotConfig.roletype;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.RendezvousAgentData;
+import exploration.rendezvous.RendezvousStrategyFactory;
 import exploration.rendezvous.SinglePointRendezvousStrategy;
 import exploration.rendezvous.SinglePointRendezvousStrategySettings;
 import java.util.*;
@@ -178,10 +179,7 @@ public class RealAgent extends BasicAgent implements Agent {
         
         this.simConfig = simConfig;
         rendezvousAgentData = new RendezvousAgentData(this);
-        SinglePointRendezvousStrategySettings rvSettings = new SinglePointRendezvousStrategySettings();
-        rvSettings.allowReplanning = simConfig.replanningAllowed();
-        rvSettings.useImprovedRendezvous = simConfig.useImprovedRendezvous();
-        rendezvousStrategy = new SinglePointRendezvousStrategy(this, rvSettings);
+        rendezvousStrategy = RendezvousStrategyFactory.createRendezvousStrategy(simConfig, this);
         
         currentGoal = new Point(x,y);
     }

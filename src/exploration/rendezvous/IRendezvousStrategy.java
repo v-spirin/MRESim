@@ -25,7 +25,7 @@ public interface IRendezvousStrategy {
      *     -- Backup rendezvous location
      *     -- Time at which backup rendezvous happens
      *     -- Time at which backup rendezvous is called off
-     *   - Parent teammate rendezvous (with all the above parameters) - 
+     *   - Parent teammate rendezvous location (parentRenedzvous.parentsRVLocation)
      * i.e., where our relay will communicate with base station
      * @param agent - child, calculates rendezvous for itself and the parent
      */
@@ -54,9 +54,8 @@ public interface IRendezvousStrategy {
     Point processWaitForChildTimeoutNoBackup();
     
     //This method is called when we just got into parent range and are in GiveParentInfo state.
-    //Normally this method should return our current location, as if we are in range, we shouldn't move.
     //Usually we would calculate next RV location here and communicate it to parent in the following timestep.
-    Point processJustGotIntoParentRange();
+    void processJustGotIntoParentRange();
     
     void processAfterGiveParentInfoExplorer();
     void processAfterGiveParentInfoRelay();
