@@ -132,7 +132,7 @@ public class TeammateAgent extends BasicAgent implements Agent {
 
     public boolean isInRange() {
         if (inRange) {
-            System.out.println("I am " + this.getName() + "[" + this.getID() + "], in range with my teammate.");
+            //System.out.println("I am " + this.getName() + "[" + this.getID() + "], in range with my teammate.");
         }
         return inRange;
     }

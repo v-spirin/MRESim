@@ -115,7 +115,7 @@ public class Path {
     public Path(OccupancyGrid agentGrid, TopologicalMap tMap, 
             Point startpoint, Point endpoint, boolean limit) 
     {   
-        System.out.println("PLANNING PATH FROM " + startpoint + " TO " + endpoint);
+        //System.out.println("PLANNING PATH FROM " + startpoint + " TO " + endpoint);
         int [][] areaGrid = tMap.getAreaGrid();
         HashMap<Integer, TopologicalNode> topologicalNodes = tMap.getTopologicalNodes();
         
@@ -401,7 +401,7 @@ public class Path {
             if (current.equals(goalNode))
             {
                 //came_from.put(goalNode, current);
-                System.out.println("Found topological node path, reconstructing...");
+                //System.out.println("Found topological node path, reconstructing...");
                 reconstructPath(came_from, goalNode);
                 break;
             }

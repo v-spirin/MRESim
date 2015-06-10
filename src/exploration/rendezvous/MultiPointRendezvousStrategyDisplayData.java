@@ -99,7 +99,7 @@ public class MultiPointRendezvousStrategyDisplayData implements IRendezvousDispl
                 for (int j = p.y-2; j < p.y+2; j++)
                     curDirtyCells.add(new Point(i,j));
             
-            if (counter < 3) {
+            if (counter < 3 && p.commLinkClosestToBase != null) {
                 NearRVPoint p1 = p.commLinkClosestToBase.getRemotePoint();
                 g2D.fillRect(p1.x-2, p1.y-2, 4, 4);
                 
@@ -128,8 +128,9 @@ public class MultiPointRendezvousStrategyDisplayData implements IRendezvousDispl
                 for (int i = p.x-5; i < p.x+50; i++)
                     for (int j = p.y-5; j < p.y+25; j++)
                         curDirtyCells.add(new Point(i,j));
+                counter++;
             }
-            counter++;
+            
         }
         //g2D.setPaint(Color.RED);
         //g2D.drawOval(frontierCenter.x-5, frontierCenter.y-5, 10, 10);

@@ -124,7 +124,8 @@ public class FrontierExploration {
 
         //<editor-fold defaultstate="collapsed" desc="If no frontiers found, or reached exploration goal, return to ComStation">
         if (((agent.getFrontiers().isEmpty()) || (agent.getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))
-                && timeElapsed > 20){
+                && timeElapsed > 100){
+            System.out.println(agent + " setting mission complete");
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
             nextStep = agent.getNextPathPoint();
@@ -151,7 +152,7 @@ public class FrontierExploration {
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="If no frontier could be assigned, then go back to base.">
-        if(!foundFrontier && timeElapsed > 20){
+        if(!foundFrontier && timeElapsed > 100){
             /*System.out.println(agent.toString() + " No frontier chosen, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
             agent.setTimeSinceLastPlan(0);

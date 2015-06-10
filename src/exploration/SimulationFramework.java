@@ -40,6 +40,7 @@ import communication.*;
 import config.RobotConfig.roletype;
 import config.SimulatorConfig.exptype;
 import environment.Environment.Status;
+import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.RendezvousAgentData;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -194,7 +195,17 @@ public class SimulationFramework implements ActionListener {
             for (int i = 0; i < numRobots; i++)
                 agent[i].setGoalArea(env.getTotalFreeSpace());
         }
+        for (int i = 0; i < numRobots; i++)
+            agent[i].flushComms();
+        
         detectCommunication();
+        
+        for(int i=0; i<numRobots-1; i++)
+            for(int j=i+1; j<numRobots; j++)
+                if(multihopCommTable[i][j] == 1) {
+                    agent[i].getTeammate(agent[j].getID()).setInRange(true);
+                    agent[j].getTeammate(agent[i].getID()).setInRange(true);
+                }
         agentSteps();               // move agents, simulate sensor data
         System.out.println(this.toString() + "agentSteps took " + (System.currentTimeMillis()-realtimeStartCycle) + "ms.\n");
         time1 += (System.currentTimeMillis()-realtimeStartCycle);
@@ -1338,8 +1349,7 @@ public class SimulationFramework implements ActionListener {
         RendezvousAgentData tempData = agent1.getRendezvousAgentData();
         agent1.setRendezvousAgentData(agent2.getRendezvousAgentData());
         agent2.setRendezvousAgentData(tempData);
-        System.out.println("After exchange RV data: agent1: " + agent1.getRendezvousAgentData() 
-                + ", agent2: " + agent2.getRendezvousAgentData());
+        
 
         // exchange exploreState
         ExploreState tempExploreState = agent1.getState();
@@ -1380,6 +1390,13 @@ public class SimulationFramework implements ActionListener {
         Frontier tempLastFrontier = agent1.getLastFrontier();
         agent1.setLastFrontier(agent2.getLastFrontier());
         agent2.setLastFrontier(tempLastFrontier);
+        
+        // exchange RV Strategy state
+        IRendezvousStrategy tempStrategy = agent1.getRendezvousStrategy();
+        agent1.setRendezvousStrategy(agent2.getRendezvousStrategy());
+        agent2.setRendezvousStrategy(tempStrategy);
+        agent1.getRendezvousStrategy().setAgent(agent1);
+        agent2.getRendezvousStrategy().setAgent(agent2);
 
         // replace Teammate agents
         agent1.removeTeammate(agent2.getID());
@@ -1391,6 +1408,8 @@ public class SimulationFramework implements ActionListener {
                 + ", agent2: " + agent2.getParentTeammate());
         System.out.println("After exchange child: agent1: " + agent1.getChildTeammate()
                 + ", agent2: " + agent2.getChildTeammate());
+        System.out.println("After exchange RV data: agent1: " + agent1.getRendezvousAgentData() 
+                + ", agent2: " + agent2.getRendezvousAgentData());
     }
 
     private boolean checkRoleSwitch(int first, int second) {

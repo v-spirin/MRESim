@@ -174,28 +174,34 @@ public class RoleBasedExploration {
         if (agent.getParent() != Constants.BASE_STATION_TEAMMATE_ID
                 && (agent.getStateTimer() % Constants.CHECK_INTERVAL_TIME_TO_RV) == (Constants.CHECK_INTERVAL_TIME_TO_RV - 1)) 
         {
+            agent.getRendezvousStrategy().processExplorerCheckDueReturnToRV();
+            
             Path pathToParentRendezvous; //output parameter
             AtomicReference<Path> outPathRef = new AtomicReference<Path>();
             if (isDueToReturnToRV(agent, outPathRef)) {
                 pathToParentRendezvous = outPathRef.get();
+                agent.setState(RealAgent.ExploreState.ReturnToParent);
+                
                 agent.getRendezvousStrategy().processExplorerStartsHeadingToRV();
                 
                 if (agent.getPath() != null) {
                     agent.addDirtyCells(agent.getPath().getAllPathPixels());
                 }
                 
-               if ((pathToParentRendezvous == null) || (!pathToParentRendezvous.found) ||
-                       (pathToParentRendezvous.getPoints().isEmpty())) {
-                   //take random step and try again
-                   agent.setStateTimer(Constants.CHECK_INTERVAL_TIME_TO_RV - 2);
-                   return RandomWalk.takeStep(agent);
-               } else {                
-                    agent.setPath(pathToParentRendezvous);
-                    agent.setState(RealAgent.ExploreState.ReturnToParent);
-                    agent.setStateTimer(0);
-                    agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
-                    return ((Point) agent.getPath().getPoints().remove(0));
-               }
+                if (agent.getState() == RealAgent.ExploreState.ReturnToParent) {
+                    if ((pathToParentRendezvous == null) || (!pathToParentRendezvous.found) ||
+                            (pathToParentRendezvous.getPoints().isEmpty())) {
+                        //take random step and try again
+                        agent.setState(BasicAgent.ExploreState.Explore);
+                        agent.setStateTimer(Constants.CHECK_INTERVAL_TIME_TO_RV - 2);
+                        return RandomWalk.takeStep(agent);
+                    } else {                
+                         agent.setPath(pathToParentRendezvous);
+                         agent.setStateTimer(0);
+                         agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
+                         return ((Point) agent.getPath().getPoints().remove(0));
+                    }
+                }
             }
             // relay must be waiting for us, we are near rv, have new info - try to comm with relay
             /*else if (((pathToParentRendezvous.getLength() / Constants.DEFAULT_SPEED) + timeElapsed) >= 
@@ -221,34 +227,38 @@ public class RoleBasedExploration {
         Point nextStep = FrontierExploration.takeStep(agent, timeElapsed, SimulatorConfig.frontiertype.ReturnWhenComplete);
         
         //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
-        if ((agent.getFrontiers().isEmpty() || (agent.getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
-            Path pathToParentRendezvous = agent.calculatePath(agent.getLocation(), rvd.getParentRendezvous().getChildLocation());
-            agent.setPath(pathToParentRendezvous);
-            agent.setState(RealAgent.ExploreState.ReturnToParent);
-            agent.setStateTimer(0);
+        if (timeElapsed > 100) { //prevent setting mission complete at the very start of the exploration
+            if ((agent.getFrontiers().isEmpty() || (agent.getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
+                Path pathToParentRendezvous = agent.calculatePath(agent.getLocation(), agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());//rvd.getParentRendezvous().getChildLocation());
+                agent.setPath(pathToParentRendezvous);
+                agent.setState(RealAgent.ExploreState.ReturnToParent);
+                System.out.println(agent + "RB Explore setting mission complete, returning to base");
+                agent.setMissionComplete(true);
+                agent.setStateTimer(0);
 
 
-            agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
-            return ((Point) agent.getPath().getPoints().remove(0));
-                    /*
-            agent.setMissionComplete();
-            agent.setParentRendezvous(new RVLocation(agent.getTeammate(Constants.BASE_STATION_ID).getLocation()));
-            agent.addDirtyCells(agent.getPath().getAllPathPixels());
-            Path path = agent.calculatePath(agent.getLocation(), agent.getParentRendezvous().getChildLocation());
-            agent.setPath(path);
-            agent.setState(RealAgent.ExploreState.ReturnToParent);
-            agent.setStateTimer(0);
-            
-            if(agent.getPath().getPoints() != null) {
-                agent.setCurrentGoal(agent.getParentRendezvous().getChildLocation());
-                return((Point)agent.getPath().getPoints().remove(0));
+                agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
+                return ((Point) agent.getPath().getPoints().remove(0));
+                        /*
+                agent.setMissionComplete();
+                agent.setParentRendezvous(new RVLocation(agent.getTeammate(Constants.BASE_STATION_ID).getLocation()));
+                agent.addDirtyCells(agent.getPath().getAllPathPixels());
+                Path path = agent.calculatePath(agent.getLocation(), agent.getParentRendezvous().getChildLocation());
+                agent.setPath(path);
+                agent.setState(RealAgent.ExploreState.ReturnToParent);
+                agent.setStateTimer(0);
+
+                if(agent.getPath().getPoints() != null) {
+                    agent.setCurrentGoal(agent.getParentRendezvous().getChildLocation());
+                    return((Point)agent.getPath().getPoints().remove(0));
+                }
+                else {
+                    System.out.println(agent.toString() + "!!!Nothing left to explore, but cannot plan path to parent!!!");
+                    nextStep = RandomWalk.takeStep(agent);
+                    agent.setCurrentGoal(nextStep);
+                    return(nextStep);
+                }*/
             }
-            else {
-                System.out.println(agent.toString() + "!!!Nothing left to explore, but cannot plan path to parent!!!");
-                nextStep = RandomWalk.takeStep(agent);
-                agent.setCurrentGoal(nextStep);
-                return(nextStep);
-            }*/
         }
         //</editor-fold>
         return nextStep;

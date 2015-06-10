@@ -419,6 +419,10 @@ public class RealAgent extends BasicAgent implements Agent {
     public IRendezvousStrategy getRendezvousStrategy() {
         return rendezvousStrategy;
     }
+    
+    public void setRendezvousStrategy(IRendezvousStrategy strategy) {
+        rendezvousStrategy = strategy;
+    }
 // </editor-fold>    
     
 // <editor-fold defaultstate="collapsed" desc="Parent and Child">
@@ -465,13 +469,16 @@ public class RealAgent extends BasicAgent implements Agent {
 // </editor-fold>     
     
 // <editor-fold defaultstate="collapsed" desc="Flush, take step, write step">
+    
+    public void flushComms() {
+        for(TeammateAgent teammate : teammates.values())
+            teammate.setInRange(false);
+    }
 
     // Overwrite any useless data from previous step
     public void flush() {
         prevX = x;
-        prevY = y;
-        for(TeammateAgent teammate : teammates.values())
-            teammate.setInRange(false);
+        prevY = y;        
 
         // Only for testing, uncommenting the line below leads to massive slow down
         //occGrid.initializeTestBits();
@@ -637,7 +644,7 @@ public class RealAgent extends BasicAgent implements Agent {
         topologicalMap.setPathGoal(goalPoint);
         if (!pureAStar)
         {
-            System.out.println(this + "calculating topological path from " + startPoint + " to " + goalPoint);
+            //System.out.println(this + "calculating topological path from " + startPoint + " to " + goalPoint);
             topologicalMap.getTopologicalPath();
             if (!topologicalMap.getPath().found && !topologicalMapUpdated) {
                 System.out.println(this + "Trying to rebuild topological map and replan path " + startPoint + " to " + goalPoint);

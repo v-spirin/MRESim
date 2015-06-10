@@ -25,7 +25,7 @@ import path.Path;
  * @author Victor
  */
 public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
-    private final RealAgent agent;
+    private RealAgent agent;
     private SinglePointRendezvousStrategyDisplayData displayData;
     
     private final int MAX_DISTANCE_TO_FRONTIER_CENTER = 600;
@@ -352,6 +352,10 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         }
     }
     
+    public void processExplorerCheckDueReturnToRV() {
+        
+    }
+    
     public void processReturnToParentReplan() {
         
     }
@@ -407,7 +411,8 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
     }
     
     public void processAfterGiveParentInfoExplorer() {
-        
+        calculateParentTimeToRV();
+        calculateParentTimeToBackupRV();
     }
     
     public void processAfterGiveParentInfoRelay() {
@@ -432,5 +437,9 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
     
     public RealAgent getAgent() {
         return agent;
+    }
+    
+    public void setAgent(RealAgent ag) {
+        agent = ag;
     }
 }

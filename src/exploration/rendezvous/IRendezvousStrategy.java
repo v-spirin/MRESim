@@ -42,6 +42,8 @@ public interface IRendezvousStrategy {
     //be waiting for us.
     //This method is called when we are replanning path to parent in ReturnToParent state
     void processReturnToParentReplan();
+    //This method called just before we check if we are due to return to RV. We can change the meeting point for us here.
+    void processExplorerCheckDueReturnToRV();
     //This method is called when we are replanning path to child in GoToChild state
     void processGoToChildReplan();
     
@@ -64,4 +66,5 @@ public interface IRendezvousStrategy {
     IRendezvousDisplayData getRendezvousDisplayData();
     
     RealAgent getAgent();
+    void setAgent(RealAgent ag);
 }
