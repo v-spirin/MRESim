@@ -75,6 +75,12 @@ public class SimulatorConfig {
     private boolean useStrictRoleSwitch;
     private boolean RVThroughWallsEnabled;
     private boolean RVCommRangeEnabled;
+    
+    private boolean timeStampTeammateData; //timestamp our teammate data; update with newest when communicating
+                                           //with other agents
+    private boolean useTeammateNextFrontierAsLocationWhenOutOfRange; //when we are out of range with a teammate,
+                                            //instead of their location at the time of last communication, use the
+                                            //frontier they said they were heading towards as their assumed location
 
     public SimulatorConfig() {
         boolean oldEnvVariableConfigFound = loadOldSimulatorConfig();
@@ -95,6 +101,8 @@ public class SimulatorConfig {
             useStrictRoleSwitch = false;
             RVThroughWallsEnabled = false;
             RVCommRangeEnabled = false;
+            timeStampTeammateData = true;
+            useTeammateNextFrontierAsLocationWhenOutOfRange = false;
         }
         
         boolean oldWallConfigFound = loadOldWallConfig();
@@ -252,6 +260,22 @@ public class SimulatorConfig {
     public void setRVThroughWallsEnabled(boolean rvThroughWallsEnabled) {
         this.RVThroughWallsEnabled = rvThroughWallsEnabled;
     }
+    
+    public boolean timeStampTeammateDataEnabled() {
+        return timeStampTeammateData;
+    }
+    
+    public void setTimeStampTeammateDataEnabled(boolean setting) {
+        timeStampTeammateData = setting;
+    }
+    
+    public boolean useTeammateNextFrontierAsLocationWhenOutOfRange() {
+        return useTeammateNextFrontierAsLocationWhenOutOfRange;
+    }
+    
+    public void setUseTeammateNextFrontierAsLocationWhenOutOfRange(boolean setting) {
+        useTeammateNextFrontierAsLocationWhenOutOfRange = setting;
+    }
 // </editor-fold>
 
 
@@ -299,6 +323,20 @@ public class SimulatorConfig {
                 } catch (Exception e)
                 {
                     TARGET_INFO_RATIO = 0.9;
+                }
+                try
+                {
+                    timeStampTeammateData = Boolean.parseBoolean(inFile.readLine());
+                } catch (Exception e)
+                {
+                    timeStampTeammateData = true;
+                }
+                try
+                {
+                    useTeammateNextFrontierAsLocationWhenOutOfRange = Boolean.parseBoolean(inFile.readLine());
+                } catch (Exception e)
+                {
+                    useTeammateNextFrontierAsLocationWhenOutOfRange = false;
                 }
 
                 inFile.close();
@@ -359,6 +397,8 @@ public class SimulatorConfig {
             outFile.println(RVCommRangeEnabled);
             outFile.println(RVThroughWallsEnabled);
             outFile.println(TARGET_INFO_RATIO);
+            outFile.println(timeStampTeammateData);
+            outFile.println(useTeammateNextFrontierAsLocationWhenOutOfRange);
             
             outFile.close();
             return true;

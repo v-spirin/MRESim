@@ -47,6 +47,7 @@ import config.Constants;
 import environment.Frontier;
 import environment.OccupancyGrid;
 import java.awt.Point;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -72,6 +73,7 @@ public class DataMessage implements IDataMessage {
     public double maxRateOfInfoGatheringBelief;
     public Point frontierCentre;
     public Set<Frontier> badFrontiers;
+    public Collection<TeammateAgent> teammates;
     //TODO: the above need to be encapsulated into ...DataMessage classes by group, and made final, like below
     public final List<IDataMessage> messages;
     
@@ -95,6 +97,7 @@ public class DataMessage implements IDataMessage {
         relayID = agent.getID();
         maxRateOfInfoGatheringBelief = agent.getMaxRateOfInfoGatheringBelief();
         badFrontiers = agent.getBadFrontiers();
+        teammates = agent.getAllTeammates().values();
         
         if(agent.getLastFrontier() != null)
             frontierCentre = new Point(agent.getLastFrontier().getCentre());//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid()));
@@ -124,6 +127,24 @@ public class DataMessage implements IDataMessage {
             agent.setMissionComplete(missionComplete);
         }
         teammate.setTimeSinceLastComm(0);
+        
+        //Update information about other teammates
+        if (agent.getSimConfig().timeStampTeammateDataEnabled()) {
+            for(TeammateAgent remoteTeammateInfo: teammates) {
+                TeammateAgent localTeammateInfo = agent.getTeammate(remoteTeammateInfo.getRobotNumber());
+                System.out.println(agent + "remoteTeammate: " + remoteTeammateInfo + 
+                        ", localTeammate: " + localTeammateInfo);
+                if (localTeammateInfo != null) {
+                    if (localTeammateInfo.getTimeSinceLastComm() > remoteTeammateInfo.getTimeSinceLastComm()) {
+                        localTeammateInfo.setX(remoteTeammateInfo.getX());
+                        localTeammateInfo.setY(remoteTeammateInfo.getY());
+                        localTeammateInfo.setSpeed(remoteTeammateInfo.getSpeed());
+                        localTeammateInfo.setFrontierCentre(new Point(remoteTeammateInfo.getFrontierCentre()));
+                        localTeammateInfo.setTimeSinceLastComm(remoteTeammateInfo.getTimeSinceLastComm());
+                    }
+                }
+            }
+        }
         
         //Merge bad frontier information
         for (Frontier badFrontier: badFrontiers) {

@@ -209,4 +209,9 @@ public class TeammateAgent extends BasicAgent implements Agent {
     public int getID() {
         return ID;
     }
+    
+    @Override
+    public String toString() {
+        return "Name: " + getName() + ", Number: " + getRobotNumber() + ", ID: " + getID();
+    }
 }

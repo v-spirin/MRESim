@@ -340,7 +340,8 @@ public class FrontierExploration {
                                               utilityEstimate(teammate.getLocation(), frontier),
                                               null));
                     System.out.println(Constants.INDENT + "Utility of robot with ID " +
-                                        teammate.getID() + " for frontier at " +
+                                        teammate.getID() + " at location " + teammate.getLocation() + 
+                                        " for frontier at " +
                                         frontier.getCentre().x + "," +
                                         frontier.getCentre().y + " is " +
                                         (int)utilityEstimate(teammate.getLocation(), frontier));                                        

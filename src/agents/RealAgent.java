@@ -256,6 +256,10 @@ public class RealAgent extends BasicAgent implements Agent {
     public void setEnvError(boolean err) {
         envError = err;
     }
+    
+    public SimulatorConfig getSimConfig() {
+        return simConfig;
+    }
 
     public int getTimeSinceLastPlan() {
         return timeSinceLastPlan;
@@ -1137,6 +1141,9 @@ public class RealAgent extends BasicAgent implements Agent {
             updateAreaRelayed(teammate);
         
         needUpdatingAreaKnown = true;
+        
+        //replan?
+        setTimeSinceLastPlan(Integer.MAX_VALUE);
     }
     
     public boolean isCommunicating() {
