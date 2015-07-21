@@ -62,6 +62,7 @@ public class RandomWalk {
         boolean found = false;
         
         int acceptableDistanceToWall = Constants.WALL_DISTANCE;
+        double speed = agent.getSpeed();
         
         while (!found && counter < maxcounter) {
             // if after 50 iterations, we couldn't find new location, relax the condition about min distance to nearest wall
@@ -82,8 +83,8 @@ public class RandomWalk {
             if(agent.getHeading() >= Math.PI) agent.setHeading(agent.getHeading() - 2*Math.PI);
             if(agent.getHeading() < -1*Math.PI) agent.setHeading(agent.getHeading() + 2*Math.PI);
 
-            newX = agent.getX() + Math.round((float)(Constants.STEP_SIZE * Math.cos(agent.getHeading())));
-            newY = agent.getY() + Math.round((float)(Constants.STEP_SIZE * Math.sin(agent.getHeading())));
+            newX = agent.getX() + Math.round((float)(speed * Math.cos(agent.getHeading())));
+            newY = agent.getY() + Math.round((float)(speed * Math.sin(agent.getHeading())));
 
             if(agent.getOccupancyGrid().locationExists(newX, newY) &&
                agent.getOccupancyGrid().directLinePossible(agent.getX(), agent.getY(), newX, newY) &&
@@ -91,6 +92,7 @@ public class RandomWalk {
                     found = true;
             
             counter++;
+            if (speed > 3) speed = speed - 1;
         }
         // couldn't get a new location, try again but relax the condition about being next to a wall.
         while (!found && counter < 50) {
@@ -110,8 +112,8 @@ public class RandomWalk {
             if(agent.getHeading() >= Math.PI) agent.setHeading(agent.getHeading() - 2*Math.PI);
             if(agent.getHeading() < -1*Math.PI) agent.setHeading(agent.getHeading() + 2*Math.PI);
 
-            newX = agent.getX() + Math.round((float)(Constants.STEP_SIZE * Math.cos(agent.getHeading())));
-            newY = agent.getY() + Math.round((float)(Constants.STEP_SIZE * Math.sin(agent.getHeading())));
+            newX = agent.getX() + Math.round((float)(speed * Math.cos(agent.getHeading())));
+            newY = agent.getY() + Math.round((float)(speed * Math.sin(agent.getHeading())));
 
             if(agent.getOccupancyGrid().locationExists(newX, newY) &&
                agent.getOccupancyGrid().directLinePossible(agent.getX(), agent.getY(), newX, newY) &&
@@ -119,6 +121,8 @@ public class RandomWalk {
                     found = true;
             
             counter++;
+            
+            if (speed > 3) speed = speed - 1;
         }
         Path path = new Path();
         path.setStartPoint(new Point(agent.getX(), agent.getY()));

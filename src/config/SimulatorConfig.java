@@ -81,6 +81,11 @@ public class SimulatorConfig {
     private boolean useTeammateNextFrontierAsLocationWhenOutOfRange; //when we are out of range with a teammate,
                                             //instead of their location at the time of last communication, use the
                                             //frontier they said they were heading towards as their assumed location
+    private boolean keepAssigningRobotsToFrontiers; //if there are more robots than frontiers, some robots will not have
+    //a frontier allocated to them. If this is false, they will get a frontier assigned to them without regard for other
+    //agents, i.e. usually the nearest frontier to them (even if there is another unassigned robot that is closer to that
+    //frontier. If it is set to True, then unassigned robots will still bid for all the frontiers and assign themselves
+    //to frontiers more evenly.
 
     public SimulatorConfig() {
         boolean oldEnvVariableConfigFound = loadOldSimulatorConfig();
@@ -103,6 +108,7 @@ public class SimulatorConfig {
             RVCommRangeEnabled = false;
             timeStampTeammateData = true;
             useTeammateNextFrontierAsLocationWhenOutOfRange = false;
+            keepAssigningRobotsToFrontiers = true;
         }
         
         boolean oldWallConfigFound = loadOldWallConfig();
@@ -276,6 +282,14 @@ public class SimulatorConfig {
     public void setUseTeammateNextFrontierAsLocationWhenOutOfRange(boolean setting) {
         useTeammateNextFrontierAsLocationWhenOutOfRange = setting;
     }
+    
+    public boolean keepAssigningRobotsToFrontiers() {
+        return keepAssigningRobotsToFrontiers;
+    }
+    
+    public void setKeepAssigningRobotsToFrontiers(boolean setting) {
+        keepAssigningRobotsToFrontiers = setting;
+    }
 // </editor-fold>
 
 
@@ -338,6 +352,14 @@ public class SimulatorConfig {
                 {
                     useTeammateNextFrontierAsLocationWhenOutOfRange = false;
                 }
+                
+                try
+                {
+                    keepAssigningRobotsToFrontiers = Boolean.parseBoolean(inFile.readLine());
+                } catch (Exception e)
+                {
+                    keepAssigningRobotsToFrontiers = true;
+                }
 
                 inFile.close();
                 return true;
@@ -399,6 +421,7 @@ public class SimulatorConfig {
             outFile.println(TARGET_INFO_RATIO);
             outFile.println(timeStampTeammateData);
             outFile.println(useTeammateNextFrontierAsLocationWhenOutOfRange);
+            outFile.println(keepAssigningRobotsToFrontiers);
             
             outFile.close();
             return true;

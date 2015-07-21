@@ -149,16 +149,27 @@ public class FrontierExploration {
         //</editor-fold>
 
         long realtimeStart2 = System.currentTimeMillis();
-        boolean foundFrontier = chooseFrontier(agent, true);
-        System.out.println(agent.toString() + "chooseFrontier took " + (System.currentTimeMillis()-realtimeStart2) + "ms.");
+        boolean foundFrontier = false;
         
-        //<editor-fold defaultstate="collapsed" desc="If could not find frontier, try to disregard other agents when planning">
-        if (!foundFrontier)
-        {
-            System.out.println(agent.toString() + " could not find frontier, trying to ignore other agents...");
-            foundFrontier = chooseFrontier(agent, false);
+        if (!agent.getSimConfig().keepAssigningRobotsToFrontiers()) {
+            foundFrontier = (chooseFrontier(agent, true, null) == null);
+            System.out.println(agent.toString() + "chooseFrontier took " + (System.currentTimeMillis()-realtimeStart2) + "ms.");
+
+            //<editor-fold defaultstate="collapsed" desc="If could not find frontier, try to disregard other agents when planning">
+            if (!foundFrontier)
+            {
+                System.out.println(agent.toString() + " could not find frontier, trying to ignore other agents...");
+                foundFrontier = (chooseFrontier(agent, false, null) == null);
+            }
+            //</editor-fold>
+        } else {
+            LinkedList<Integer> assignedTeammates = new LinkedList<Integer>();
+            for (int i = 0; (i < agent.getAllTeammates().size()) && !foundFrontier; i++) {
+                assignedTeammates = chooseFrontier(agent, true, assignedTeammates);
+                if (assignedTeammates == null)
+                    foundFrontier = true;
+            }
         }
-        //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="If no frontier could be assigned, then go back to base.">
         if(!foundFrontier && timeElapsed > 100){
@@ -187,6 +198,7 @@ public class FrontierExploration {
         {
             if (agent.getLocation().equals(teammate.getLocation()))
             {
+                System.out.println(agent + " overlapping " + teammate + ", taking random step");
                 nextStep = RandomWalk.takeStep(agent);
                 agent.setTimeSinceLastPlan(0);
                 agent.setCurrentGoal(nextStep);
@@ -203,6 +215,7 @@ public class FrontierExploration {
                 agent.getPath().getPoints() == null ||
                 agent.getPath().getPoints().isEmpty())
         {
+            System.out.println(agent + " has no path, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
             agent.setTimeSinceLastPlan(0);
             agent.setEnvError(false);
@@ -307,7 +320,10 @@ public class FrontierExploration {
     }
     
     // Calculates Euclidean distance from all known teammates and self to frontiers of interest
-    private static PriorityQueue initializeUtilities(RealAgent agent, LinkedList<Frontier> frontiers, boolean considerOtherAgents) {      
+    private static PriorityQueue initializeUtilities(RealAgent agent, LinkedList<Frontier> frontiers, 
+            boolean considerOtherAgents, LinkedList<Integer> teammatesAssignedIDs) {  
+        if (teammatesAssignedIDs == null)
+            teammatesAssignedIDs = new LinkedList<Integer>();
         PriorityQueue<Utility> utilities = new PriorityQueue<Utility>();
         
         int lastCommLimit = Constants.REMEMBER_TEAMMATE_FRONTIER_PERIOD;
@@ -333,7 +349,8 @@ public class FrontierExploration {
                 if(teammate.getID() != 1 &&
                    teammate.getID() != agent.getID() &&
                    teammate.isExplorer() &&   // THIS LINE ONLY IF non-explorer agents are to be ignored
-                   teammate.getTimeSinceLastComm() < lastCommLimit) {
+                   teammate.getTimeSinceLastComm() < lastCommLimit &&
+                   !teammatesAssignedIDs.contains(teammate.getID())) {
                     utilities.add(new Utility(teammate.getID(),
                                               teammate.getLocation(), 
                                               frontier,
@@ -406,12 +423,15 @@ public class FrontierExploration {
         return utilities.peek().utility;
     }
     
-    public static boolean chooseFrontier(RealAgent agent, boolean considerOtherAgents) {
+    public static LinkedList<Integer> chooseFrontier(RealAgent agent, boolean considerOtherAgents,
+            LinkedList<Integer> teammatesAssignedIDs) {
+        if (teammatesAssignedIDs == null)
+            teammatesAssignedIDs = new LinkedList<Integer>();
         // Step 1:  Create list of frontiers of interest (closest ones)
         LinkedList<Frontier> frontiers = frontiersOfInterest(agent, agent.getLastFrontier(), agent.getFrontiers(), agent.getOccupancyGrid());
         System.out.println(agent + " frontiers of interest: " + frontiers.size());
         // Step 2:  Create priorityQueue of utility estimates (Euclidean distance)
-        PriorityQueue<Utility> utilities = initializeUtilities(agent, frontiers, considerOtherAgents);
+        PriorityQueue<Utility> utilities = initializeUtilities(agent, frontiers, considerOtherAgents, teammatesAssignedIDs);
         System.out.println(agent + " frontier utilities: " + utilities.size());
         // Step 3
         Utility best = null;
@@ -505,7 +525,7 @@ public class FrontierExploration {
                         if(agent.getPath() != null)
                             agent.addDirtyCells(agent.getPath().getAllPathPixels());
                         agent.setPath(best.path);
-                        return true;
+                        return null;
                     }
                     else {
                         // This robot assigned, so remove all remaining associated utilities
@@ -517,6 +537,7 @@ public class FrontierExploration {
                                 removal.add(u);
                         for(Utility r : removal)
                             utilities.remove(r);
+                        teammatesAssignedIDs.add(best.ID);
                     }
                 } else
                     utilities.add(best);
@@ -525,7 +546,7 @@ public class FrontierExploration {
             counter++;
         }
         
-        return false;  // should only happen if there are no frontiers at all
+        return teammatesAssignedIDs;  // couldn't assign frontier - could be there are more robots than frontiers?
     } 
 // </editor-fold>     
 

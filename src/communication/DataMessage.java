@@ -139,7 +139,8 @@ public class DataMessage implements IDataMessage {
                         localTeammateInfo.setX(remoteTeammateInfo.getX());
                         localTeammateInfo.setY(remoteTeammateInfo.getY());
                         localTeammateInfo.setSpeed(remoteTeammateInfo.getSpeed());
-                        localTeammateInfo.setFrontierCentre(new Point(remoteTeammateInfo.getFrontierCentre()));
+                        if (remoteTeammateInfo.getFrontierCentre() != null)
+                            localTeammateInfo.setFrontierCentre(new Point(remoteTeammateInfo.getFrontierCentre()));
                         localTeammateInfo.setTimeSinceLastComm(remoteTeammateInfo.getTimeSinceLastComm());
                     }
                 }
