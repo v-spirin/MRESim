@@ -164,6 +164,8 @@ public class RobotPanel extends javax.swing.JPanel {
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         setMaximumSize(new java.awt.Dimension(275, 80));
+        setMinimumSize(new java.awt.Dimension(275, 0));
+        setName(""); // NOI18N
         setPreferredSize(new java.awt.Dimension(275, 80));
 
         panelRobotConfig.setName("panelRobotConfig"); // NOI18N

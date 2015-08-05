@@ -66,15 +66,9 @@ public class RealAgent extends BasicAgent implements Agent {
 
 // <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">    
     // Data
-    int timeLastCentralCommand;   /* units of time elapsed since command 
-                                     received from ComStation */
-    double distanceTraveled;      // Distance traveled
-    int areaKnown;                // How much area this agent knows about
-    int areaGoal;                 // How much free space the agent needs to explore in this mission
-    int lastContactAreaKnown;     // How much area this agent knew at the time of last contact with base
-    int newInfo;                  // How much area that we know we think is not known at base station
+    AgentStats stats;
+    
     int prevX, prevY;             // Previous position in environment
-    public int timeLastDirectContactCS; // time since last contact with base station
     public int periodicReturnInterval;   // how long to wait until going back to BS
     public int frontierPeriodicState;   // bit of a hack: state of periodic return frontier exp robots (0=exploring; 1=returning)
     int timeElapsed;
@@ -82,7 +76,6 @@ public class RealAgent extends BasicAgent implements Agent {
     int relayID; //id of the agent acting as relay for this agent
 
     boolean envError;             // set to true by env when RealAgent's step is not legal
-    public int timeSinceLastPlan;        // time passed since last plan was made
     
     boolean needUpdatingAreaKnown;
 
@@ -109,30 +102,20 @@ public class RealAgent extends BasicAgent implements Agent {
     // Teammates
     HashMap<Integer,TeammateAgent> teammates;
     
-    double maxRateOfInfoGatheringBelief;
-    double currentTotalKnowledgeBelief;    
-    double currentBaseKnowledgeBelief;  
-    
     // Role-based Exploration
     private RendezvousAgentData rendezvousAgentData;
     private IRendezvousStrategy rendezvousStrategy;
     
     private boolean missionComplete; // true only when mission complete (env fully explored)
-    private double percentageKnown;
 
-    // rendezvous Points and Skeleton
-    
-    
     private final TopologicalMap topologicalMap;
     int timeTopologicalMapUpdated;
     
-
     // dynamic behavior
     private Point currentGoal;  // needed for calculating dynamic role switch
     
     private SimulatorConfig simConfig;
 
-    
     public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig) {
         super(robot.getRobotNumber(), 
               robot.getName(), 
@@ -148,33 +131,23 @@ public class RealAgent extends BasicAgent implements Agent {
               robot.getChild(),
               Constants.DEFAULT_SPEED);
 
-        timeLastCentralCommand = 0;
-        distanceTraveled = 0;
-        areaKnown = 0;
-        newInfo = 0;
-        lastContactAreaKnown = 0;
+        stats = new AgentStats();
+        
         prevX = x;
         prevY = y;
-        timeLastDirectContactCS = 0;
+        
         periodicReturnInterval = 10;
         frontierPeriodicState = 0;
-        envError = false;
-        timeSinceLastPlan = 0;
+        envError = false;        
         timeTopologicalMapUpdated = -1;
         timeElapsed = 0;
         relayID = -1;
         
-        maxRateOfInfoGatheringBelief = 0;
-        currentTotalKnowledgeBelief = 0;
-        currentBaseKnowledgeBelief = 0;
-        
-
         occGrid = new OccupancyGrid(envWidth, envHeight);
         topologicalMap = new TopologicalMap(null);
         dirtyCells = new LinkedList<Point>();
         pathTaken = new LinkedList<Point>();
         badFrontiers = new HashMap<Frontier, Boolean>();
-        
         
         frontiers = new PriorityQueue();
         
@@ -197,6 +170,10 @@ public class RealAgent extends BasicAgent implements Agent {
 
     
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
+    public AgentStats getStats() {
+        return stats;
+    }
+    
     public void resetBadFrontiers() {
         badFrontiers.clear();
     }
@@ -211,34 +188,6 @@ public class RealAgent extends BasicAgent implements Agent {
     
     public boolean isBadFrontier(Frontier f) {
         return badFrontiers.containsKey(f);
-    }
-    
-    public int getTimeLastCentralCommand() {
-        return this.timeLastCentralCommand;
-    }
-    
-    public void incrementTimeLastCentralCommand() {
-        timeLastCentralCommand++;
-    }
-    
-    public double getDistanceTraveled() {
-        return this.distanceTraveled;
-    }     
-    
-    public int getAreaKnown() {
-        return this.areaKnown;
-    }
-    
-    public int getNewInfo() {
-        return this.newInfo;
-    }
-    
-    public int getLastContactAreaKnown() {
-        return this.lastContactAreaKnown;
-    }
-    
-    public void setLastContactAreaKnown(int val) {
-        this.lastContactAreaKnown = val;
     }
     
     public int getPrevX() {
@@ -259,14 +208,6 @@ public class RealAgent extends BasicAgent implements Agent {
     
     public SimulatorConfig getSimConfig() {
         return simConfig;
-    }
-
-    public int getTimeSinceLastPlan() {
-        return timeSinceLastPlan;
-    }
-
-    public void setTimeSinceLastPlan(int t) {
-        timeSinceLastPlan = t;
     }
 
     public OccupancyGrid getOccupancyGrid() {
@@ -375,30 +316,7 @@ public class RealAgent extends BasicAgent implements Agent {
     {
         return topologicalMap;
     }
-    
-    public double getMaxRateOfInfoGatheringBelief()
-    {
-        return maxRateOfInfoGatheringBelief;
-    }
-    
-    public void setMaxRateOfInfoGatheringBelief(double rate)
-    {
-        maxRateOfInfoGatheringBelief = rate;
-    }
-    
-    public double getCurrentTotalKnowledgeBelief()
-    {
-        return currentTotalKnowledgeBelief;
-    }
-    
-    // used in utility exploration
-    // returns: how much information/utility we assume the base station will already know
-    // by the time we deliver out information.
-    public double getCurrentBaseKnowledgeBelief()
-    {
-        return currentBaseKnowledgeBelief;        
-    }
-    
+
     //This method checks if occupancy grid has changed since last update of topological map,
     //and rebuilds the map if necessary
     public void forceUpdateTopologicalMap(boolean mustUpdate)
@@ -601,7 +519,7 @@ public class RealAgent extends BasicAgent implements Agent {
         
         if(!(prevX == x  &&  prevY == y))
             heading = Math.atan2(y - prevY, x - prevX);
-        distanceTraveled += Math.sqrt(Math.pow(y-prevY,2) + Math.pow(x-prevX,2));
+        stats.addDistanceTraveled(Math.sqrt(Math.pow(y-prevY,2) + Math.pow(x-prevX,2)));
         //System.out.println("Agent " + this.ID + " distance travelled: " + distanceTraveled);
 
         // OLD METHOD RAY TRACING
@@ -624,7 +542,7 @@ public class RealAgent extends BasicAgent implements Agent {
         //updateGrid(sensorData);
 
         //batteryPower--;
-        batteryPower = newInfo;
+        batteryPower = stats.getNewInfo(); //hack to display new info in the GUI
         //timeLastCentralCommand++;
         
         //System.out.println(this.toString() + "WriteStep complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
@@ -737,18 +655,6 @@ public class RealAgent extends BasicAgent implements Agent {
     */
     // </editor-fold>
     
-    
-    
-    public double getPercentageKnown ()
-    {
-        return percentageKnown;
-    }
-    
-    public void setGoalArea(int goalArea)
-    {
-        areaGoal = goalArea;
-    }
-    
     // update stats of what we know about the environment
     // TODO: we shouldn't call this every time step, this is a performance bottleneck and can be made more efficient.
     public void updateAreaKnown () {
@@ -788,23 +694,23 @@ public class RealAgent extends BasicAgent implements Agent {
         " got " + (occGrid.getNumFreeCells() - occGrid.getNumFreeCellsKnownAtBase() - occGrid.getNumFreeRelayedCells()) + " @@@@@@@@@");*/
 //</editor-fold>
         
-        areaKnown = occGrid.getNumFreeCells();
-        newInfo = (occGrid.getNumFreeCells() - occGrid.getNumFreeCellsKnownAtBase() - occGrid.getNumFreeRelayedCells());
-        percentageKnown = (double)areaKnown / (double)areaGoal;
+        stats.setAreaKnown(occGrid.getNumFreeCells());
+        stats.setNewInfo(occGrid.getNumFreeCells() - occGrid.getNumFreeCellsKnownAtBase() - occGrid.getNumFreeRelayedCells());
+        stats.setPercentageKnown((double)stats.getAreaKnown() / (double)stats.getGoalArea());
         
-        currentBaseKnowledgeBelief = occGrid.getNumFreeCellsKnownAtBase() + occGrid.getNumFreeRelayedCells(); 
+        stats.setCurrentBaseKnowledgeBelief(occGrid.getNumFreeCellsKnownAtBase() + occGrid.getNumFreeRelayedCells()); 
         // ^^^ can add them up, as they are disjoint;
         // may be a good idea to add a discounted value for gotRelayed, as we are not sure it is going to be delivered
         // to base soon. The reason we incorporate gotRelayed to reduce the probability of agents trying to go back to base
         // before the ratio is hit, and then having to go back to exploring when they learn that base station knows more
         // information than they thought, resulting in wasted effort.
-        currentTotalKnowledgeBelief = getCurrentBaseKnowledgeBelief() + newInfo * (teammates.size()-1);
+        stats.setCurrentTotalKnowledgeBelief(stats.getCurrentBaseKnowledgeBelief() + stats.getNewInfo() * (teammates.size()-1));
         
         if (timeElapsed > 0)
         {
-            double rateOfInfoGatheringBelief = (double)areaKnown / (double)timeElapsed;
-            if (rateOfInfoGatheringBelief > maxRateOfInfoGatheringBelief)
-                maxRateOfInfoGatheringBelief = rateOfInfoGatheringBelief;
+            double rateOfInfoGatheringBelief = (double)stats.getAreaKnown() / (double)timeElapsed;
+            if (rateOfInfoGatheringBelief > stats.getMaxRateOfInfoGatheringBelief())
+                stats.setMaxRateOfInfoGatheringBelief(rateOfInfoGatheringBelief);
         }
     }    
     
@@ -830,11 +736,12 @@ public class RealAgent extends BasicAgent implements Agent {
                 }
             }
            if (new_counter > 0) {
-               if (newInfo == 0) newInfo = 1;
+               //Set new info to 1 to prevent oscillations - this get updated properly in updateAreaKnown
+               if (stats.getNewInfo() == 0) stats.setNewInfo(1);
                System.out.println(toString() + "setGotUnrelayed: " + new_counter);
            }
         } else {        
-            if (newInfo > 0) {
+            if (stats.getNewInfo() > 0) {
                 // Need to iterate over a copy of getOwnedCells list, as the list gets changed by setGotRelayed.
                 new_counter = occGrid.setOwnedCellsRelayed();
                 if (new_counter > 0)
@@ -1143,7 +1050,7 @@ public class RealAgent extends BasicAgent implements Agent {
         needUpdatingAreaKnown = true;
         
         //replan?
-        setTimeSinceLastPlan(Integer.MAX_VALUE);
+        stats.setTimeSinceLastPlan(Integer.MAX_VALUE);
     }
     
     public boolean isCommunicating() {

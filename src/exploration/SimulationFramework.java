@@ -99,7 +99,7 @@ public class SimulationFramework implements ActionListener {
     // Interesting data
     int timeElapsed;
     int jointAreaKnown;
-    double pctAreaKnown;
+    double pctAreaKnownTeam;
     int avgCycleTime;
     long simStartTime;
     int totalArea;
@@ -130,7 +130,7 @@ public class SimulationFramework implements ActionListener {
 
         timeElapsed = 0;
         jointAreaKnown = 1;             // to prevent divide by 0
-        pctAreaKnown = 0;
+        pctAreaKnownTeam = 0;
         totalArea = simConfig.getEnv().getTotalFreeSpace();
         avgComStationKnowledge = 0;
         avgAgentKnowledge = 0;
@@ -202,7 +202,7 @@ public class SimulationFramework implements ActionListener {
         if (timeElapsed == 0)
         {
             for (int i = 0; i < numRobots; i++)
-                agent[i].setGoalArea(env.getTotalFreeSpace());
+                agent[i].getStats().setGoalArea(env.getTotalFreeSpace());
         }
         for (int i = 0; i < numRobots; i++)
             agent[i].flushComms();
@@ -963,7 +963,7 @@ public class SimulationFramework implements ActionListener {
                 return false;
         }
         return true;*/
-        return (((double)agent[0].getAreaKnown()/(double)totalArea) >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL);
+        return (((double)agent[0].getStats().getAreaKnown()/(double)totalArea) >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL);
     }
 
     private void checkRunFinish() {
@@ -1610,7 +1610,7 @@ public class SimulationFramework implements ActionListener {
         //long realtimeStart = System.currentTimeMillis();
         //System.out.print(this.toString() + "Updating GUI ... ");
         
-        mainGUI.updateFromData(agent, timeElapsed, pctAreaKnown, avgCycleTime);
+        mainGUI.updateFromData(agent, timeElapsed, pctAreaKnownTeam, avgCycleTime);
         
         //if (timeElapsed % 10 == 1)
         updateImage(false); //was false
@@ -1653,23 +1653,39 @@ public class SimulationFramework implements ActionListener {
         long realtimeStart = System.currentTimeMillis();
         //System.out.print(this.toString() + "Updating Global Data ... ");
         timeElapsed++;
-        pctAreaKnown = 100 * (double)agent[Constants.BASE_STATION_AGENT_ID].getAreaKnown() / (double)totalArea;
+        double pctAreaKnownBase = 100 * (double)agent[Constants.BASE_STATION_AGENT_ID].getStats().getAreaKnown() / (double)totalArea;
+        pctAreaKnownTeam = pctAreaKnownBase;
         if(simConfig.logData()) {
             avgAgentKnowledge = 0;
             avgTimeLastCommand = 0;
             totalDistanceTraveled = 0;
             //jointAreaKnown = 1;
+            
+            int maxTeamLatency = 0;
+            double avgTeamLatency = 0;
+            //todo: same per robot
+            
+            int maxTimeOutsideBaseRange = 0;
+            
+            double avgLatencyAmongRobots = 0;
+            double maxLatencyAmongRobots = 0;
+            
+            //stats below also per agent
+            int totalTeamTimeSpentSensing = 0; //sum of individual agent time spent sensing new areas
+            int totalTeamTime = timeElapsed * (agent.length - 1); //ignore base station
+            int totalNotSensingTime = totalTeamTime - totalTeamTimeSpentSensing;
+            int totalRelayingTime = 0; //sum of individual agent time spent in "returning to parent" state.
 
             if ((timeElapsed % Constants.RECALC_JOINT_AREA) == 1)
                 jointAreaKnown = getTrueJointAreaKnown();
-            else jointAreaKnown = Math.max(agent[Constants.BASE_STATION_AGENT_ID].getAreaKnown(), jointAreaKnown);
+            else jointAreaKnown = Math.max(agent[Constants.BASE_STATION_AGENT_ID].getStats().getAreaKnown(), jointAreaKnown);
             
-            jointAreaKnown = Math.max(agent[Constants.BASE_STATION_AGENT_ID].getAreaKnown(), jointAreaKnown);
-
+            jointAreaKnown = Math.max(agent[Constants.BASE_STATION_AGENT_ID].getStats().getAreaKnown(), jointAreaKnown);
+            
             for(int i=1; i<agent.length; i++) {
-                avgAgentKnowledge += agent[i].getAreaKnown();
-                avgTimeLastCommand += agent[i].getTimeLastCentralCommand();
-                totalDistanceTraveled += agent[i].getDistanceTraveled();
+                avgAgentKnowledge += agent[i].getStats().getAreaKnown();
+                avgTimeLastCommand += agent[i].getStats().getTimeLastCentralCommand();
+                totalDistanceTraveled += agent[i].getStats().getDistanceTraveled();
             }
             avgAgentKnowledge /= (agent.length-1);  //ComStation not included in calculation
             avgAgentKnowledge = 100 * avgAgentKnowledge / jointAreaKnown;
@@ -1679,35 +1695,37 @@ public class SimulationFramework implements ActionListener {
                 avgComStationKnowledge = 0;
             else
                 if(timeElapsed < 2)
-                    avgComStationKnowledge = 100 * agent[0].getAreaKnown() / jointAreaKnown;
+                    avgComStationKnowledge = 100 * agent[0].getStats().getAreaKnown() / jointAreaKnown;
                 else
                     avgComStationKnowledge = ((timeElapsed-1)*avgComStationKnowledge + 
-                                                    (100 * agent[0].getAreaKnown() / jointAreaKnown)) / 
+                                                    (100 * agent[0].getStats().getAreaKnown() / jointAreaKnown)) / 
                                                    timeElapsed;
-            pctAreaKnown = 100 * (double)jointAreaKnown / (double)totalArea;
-
+            pctAreaKnownTeam = 100 * (double)jointAreaKnown / (double)totalArea;
+            
+            
 
             try{
                 PrintWriter outFile = new PrintWriter(new FileWriter(simConfig.getLogDataFilename(), true));
 
                 outFile.print(timeElapsed + " ");
                 outFile.print(System.currentTimeMillis() + " ");
-                outFile.print(pctAreaKnown + " ");
-                outFile.print(100*(double)agent[0].getAreaKnown()/(double)totalArea + " ");
+                outFile.print(pctAreaKnownTeam + " ");
+                outFile.print(pctAreaKnownBase + " ");
+                outFile.print(totalArea + " ");
                 outFile.print(avgAgentKnowledge + " ");
                 outFile.print(avgTimeLastCommand + " ");
                 outFile.print((double)totalDistanceTraveled / (double)(agent.length-1) + " ");                
                 outFile.print(numSwaps + " ");
                 outFile.print(jointAreaKnown + " ");
-                outFile.print(agent[0].getAreaKnown() + " ");
-                outFile.print(100 * (double)agent[0].getAreaKnown() / (double)jointAreaKnown + " ");
+                outFile.print(agent[0].getStats().getAreaKnown() + " ");
+                outFile.print(100 * (double)agent[0].getStats().getAreaKnown() / (double)jointAreaKnown + " ");
                 for (int i = 1; i < agent.length; i++)
                 {
-                    outFile.print(agent[i].getAreaKnown() + " ");
-                    outFile.print(agent[i].getNewInfo() + " ");
-                    outFile.print(agent[i].getMaxRateOfInfoGatheringBelief() + " ");
-                    outFile.print(agent[i].getCurrentTotalKnowledgeBelief() + " ");
-                    outFile.print(agent[i].getCurrentBaseKnowledgeBelief() + " ");
+                    outFile.print(agent[i].getStats().getAreaKnown() + " ");
+                    outFile.print(agent[i].getStats().getNewInfo() + " ");
+                    //outFile.print(agent[i].getMaxRateOfInfoGatheringBelief() + " ");
+                    outFile.print(agent[i].getStats().getCurrentTotalKnowledgeBelief() + " ");
+                    outFile.print(agent[i].getStats().getCurrentBaseKnowledgeBelief() + " ");
                 }
                 outFile.println();
                 outFile.close();

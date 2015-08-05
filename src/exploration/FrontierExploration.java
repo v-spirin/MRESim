@@ -64,17 +64,17 @@ public class FrontierExploration {
 
         //<editor-fold defaultstate="collapsed" desc="If base station is in range, update timeLastDirectContactCS and lastContactAreaKnown">
         if(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
-            agent.timeLastDirectContactCS = 1;
-            agent.setLastContactAreaKnown(agent.getAreaKnown());
+            agent.getStats().setTimeLastDirectContactCS(1);
+            agent.getStats().setLastContactAreaKnown(agent.getStats().getAreaKnown());
         }
         else
-            agent.timeLastDirectContactCS++;
+            agent.getStats().incrementLastDirectContactCS();
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="CHECK 0: Take a couple of random steps to start (just to gather some sensor data).">
         if(timeElapsed < Constants.INIT_CYCLES) {
             nextStep = RandomWalk.takeStep(agent);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
         }
         //</editor-fold>
  
@@ -82,13 +82,13 @@ public class FrontierExploration {
         else if(agent.getEnvError()) {
             agent.resetPathToBaseStation();
             nextStep = RandomWalk.takeStep(agent);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
         }
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="CHECK 2: Agent isn't stuck, not yet time to replan. Continue if we have points left in the previously planned path.">
-        else if ((agent.timeSinceLastPlan < Constants.REPLAN_INTERVAL)
+        else if ((agent.getStats().getTimeSinceLastPlan() < Constants.REPLAN_INTERVAL)
                 && agent.getPath().found && agent.getPath().getPoints().size() >= 2)
         {
             nextStep = agent.getNextPathPoint();
@@ -97,7 +97,7 @@ public class FrontierExploration {
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="CHECK 3: Agent isn't stuck. Is it time to replan? Have we moved on to next time cycle?">
-        else if(agent.getTimeSinceLastPlan() >= Constants.REPLAN_INTERVAL)
+        else if(agent.getStats().getTimeSinceLastPlan() >= Constants.REPLAN_INTERVAL)
         {
             nextStep = replan(agent, frontierExpType, timeElapsed);
         }
@@ -110,7 +110,7 @@ public class FrontierExploration {
         }
         //</editor-fold>
 
-        agent.timeSinceLastPlan++;
+        agent.getStats().incrementTimeSinceLastPlan();
 
         //agent.setLastTotalKnowledgeBelief(agent.getCurrentTotalKnowledgeBelief());
         //agent.setLastBaseKnowledgeBelief(agent.getCurrentBaseKnowledgeBelief());
@@ -123,7 +123,7 @@ public class FrontierExploration {
     public static Point replan(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, int timeElapsed) {
         Point nextStep;
         
-        agent.setTimeSinceLastPlan(0);
+        agent.getStats().setTimeSinceLastPlan(0);
         System.out.println(agent.toString() + "starting replan");
         long realtimeStart = System.currentTimeMillis();
                      
@@ -132,7 +132,7 @@ public class FrontierExploration {
         System.out.println(agent.toString() + "calculateFrontiers took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
 
         //<editor-fold defaultstate="collapsed" desc="If no frontiers found, or reached exploration goal, return to ComStation">
-        if (((agent.getFrontiers().isEmpty()) || (agent.getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))
+        if (((agent.getFrontiers().isEmpty()) || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))
                 && timeElapsed > 100){
             System.out.println(agent + " setting mission complete");
             agent.setMissionComplete(true);
@@ -142,7 +142,7 @@ public class FrontierExploration {
             {
                 nextStep = agent.getNextPathPoint();
             }
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
             agent.setCurrentGoal(agent.getTeammate(1).getLocation());
             return nextStep;
         }
@@ -187,7 +187,7 @@ public class FrontierExploration {
             {
                 nextStep = agent.getNextPathPoint();
             }
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
             agent.setCurrentGoal(agent.getTeammate(1).getLocation());
             return nextStep;
         }
@@ -200,7 +200,7 @@ public class FrontierExploration {
             {
                 System.out.println(agent + " overlapping " + teammate + ", taking random step");
                 nextStep = RandomWalk.takeStep(agent);
-                agent.setTimeSinceLastPlan(0);
+                agent.getStats().setTimeSinceLastPlan(0);
                 agent.setCurrentGoal(nextStep);
                 return nextStep;
             }
@@ -217,7 +217,7 @@ public class FrontierExploration {
         {
             System.out.println(agent + " has no path, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
             return nextStep;
         }

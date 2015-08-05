@@ -175,7 +175,7 @@ public class AgentStepRunnable implements Runnable{
         /*if (simConfig.getExpAlgorithm() != SimulatorConfig.exptype.RunFromLog)
             agent.updateTrueAreaKnown(env);*/
         //benchmark
-        agent.incrementTimeLastCentralCommand();
+        agent.getStats().incrementTimeLastCentralCommand();
         System.out.println(agent.toString() + "Agent cycle complete, took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
     }
 

@@ -204,13 +204,16 @@ public class MainGUI extends javax.swing.JFrame {
             panelRobotInfo.add(Box.createVerticalGlue());
 
             panelRobotInfo.repaint();
+            
             panelRobotInfo.revalidate();
+            //panelRobotInfo.getTopLevelAncestor().validate();
             explorationImage = new ExplorationImage(simConfig.getEnv());
             explorationImage.redrawEnvAndAgents(this, robotTeamConfig, simConfig);
             labelImageHolder.setIcon(new ImageIcon(explorationImage.getImage()));
             validate();
             updateShowSettings();
             updateShowSettingsAgents();
+            
        }
        catch (NullPointerException e) {
            System.out.println("Updating from robotTeamConfig: null pointer exception.");
@@ -295,7 +298,7 @@ public class MainGUI extends javax.swing.JFrame {
         for( int i = 0; i < agent.length; i++ ) {
             //update agent data
             //agent[i].updateTrueAreaKnown(simConfig.getEnv());
-            agent[i].knowledgeData.put(simulation.getTimeElapsed(), (double) agent[i].getAreaKnown() / (double) simulation.getTotalArea());
+            agent[i].knowledgeData.put(simulation.getTimeElapsed(), (double) agent[i].getStats().getAreaKnown() / (double) simulation.getTotalArea());
 
             XYSeries series = new XYSeries("Agent " + i);
             Iterator it = agent[i].knowledgeData.entrySet().iterator();
@@ -562,19 +565,20 @@ public class MainGUI extends javax.swing.JFrame {
         scrollPaneRobots.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPaneRobots.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPaneRobots.setMinimumSize(new java.awt.Dimension(21, 22));
-        scrollPaneRobots.setPreferredSize(new java.awt.Dimension(0, 0));
+        scrollPaneRobots.setPreferredSize(new java.awt.Dimension(273, 600));
 
-        panelRobotInfo.setPreferredSize(new java.awt.Dimension(273, 600));
+        panelRobotInfo.setPreferredSize(new java.awt.Dimension(275, 900));
+        panelRobotInfo.setRequestFocusEnabled(false);
 
         javax.swing.GroupLayout panelRobotInfoLayout = new javax.swing.GroupLayout(panelRobotInfo);
         panelRobotInfo.setLayout(panelRobotInfoLayout);
         panelRobotInfoLayout.setHorizontalGroup(
             panelRobotInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 273, Short.MAX_VALUE)
+            .addGap(0, 275, Short.MAX_VALUE)
         );
         panelRobotInfoLayout.setVerticalGroup(
             panelRobotInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 600, Short.MAX_VALUE)
+            .addGap(0, 900, Short.MAX_VALUE)
         );
 
         scrollPaneRobots.setViewportView(panelRobotInfo);

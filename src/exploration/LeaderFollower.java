@@ -97,7 +97,7 @@ public class LeaderFollower {
         if(timeElapsed < 3) {
             System.out.println(agent.toString() + "LeaderFollower: Starting up, staying stationary for now.");
             nextStep = new Point(agent.getX(), agent.getY());
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
         }
 
 
@@ -108,13 +108,13 @@ public class LeaderFollower {
         else if(agent.getEnvError()) {
             System.out.println(agent.toString() + "LeaderFollower: No step taken since last timeStep, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
         }
 
         // Check 1.5, make sure parent is in range
         else if(!agent.getParentTeammate().isInRange()) {
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
             return (new Point(agent.getPrevX(), agent.getPrevY()));
         }
 
@@ -122,9 +122,9 @@ public class LeaderFollower {
         // CHECK 2
         // Agent isn't stuck.
         // Is it time to replan?
-        else if(agent.getTimeSinceLastPlan() > TIME_BETWEEN_PLANS) {
+        else if(agent.getStats().getTimeSinceLastPlan() > TIME_BETWEEN_PLANS) {
             nextStep = replanRelay(agent);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
         }
 
         // CHECK 3
@@ -138,28 +138,33 @@ public class LeaderFollower {
         // Agent isn't stuck, not yet time to replan, but we have no points left
         else {
             nextStep = replanRelay(agent);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
         }
 
         // UPDATE
         if(agent.getTeammate(1).isInRange())
-            agent.timeLastDirectContactCS = 1;
+            agent.getStats().setTimeLastDirectContactCS(1);
         else
-            agent.timeLastDirectContactCS++;
-        agent.timeSinceLastPlan++;
+            agent.getStats().incrementLastDirectContactCS();
+        agent.getStats().incrementTimeSinceLastPlan();
 
 
         return nextStep;
     }
 
     public static Point replanRelay(RealAgent agent) {
-        /*Path P2P = new Path(agent, agent.getLocation(), agent.getParentTeammate().getLocation());
-        if(P2P.getLength() > agent.getCommRange()-3*Constants.STEP_SIZE ||
-           !agent.getParentTeammate().isInRange())
-            return (new Point(agent.getPrevX(), agent.getPrevY()));*/
+        Path P2C = agent.calculatePath(agent.getLocation(), agent.getChildTeammate().getLocation());
+        
+        if (agent.getLocation().distance(agent.getParentTeammate().getLocation()) < 
+                agent.getCommRange() - 1* agent.getSpeed())
+        {
+            agent.setPath(P2C);
+            return agent.getNextPathPoint();
+        } else
+            return (new Point(agent.getPrevX(), agent.getPrevY()));
 
         // total hack:  for leader-follower, use "parent" value as number of robots between this relay and comstation, including self
-        if(agent.getChildTeammate().getLocation().distance(agent.getTeammate(1).getLocation()) <=
+        /*if(agent.getChildTeammate().getLocation().distance(agent.getTeammate(1).getLocation()) <=
            (agent.getParent() * agent.getCommRange() - 2*Constants.DEFAULT_SPEED - 20)) {
                 agent.setPath(agent.calculatePath(agent.getLocation(), agent.getChildTeammate().getLocation()));
                 System.out.println("LeaderFollower: my child is still in my allowed range (" + (agent.getParent() * agent.getCommRange() - 2*Constants.DEFAULT_SPEED) + ")");
@@ -189,7 +194,7 @@ public class LeaderFollower {
             return RandomWalk.takeStep(agent);
         
         agent.getPath().getPoints().remove(0);
-        return agent.getNextPathPoint();
+        return agent.getNextPathPoint();*/
     }
 
     public static Point takeStep_Explorer(RealAgent agent, int timeElapsed) {
@@ -200,7 +205,7 @@ public class LeaderFollower {
         if(timeElapsed < 3) {
             System.out.println(agent.toString() + "LeaderFollower: Starting up, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
         }
 
 
@@ -211,7 +216,7 @@ public class LeaderFollower {
         else if(agent.getEnvError()) {
             System.out.println(agent.toString() + "LeaderFollower: No step taken since last timeStep, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
         }
 
@@ -219,9 +224,9 @@ public class LeaderFollower {
         // CHECK 2
         // Agent isn't stuck.
         // Is it time to replan?
-        else if(agent.getTimeSinceLastPlan() % TIME_BETWEEN_PLANS == 0) {
+        else if(agent.getStats().getTimeSinceLastPlan() % TIME_BETWEEN_PLANS == 0) {
             nextStep = replanExplorer(agent);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
         }
 
         // CHECK 3
@@ -235,15 +240,15 @@ public class LeaderFollower {
         // Agent isn't stuck, not yet time to replan, but we have no points left
         else {
             nextStep = replanExplorer(agent);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
         }
 
         // UPDATE
         if(agent.getTeammate(1).isInRange())
-            agent.timeLastDirectContactCS = 1;
+            agent.getStats().setTimeLastDirectContactCS(1);
         else
-            agent.timeLastDirectContactCS++;
-        agent.timeSinceLastPlan++;
+            agent.getStats().incrementLastDirectContactCS();
+        agent.getStats().incrementTimeSinceLastPlan();
 
 
         return nextStep;
@@ -255,6 +260,10 @@ public class LeaderFollower {
 // <editor-fold defaultstate="collapsed" desc="Replan">
 
     public static Point replanExplorer(RealAgent agent) {
+        if(!agent.getParentTeammate().isInRange()) {
+            agent.getStats().setTimeSinceLastPlan(0);
+            return (new Point(agent.getPrevX(), agent.getPrevY()));
+        }
         Point nextStep;
 
         // Find frontiers
@@ -266,7 +275,7 @@ public class LeaderFollower {
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
             nextStep = agent.getNextPathPoint();
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
             agent.setCurrentGoal(agent.getTeammate(1).getLocation());
             return nextStep;
         }
@@ -282,7 +291,7 @@ public class LeaderFollower {
         if(!foundFrontier){
             System.out.println(agent.toString() + "No frontier chosen, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
             agent.setCurrentGoal(nextStep);
             return nextStep;
         }
@@ -294,7 +303,7 @@ public class LeaderFollower {
         if(agent.getPath() == null || agent.getPath().getPoints() == null || agent.getPath().getPoints().size() == 0){
             System.out.println(agent.toString() + "No path found, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
             agent.setCurrentGoal(nextStep);
             return nextStep;
         }
@@ -302,7 +311,7 @@ public class LeaderFollower {
         // If we reach this point, we have a path.  Remove the first point
         // since this is the robot itself.
         agent.getPath().getPoints().remove(0);
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
         System.out.print(Constants.INDENT + "Chose frontier at " + agent.getLastFrontier().getCentre().x + "," + agent.getLastFrontier().getCentre().y + ". ");
         System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         return agent.getNextPathPoint();

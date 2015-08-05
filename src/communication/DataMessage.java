@@ -83,8 +83,8 @@ public class DataMessage implements IDataMessage {
         y = agent.getY();
         if (agent.getOccupancyGrid() != null)
             occGrid = agent.getOccupancyGrid().copy();
-        timeLastCentralCommand = agent.getTimeLastCentralCommand();
-        lastContactAreaKnown = agent.getLastContactAreaKnown();
+        timeLastCentralCommand = agent.getStats().getTimeLastCentralCommand();
+        lastContactAreaKnown = agent.getStats().getLastContactAreaKnown();
         if(agent.getPath() != null)
             pathLength = agent.getPath().getLength();
         else
@@ -95,7 +95,7 @@ public class DataMessage implements IDataMessage {
         distToBase = agent.distanceToBase();
         speed = agent.getSpeed();
         relayID = agent.getID();
-        maxRateOfInfoGatheringBelief = agent.getMaxRateOfInfoGatheringBelief();
+        maxRateOfInfoGatheringBelief = agent.getStats().getMaxRateOfInfoGatheringBelief();
         badFrontiers = agent.getBadFrontiers();
         teammates = agent.getAllTeammates().values();
         
@@ -155,12 +155,12 @@ public class DataMessage implements IDataMessage {
         
         if(teammate.getTimeLastCentralCommand() < timeLastCentralCommand)
             timeLastCentralCommand = teammate.getTimeLastCentralCommand();
-        if (teammate.getLastContactAreaKnown() > agent.getLastContactAreaKnown())
-            agent.setLastContactAreaKnown(teammate.getLastContactAreaKnown());
+        if (teammate.getLastContactAreaKnown() > agent.getStats().getLastContactAreaKnown())
+            agent.getStats().setLastContactAreaKnown(teammate.getLastContactAreaKnown());
         
         double rateOfInfoGatheringBelief = maxRateOfInfoGatheringBelief;
-        if (rateOfInfoGatheringBelief > agent.getMaxRateOfInfoGatheringBelief())
-            agent.setMaxRateOfInfoGatheringBelief(rateOfInfoGatheringBelief);
+        if (rateOfInfoGatheringBelief > agent.getStats().getMaxRateOfInfoGatheringBelief())
+            agent.getStats().setMaxRateOfInfoGatheringBelief(rateOfInfoGatheringBelief);
         
         //Process other messages
         for (IDataMessage msg: messages) {

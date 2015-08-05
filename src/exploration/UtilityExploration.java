@@ -126,7 +126,7 @@ public class UtilityExploration {
         // <editor-fold defaultstate="collapsed" desc="Otherwise? Explorers go into Explore state, others go into GoToChild state. Explorers replan using FrontierExploration, others do nothing.">
         else {
             agent.setState(RealAgent.ExploreState.Explore);                
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
             return takeStep_Explore(agent, simConfig);
         }
         // </editor-fold>
@@ -135,11 +135,11 @@ public class UtilityExploration {
     private static Point takeStep_Explore(RealAgent agent, SimulatorConfig simConfig) {  
         Point nextStep;
         // <editor-fold defaultstate="collapsed" desc="Every CHECK_INTERVAL_TIME_TO_RV steps, check if we're due to meet our parent again (unless parent is basestation, in which case explore continuously)">
-        int totalNewInfo = agent.getNewInfo();
+        int totalNewInfo = agent.getStats().getNewInfo();
         //double infoRatio = (double)agent.getLastContactAreaKnown() / 
         //        (double)(agent.getLastContactAreaKnown() + totalNewInfo);
-        double infoRatio = (double)agent.getCurrentBaseKnowledgeBelief() / 
-                (double)(agent.getCurrentBaseKnowledgeBelief() + totalNewInfo);
+        double infoRatio = (double)agent.getStats().getCurrentBaseKnowledgeBelief() / 
+                (double)(agent.getStats().getCurrentBaseKnowledgeBelief() + totalNewInfo);
         
         if ((!agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) && (infoRatio < simConfig.TARGET_INFO_RATIO))
         {
@@ -152,7 +152,7 @@ public class UtilityExploration {
             {
                 //System.out.println(agent.toString() + "Can't find my way home, taking random step.");
                 nextStep = RandomWalk.takeStep(agent);
-                agent.setTimeSinceLastPlan(0);
+                agent.getStats().setTimeSinceLastPlan(0);
                 agent.setCurrentGoal(nextStep);
                 return nextStep;
             }
@@ -162,7 +162,7 @@ public class UtilityExploration {
                 nextStep = agent.getNextPathPoint();
             if (nextStep == null) nextStep = agent.getLocation();
 
-            agent.setTimeSinceLastPlan(0);
+            agent.getStats().setTimeSinceLastPlan(0);
             agent.setCurrentGoal(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
             return nextStep;
         }
@@ -171,11 +171,11 @@ public class UtilityExploration {
         //if we reach this point we continue exploring
         //make sure we replan, if we just entered Explore state
         if (agent.getStateTimer() == 0)
-            agent.timeSinceLastPlan = Constants.REPLAN_INTERVAL + 1;
+            agent.getStats().setTimeSinceLastPlan(Constants.REPLAN_INTERVAL + 1);
         nextStep = FrontierExploration.takeStep(agent, timeElapsed, SimulatorConfig.frontiertype.ReturnWhenComplete);
         
         //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
-        if ((agent.getFrontiers().isEmpty() || (agent.getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
+        if ((agent.getFrontiers().isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
             agent.setMissionComplete(true);
             Point baseLocation = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
@@ -214,9 +214,9 @@ public class UtilityExploration {
         //</editor-fold>
         
         //<editor-fold defaultstate="collapsed" desc="If newInfo goes under ratio, go exploring (can happen if we meet a relay)">
-        int totalNewInfo = agent.getNewInfo();
-        double infoRatio = (double)agent.getLastContactAreaKnown() / 
-                (double)(agent.getLastContactAreaKnown() + totalNewInfo);
+        int totalNewInfo = agent.getStats().getNewInfo();
+        double infoRatio = (double)agent.getStats().getLastContactAreaKnown() / 
+                (double)(agent.getStats().getLastContactAreaKnown() + totalNewInfo);
         if (infoRatio > simConfig.TARGET_INFO_RATIO) {
             agent.setState(RealAgent.ExploreState.Explore);
             agent.setStateTimer(0);

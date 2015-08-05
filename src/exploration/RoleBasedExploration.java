@@ -53,7 +53,6 @@ import java.util.*;
 import java.awt.*;
 import java.util.concurrent.atomic.AtomicReference;
 import path.Path;
-import org.apache.commons.math3.random.SobolSequenceGenerator;
 
 /**
  *
@@ -146,7 +145,7 @@ public class RoleBasedExploration {
         else {
             if(agent.isExplorer()) {
                 agent.setState(RealAgent.ExploreState.Explore);                
-                agent.setTimeSinceLastPlan(0);
+                agent.getStats().setTimeSinceLastPlan(0);
                 return FrontierExploration.replan(agent, SimulatorConfig.frontiertype.ReturnWhenComplete, 0);
             }
             else {
@@ -237,7 +236,7 @@ public class RoleBasedExploration {
         
         //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
         if (timeElapsed > 100) { //prevent setting mission complete at the very start of the exploration
-            if ((agent.getFrontiers().isEmpty() || (agent.getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
+            if ((agent.getFrontiers().isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
                 Path pathToParentRendezvous = agent.calculatePath(agent.getLocation(), agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());//rvd.getParentRendezvous().getChildLocation());
                 agent.setPath(pathToParentRendezvous);
                 agent.setState(RealAgent.ExploreState.ReturnToParent);
