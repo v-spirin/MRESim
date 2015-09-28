@@ -171,6 +171,10 @@ public class SimulationFramework implements ActionListener {
             teammate[i] = new TeammateAgent(robotTeamConfig.getRobotTeam().get(i+1));
         }
         
+        for(int i=1; i<numRobots; i++) {
+            agent[i].setSimFramework(this); //for logging only
+        }
+        
         // Give each agent its teammates
         for(int i=0; i<numRobots; i++)
             for(int j=0; j<numRobots; j++)
@@ -188,6 +192,15 @@ public class SimulationFramework implements ActionListener {
     public int getTimeElapsed()
     {
         return timeElapsed;
+    }
+    
+    //used for checking if area has been double-sensed, for logging stats only
+    public boolean hasCellBeenSensedByAnyAgent(int x, int y) {
+        for (int i = 1; i < numRobots; i++) {
+            if (agent[i].getOccupancyGrid().freeSpaceAt(x, y) || agent[i].getOccupancyGrid().obstacleAt(x, y))
+                return true;
+        }
+        return false;
     }
 
 // <editor-fold defaultstate="collapsed" desc="Simulation Cycle">
@@ -967,11 +980,18 @@ public class SimulationFramework implements ActionListener {
     }
 
     private void checkRunFinish() {
-        if(timeElapsed >= 10000 || allAgentsDone()) {
+        boolean allAgentsAtBase = true;
+        
+        for (int i = 1; i < agent.length; i++) {
+            if (!agent[0].getLocation().equals(agent[i].getLocation()))
+                allAgentsAtBase = false;
+        }
+        
+        if(timeElapsed >= 10000 || allAgentsDone() || allAgentsAtBase) {
             timer.stop();
-            runNumber++;
-            if(runNumber < runNumMax)
-                restart();
+            //runNumber++;
+            //if(runNumber < runNumMax)
+            //    restart();
         }
     }
     
@@ -1667,13 +1687,14 @@ public class SimulationFramework implements ActionListener {
             
             int maxTimeOutsideBaseRange = 0;
             
-            double avgLatencyAmongRobots = 0;
-            double maxLatencyAmongRobots = 0;
+            //double avgLatencyAmongRobots = 0;
+            //double maxLatencyAmongRobots = 0;
             
             //stats below also per agent
             int totalTeamTimeSpentSensing = 0; //sum of individual agent time spent sensing new areas
+            int totalTeamTimeSpentDoubleSensing = 0; //sum of individual agent time spent re-sensing areas known by other agents
             int totalTeamTime = timeElapsed * (agent.length - 1); //ignore base station
-            int totalNotSensingTime = totalTeamTime - totalTeamTimeSpentSensing;
+            
             int totalRelayingTime = 0; //sum of individual agent time spent in "returning to parent" state.
 
             if ((timeElapsed % Constants.RECALC_JOINT_AREA) == 1)
@@ -1686,7 +1707,15 @@ public class SimulationFramework implements ActionListener {
                 avgAgentKnowledge += agent[i].getStats().getAreaKnown();
                 avgTimeLastCommand += agent[i].getStats().getTimeLastCentralCommand();
                 totalDistanceTraveled += agent[i].getStats().getDistanceTraveled();
+                if (agent[i].getStats().getMaxLatency() > maxTeamLatency)
+                    maxTeamLatency = agent[i].getStats().getMaxLatency();
+                avgTeamLatency += agent[i].getStats().getAvgLatency();
+                totalTeamTimeSpentSensing += agent[i].getStats().getTimeSensing();
+                totalTeamTimeSpentDoubleSensing += agent[i].getStats().getTimeDoubleSensing();
+                totalRelayingTime += agent[i].getStats().getTimeReturning();
             }
+            int totalNotSensingTime = totalTeamTime - totalTeamTimeSpentSensing - totalTeamTimeSpentDoubleSensing;
+            avgTeamLatency /= (agent.length - 1);
             avgAgentKnowledge /= (agent.length-1);  //ComStation not included in calculation
             avgAgentKnowledge = 100 * avgAgentKnowledge / jointAreaKnown;
             avgTimeLastCommand /= (agent.length-1);
@@ -1719,6 +1748,13 @@ public class SimulationFramework implements ActionListener {
                 outFile.print(jointAreaKnown + " ");
                 outFile.print(agent[0].getStats().getAreaKnown() + " ");
                 outFile.print(100 * (double)agent[0].getStats().getAreaKnown() / (double)jointAreaKnown + " ");
+                outFile.print(maxTeamLatency + " ");
+                outFile.print(avgTeamLatency + " ");
+                outFile.print(totalTeamTimeSpentSensing + " ");
+                outFile.print(totalTeamTimeSpentDoubleSensing + " ");
+                outFile.print(totalRelayingTime + " ");
+                outFile.print(totalNotSensingTime + " ");
+                outFile.print(totalTeamTime + " ");
                 for (int i = 1; i < agent.length; i++)
                 {
                     outFile.print(agent[i].getStats().getAreaKnown() + " ");
@@ -1726,6 +1762,13 @@ public class SimulationFramework implements ActionListener {
                     //outFile.print(agent[i].getMaxRateOfInfoGatheringBelief() + " ");
                     outFile.print(agent[i].getStats().getCurrentTotalKnowledgeBelief() + " ");
                     outFile.print(agent[i].getStats().getCurrentBaseKnowledgeBelief() + " ");
+                    outFile.print(agent[i].getStats().getMaxLatency() + " ");
+                    outFile.print(agent[i].getStats().getAvgLatency() + " ");
+                    outFile.print(agent[i].getStats().getTimeSensing() + " ");
+                    outFile.print(agent[i].getStats().getTimeDoubleSensing() + " ");
+                    outFile.print(agent[i].getStats().getTimeReturning() + " ");
+                    outFile.print((timeElapsed - agent[i].getStats().getTimeSensing() - 
+                            agent[i].getStats().getTimeDoubleSensing()) + " ");
                 }
                 outFile.println();
                 outFile.close();

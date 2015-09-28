@@ -40,6 +40,8 @@
 
 package agents;
 
+import java.util.LinkedList;
+
 /**
  *
  * @author Victor
@@ -64,6 +66,14 @@ public class AgentStats {
     private double percentageKnown;
     private int timeSinceLastPlan;        // time passed since last plan was made
     
+    private int timeSensing;
+    private int lastIncrementedTimeSensing;
+    private int timeReturning;
+    private int lastIncrementedTimeReturning;
+    private int timeDoubleSensing;
+    private int lastIncrementedTimeDoubleSensing;
+    private final LinkedList<Integer> timeBaseMessageReceived;
+    
     public AgentStats() {
         timeLastCentralCommand = 0;
         distanceTraveled = 0;
@@ -75,6 +85,15 @@ public class AgentStats {
         currentTotalKnowledgeBelief = 0;
         currentBaseKnowledgeBelief = 0;
         timeSinceLastPlan = 0;
+        
+        lastIncrementedTimeSensing = 0;
+        lastIncrementedTimeReturning = 0;
+        lastIncrementedTimeDoubleSensing = 0;
+        
+        timeSensing = 0;
+        timeReturning = 0;
+        timeDoubleSensing = 0;
+        timeBaseMessageReceived = new LinkedList<Integer>();
     }
     
     public int getTimeLastCentralCommand() {
@@ -184,4 +203,74 @@ public class AgentStats {
         currentBaseKnowledgeBelief = val;
     }
     
+    // general logging/reporting stats
+    public void incrementTimeSensing(int curTimestep) {
+        if (curTimestep > lastIncrementedTimeSensing) {
+            timeSensing++;
+            lastIncrementedTimeSensing = curTimestep;
+        }
+    }
+    
+    //If we have sensed new in this timestep, we cannot also doublesense in the same timestep.
+    public void incrementTimeDoubleSensing(int curTimestep) {
+        if ((curTimestep > lastIncrementedTimeDoubleSensing) && (curTimestep > lastIncrementedTimeSensing)) {
+            timeDoubleSensing++;
+            lastIncrementedTimeDoubleSensing = curTimestep;
+        }
+    }
+    
+    public void incrementTimeReturning(int curTimestep) {
+        if (curTimestep > lastIncrementedTimeReturning) {
+            timeReturning++;
+            lastIncrementedTimeReturning = curTimestep;
+        }
+    }
+    
+    // NEW sensing (this does not count double-sensing
+    public int getTimeSensing() {
+        return timeSensing;
+    }
+    
+    public int getTimeDoubleSensing() {
+        return timeDoubleSensing;
+    }
+    
+    public int getTimeReturning() {
+        return timeReturning;
+    }
+    
+    public void commWithBaseStation(int curTimestep) {
+        for (int i = timeBaseMessageReceived.size(); i < curTimestep; i++)
+            timeBaseMessageReceived.add(curTimestep);
+    }
+    
+    public void commWithTeammate(int curTimestep, int teammateBaseMessageListSize) {
+        for (int i = timeBaseMessageReceived.size(); i < teammateBaseMessageListSize; i++)
+            timeBaseMessageReceived.add(curTimestep);
+    }
+    
+    public int getTimeBaseMessageListSize() {
+        return timeBaseMessageReceived.size();
+    }
+    
+    public int getMaxLatency() {
+        int maxLatency = 0;
+        int curTime = 0;
+        for (Integer item: timeBaseMessageReceived) {
+            curTime++;
+            int latency = item - curTime;
+            if (latency > maxLatency) maxLatency = latency;
+        }
+        return maxLatency;
+    }
+    
+    public double getAvgLatency() {
+        int totalLatency = 0;
+        int curTime = 0;
+        for (Integer item: timeBaseMessageReceived) {
+            curTime++;
+            totalLatency += item - curTime;
+        }
+        return (double)totalLatency / (double)curTime;
+    }
 }

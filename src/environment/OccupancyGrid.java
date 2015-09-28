@@ -149,6 +149,15 @@ public class OccupancyGrid {
             for(int j=0; j<this.height; j++) {
                 if(this.getByteNoRelay(i,j) != partnerOccGrid.getByteNoRelay(i,j)) {
                     totalCellsTransferred++;
+                    
+                    // if the information is completely new, get relay status
+                    // otherwise, we may be the relay!
+                    if (this.getByte(i, j) == 0) {
+                        if (partnerOccGrid.isGotRelayed(i, j))
+                            this.setGotRelayed(i, j);
+                        //this.setByte(i, j, (byte)(this.getByte(i,j) | partnerOccGrid.getByte(i,j)));
+                    }
+                    
                     if (partnerOccGrid.safeSpaceAt(i, j)) {
                         if (partnerOccGrid.freeSpaceAt(i, j)) {
                             if (this.safeSpaceAt(i, j) && (this.obstacleAt(i, j))) {
@@ -201,18 +210,12 @@ public class OccupancyGrid {
                     }
                     if (partnerOccGrid.obstacleAt(i, j) && !this.safeSpaceAt(i, j))
                         this.setObstacleAt(i, j);*/
-                    if (partnerOccGrid.isKnownAtBase(i, j)) {
+                    if (partnerOccGrid.isKnownAtBase(i, j) && !this.isKnownAtBase(i, j)) {
                         cellsSetKnownAtBase++;
                         this.setKnownAtBase(i, j);
                     }
                         
-                    // if the information is completely new, get all of it, including relay status
-                    // otherwise, we may be the relay! So get all new info, apart from relay status
-                    if (this.getByte(i, j) == 0) {
-                        if (partnerOccGrid.isGotRelayed(i, j))
-                            this.setGotRelayed(i, j);
-                        //this.setByte(i, j, (byte)(this.getByte(i,j) | partnerOccGrid.getByte(i,j)));
-                    }
+                    
                     /*else {
                         this.setByte(i, j, (byte)(this.getByte(i,j) | partnerOccGrid.getByteNoRelay(i,j)));
                     }*/

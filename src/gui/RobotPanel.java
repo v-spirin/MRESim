@@ -246,7 +246,8 @@ public class RobotPanel extends javax.swing.JPanel {
         jToolBar1.add(toggleAgent);
 
         togglePath.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        togglePath.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/pathOff.png"))); // NOI18N
+        togglePath.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/pathOn.png"))); // NOI18N
+        togglePath.setSelected(true);
         togglePath.setToolTipText("Path");
         togglePath.setBorderPainted(false);
         togglePath.setContentAreaFilled(false);
@@ -307,7 +308,8 @@ public class RobotPanel extends javax.swing.JPanel {
         jToolBar1.add(toggleSafeSpace);
 
         toggleFrontiers.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        toggleFrontiers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/frontiersOff.png"))); // NOI18N
+        toggleFrontiers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/frontiersOn.png"))); // NOI18N
+        toggleFrontiers.setSelected(true);
         toggleFrontiers.setToolTipText("Frontiers");
         toggleFrontiers.setBorderPainted(false);
         toggleFrontiers.setContentAreaFilled(false);
@@ -327,7 +329,8 @@ public class RobotPanel extends javax.swing.JPanel {
         jToolBar1.add(toggleFrontiers);
 
         toggleCommRange.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        toggleCommRange.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/commrangeOff.png"))); // NOI18N
+        toggleCommRange.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/commrangeOn.png"))); // NOI18N
+        toggleCommRange.setSelected(true);
         toggleCommRange.setToolTipText("Communication Range");
         toggleCommRange.setBorderPainted(false);
         toggleCommRange.setContentAreaFilled(false);
@@ -367,8 +370,7 @@ public class RobotPanel extends javax.swing.JPanel {
         jToolBar1.add(toggleSkeleton);
 
         toggleRendezvous.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        toggleRendezvous.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/rvpointOn.png"))); // NOI18N
-        toggleRendezvous.setSelected(true);
+        toggleRendezvous.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/rvpointOff.png"))); // NOI18N
         toggleRendezvous.setToolTipText("Rendezvous Points");
         toggleRendezvous.setBorderPainted(false);
         toggleRendezvous.setContentAreaFilled(false);

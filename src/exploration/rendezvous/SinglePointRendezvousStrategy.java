@@ -420,6 +420,8 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
             }
             else {
                 //calculateRendezvous();
+                //set RV to next destination
+                rvd.setChildRendezvous(new Rendezvous(agent.getCurrentGoal()));
                 rvd.setParentRendezvous(rvd.getChildRendezvous());
                 /*if (rvThroughWalls && timeElapsed > 100) {
                     if (rvd.getTimeSinceLastRVCalc() == 0)

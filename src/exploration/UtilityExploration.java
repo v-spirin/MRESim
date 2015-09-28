@@ -62,6 +62,7 @@ public class UtilityExploration {
     private static final int TIME_BETWEEN_RECOMPUTE_PATHS = 10;
     public static int timeElapsed;
     public static int oldTimeElapsed;
+    
 
 // <editor-fold defaultstate="collapsed" desc="Take Step">
 
@@ -117,6 +118,7 @@ public class UtilityExploration {
     }
     
     private static Point takeStep_Initial(RealAgent agent, SimulatorConfig simConfig) {
+        System.out.println(agent + " takeStep_Initial timeInState: " + agent.getStateTimer());
         // Small number of random steps to get initial range data
         // <editor-fold defaultstate="collapsed" desc="First 3 steps? Take random step">
         if (agent.getStateTimer() < 3)
@@ -132,25 +134,36 @@ public class UtilityExploration {
         // </editor-fold>
     }
     
-    private static Point takeStep_Explore(RealAgent agent, SimulatorConfig simConfig) {  
+    private static Point takeStep_Explore(RealAgent agent, SimulatorConfig simConfig) {
+        System.out.println(agent + " takeStep_Explore timeInState: " + agent.getStateTimer());
         Point nextStep;
-        // <editor-fold defaultstate="collapsed" desc="Every CHECK_INTERVAL_TIME_TO_RV steps, check if we're due to meet our parent again (unless parent is basestation, in which case explore continuously)">
+        // <editor-fold defaultstate="collapsed" desc="Every CHECK_INTERVAL_TIME_TO_RV steps, check if we're due to change state to return">
         int totalNewInfo = agent.getStats().getNewInfo();
         //double infoRatio = (double)agent.getLastContactAreaKnown() / 
         //        (double)(agent.getLastContactAreaKnown() + totalNewInfo);
         double infoRatio = (double)agent.getStats().getCurrentBaseKnowledgeBelief() / 
                 (double)(agent.getStats().getCurrentBaseKnowledgeBelief() + totalNewInfo);
         
+        //double infoRatio = (double)totalNewInfo / (double)57600;
+        System.out.println(agent.toString() + " in state Explore. infoRatio = " + 
+                    infoRatio +", Target = " + simConfig.TARGET_INFO_RATIO + ". newInfo = " + totalNewInfo +
+                ", baseInfo = " + agent.getStats().getCurrentBaseKnowledgeBelief());    
+        
+        
+        
         if ((!agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) && (infoRatio < simConfig.TARGET_INFO_RATIO))
+        //if ((!agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) && (infoRatio >= simConfig.TARGET_INFO_RATIO))
         {
-            //System.out.println(agent.toString() + " Decided to return.");     
+            System.out.println(agent.toString() + " Decided to return. infoRatio = " + 
+                    infoRatio +", Target = " + simConfig.TARGET_INFO_RATIO);     
             agent.setState(ExploreState.ReturnToParent);
             //agent.setRole(RobotConfig.roletype.Relay);
+            agent.computePathToBaseStation();
             agent.setPathToBaseStation();
 
             if (agent.getPath() == null || agent.getPath().getPoints() == null || agent.getPath().getPoints().size() <= 1)
             {
-                //System.out.println(agent.toString() + "Can't find my way home, taking random step.");
+                System.out.println(agent.toString() + "Can't find my way home, taking random step.");
                 nextStep = RandomWalk.takeStep(agent);
                 agent.getStats().setTimeSinceLastPlan(0);
                 agent.setCurrentGoal(nextStep);
@@ -176,6 +189,7 @@ public class UtilityExploration {
         
         //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
         if ((agent.getFrontiers().isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
+            System.out.println(agent + " setting mission complete");
             agent.setMissionComplete(true);
             Point baseLocation = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
@@ -200,6 +214,7 @@ public class UtilityExploration {
     }
     
     private static Point takeStep_ReturnToParent(RealAgent agent, SimulatorConfig simConfig) { 
+        System.out.println(agent + " takeStep_ReturnToParent timeInState: " + agent.getStateTimer());
         //<editor-fold defaultstate="collapsed" desc="If base is in range, go back to exploring">
         if(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
             agent.setState(RealAgent.ExploreState.Explore);
@@ -215,23 +230,36 @@ public class UtilityExploration {
         
         //<editor-fold defaultstate="collapsed" desc="If newInfo goes under ratio, go exploring (can happen if we meet a relay)">
         int totalNewInfo = agent.getStats().getNewInfo();
-        double infoRatio = (double)agent.getStats().getLastContactAreaKnown() / 
-                (double)(agent.getStats().getLastContactAreaKnown() + totalNewInfo);
-        if (infoRatio > simConfig.TARGET_INFO_RATIO) {
+        //double infoRatio = (double)agent.getLastContactAreaKnown() / 
+        //        (double)(agent.getLastContactAreaKnown() + totalNewInfo);
+        //double infoRatio = (double)agent.getStats().getCurrentBaseKnowledgeBelief() / 
+        //        (double)(agent.getStats().getCurrentBaseKnowledgeBelief() + totalNewInfo);
+        
+        double infoRatio = (double)totalNewInfo / (double)57600;
+        
+        if ((totalNewInfo == 0) && (infoRatio > simConfig.TARGET_INFO_RATIO)) { //just in case, to avoid returning with 0 new info
             agent.setState(RealAgent.ExploreState.Explore);
             agent.setStateTimer(0);
+            System.out.println(agent + " switching to takeStep_Explore. infoRatio = " + 
+                    infoRatio +", Target = " + simConfig.TARGET_INFO_RATIO);
             return takeStep_Explore(agent, simConfig);
+        } else {
+            System.out.println(agent + " remained in ReturnToParent. infoRatio = " + 
+                    infoRatio +", Target = " + simConfig.TARGET_INFO_RATIO);
         }
         //</editor-fold>
 
         Point baseLocation = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
         //<editor-fold defaultstate="collapsed" desc="Recalculate path every PATH_RECALC_PARENT_INTERVAL steps, if fail try A*, if that fails try using existing path, if that fails take random step">
         Path existingPath = agent.getPath();
-        if((agent.getStateTimer() % Constants.PATH_RECALC_PARENT_INTERVAL) == (Constants.PATH_RECALC_PARENT_INTERVAL - 1)) {
+        if((existingPath == null) || (agent.getStateTimer() == 0) ||
+                (agent.getStateTimer() % Constants.PATH_RECALC_PARENT_INTERVAL) == (Constants.PATH_RECALC_PARENT_INTERVAL - 1)) {
+            System.out.println(agent + " replanning path to Base");
             //<editor-fold defaultstate="collapsed" desc="If path already exists, update dirty cells with that path">
             if (existingPath != null)
                 agent.addDirtyCells(existingPath.getAllPathPixels());
-            //</editor-fold>            
+            //</editor-fold>  
+            agent.forceUpdateTopologicalMap(false);
             Path path = agent.calculatePath(agent.getLocation(), baseLocation);
             //<editor-fold defaultstate="collapsed" desc="If path not found, try A*">
             if (!path.found)
@@ -255,6 +283,7 @@ public class UtilityExploration {
             }
             //</editor-fold>
             else {
+                System.out.println(agent + " path to Base found.");
                 agent.setPath(path);
                 agent.setCurrentGoal(baseLocation);
                 // Must remove first point in path as this is robot's location.
@@ -272,6 +301,7 @@ public class UtilityExploration {
         if(agent.getLocation().distance(baseLocation) > 2*Constants.STEP_SIZE)
         {
             System.out.println(agent.toString() + "!!!ERROR! We should have reached parent RV, but we are too far from it! Taking random step");
+            agent.setPath(null);
             return RandomWalk.takeStep(agent);
         }
         

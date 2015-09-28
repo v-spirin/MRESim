@@ -102,6 +102,12 @@ public class RealAgent extends BasicAgent implements Agent {
     // Teammates
     HashMap<Integer,TeammateAgent> teammates;
     
+    //This is used only for logging - direct reference to other agents. DO NOT use this for anything else
+    private SimulationFramework simFramework;
+    public void setSimFramework(SimulationFramework simFramework) {
+        this.simFramework = simFramework;
+    }
+    
     // Role-based Exploration
     private RendezvousAgentData rendezvousAgentData;
     private IRendezvousStrategy rendezvousStrategy;
@@ -172,6 +178,10 @@ public class RealAgent extends BasicAgent implements Agent {
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
     public AgentStats getStats() {
         return stats;
+    }
+    
+    public int getTimeElapsed() {
+        return timeElapsed;
     }
     
     public void resetBadFrontiers() {
@@ -260,7 +270,8 @@ public class RealAgent extends BasicAgent implements Agent {
     }
     
     public void setPath(Path newPath) {
-        this.setDirtyCells(mergeLists(dirtyCells, path.getAllPathPixels()));
+        if (path != null)
+            this.setDirtyCells(mergeLists(dirtyCells, path.getAllPathPixels()));
         path = newPath;
     }
 
@@ -335,7 +346,7 @@ public class RealAgent extends BasicAgent implements Agent {
             System.out.println(toString() + "generated topological map, " + (System.currentTimeMillis()-timeStart) + "ms.");
             occGrid.setMapHasChangedToFalse();
         } else {
-            //System.out.println(this + " Occupancy Grid not changed since last update, skipping topological map update");
+            System.out.println(this + " Occupancy Grid not changed since last update, skipping topological map update");
         }
     }
 
@@ -582,7 +593,7 @@ public class RealAgent extends BasicAgent implements Agent {
                 timeTopologicalMapUpdated = -1;
                 return calculatePath(startPoint, goalPoint);
             } else if (!topologicalMap.getPath().found) {
-                System.out.println(this + "failed to plan path " + startPoint + " to " + goalPoint + ", not retrying; " +
+                System.out.println(this +"at location " + getLocation() + "failed to plan path " + startPoint + " to " + goalPoint + ", not retrying; " +
                         "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed + 
                         ", mapCellsChanged: " + occGrid.getMapCellsChanged() + "/" + Constants.MAP_CHANGED_THRESHOLD);
             } 
@@ -721,26 +732,53 @@ public class RealAgent extends BasicAgent implements Agent {
             return;
         if (getID() == Constants.BASE_STATION_TEAMMATE_ID) //base station
             return;
+        if (ag.timeToBase() == timeToBase()) { //robots overlapping in sim; couldn't happen in real life.
+            System.out.println(toString() + " timeToBase same as " + ag.name + " (" + timeToBase() + " vs " + ag.timeToBase() + ")");
+            return;                          //anyway, this means there is symmetry so could potentially lose new data
+        }
+        
+        if (ag.getNewInfo() == 0 || stats.getNewInfo() == 0) { //only at most one agent is responsible for data
+            if (Math.abs(ag.timeToBase() - timeToBase()) < 3) //then only 'swap' data if significant advantage is offered
+                return;                                     //to prevent oscillations
+        }
         int new_counter = 0;
-        boolean iAmCloserToBase = (ag.timeToBase() > timeToBase());
-        /*if (iAmCloserToBase)
+        boolean iAmCloserToBase = (ag.timeToBase() > timeToBase()); //buffer to prevent oscillations
+        if (iAmCloserToBase)
             System.out.println(toString() + " relaying for " + ag.name + " (" + timeToBase() + " vs " + ag.timeToBase() + ")");
         else
             System.out.println(ag.name + " relaying for " + toString() + " (" + ag.timeToBase() + " vs " + timeToBase() + ")");
-        */
-        if (iAmCloserToBase) {           
+        
+        if (iAmCloserToBase) {
             for (Point point : ag.occGrid.getOwnedCells()) {
                 if (occGrid.isGotRelayed(point.x, point.y)) {
                     occGrid.setGotUnrelayed(point.x, point.y);
                     new_counter++;
                 }
             }
-           if (new_counter > 0) {
-               //Set new info to 1 to prevent oscillations - this get updated properly in updateAreaKnown
-               if (stats.getNewInfo() == 0) stats.setNewInfo(1);
-               System.out.println(toString() + "setGotUnrelayed: " + new_counter);
-           }
-        } else {        
+            
+            stats.setNewInfo(occGrid.getNumFreeCells() - occGrid.getNumFreeCellsKnownAtBase() - occGrid.getNumFreeRelayedCells());
+            
+            if (new_counter > 0) {
+                //Set new info to 1 to prevent oscillations - this get updated properly in updateAreaKnown
+                if (stats.getNewInfo() == 0) stats.setNewInfo(1);
+                System.out.println(toString() + "setGotUnrelayed: " + new_counter);
+            }
+           
+            
+            if ((simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration) && 
+                   (simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.UtilReturn)) {
+                if (((getState() == ExploreState.ReturnToParent) || ag.getState() == ExploreState.ReturnToParent)
+                        && (ag.getNewInfo() > 1 || stats.getNewInfo() > 1))
+                    setState(ExploreState.ReturnToParent);
+                else
+                    setState(ExploreState.Explore);
+            }
+            
+        } else {
+            if ((simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration) && 
+                   (simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.UtilReturn)) {
+                setState(ExploreState.Explore);
+            }
             if (stats.getNewInfo() > 0) {
                 // Need to iterate over a copy of getOwnedCells list, as the list gets changed by setGotRelayed.
                 new_counter = occGrid.setOwnedCellsRelayed();
@@ -748,6 +786,9 @@ public class RealAgent extends BasicAgent implements Agent {
                     System.out.println(toString() + "setGotRelayed: " + new_counter);
             }
         }
+        
+        if ((getState() != ExploreState.Initial) && (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)) 
+            setStateTimer(0); //replan
         //System.out.println(this.toString() + "updateAreaRelayed took " + (System.currentTimeMillis()-timer) + "ms.\n");
     }
     
@@ -910,12 +951,21 @@ public class RealAgent extends BasicAgent implements Agent {
     
     protected void updateFreeAndSafeSpace(Polygon newFreeSpace, Polygon newSafeSpace) {
         // May be possible to do some optimization here, I think a lot of cells are checked unnecessarily
+        boolean sensedNew = false;
+        boolean doubleSensed = false;
         for(int i=newFreeSpace.getBounds().x; i<=newFreeSpace.getBounds().x+newFreeSpace.getBounds().width; i++)
             innerloop:
             for(int j=newFreeSpace.getBounds().y; j<=newFreeSpace.getBounds().y+newFreeSpace.getBounds().height; j++)
                 if(occGrid.locationExists(i, j)) {
                     if(newFreeSpace.contains(i,j) && !occGrid.freeSpaceAt(i,j)) {
                         if (!occGrid.obstacleAt(i, j)) {
+                            sensedNew = true;
+                            //need to check if it was new sensing or double-sensing
+                            //note that agent itself has no way of knowing this. So we do a dirty hack here and check the
+                            //occupancy grids of other agents directly. This is fine though as we only do this for logging.
+                            if (simFramework.hasCellBeenSensedByAnyAgent(i, j)) {
+                                doubleSensed = true;
+                            }
                             occGrid.setFreeSpaceAt(i, j);
                             dirtyCells.add(new Point(i,j));
                         }
@@ -934,6 +984,22 @@ public class RealAgent extends BasicAgent implements Agent {
                         }
                     }
                 }
+        
+        //update stats for reporting/logging
+        if (sensedNew) {
+            if (!doubleSensed) stats.incrementTimeSensing(timeElapsed);
+            else stats.incrementTimeDoubleSensing(timeElapsed);
+        }
+        if (getState().equals(ExploreState.ReturnToParent) || 
+                getState().equals(ExploreState.WaitForParent) ||
+                getState().equals(ExploreState.WaitForChild) ||
+                //getState().equals(ExploreState.GetInfoFromChild) ||
+                getState().equals(ExploreState.GiveParentInfo)) //don't include GoToChild here, as in UtilityExploration
+                                                                //agents end up going to child in Explore state as
+                                                                //they don't know they are going to child at the time!
+        {
+            stats.incrementTimeReturning(timeElapsed);
+        }
     }
     
     protected void updateObstacles(Polygon newFreeSpace) {
@@ -1043,8 +1109,10 @@ public class RealAgent extends BasicAgent implements Agent {
         dirtyCells.addAll(
                 occGrid.mergeGrid(teammate.getOccupancyGrid(), isBaseStation));
         
-        if ((simConfig != null) && (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)
+        if ((simConfig != null) && 
+                ((simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)
                 && (simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.UtilReturn))
+                || (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RoleBasedExploration)) //this line just so we can compare logs with UtilReturn exploration
             updateAreaRelayed(teammate);
         
         needUpdatingAreaKnown = true;

@@ -144,7 +144,7 @@ public class Constants {
     public static final int BASE_STATION_AGENT_ID = 0;
     
     // How often should we check if it's time to RV?
-    public static final int CHECK_INTERVAL_TIME_TO_RV = 10;
+    public static final int CHECK_INTERVAL_TIME_TO_RV = 2;
     
     // How often should we recalculate path to parent
     public static final int PATH_RECALC_PARENT_INTERVAL = 8;

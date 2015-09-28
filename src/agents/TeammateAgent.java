@@ -68,7 +68,7 @@ public class TeammateAgent extends BasicAgent implements Agent {
     private Point frontierCentre;
     private double pathLength;
     int relayID;
-    public int newInfo;
+    private int newInfo;
     
     private RendezvousAgentData rendezvousAgentData;
 
@@ -204,6 +204,14 @@ public class TeammateAgent extends BasicAgent implements Agent {
     
     public void setRelayID(int relayID) {
         this.relayID = relayID;
+    }
+    
+    public void setNewInfo(int newInfo) {
+        this.newInfo = newInfo;
+    }
+    
+    public int getNewInfo() {
+        return this.newInfo;
     }
     
     public int getID() {

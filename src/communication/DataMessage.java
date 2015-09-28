@@ -62,6 +62,7 @@ public class DataMessage implements IDataMessage {
     public int y;
     public OccupancyGrid occGrid;
     public int timeLastCentralCommand;
+    public int timeBaseMessageListSize;
     public int lastContactAreaKnown;
     public double pathLength;
     public boolean missionComplete;
@@ -76,6 +77,7 @@ public class DataMessage implements IDataMessage {
     public Collection<TeammateAgent> teammates;
     //TODO: the above need to be encapsulated into ...DataMessage classes by group, and made final, like below
     public final List<IDataMessage> messages;
+    public int newInfo;
     
     public DataMessage(RealAgent agent, int direct) {
         ID = agent.getID();
@@ -98,6 +100,8 @@ public class DataMessage implements IDataMessage {
         maxRateOfInfoGatheringBelief = agent.getStats().getMaxRateOfInfoGatheringBelief();
         badFrontiers = agent.getBadFrontiers();
         teammates = agent.getAllTeammates().values();
+        timeBaseMessageListSize = agent.getStats().getTimeBaseMessageListSize();
+        newInfo = agent.getStats().getNewInfo();
         
         if(agent.getLastFrontier() != null)
             frontierCentre = new Point(agent.getLastFrontier().getCentre());//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid()));
@@ -123,6 +127,7 @@ public class DataMessage implements IDataMessage {
         teammate.setLastContactAreaKnown(lastContactAreaKnown);
         teammate.setRelayID(relayID);
         teammate.setFrontierCentre(frontierCentre);
+        teammate.setNewInfo(newInfo); //needed for UtilExploration to correctly execute updateAreaRelayed
         if(teammate.getID() == agent.getChild() && teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
             agent.setMissionComplete(missionComplete);
         }
@@ -161,6 +166,12 @@ public class DataMessage implements IDataMessage {
         double rateOfInfoGatheringBelief = maxRateOfInfoGatheringBelief;
         if (rateOfInfoGatheringBelief > agent.getStats().getMaxRateOfInfoGatheringBelief())
             agent.getStats().setMaxRateOfInfoGatheringBelief(rateOfInfoGatheringBelief);
+        
+        // This is for max/avg latency for message from base station
+        if (teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID)
+            agent.getStats().commWithTeammate(agent.getTimeElapsed(), timeBaseMessageListSize);
+        else
+            agent.getStats().commWithBaseStation(agent.getTimeElapsed());
         
         //Process other messages
         for (IDataMessage msg: messages) {
