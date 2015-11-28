@@ -48,6 +48,7 @@ import gui.*;
 import communication.*;
 import config.RobotConfig.roletype;
 import config.SimulatorConfig.exptype;
+import config.SimulatorConfig.frontiertype;
 import environment.Environment.Status;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.RendezvousAgentData;
@@ -56,6 +57,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Point;
 import java.awt.Polygon;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -307,16 +309,25 @@ public class SimulationFramework implements ActionListener {
         // This method can be used to set up batch simulations
         // TODO: replace with XML batch run configuration
         
-        /*String root = "C:\\RAS2014\\simulations\\";
-        String configs[] = {"M2_L4_R4_RB", "M2_L2_R4", 
-                            "M2_L3_R4", "M2_L4_R4",
-                            "M3_L1_R4", "M3_L2_R4",
-                            "M3_L3_R4", "M3_L4_R4",
-                            "M4_L1_R4", "M4_L2_R4",
-                            "M4_L3_R4", "M4_L4_R4",
-                            "M1_L1_R8", "M1_L2_R8",
-                            "M1_L3_R8", "M1_L4_R8",};
-        int map = 2;
+        String root = "C:\\Users\\Victor\\Documents\\uni\\actual_dphil_thesis\\experiments\\ch3\\automated\\";
+        String configs[] = {//"grid_RB_2R", "grid_greedy_2R", 
+                            "lgrid_util_8r_0.2", "lgrid_util_8r_0.3",
+                            "lgrid_util_8r_0.4", "lgrid_util_8r_0.5",
+                            "lgrid_util_8r_0.6", "lgrid_util_8r_0.7",
+                            "lgrid_util_8r_0.8", "lgrid_util_8r_0.9",};
+        
+        {
+            simConfig.setExpAlgorithm(exptype.FrontierExploration);
+            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
+            simConfig.TARGET_INFO_RATIO = 0.2 + runNumber*0.1;
+            (new File(root + configs[runNumber])).mkdirs();
+            (new File(root + configs[runNumber] + "\\screenshots")).mkdirs();
+            simConfig.setLogDataFilename(root + configs[runNumber] + "\\sim.txt");
+            simConfig.setLogAgentsFilename(root + configs[runNumber] + "\\loc.txt");
+            simConfig.setLogScreenshotsDirname(root + configs[runNumber] + "\\screenshots");
+        }
+        
+        /*int map = 2;
         if (runNumber == 1)
         {
             simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
@@ -337,609 +348,17 @@ public class SimulationFramework implements ActionListener {
             }
             simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[0]);
         }
-        if (runNumber == 2)
-        {
-            map = 2;
-            String config = configs[1];
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.95;
-            robotTeamConfig.loadConfig(root + "configs\\" + config);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 3)
-        {
-            map = 2;
-            String config = configs[2];
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.95;
-            robotTeamConfig.loadConfig(root + "configs\\" + config);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 4)
-        {
-            map = 2;
-            String config = configs[3];
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.95;
-            robotTeamConfig.loadConfig(root + "configs\\" + config);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 5)
-        {
-            map = 3;
-            String config = configs[4];
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.95;
-            robotTeamConfig.loadConfig(root + "configs\\" + config);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 6)
-        {
-            map = 3;
-            String config = configs[5];
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.95;
-            robotTeamConfig.loadConfig(root + "configs\\" + config);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 7)
-        {
-            map = 3;
-            String config = configs[6];
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.95;
-            robotTeamConfig.loadConfig(root + "configs\\" + config);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 8)
-        {
-            map = 3;
-            String config = configs[7];
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.95;
-            robotTeamConfig.loadConfig(root + "configs\\" + config);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 9)
-        {
-            map = 4;
-            String config = configs[8];
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.95;
-            robotTeamConfig.loadConfig(root + "configs\\" + config);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 10)
-        {
-            map = 4;
-            String config = configs[9];
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.95;
-            robotTeamConfig.loadConfig(root + "configs\\" + config);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 11)
-        {
-            map = 4;
-            String config = configs[10];
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.95;
-            robotTeamConfig.loadConfig(root + "configs\\" + config);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 12)
-        {
-            map = 4;
-            String config = configs[11];
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.95;
-            robotTeamConfig.loadConfig(root + "configs\\" + config);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + config + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + config + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 13)
-        {
-            runNumber = 33;
-            /*
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.RoleBasedExploration);
-            simConfig.setRoleSwitchAllowed(true);
-            simConfig.setReplanningAllowed(false);
-            simConfig.setStrictRoleSwitch(false);
-            simConfig.setUseImprovedRendezvous(true);
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[7]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[7] + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[7] + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[7])).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[7]);
-        }
-        if (runNumber == 14)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.90;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[6]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[6] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[6] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[6] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[6] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 15)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.75;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[6]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[6] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[6] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[6] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[6] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 16)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.3;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[6]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[6] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[6] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[6] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[6] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
         
-        if (runNumber == 17)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.RoleBasedExploration);
-            simConfig.setRoleSwitchAllowed(true);
-            simConfig.setReplanningAllowed(false);
-            simConfig.setStrictRoleSwitch(false);
-            simConfig.setUseImprovedRendezvous(true);
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[9]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[9] + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[9] + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[9])).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[9]);
-        }
-        if (runNumber == 18)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.90;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[8]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[8] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[8] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[8] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[8] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 19)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.75;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[8]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[8] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[8] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[8] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[8] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 20)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.3;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[8]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[8] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[8] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[8] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[8] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 21)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.RoleBasedExploration);
-            simConfig.setRoleSwitchAllowed(true);
-            simConfig.setReplanningAllowed(false);
-            simConfig.setStrictRoleSwitch(false);
-            simConfig.setUseImprovedRendezvous(true);
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[11]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[11] + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[11] + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[11])).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[11]);
-        }
-        if (runNumber == 22)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.90;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[10]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[10] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[10] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[10] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[10] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 23)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.75;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[10]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[10] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[10] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[10] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[10] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 24)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.3;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[10]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[10] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[10] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[10] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[10] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 25)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.RoleBasedExploration);
-            simConfig.setRoleSwitchAllowed(true);
-            simConfig.setReplanningAllowed(false);
-            simConfig.setStrictRoleSwitch(false);
-            simConfig.setUseImprovedRendezvous(true);
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[13]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[13] + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[13] + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[13])).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[13]);
-        }
-        if (runNumber == 26)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.90;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[12]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[12] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[12] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[12] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[12] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 27)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.75;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[12]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[12] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[12] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[12] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[12] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 28)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.3;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[12]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[12] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[12] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[12] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[12] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 29)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.RoleBasedExploration);
-            simConfig.setRoleSwitchAllowed(true);
-            simConfig.setReplanningAllowed(false);
-            simConfig.setStrictRoleSwitch(false);
-            simConfig.setUseImprovedRendezvous(true);
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[15]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[15] + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[15] + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[15])).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[15]);
-        }
-        if (runNumber == 30)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.90;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[14]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[14] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[14] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[14] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[14] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 31)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.75;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[14]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[14] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[14] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[14] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[14] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
-        if (runNumber == 32)
-        {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
-            simConfig.setExpAlgorithm(exptype.FrontierExploration);
-            simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-            simConfig.TARGET_INFO_RATIO = 0.3;
-            robotTeamConfig.loadConfig(root + "configs\\" + configs[14]);
-            simConfig.setLogDataFilename(root + "output\\sim\\" + configs[14] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            simConfig.setLogAgentsFilename(root + "output\\agent\\" + configs[14] + "U" + simConfig.TARGET_INFO_RATIO + ".txt");
-            try
-            {
-                (new File(root + "output\\video\\" + configs[14] + "U" + simConfig.TARGET_INFO_RATIO)).mkdirs();
-            } catch (Exception e)
-            {
-
-            }
-            simConfig.setLogScreenshotsDirname(root + "output\\video\\" + configs[14] + "U" + simConfig.TARGET_INFO_RATIO);
-        }
         
         mainGUI.updateFromRobotTeamConfig();*/
 
     }
 
     public void start() {
-        /*runNumber = 1;
-        runNumMax = 33;
-        updateRunConfig();
-        reset();*/
+        runNumber = 0;
+        runNumMax = 10;
+        //updateRunConfig();
+        //reset();
         //simConfig.TARGET_INFO_RATIO = 0.90;
         RandomWalk.generator.setSeed(Constants.RANDOM_SEED);
         System.out.println(this.toString() + "Starting exploration!");
@@ -948,8 +367,8 @@ public class SimulationFramework implements ActionListener {
     }
 
     private void restart() {        
-        /*updateRunConfig();
-        reset();*/
+        //updateRunConfig();
+        reset();
         System.out.println(this.toString() + "Restarting exploration!");
         simStartTime = System.currentTimeMillis();
         timer.start();
@@ -989,7 +408,7 @@ public class SimulationFramework implements ActionListener {
         
         if(timeElapsed >= 10000 || allAgentsDone() || allAgentsAtBase) {
             timer.stop();
-            //runNumber++;
+            runNumber++;
             //if(runNumber < runNumMax)
             //    restart();
         }

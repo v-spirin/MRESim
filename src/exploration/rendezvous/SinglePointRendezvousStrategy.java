@@ -421,7 +421,9 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
             else {
                 //calculateRendezvous();
                 //set RV to next destination
-                rvd.setChildRendezvous(new Rendezvous(agent.getCurrentGoal()));
+                //if we have a current goal that is not right next to where we are
+                if (agent.getCurrentGoal().distance(agent.getLocation()) > 25)
+                    rvd.setChildRendezvous(new Rendezvous(agent.getCurrentGoal()));
                 rvd.setParentRendezvous(rvd.getChildRendezvous());
                 /*if (rvThroughWalls && timeElapsed > 100) {
                     if (rvd.getTimeSinceLastRVCalc() == 0)
