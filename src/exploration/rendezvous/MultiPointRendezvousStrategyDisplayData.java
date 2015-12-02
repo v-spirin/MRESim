@@ -59,11 +59,16 @@ public class MultiPointRendezvousStrategyDisplayData implements IRendezvousDispl
     private PriorityQueue<NearRVPoint> pointsNearFrontierReal;
     private List<NearRVPoint> generatedPoints;
     private List<Point> curDirtyCells;
+    private SinglePointRendezvousStrategyDisplayData sprDisplayData;
     
     public MultiPointRendezvousStrategyDisplayData() {
         pointsNearFrontierReal = new PriorityQueue<NearRVPoint>();
         generatedPoints = new LinkedList<NearRVPoint>();
         curDirtyCells = new LinkedList<Point>();
+    }
+    
+    public void setSPRDisplayData(SinglePointRendezvousStrategyDisplayData data) {
+        sprDisplayData = data;
     }
     
     public PriorityQueue<NearRVPoint> getPointsNearFrontier() {
@@ -101,6 +106,9 @@ public class MultiPointRendezvousStrategyDisplayData implements IRendezvousDispl
                     agent.getDirtyCells().add(new Point(i,j));
         
         dirtyCells.addAll(curDirtyCells);
+        if (sprDisplayData != null) {
+            dirtyCells.addAll(sprDisplayData.getDirtyCells(image, agent));
+        }
         
         curDirtyCells.clear();
         
@@ -108,6 +116,10 @@ public class MultiPointRendezvousStrategyDisplayData implements IRendezvousDispl
     }
 
     public void drawCandidatePointInfo(ExplorationImage image) {
+        if (sprDisplayData != null) {
+            sprDisplayData.drawCandidatePointInfo(image);
+        }
+        
         image.setG2D();
         Graphics2D g2D = image.getG2D();
         
@@ -172,6 +184,10 @@ public class MultiPointRendezvousStrategyDisplayData implements IRendezvousDispl
     }
 
     public void drawRendezvousLocation(ExplorationImage image, RealAgent agent) {
+        if (sprDisplayData != null) {
+            sprDisplayData.drawRendezvousLocation(image, agent);
+        }
+        
         int x,y;
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         // Draw Child RV

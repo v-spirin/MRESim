@@ -181,33 +181,37 @@ public class RoleBasedExploration {
         // <editor-fold defaultstate="collapsed" desc="Every CHECK_INTERVAL_TIME_TO_RV steps, check if we're due to meet our parent again (unless parent is basestation, in which case explore continuously)">
         if (agent.getParent() != Constants.BASE_STATION_TEAMMATE_ID
                 && (agent.getStateTimer() % Constants.CHECK_INTERVAL_TIME_TO_RV) == (Constants.CHECK_INTERVAL_TIME_TO_RV - 1)) 
-        {
-            agent.getRendezvousStrategy().processExplorerCheckDueReturnToRV();
+        {           
             
             Path pathToParentRendezvous; //output parameter
             AtomicReference<Path> outPathRef = new AtomicReference<Path>();
             if (isDueToReturnToRV(agent, outPathRef)) {
-                pathToParentRendezvous = outPathRef.get();
-                agent.setState(RealAgent.ExploreState.ReturnToParent);
-                
-                agent.getRendezvousStrategy().processExplorerStartsHeadingToRV();
-                
-                if (agent.getPath() != null) {
-                    agent.addDirtyCells(agent.getPath().getAllPathPixels());
-                }
-                
-                if (agent.getState() == RealAgent.ExploreState.ReturnToParent) {
-                    if ((pathToParentRendezvous == null) || (!pathToParentRendezvous.found) ||
-                            (pathToParentRendezvous.getPoints().isEmpty())) {
-                        //take random step and try again
-                        agent.setState(BasicAgent.ExploreState.Explore);
-                        agent.setStateTimer(Constants.CHECK_INTERVAL_TIME_TO_RV - 2);
-                        return RandomWalk.takeStep(agent);
-                    } else {                
-                         agent.setPath(pathToParentRendezvous);
-                         agent.setStateTimer(0);
-                         agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
-                         return ((Point) agent.getPath().getPoints().remove(0));
+                //run below method here as it may be costly and we only want to run it when we are about to return to RV anyway
+                //so we want to check if perhaps there is a better RV we could go to that is closer, so we can explore some more
+                agent.getRendezvousStrategy().processExplorerCheckDueReturnToRV();
+                if (isDueToReturnToRV(agent, outPathRef)) {
+                    pathToParentRendezvous = outPathRef.get();
+                    agent.setState(RealAgent.ExploreState.ReturnToParent);
+
+                    agent.getRendezvousStrategy().processExplorerStartsHeadingToRV();
+
+                    if (agent.getPath() != null) {
+                        agent.addDirtyCells(agent.getPath().getAllPathPixels());
+                    }
+
+                    if (agent.getState() == RealAgent.ExploreState.ReturnToParent) {
+                        if ((pathToParentRendezvous == null) || (!pathToParentRendezvous.found) ||
+                                (pathToParentRendezvous.getPoints().isEmpty())) {
+                            //take random step and try again
+                            agent.setState(BasicAgent.ExploreState.Explore);
+                            agent.setStateTimer(Constants.CHECK_INTERVAL_TIME_TO_RV - 2);
+                            return RandomWalk.takeStep(agent);
+                        } else {                
+                             agent.setPath(pathToParentRendezvous);
+                             agent.setStateTimer(0);
+                             agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
+                             return ((Point) agent.getPath().getPoints().remove(0));
+                        }
                     }
                 }
             }

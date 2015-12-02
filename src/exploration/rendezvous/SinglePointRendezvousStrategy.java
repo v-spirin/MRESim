@@ -284,21 +284,11 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         }
     }
     
-    public void calculateRendezvousExplorerWithRelay() {
-        RendezvousAgentData rvd = agent.getRendezvousAgentData();
-        // Only calculate rv every several time steps at most
-        if(rvd.getTimeSinceLastRVCalc() < Constants.RV_REPLAN_INTERVAL)
-            return;
-        else
-            rvd.setTimeSinceLastRVCalc(0);
-
-        long realtimeStart = System.currentTimeMillis();
-        System.out.println(agent.toString() + "Calculating next rendezvous ... ");
-
+    public Point calculateRVPoint(RealAgent explorer) {
         List<Point> pts = SampleEnvironmentPoints();
         
         if(pts == null) {
-            rvd.setParentRendezvous(new Rendezvous(agent.getLocation()));
+            return explorer.getLocation();
         }
         else {
             PriorityQueue<NearRVPoint> nearFrontier = PruneByFrontierProximity(pts);
@@ -313,8 +303,22 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
                 bestPoint = agent.getLocation();
             }
 
-            rvd.setParentRendezvous(new Rendezvous(bestPoint));
+            return bestPoint;
         }
+    }
+    
+    public void calculateRendezvousExplorerWithRelay() {
+        RendezvousAgentData rvd = agent.getRendezvousAgentData();
+        // Only calculate rv every several time steps at most
+        if(rvd.getTimeSinceLastRVCalc() < Constants.RV_REPLAN_INTERVAL)
+            return;
+        else
+            rvd.setTimeSinceLastRVCalc(0);
+
+        long realtimeStart = System.currentTimeMillis();
+        System.out.println(agent.toString() + "Calculating next rendezvous ... ");
+
+        rvd.setParentRendezvous(new Rendezvous(calculateRVPoint(agent)));        
         
         //required by the interface contract - where our relay will meet its parent
         Rendezvous parentsRVLocation = new Rendezvous(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());

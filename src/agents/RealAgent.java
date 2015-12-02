@@ -392,11 +392,18 @@ public class RealAgent extends BasicAgent implements Agent {
 // <editor-fold defaultstate="collapsed" desc="Teammates">
     
     public void addTeammate(TeammateAgent teammate) {
-        teammates.put(teammate.getRobotNumber(), teammate);
+        teammates.put(teammate.getID(), teammate);
     }
     
     public TeammateAgent getTeammate(int n) {
         return teammates.get(n);
+    }
+    
+    public TeammateAgent getTeammateByNumber(int n) {
+        for(TeammateAgent teammate: teammates.values()) {
+            if (teammate.getRobotNumber() == n) return teammate;
+        }
+        return null;
     }
 
     // necessary when swapping roles with another agent

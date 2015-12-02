@@ -847,9 +847,13 @@ public class SimulationFramework implements ActionListener {
         agent2.getRendezvousStrategy().setAgent(agent2);
 
         // replace Teammate agents
-        agent1.removeTeammate(agent2.getID());
+        agent1.removeTeammate(copyAgent2.getID());
+        agent2.removeTeammate(copyAgent1.getID());
+        copyAgent1.setName(agent2.getName());
+        copyAgent1.setRobotNumber(agent2.getRobotNumber());
         agent1.addTeammate(copyAgent1);
-        agent2.removeTeammate(agent1.getID());
+        copyAgent2.setName(agent1.getName());
+        copyAgent2.setRobotNumber(agent1.getRobotNumber());
         agent2.addTeammate(copyAgent2);
         
         System.out.println("After exchange parent: agent1: " + agent1.getParentTeammate()
@@ -858,6 +862,13 @@ public class SimulationFramework implements ActionListener {
                 + ", agent2: " + agent2.getChildTeammate());
         System.out.println("After exchange RV data: agent1: " + agent1.getRendezvousAgentData() 
                 + ", agent2: " + agent2.getRendezvousAgentData());
+        
+        RendezvousAgentData rvd = agent1.getRendezvousAgentData();
+        
+        Point basePoint = rvd.getParentRendezvous().parentsRVLocation.getChildLocation();
+        if (basePoint == null) {
+            System.out.println("!!! Somehow we don't have a relay?! Not recalcing rv timings...");
+        }
     }
 
     private boolean checkRoleSwitch(int first, int second) {

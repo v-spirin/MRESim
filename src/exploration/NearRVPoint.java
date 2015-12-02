@@ -52,8 +52,8 @@ import java.util.LinkedList;
         public double distanceToFrontier;
         public double distanceToParent = java.lang.Double.MAX_VALUE;
         public double utility;
-        public NearRVPoint parentPoint;
-        public CommLink commLinkClosestToBase;
+        public NearRVPoint parentPoint; //Point to which we need to head to enter comm range of our parent
+        public CommLink commLinkClosestToBase; //Communication link from here to a point that is closest to the comm range of base
         
         public LinkedList<CommLink> commLinks = new LinkedList<CommLink>(); //connected points
         

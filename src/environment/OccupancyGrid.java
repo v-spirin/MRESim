@@ -647,21 +647,36 @@ public class OccupancyGrid {
         double angle = Math.atan2(y2 - y1, x2 - x1);
         int distance = (int)(Math.sqrt(Math.pow(y2-y1, 2) + Math.pow(x2-x1, 2)));
         int currX, currY;
-        //boolean insideWall = false; //flag to make sure a thick wall counts as one obstacle
+        boolean insideWall = false; //flag to make sure a thick wall counts as one obstacle
+        
+        //every meter of unknown space we assume there is one wall.
+        int unknownSpaceCounter = 0;
+        int unknownSpaceWallLimit = 13; //0.078m/px makes it 1 meter
         
         for(int i=0; i<=distance; i++) {
             currX = x1 + (int)(Math.cos(angle) * i);
             currY = y1 + (int)(Math.sin(angle) * i);
             
             if(!this.freeSpaceAt(currX, currY))
-                //if (!insideWall) {
+            {
+                if(!this.obstacleAt(currX, currY)) {
+                    unknownSpaceCounter++;
+                    if (unknownSpaceCounter > unknownSpaceWallLimit) {
+                        counter++;
+                        unknownSpaceCounter = 0;
+                    }
+                } else
+                {
+                    unknownSpaceCounter = 0;
+                }
+                if (!insideWall) {
                     counter++;
-                //    insideWall = true;
-                //}
-            //} else
-            //{
-            //    insideWall = false;
-            //}
+                    insideWall = true;
+                }
+            } else
+            {
+                insideWall = false;
+            }
         }
         
         return counter;
