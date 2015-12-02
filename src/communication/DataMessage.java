@@ -80,7 +80,7 @@ public class DataMessage implements IDataMessage {
     public int newInfo;
     
     public DataMessage(RealAgent agent, int direct) {
-        ID = agent.getID();
+        ID = agent.getRobotNumber();
         x = agent.getX();
         y = agent.getY();
         if (agent.getOccupancyGrid() != null)

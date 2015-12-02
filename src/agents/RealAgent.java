@@ -1103,7 +1103,7 @@ public class RealAgent extends BasicAgent implements Agent {
 // <editor-fold defaultstate="collapsed" desc="Communicate">
 
     public void receiveMessage(DataMessage msg) {
-        TeammateAgent teammate = teammates.get(msg.ID);
+        TeammateAgent teammate = getTeammateByNumber(msg.ID);
         
         msg.receiveMessage(this, teammate);
         

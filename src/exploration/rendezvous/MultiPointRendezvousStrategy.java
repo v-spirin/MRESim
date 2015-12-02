@@ -47,6 +47,7 @@ import communication.PropModel1;
 import config.Constants;
 import environment.OccupancyGrid;
 import exploration.NearRVPoint;
+import exploration.RandomWalk;
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
@@ -198,8 +199,8 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         while (foundNewPoint && (point1.distance(curPoint) < Constants.DEFAULT_SPEED)) {
             foundNewPoint = false;
             int oldX = curPoint.x; int oldY = curPoint.y;
-            for (int x = oldX-1; x <= oldX+1; x++) {
-                for (int y = oldY-1; y <= oldY+1; y++) {                        
+            for (int x = oldX-Constants.DEFAULT_SPEED; x <= oldX+Constants.DEFAULT_SPEED; x++) {
+                for (int y = oldY-Constants.DEFAULT_SPEED; y <= oldY+Constants.DEFAULT_SPEED; y++) {                        
                     Point testPoint = new Point(x,y);
                     if (agent.getOccupancyGrid().directLinePossible(point1.x, point1.y, testPoint.x, testPoint.y)) {
                         double newSignal = PropModel1.signalStrength(
@@ -213,11 +214,13 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
                 }
             }
         }
-        
-        System.out.println(agent + " getBetterCommLocation(" + point1 + ", " + point2 + "): " + 
-                "origSignal: " + origSignal + ", newSignal: " + curSignal + ", newPoint: " + curPoint);
-        //</editor-fold>
-        return curPoint;
+        //if (!curPoint.equals(point1)) {
+            System.out.println(agent + " getBetterCommLocation(" + point1 + ", " + point2 + "): " + 
+                    "origSignal: " + origSignal + ", newSignal: " + curSignal + ", newPoint: " + curPoint);            
+            return curPoint;
+        //} else {
+        //    return RandomWalk.takeStep(agent);
+        //}
     }
 
     public Point processWaitForChildTimeoutNoBackup() {
@@ -335,8 +338,8 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         
         double timeToMeetingR = timeRelayToBase + timeBaseToRV;
         timeToMeetingR = timeElapsed + timeToMeetingR / Constants.DEFAULT_SPEED;
-        double timeToMeetingE = timeExpToFrontier + Constants.FRONTIER_MIN_EXPLORE_TIME + timeFrontierToRV;
-        timeToMeetingE = timeElapsed + timeToMeetingE / Constants.DEFAULT_SPEED;
+        double timeToMeetingE = timeExpToFrontier + timeFrontierToRV;
+        timeToMeetingE = timeElapsed + Constants.FRONTIER_MIN_EXPLORE_TIME + timeToMeetingE / Constants.DEFAULT_SPEED;
         int timeToMeeting = (int)Math.ceil(Math.max(timeToMeetingR, timeToMeetingE));
         rvd.getParentRendezvous().setTimeMeeting(timeToMeeting);
         //rvd.getParentRendezvous().setMinTimeMeeting(timeToMeeting);
