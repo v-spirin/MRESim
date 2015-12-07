@@ -40,6 +40,7 @@
  */
 package exploration.rendezvous;
 
+import agents.BasicAgent;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import communication.CommLink;
@@ -273,7 +274,19 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     public void processAfterGiveParentInfoRelay() {
-        
+        //if exploration by relay enabled
+        if (settings.attemptExplorationByRelay) {
+            RendezvousAgentData rvd = agent.getRendezvousAgentData();
+            Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
+            //Check if we have at least T=15 timesteps to spare.
+            int timeMeeting = rvd.getChildRendezvous().getTimeMeeting();
+            if ((path.getLength() / Constants.DEFAULT_SPEED) + agent.getTimeElapsed() <= (timeMeeting - 15)) {
+                //If we do, calc frontiers and check if we can reach the center of any of them, and get to RV in time
+                //if we can, go to that frontier.
+                //Adapt explore state / frontier exploration to only go to frontiers that we have time to explore. Then we can simply go to explore state above, and once it's time to go back go back into GoToParent state.
+                agent.setState(BasicAgent.ExploreState.Explore);
+            }
+        }
     }
 
     public void processAfterGetInfoFromChild() {

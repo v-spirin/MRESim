@@ -56,6 +56,7 @@ public class RendezvousStrategyFactory {
             rvSettings.moveToBetterCommsWhileWaiting = true;
             rvSettings.SamplePointDensity = 400; //roughly every 20 sq. units
             rvSettings.replanOurMeetingPoint = true;
+            rvSettings.attemptExplorationByRelay = true;
             IRendezvousStrategy rendezvousStrategy = new MultiPointRendezvousStrategy(agent, rvSettings);
             return rendezvousStrategy;
         }

@@ -42,8 +42,10 @@ package exploration;
 
 import agents.*;
 import config.Constants;
+import config.RobotConfig;
 import config.SimulatorConfig;
 import environment.*;
+import exploration.rendezvous.RendezvousAgentData;
 import java.util.*;
 import java.awt.*;
 import path.Path;
@@ -284,7 +286,8 @@ public class FrontierExploration {
     
     private static void calculateUtilityExact(RealAgent agent, Utility ute) {
         Point start;
-        if(ute.ID == agent.getID())
+        boolean isMe = (ute.ID == agent.getID());
+        if(isMe)
             start = agent.getLocation();
         else
             start = agent.getTeammate(ute.ID).getLocation();
@@ -305,6 +308,31 @@ public class FrontierExploration {
         if(p.found) {
             ute.path = p;
             ute.utility = (ute.frontier.getArea() * 100000000) / Math.pow(p.getLength(), 4);
+            if (Constants.AVOID_FRONTIERS_WE_CANNOT_REACH_IN_TIME && isMe) {
+                //calculate how much time we have left if we are in Role-Based exp.
+                Point RVDestination = null;
+                int timeMeeting = Integer.MAX_VALUE;
+                RendezvousAgentData rvd = agent.getRendezvousAgentData();
+                if (agent.getRole() == RobotConfig.roletype.Explorer) {
+                    RVDestination = rvd.getParentRendezvous().getChildLocation();
+                    timeMeeting = rvd.getParentRendezvous().getTimeMeeting();
+                } else if (agent.getRole() == RobotConfig.roletype.Relay) {
+                    RVDestination = rvd.getChildRendezvous().getParentLocation();
+                    timeMeeting = rvd.getChildRendezvous().getTimeMeeting();
+                }
+                if (RVDestination != null) {
+                    Path meToFrontier = p;
+                    Path frontierToRV = agent.calculatePath(ute.frontier.getCentre(), RVDestination);
+                
+                    int timeToRV = (int)((meToFrontier.getLength() + frontierToRV.getLength()) / Constants.DEFAULT_SPEED) + agent.getTimeElapsed();
+                    //if time available is less than time to frontier, set utility to low value
+                    if (timeToRV > timeMeeting) {
+                        System.out.println(agent + "Cannot explore frontier with centre " + ute.frontier.getCentre() + ", timeToRV is " + timeToRV + ", timeMeeting is " + timeMeeting + ", utility was " + ute.utility + ", setting utility to " + (ute.utility - 100000000));
+                        ute.utility = ute.utility - 100000000;
+                    }
+                }
+                
+            }
         }
         else {
             System.out.println("Could not find path from "  + start + " to " + ute.frontier.getCentre());

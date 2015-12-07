@@ -109,6 +109,7 @@ public class SimulatorConfig {
             timeStampTeammateData = true;
             useTeammateNextFrontierAsLocationWhenOutOfRange = false;
             keepAssigningRobotsToFrontiers = true;
+            
         }
         
         boolean oldWallConfigFound = loadOldWallConfig();

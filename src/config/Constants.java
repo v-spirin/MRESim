@@ -156,6 +156,9 @@ public class Constants {
     // Minimal time an explorer should explore a frontier before delivering the information back
     public static final int FRONTIER_MIN_EXPLORE_TIME = 75;
     
+    //In role-based exploration try not to go to frontiers if we will have to turn back to RV before we can even reach the frontier.
+    public static final boolean AVOID_FRONTIERS_WE_CANNOT_REACH_IN_TIME = true;
+    
     // How often should we check if we need to rebuild topological path?
     public static final int REBUILD_TOPOLOGICAL_MAP_INTERVAL = REPLAN_INTERVAL;
     

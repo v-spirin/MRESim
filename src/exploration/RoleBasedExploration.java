@@ -45,6 +45,7 @@ import exploration.rendezvous.Rendezvous;
 import agents.BasicAgent;
 import agents.RealAgent;
 import config.Constants;
+import config.RobotConfig;
 import config.SimulatorConfig;
 import environment.*;
 import exploration.rendezvous.IRendezvousStrategy;
@@ -163,7 +164,7 @@ public class RoleBasedExploration {
         boolean haveNewRVDetailsForParent = !rvd.getParentRendezvous().equals(parentRvd.getChildRendezvous());
         boolean noRVAgreed = (rvd.getParentRendezvous().getTimeMeeting() == Constants.MAX_TIME);
         // <editor-fold defaultstate="collapsed" desc="If parent is in range, and we have been exploring for longer than MIN_TIME_IN_EXPLORE_STATE, give parent info.">
-        if (agent.getParentTeammate().isInRange()) {
+        if (agent.getParentTeammate().isInRange() && (agent.getRole() != RobotConfig.roletype.Relay)) {
             if ((agent.getStateTimer() > Constants.MIN_TIME_IN_EXPLORE_STATE) || 
                     // we have a new RV point, and must communicate it to the parent - otherwise the parent will be waiting at the old RV forever!
                     haveNewRVDetailsForParent || noRVAgreed) 
@@ -178,6 +179,23 @@ public class RoleBasedExploration {
         //else
         //    agent.setTimeUntilRendezvous(agent.getTimeUntilRendezvous() - 1);
         // </editor-fold>
+        //if we are a relay, check if we are due to return to child and return if it's time
+        if (agent.getRole() == RobotConfig.roletype.Relay) {
+            if((agent.getChildTeammate().isInRange()) /*&& !agent.getParentTeammate().isInRange()*/) {
+                agent.setState(RealAgent.ExploreState.GetInfoFromChild);
+                agent.setStateTimer(0);
+
+                return takeStep_GetInfoFromChild(agent);
+            }
+            if ((agent.getStateTimer() % Constants.CHECK_INTERVAL_TIME_TO_RV) == (Constants.CHECK_INTERVAL_TIME_TO_RV - 1)) {
+                Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
+                if ((path.getLength() / Constants.DEFAULT_SPEED) + agent.getTimeElapsed() >= rvd.getChildRendezvous().getTimeMeeting()) {
+                    agent.setState(BasicAgent.ExploreState.GoToChild);
+                    return takeStep_GoToChild(agent);
+                }
+            }
+        }
+        
         // <editor-fold defaultstate="collapsed" desc="Every CHECK_INTERVAL_TIME_TO_RV steps, check if we're due to meet our parent again (unless parent is basestation, in which case explore continuously)">
         if (agent.getParent() != Constants.BASE_STATION_TEAMMATE_ID
                 && (agent.getStateTimer() % Constants.CHECK_INTERVAL_TIME_TO_RV) == (Constants.CHECK_INTERVAL_TIME_TO_RV - 1)) 
@@ -439,7 +457,10 @@ public class RoleBasedExploration {
             //<editor-fold defaultstate="collapsed" desc="Relay - process & go to child">
             else {
                 agent.getRendezvousStrategy().processAfterGiveParentInfoRelay();
-                
+                if (agent.getState() == RealAgent.ExploreState.Explore) {
+                    agent.setStateTimer(0);
+                    return takeStep_Explore(agent);
+                }
                 agent.setState(RealAgent.ExploreState.GoToChild);
                 agent.setStateTimer(0);
                 agent.addDirtyCells(agent.getPath().getAllPathPixels());

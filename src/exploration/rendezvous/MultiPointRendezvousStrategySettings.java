@@ -58,4 +58,5 @@ public class MultiPointRendezvousStrategySettings {
     public boolean moveToBetterCommsWhileWaiting;
     public double SamplePointDensity;
     public boolean replanOurMeetingPoint;
+    public boolean attemptExplorationByRelay; //should relay try to explore some frontiers if otherwise it will arrive at RV too early
 }
