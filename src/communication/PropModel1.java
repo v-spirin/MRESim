@@ -59,7 +59,7 @@ public class PropModel1 {
                                                       //In real life, this could vary depending on wall material.
                                                       //This should be a different value for the simulator and for robots
                                                       //As robots cannot sense how thick a wall is.
-    private static final double WALL_ATTENUATION_AGENT = 3.65*AGENT_ESTIMATION_FACTOR; //this should probably be higher for agent than for simulator, as agents
+    private static final double WALL_ATTENUATION_AGENT = WALL_ATTENUATION_SIM*AGENT_ESTIMATION_FACTOR; //this should probably be higher for agent than for simulator, as agents
                                                             //don't know how thick the walls are generally.
     private static final int MAX_WALLS = 125; //maximum combined wall "thickness" after which attenuation stops making a difference
     private static final double CUTOFF = -93;
@@ -189,8 +189,8 @@ public class PropModel1 {
         int numWalls = Math.min(MAX_WALLS, occGrid.numPossibleObstaclesOnLine(p1.x, p1.y, p2.x, p2.y));
         double distance = p1.distance(p2);
         
-        return (REF_SIGNAL - 10 * PATHLOSS_FACTOR * Math.log10(distance / /*REF_DISTANCE*/agentRange * 
-                (1 / AGENT_ESTIMATION_FACTOR)) - numWalls * WALL_ATTENUATION_AGENT);
+        return (REF_SIGNAL - 10 * PATHLOSS_FACTOR * Math.log10(distance / /*REF_DISTANCE*/(agentRange * 
+                (1 / AGENT_ESTIMATION_FACTOR))) - numWalls * WALL_ATTENUATION_AGENT);
     }
     //</editor-fold>
     

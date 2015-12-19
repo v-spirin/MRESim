@@ -350,7 +350,8 @@ public class RobotPanel extends javax.swing.JPanel {
         jToolBar1.add(toggleCommRange);
 
         toggleSkeleton.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        toggleSkeleton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/skeletonOff.png"))); // NOI18N
+        toggleSkeleton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/skeletonOn.png"))); // NOI18N
+        toggleSkeleton.setSelected(true);
         toggleSkeleton.setToolTipText("Show information on how the RV location was selected");
         toggleSkeleton.setBorderPainted(false);
         toggleSkeleton.setContentAreaFilled(false);
@@ -370,7 +371,8 @@ public class RobotPanel extends javax.swing.JPanel {
         jToolBar1.add(toggleSkeleton);
 
         toggleRendezvous.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        toggleRendezvous.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/rvpointOff.png"))); // NOI18N
+        toggleRendezvous.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/rvpointOn.png"))); // NOI18N
+        toggleRendezvous.setSelected(true);
         toggleRendezvous.setToolTipText("Rendezvous Points");
         toggleRendezvous.setBorderPainted(false);
         toggleRendezvous.setContentAreaFilled(false);

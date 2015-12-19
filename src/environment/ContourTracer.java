@@ -100,8 +100,17 @@ public class ContourTracer {
             currPoint = dir2Point(pt, currDir);
             
             if(occGrid.locationExists(currPoint.x, currPoint.y) && 
-               occGrid.frontierCellAt(currPoint.x, currPoint.y))
-                  return currPoint;
+               occGrid.frontierCellAt(currPoint.x, currPoint.y)) {
+                int dx = currPoint.x - pt.x;
+                int dy = currPoint.y - pt.y;
+                boolean diagonal = (dx != 0) && (dy != 0);
+                //  --only add diagonal cells if there is space on both sides. Otherwise path has to go 'manhattan' way
+                if (diagonal && !(occGrid.freeSpaceAt(pt.x + dx, pt.y) && occGrid.freeSpaceAt(pt.x, pt.y + dy))) {
+                    //continue;
+                } else
+                    return currPoint;
+            }
+                  
         }
         
         // couldn't find any further points

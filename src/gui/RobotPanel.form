@@ -363,8 +363,9 @@
               <Font name="Arial" size="11" style="0"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/resources/skeletonOff.png"/>
+              <Image iconType="3" name="/resources/skeletonOn.png"/>
             </Property>
+            <Property name="selected" type="boolean" value="true"/>
             <Property name="toolTipText" type="java.lang.String" value="Show information on how the RV location was selected"/>
             <Property name="borderPainted" type="boolean" value="false"/>
             <Property name="contentAreaFilled" type="boolean" value="false"/>
@@ -395,8 +396,9 @@
               <Font name="Arial" size="11" style="0"/>
             </Property>
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-              <Image iconType="3" name="/resources/rvpointOff.png"/>
+              <Image iconType="3" name="/resources/rvpointOn.png"/>
             </Property>
+            <Property name="selected" type="boolean" value="true"/>
             <Property name="toolTipText" type="java.lang.String" value="Rendezvous Points"/>
             <Property name="borderPainted" type="boolean" value="false"/>
             <Property name="contentAreaFilled" type="boolean" value="false"/>

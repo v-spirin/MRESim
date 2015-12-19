@@ -411,7 +411,7 @@ public class RoleBasedExploration {
             Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
             agent.setPath(path);
             // must remove first point as this is agent's location
-            agent.getPath().getPoints().remove(0);
+            agent.getPath().getPoints().remove(0); // TODO: can be null pointer exception here
             agent.setState(RealAgent.ExploreState.ReturnToParent);
             agent.setStateTimer(0);
             

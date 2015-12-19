@@ -54,9 +54,9 @@ public class RendezvousStrategyFactory {
         } else {
             MultiPointRendezvousStrategySettings rvSettings = new MultiPointRendezvousStrategySettings();
             rvSettings.moveToBetterCommsWhileWaiting = true;
-            rvSettings.SamplePointDensity = 400; //roughly every 20 sq. units
-            rvSettings.replanOurMeetingPoint = true;
-            rvSettings.attemptExplorationByRelay = true;
+            rvSettings.SamplePointDensity = simConfig.getSamplingDensity(); //roughly every 20 sq. units
+            rvSettings.replanOurMeetingPoint = simConfig.getExploreReplan();
+            rvSettings.attemptExplorationByRelay = simConfig.getRelayExplore();
             IRendezvousStrategy rendezvousStrategy = new MultiPointRendezvousStrategy(agent, rvSettings);
             return rendezvousStrategy;
         }
@@ -66,6 +66,9 @@ public class RendezvousStrategyFactory {
         SinglePointRendezvousStrategySettings rvSettings = new SinglePointRendezvousStrategySettings();
         rvSettings.allowReplanning = simConfig.replanningAllowed();
         rvSettings.useImprovedRendezvous = simConfig.useImprovedRendezvous();
+        rvSettings.attemptExplorationByRelay = simConfig.getRelayExplore();
+        rvSettings.useSimpleCircleCommModelForBaseRange = false;
+        rvSettings.giveExplorerMinTimeNearFrontier = true;
         IRendezvousStrategy rendezvousStrategy = new SinglePointRendezvousStrategy(agent, rvSettings);
         return rendezvousStrategy;
     }

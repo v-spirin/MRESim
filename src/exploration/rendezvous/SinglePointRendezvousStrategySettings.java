@@ -55,4 +55,5 @@ public class SinglePointRendezvousStrategySettings {
     public boolean useSimpleCircleCommModelForBaseRange;
     //Should we explicitly make sure explorer has some time to spend exploring the frontier?
     public boolean giveExplorerMinTimeNearFrontier;
+    public boolean attemptExplorationByRelay; //should relay try to explore some frontiers if otherwise it will arrive at RV too early
 }

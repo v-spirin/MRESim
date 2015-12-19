@@ -78,6 +78,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     public void calculateRendezvousExplorerWithRelay() {
         //calculateRendezvousRandomSampling();
         calculateRendezvousAAMAS();
+        //calculateRendezvousNearAAMAS();
     }
 
     public void calculateRendezvousRelayWithRelay() {
@@ -99,7 +100,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             //Do same as sampling method, except we already have explorer point
             //need to find nearest point to base's comms range
             System.out.print(Constants.INDENT + "Generating random points ... ");
-            generatedPoints = SampleEnvironmentPoints();
+            generatedPoints = SampleEnvironmentPoints(agent, settings.SamplePointDensity);
 
             NearRVPoint relayRVPoint = new NearRVPoint(relayPoint.x, relayPoint.y);
             NearRVPoint explorerRVPoint = new NearRVPoint(explorerPoint.x, explorerPoint.y);
@@ -107,7 +108,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             generatedPoints.add(relayRVPoint);
 
             System.out.print(Constants.INDENT + "Finding commlinks ... ");        
-            connectionsToBase = FindCommLinks(generatedPoints);      
+            connectionsToBase = FindCommLinks(generatedPoints, agent);      
             int pathsCalculated = 0;
 
             double minDistToExplorer = Double.MAX_VALUE;
@@ -172,13 +173,32 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     public Point processWaitForParent() {
+        RendezvousAgentData rvd = agent.getRendezvousAgentData();
         if (settings.moveToBetterCommsWhileWaiting) {
             //<editor-fold defaultstate="collapsed" desc="Try to move to a cell with better comms">
             Point point1 = agent.getLocation();
             Point point2 = agent.getRendezvousAgentData().getParentRendezvous().getParentLocation();
-            return getBetterCommLocation(point1, point2);
-        } else
+            Point newPoint = getBetterCommLocation(point1, point2, agent);
+            if (agent.getParentTeammate().getID() == Constants.BASE_STATION_AGENT_ID) {
+                if (!point1.equals(newPoint)) return newPoint;
+                else {
+                    //let's head back to actual base station
+                    System.out.println("Heading back to actual base station, as we cannot communicate with base station form here.");
+                    Rendezvous meetingLocation = rvd.getParentRendezvous();
+                    meetingLocation.setChildLocation(agent.getParentTeammate().getLocation());
+                    meetingLocation.setParentLocation(agent.getParentTeammate().getLocation());
+                    rvd.setParentRendezvous(meetingLocation);
+                    Path newPath = agent.calculatePath(point1, agent.getParentTeammate().getLocation());
+                    agent.setPath(newPath);
+                    
+                    agent.setState(BasicAgent.ExploreState.ReturnToParent);
+                    return agent.getLocation();
+                }
+            } else
+                return newPoint;
+        } else {
             return agent.getLocation();
+        }
     }
 
     public Point processWaitForChild() {
@@ -186,14 +206,14 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             //<editor-fold defaultstate="collapsed" desc="Try to move to a cell with better comms">
             Point point1 = agent.getLocation();
             Point point2 = agent.getRendezvousAgentData().getChildRendezvous().getChildLocation();
-            return getBetterCommLocation(point1, point2);
+            return getBetterCommLocation(point1, point2, agent);
         } else
             return agent.getLocation();
     }
     
     //This method "rolls" the agent into a local minima of better signal between points 1 and 2.
-    private Point getBetterCommLocation(Point point1, Point point2) {
-        double curSignal = PropModel1.signalStrength(agent.getCommRange(), agent.getOccupancyGrid(), point1, point2);
+    public static Point getBetterCommLocation(Point point1, Point point2, RealAgent ag) {
+        double curSignal = PropModel1.signalStrength(ag.getCommRange(), ag.getOccupancyGrid(), point1, point2);
         double origSignal = curSignal;
         Point curPoint = new Point(point1.x, point1.y);
         boolean foundNewPoint = true;
@@ -203,9 +223,9 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             for (int x = oldX-Constants.DEFAULT_SPEED; x <= oldX+Constants.DEFAULT_SPEED; x++) {
                 for (int y = oldY-Constants.DEFAULT_SPEED; y <= oldY+Constants.DEFAULT_SPEED; y++) {                        
                     Point testPoint = new Point(x,y);
-                    if (agent.getOccupancyGrid().directLinePossible(point1.x, point1.y, testPoint.x, testPoint.y)) {
+                    if (ag.getOccupancyGrid().directLinePossible(point1.x, point1.y, testPoint.x, testPoint.y)) {
                         double newSignal = PropModel1.signalStrength(
-                                agent.getCommRange(), agent.getOccupancyGrid(), testPoint, point2);
+                                ag.getCommRange(), ag.getOccupancyGrid(), testPoint, point2);
                         if (newSignal > curSignal) {
                             curPoint = testPoint;
                             curSignal = newSignal;
@@ -216,7 +236,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             }
         }
         //if (!curPoint.equals(point1)) {
-            System.out.println(agent + " getBetterCommLocation(" + point1 + ", " + point2 + "): " + 
+            System.out.println(ag + " getBetterCommLocation(" + point1 + ", " + point2 + "): " + 
                     "origSignal: " + origSignal + ", newSignal: " + curSignal + ", newPoint: " + curPoint);            
             return curPoint;
         //} else {
@@ -367,11 +387,11 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     }
     
     
-    private LinkedList<NearRVPoint> generateSobolPoints(OccupancyGrid grid) {
+    public static LinkedList<NearRVPoint> generateSobolPoints(OccupancyGrid grid, double density) {
         SobolSequenceGenerator sobolGen = new SobolSequenceGenerator(2);
         
         //int numPointsToGenerate = grid.getNumFreeCells() * 150 / 432000;
-        int numPointsToGenerate = (int)(grid.getNumFreeCells() / settings.SamplePointDensity); //roughly every 20 sq. cells
+        int numPointsToGenerate = (int)(grid.getNumFreeCells() / density); //roughly every 20 sq. cells
         System.out.println("Generating " + numPointsToGenerate + " Sobol points");
         
         LinkedList<NearRVPoint> genPoints = new LinkedList<NearRVPoint>();
@@ -405,11 +425,11 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         return genPoints;
     }
     
-    private List<NearRVPoint> SampleEnvironmentPoints() {
-        LinkedList<NearRVPoint> genPoints = generateSobolPoints(agent.getOccupancyGrid());
+    public static List<NearRVPoint> SampleEnvironmentPoints(RealAgent ag, double density) {
+        LinkedList<NearRVPoint> genPoints = generateSobolPoints(ag.getOccupancyGrid(), density);
         //add base station to it. Could also add any special points here as well
-        NearRVPoint base = new NearRVPoint(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getX(), 
-                agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getY());
+        NearRVPoint base = new NearRVPoint(ag.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getX(), 
+                ag.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getY());
         genPoints.add(base);
         
         return genPoints;
@@ -417,19 +437,19 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     
     //This method finds comm connections between generatedPoints, and returns the subset of points within comm range
     //of base station
-    private List<CommLink> FindCommLinks(List<NearRVPoint> generatedPoints) {
+    public static List<CommLink> FindCommLinks(List<NearRVPoint> generatedPoints, RealAgent ag) {
         //LinkedList<CommLink> commLinks = new LinkedList<CommLink>();
         LinkedList<CommLink> connsToBase = new LinkedList<CommLink>();
-        NearRVPoint base = new NearRVPoint(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getX(), 
-                agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getY());
+        NearRVPoint base = new NearRVPoint(ag.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getX(), 
+                ag.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getY());
         
         for (NearRVPoint p1: generatedPoints) {
             for (NearRVPoint p2: generatedPoints) {
-                if (p1.distance(p2) <= PropModel1.getMaxRange(agent.getCommRange())) {
+                if (p1.distance(p2) <= PropModel1.getMaxRange(ag.getCommRange())) {
                     //TODO: range should be min of ours and our teammate's
-                    if (PropModel1.isConnected(agent.getOccupancyGrid(), agent.getCommRange(), (Point)p1, (Point)p2)) {
+                    if (PropModel1.isConnected(ag.getOccupancyGrid(), ag.getCommRange(), (Point)p1, (Point)p2)) {
                         //check if connection is line of sight?
-                        int numWalls = agent.getOccupancyGrid().numObstaclesOnLine(p1.x, p1.y, p2.x, p2.y);
+                        int numWalls = ag.getOccupancyGrid().numObstaclesOnLine(p1.x, p1.y, p2.x, p2.y);
                         
                         CommLink link = new CommLink(p1, p2);
                         link.numObstacles = numWalls;
@@ -487,7 +507,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     * @param origPoint  
     * @param connectionsToBase
     */
-    private int findNearestPointInBaseCommRange(NearRVPoint origPoint, List<CommLink> connectionsToBase) {
+    public static int findNearestPointInBaseCommRange(NearRVPoint origPoint, List<CommLink> connectionsToBase, RealAgent ag) {
         int pathsCalculated = 0;
         // only calculate nearest base point for connectedPoint if we haven't already.
         if (origPoint.distanceToParent == Double.MAX_VALUE) {
@@ -515,7 +535,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
 
             for(NearRVPoint basePoint: pointsConnectedToBase) {
                 pathsCalculated++;
-                Path pathToBase = agent.calculatePath(origPoint, basePoint);
+                Path pathToBase = ag.calculatePath(origPoint, basePoint);
                 double pathLen = Double.MAX_VALUE;
                 if (pathToBase.found)
                     pathLen = pathToBase.getLength();
@@ -550,13 +570,13 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         //Do same as sampling method, except we already have explorer point
         //need to find nearest point to base's comms range
         System.out.print(Constants.INDENT + "Generating random points ... ");
-        generatedPoints = SampleEnvironmentPoints();
+        generatedPoints = SampleEnvironmentPoints(agent, settings.SamplePointDensity);
         
         NearRVPoint explorerRVPoint = new NearRVPoint(explorerPoint.x, explorerPoint.y);
         generatedPoints.add(explorerRVPoint);
 
         System.out.print(Constants.INDENT + "Finding commlinks ... ");        
-        connectionsToBase = FindCommLinks(generatedPoints);
+        connectionsToBase = FindCommLinks(generatedPoints, agent);
         System.out.println(agent + " connectionsToBase count is " + connectionsToBase.size());        
         int pathsCalculated = 0;
         
@@ -564,7 +584,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         for(CommLink link: explorerRVPoint.commLinks) {
             NearRVPoint connectedPoint = link.getRemotePoint();
 
-            pathsCalculated = findNearestPointInBaseCommRange(connectedPoint, connectionsToBase);
+            pathsCalculated = findNearestPointInBaseCommRange(connectedPoint, connectionsToBase, agent);
 
             if (connectedPoint.distanceToParent < minDistToBase) {
                 minDistToBase = connectedPoint.distanceToParent;
@@ -582,7 +602,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             Point baseLocation = agent.getTeammate(agent.getParentTeammate().getParent()).getLocation();
             Rendezvous parentsMeetingLocation = new Rendezvous(baseLocation);
             System.out.println("    base location: " + baseLocation);
-            parentsMeetingLocation.setParentLocation(agent.getTeammate(agent.getParentTeammate().getParent()).getLocation());
+            parentsMeetingLocation.setParentLocation(baseLocation);
             meetingLocation.parentsRVLocation = parentsMeetingLocation;
             rvd.setParentRendezvous(meetingLocation);
             Rendezvous backupRV = new Rendezvous(explorerPoint);
@@ -632,11 +652,11 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         
         System.out.print(Constants.INDENT + "Generating random points ... ");
 
-        generatedPoints = SampleEnvironmentPoints();
+        generatedPoints = SampleEnvironmentPoints(agent, settings.SamplePointDensity);
 
         System.out.print(Constants.INDENT + "Finding commlinks ... ");
         
-        connectionsToBase = FindCommLinks(generatedPoints);
+        connectionsToBase = FindCommLinks(generatedPoints, agent);
         
         System.out.println(Constants.INDENT + "Choosing specific RV point ... ");
         
@@ -655,7 +675,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             for(CommLink link: p.commLinks) {
                 NearRVPoint connectedPoint = link.getRemotePoint();
                 
-                pathsCalculated = findNearestPointInBaseCommRange(connectedPoint, connectionsToBase);
+                pathsCalculated = findNearestPointInBaseCommRange(connectedPoint, connectionsToBase, agent);
                 
                 if (connectedPoint.distanceToParent < minDistToBase) {
                     minDistToBase = connectedPoint.distanceToParent;

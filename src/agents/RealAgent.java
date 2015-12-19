@@ -40,6 +40,7 @@
  */
 package agents;
 
+import communication.CommLink;
 import communication.DataMessage;
 import exploration.*;
 import environment.*;
@@ -47,6 +48,8 @@ import config.*;
 
 import config.RobotConfig.roletype;
 import exploration.rendezvous.IRendezvousStrategy;
+import exploration.rendezvous.MultiPointRendezvousStrategy;
+import static exploration.rendezvous.MultiPointRendezvousStrategy.findNearestPointInBaseCommRange;
 import exploration.rendezvous.RendezvousAgentData;
 import exploration.rendezvous.RendezvousStrategyFactory;
 import exploration.rendezvous.SinglePointRendezvousStrategy;
@@ -113,6 +116,8 @@ public class RealAgent extends BasicAgent implements Agent {
     private IRendezvousStrategy rendezvousStrategy;
     
     private boolean missionComplete; // true only when mission complete (env fully explored)
+    
+    private Point nearestBasePoint; //location in range of base station that is nearest to us
 
     private final TopologicalMap topologicalMap;
     int timeTopologicalMapUpdated;
@@ -170,6 +175,8 @@ public class RealAgent extends BasicAgent implements Agent {
         rendezvousStrategy = RendezvousStrategyFactory.createRendezvousStrategy(simConfig, this);
         
         currentGoal = new Point(x,y);
+        
+        nearestBasePoint = null;
     }
   
 // </editor-fold>     
@@ -295,7 +302,21 @@ public class RealAgent extends BasicAgent implements Agent {
     public void computePathToBaseStation()
     {
         long realtimeStartAgentCycle = System.currentTimeMillis();
-        pathToBase = calculatePath(getLocation(), getTeammate(1).getLocation());
+        Point baseLocation = getTeammate(1).getLocation();
+        if (nearestBasePoint == null) nearestBasePoint = baseLocation;
+        else baseLocation = nearestBasePoint;
+        if (simConfig.getBaseRange() && (this.getTimeElapsed() % 10 == 1)) {
+            java.util.List<NearRVPoint> generatedPoints = 
+                    MultiPointRendezvousStrategy.SampleEnvironmentPoints(this, simConfig.getSamplingDensity());
+            NearRVPoint agentPoint = new NearRVPoint(this.getLocation().x, this.getLocation().y);
+            java.util.List<CommLink> connectionsToBase = MultiPointRendezvousStrategy.FindCommLinks(generatedPoints, this);
+            findNearestPointInBaseCommRange(agentPoint, connectionsToBase, this);
+            if (agentPoint.parentPoint != null) {
+                baseLocation = agentPoint.parentPoint.getLocation();
+                nearestBasePoint = baseLocation;
+            }
+        }
+        pathToBase = calculatePath(getLocation(), nearestBasePoint);
         System.out.println(this.toString() + "Path to base computation took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
     }
     

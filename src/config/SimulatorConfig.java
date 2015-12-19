@@ -59,12 +59,13 @@ public class SimulatorConfig {
     private boolean logScreenshots;
     private String logScreenshotsDirname;
     private String runFromLogFilename;
+    private String batchFilename;
     
     public static enum commtype {StaticCircle, DirectLine, PropModel1}
     private commtype commModel;
     private int simRate;
     private Environment env;
-    public static enum exptype {RunFromLog, LeaderFollower, FrontierExploration, RoleBasedExploration}
+    public static enum exptype {BatchRun, RunFromLog, LeaderFollower, FrontierExploration, RoleBasedExploration}
     public static enum frontiertype {RangeConstrained, PeriodicReturn, ReturnWhenComplete, UtilReturn}
     public double TARGET_INFO_RATIO;
     private exptype expAlgorithm;
@@ -86,6 +87,14 @@ public class SimulatorConfig {
     //agents, i.e. usually the nearest frontier to them (even if there is another unassigned robot that is closer to that
     //frontier. If it is set to True, then unassigned robots will still bid for all the frontiers and assign themselves
     //to frontiers more evenly.
+    
+    private boolean baseRange; //if true, agents will try to navigate to base station range rather than to base station
+    //itself. This can yield great benefits as the actual path to base can be very convoluted, but the base comm range
+    //can actually be very near to agent's current position (but there may be obstacles between agent and base station.
+    private double samplingDensity; //when sampling points from the environment, how dense they need to be (1 point per
+    //samplingDensity pixels. E.g. if samplingDensity = 100, we will roughly get one point per 10x10 pixel square.
+    private boolean exploreReplan; //Should explorer replan the meeting with relay to take into account comm range
+    private boolean relayExplore; //Should relay also explore if it gets a chance in RBE
 
     public SimulatorConfig() {
         boolean oldEnvVariableConfigFound = loadOldSimulatorConfig();
@@ -109,7 +118,10 @@ public class SimulatorConfig {
             timeStampTeammateData = true;
             useTeammateNextFrontierAsLocationWhenOutOfRange = false;
             keepAssigningRobotsToFrontiers = true;
-            
+            baseRange = false;
+            samplingDensity = 400;
+            exploreReplan = false;
+            relayExplore = false;
         }
         
         boolean oldWallConfigFound = loadOldWallConfig();
@@ -146,6 +158,14 @@ public class SimulatorConfig {
     
     public void setRunFromLogFilename(String f) {
         runFromLogFilename = f;
+    }
+    
+    public void setBatchFilename(String f) {
+        batchFilename = f;
+    }
+    
+    public String getBatchFilename() {
+        return batchFilename;
     }
 
     public void setExpAlgorithm(int n) {
@@ -291,6 +311,38 @@ public class SimulatorConfig {
     public void setKeepAssigningRobotsToFrontiers(boolean setting) {
         keepAssigningRobotsToFrontiers = setting;
     }
+    
+    public void setBaseRange(boolean br) {
+        baseRange = br;
+    }
+    
+    public boolean getBaseRange() {
+        return baseRange;
+    }
+    
+    public void setSamplingDensity(double density) {
+        samplingDensity = density;
+    }
+    
+    public double getSamplingDensity() {
+        return samplingDensity;
+    }
+    
+    public void setRelayExplore(boolean s) {
+        relayExplore = s;
+    }
+    
+    public boolean getRelayExplore() {
+        return relayExplore;
+    }
+    
+    public void setExploreReplan(boolean s) {
+        exploreReplan = s;
+    }
+    
+    public boolean getExploreReplan() {
+        return exploreReplan;
+    }
 // </editor-fold>
 
 
@@ -361,6 +413,46 @@ public class SimulatorConfig {
                 {
                     keepAssigningRobotsToFrontiers = true;
                 }
+                
+                try
+                {
+                    batchFilename = String.valueOf(inFile.readLine());
+                } catch (Exception e)
+                {
+                    batchFilename = "";
+                }
+                
+                try
+                {
+                    baseRange = Boolean.parseBoolean(inFile.readLine());
+                } catch (Exception e)
+                {
+                    baseRange = false;
+                }
+                
+                try
+                {
+                    samplingDensity = Double.parseDouble(inFile.readLine());
+                } catch (Exception e)
+                {
+                    samplingDensity = 400;
+                }
+                
+                try
+                {
+                    relayExplore = Boolean.parseBoolean(inFile.readLine());
+                } catch (Exception e)
+                {
+                    relayExplore = false;
+                }
+                
+                try
+                {
+                    exploreReplan = Boolean.parseBoolean(inFile.readLine());
+                } catch (Exception e)
+                {
+                    exploreReplan = false;
+                }
 
                 inFile.close();
                 return true;
@@ -423,6 +515,11 @@ public class SimulatorConfig {
             outFile.println(timeStampTeammateData);
             outFile.println(useTeammateNextFrontierAsLocationWhenOutOfRange);
             outFile.println(keepAssigningRobotsToFrontiers);
+            outFile.println(batchFilename);
+            outFile.println(baseRange);
+            outFile.println(samplingDensity);
+            outFile.println(relayExplore);
+            outFile.println(exploreReplan);
             
             outFile.close();
             return true;
@@ -443,7 +540,32 @@ public class SimulatorConfig {
 // <editor-fold defaultstate="collapsed" desc="Utility">
     @Override
     public String toString() {
-        return ("[SimulatorConfig] ");
+        return ("[SimulatorConfig] expAlgorithm: " + expAlgorithm.toString() + 
+                "\n frontierAlgorithm: " + frontierAlgorithm.toString() +
+                "\n runFromLogFilename: " + runFromLogFilename +
+                "\n commModel: " + commModel.toString() +
+                "\n logAgents: " + logAgents +
+                "\n logAgentsFilename: " + logAgentsFilename +
+                "\n logData: " + logData + 
+                "\n logDataFilename: " + logDataFilename +
+                "\n logScreenshots: " + logScreenshots +
+                "\n logScreenshotsDirname: "+ logScreenshotsDirname +
+                "\n useImprovedRendezvous: " + useImprovedRendezvous +
+                "\n allowReplanning: " + allowReplanning +
+                "\n allowRoleSwitch: " + allowRoleSwitch +
+                "\n useStrictRoleSwitch: " + useStrictRoleSwitch +
+                "\n simRate: " + simRate +
+                "\n RVCommRangeEnabled: " + RVCommRangeEnabled +
+                "\n RVThroughWallsEnabled: " + RVThroughWallsEnabled +
+                "\n TARGET_INFO_RATIO: " + TARGET_INFO_RATIO +
+                "\n timeStampTeammateData: " + timeStampTeammateData +
+                "\n useTeammateNextFrontierAsLocationWhenOutOfRange: " + useTeammateNextFrontierAsLocationWhenOutOfRange +
+                "\n keepAssigningRobotsToFrontiers: " + keepAssigningRobotsToFrontiers +
+                "\n batchFilename: " + batchFilename +
+                "\n baseRange: " + baseRange +
+                "\n samplingDensity: " + samplingDensity +
+                "\n relayExplore: " + relayExplore +
+                "\n exploreReplan: " + exploreReplan);
     }
 // </editor-fold>
     

@@ -65,7 +65,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Random;
+import java.util.Scanner;
 import path.Path;
+import org.json.*;
 
 /**
  *
@@ -78,6 +80,10 @@ public class SimulationFramework implements ActionListener {
 // <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">
     
     boolean pauseSimulation;                    // For stepping through simulation one step at a time
+    
+    boolean isBatch;                            // Are we running a batch file
+    int runNumber;
+    int runNumMax;
 
     MainGUI mainGUI;                            // Allows simulator to change image, data
     ExplorationImage image;                     // Image of environment
@@ -302,14 +308,107 @@ public class SimulationFramework implements ActionListener {
 
 // <editor-fold defaultstate="collapsed" desc="Start, Run and Stop">
 
-    int runNumber;
-    int runNumMax;
+    private String readFile(String pathname) throws IOException {
+        File file = new File(pathname);
+        StringBuilder fileContents = new StringBuilder((int)file.length());
+        Scanner scanner = new Scanner(file);
+        String lineSeparator = System.getProperty("line.separator");
 
+        try {
+            while(scanner.hasNextLine()) {        
+                fileContents.append(scanner.nextLine() + lineSeparator);
+            }
+            return fileContents.toString();
+        } finally {
+            scanner.close();
+        }
+    }
+    
     private void updateRunConfig() {
         // This method can be used to set up batch simulations
         // TODO: replace with XML batch run configuration
         
-        String root = "C:\\Users\\Victor\\Documents\\uni\\actual_dphil_thesis\\experiments\\ch3\\automated\\";
+        //open JSON file
+        try {
+            String json = readFile(simConfig.getBatchFilename());
+            //parse JSON
+            JSONObject obj = new JSONObject(json);            
+            //set global settings
+            String baseDir = obj.getJSONObject("globalSettings").getString("baseDir");
+            String envDir = baseDir + obj.getJSONObject("globalSettings").getString("envDir");
+            //set runNumMax
+            //set appropriate local settings
+            JSONArray runs = obj.getJSONArray("runs");
+            runNumMax = runs.length();
+            
+            int index = runNumber;
+            String strategy = runs.getJSONObject(index).getString("strategy");
+            if (strategy.equals("greedy")) {
+                simConfig.setExpAlgorithm(exptype.FrontierExploration);
+                simConfig.setFrontierAlgorithm(frontiertype.ReturnWhenComplete);
+            } else if (strategy.equals("ratio")) {
+                String ratio = runs.getJSONObject(index).getString("ratio");
+                boolean baseRange = Boolean.parseBoolean(runs.getJSONObject(index).getString("baseRange"));
+                simConfig.setBaseRange(baseRange);
+                if (baseRange) {
+                    String samplingDensity = runs.getJSONObject(index).getString("samplingDensity");
+                    simConfig.setSamplingDensity(Double.parseDouble(samplingDensity));
+                }
+                simConfig.setExpAlgorithm(exptype.FrontierExploration);
+                simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
+                simConfig.TARGET_INFO_RATIO = Double.parseDouble(ratio);
+            } else if (strategy.equals("role-based")) {
+                boolean multiPoint = Boolean.parseBoolean(runs.getJSONObject(index).getString("multiPoint"));                
+                boolean baseRange = Boolean.parseBoolean(runs.getJSONObject(index).getString("baseRange"));
+                simConfig.setBaseRange(baseRange);
+                if (baseRange) {
+                    String samplingDensity = runs.getJSONObject(index).getString("samplingDensity");
+                    simConfig.setSamplingDensity(Double.parseDouble(samplingDensity));
+                }
+                String relayExplore = runs.getJSONObject(index).getString("relayExplore");
+                String rvcalc = runs.getJSONObject(index).getString("rvcalc");
+                simConfig.setExpAlgorithm(exptype.RoleBasedExploration);
+                simConfig.setRoleSwitchAllowed(true);
+                simConfig.setReplanningAllowed(false);
+                simConfig.setStrictRoleSwitch(false);
+                simConfig.setUseImprovedRendezvous(rvcalc.equals("improved"));
+                simConfig.setRelayExplore(Boolean.parseBoolean(relayExplore));
+                if (multiPoint) {                    
+                    String exploreReplan = runs.getJSONObject(index).getString("exploreReplan");
+                    simConfig.setExploreReplan(Boolean.parseBoolean(exploreReplan));
+                } else {
+                    
+                }
+                simConfig.setRVThroughWallsEnabled(multiPoint);
+            }
+            
+            String map = runs.getJSONObject(index).getString("map");
+            String conf = runs.getJSONObject(index).getString("conf");
+            String outputDir = baseDir + runs.getJSONObject(index).getString("outputDir");
+            
+            (new File(outputDir)).mkdirs();
+            (new File(outputDir + "\\screenshots")).mkdirs();
+            simConfig.setLogDataFilename(outputDir + "\\sim.txt");            
+            simConfig.setLogAgentsFilename(outputDir + "\\loc.txt");
+            simConfig.setLogScreenshotsDirname(outputDir + "\\screenshots");
+            simConfig.setLogAgents(true);
+            simConfig.setLogData(true);
+            simConfig.setLogScreenshots(true);
+            
+            simConfig.loadWallConfig(envDir + "\\" +  map);            
+            robotTeamConfig.loadConfig(envDir + "\\" + conf);
+            
+            System.out.println(simConfig.toString());
+            PrintWriter out = new PrintWriter(outputDir + "\\config.txt");
+            out.println(simConfig.toString());
+            out.close();
+            
+            mainGUI.updateFromRobotTeamConfig();
+        } catch (Exception e) {
+            
+        }
+        
+        /*String root = "C:\\Users\\Victor\\Documents\\uni\\actual_dphil_thesis\\experiments\\ch3\\automated\\";
         String configs[] = {//"grid_RB_2R", "grid_greedy_2R", 
                             "lgrid_util_8r_0.2", "lgrid_util_8r_0.3",
                             "lgrid_util_8r_0.4", "lgrid_util_8r_0.5",
@@ -325,7 +424,7 @@ public class SimulationFramework implements ActionListener {
             simConfig.setLogDataFilename(root + configs[runNumber] + "\\sim.txt");
             simConfig.setLogAgentsFilename(root + configs[runNumber] + "\\loc.txt");
             simConfig.setLogScreenshotsDirname(root + configs[runNumber] + "\\screenshots");
-        }
+        }*/
         
         /*int map = 2;
         if (runNumber == 1)
@@ -356,9 +455,15 @@ public class SimulationFramework implements ActionListener {
 
     public void start() {
         runNumber = 0;
-        runNumMax = 10;
-        //updateRunConfig();
-        //reset();
+        //Check if we are running batch
+        if (simConfig.getExpAlgorithm() == exptype.BatchRun) {
+            isBatch = true;
+        } else isBatch = false;
+        
+        if (isBatch) {
+            updateRunConfig(); //this should set runNumMax;
+            reset();
+        }
         //simConfig.TARGET_INFO_RATIO = 0.90;
         RandomWalk.generator.setSeed(Constants.RANDOM_SEED);
         System.out.println(this.toString() + "Starting exploration!");
@@ -366,8 +471,9 @@ public class SimulationFramework implements ActionListener {
         simStartTime = System.currentTimeMillis();
     }
 
-    private void restart() {        
-        //updateRunConfig();
+    private void restart() {
+        if (isBatch)
+            updateRunConfig();
         reset();
         System.out.println(this.toString() + "Restarting exploration!");
         simStartTime = System.currentTimeMillis();
@@ -409,8 +515,8 @@ public class SimulationFramework implements ActionListener {
         if(timeElapsed >= 10000 || allAgentsDone() || allAgentsAtBase) {
             timer.stop();
             runNumber++;
-            //if(runNumber < runNumMax)
-            //    restart();
+            if(isBatch && (runNumber < runNumMax))
+                restart();
         }
     }
     
@@ -874,6 +980,16 @@ public class SimulationFramework implements ActionListener {
     private boolean checkRoleSwitch(int first, int second) {
         RealAgent agent1 = agent[first];
         RealAgent agent2 = agent[second];
+        
+        if ((agent1.getState() == ExploreState.GetInfoFromChild) ||
+                (agent1.getState() == ExploreState.GiveParentInfo) ||
+                (agent1.getState() == ExploreState.WaitForChild) ||
+                (agent1.getState() == ExploreState.WaitForParent) ||
+                (agent2.getState() == ExploreState.GetInfoFromChild) ||
+                (agent2.getState() == ExploreState.GiveParentInfo) ||
+                (agent2.getState() == ExploreState.WaitForChild) ||
+                (agent2.getState() == ExploreState.WaitForParent))
+            return false;
         
         if(agent1.getRendezvousAgentData().getTimeSinceLastRoleSwitch() < 4 ||
            agent2.getRendezvousAgentData().getTimeSinceLastRoleSwitch() < 4)

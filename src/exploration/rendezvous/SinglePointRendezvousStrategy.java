@@ -40,6 +40,7 @@
  */
 package exploration.rendezvous;
 
+import agents.BasicAgent;
 import agents.RealAgent;
 import config.Constants;
 import environment.OccupancyGrid;
@@ -48,6 +49,7 @@ import static environment.Skeleton.gridToList;
 import static environment.Skeleton.neighborTraversal;
 import static environment.Skeleton.numNonzeroNeighbors;
 import exploration.NearRVPoint;
+import exploration.RoleBasedExploration;
 import static exploration.RoleBasedExploration.timeElapsed;
 import java.awt.Point;
 import java.util.LinkedList;
@@ -217,7 +219,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         if (settings.useSimpleCircleCommModelForBaseRange)
             totalPathLength = totalPathLength - 2*Math.min(agent.getParentTeammate().getCommRange(), 
                     agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getCommRange());
-        rvd.setTimeUntilRendezvous(Math.max((int)((totalPathLength)/Constants.DEFAULT_SPEED), 10));
+        rvd.setTimeUntilRendezvous(Math.max((int)((totalPathLength)/Constants.DEFAULT_SPEED), 60));
         System.out.println("\nP2CS " + pathParentToCS.getLength() + "; " +
                             " CS2R " + pathCSToRendezvous.getLength() + "; " +
                             totalPathLength + "; " +
@@ -404,6 +406,13 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
     }
     
     public Point processWaitForParent() {
+        /*if (agent.getParentTeammate().getID() == Constants.BASE_STATION_AGENT_ID) {
+            //if we are returning to base station, we should never get into this state, because base station doesn't move.
+            //So what must have happened is that we picked a spot that we thought is in the range of the base station, but
+            //actually it is not. So we should head directly to the base station.
+            agent.getSimConfig().setBaseRange(false);
+            return RoleBasedExploration.takeStep_ReturnToParent(agent);
+        }*/
         return new Point(agent.getX(), agent.getY());
     }
     
@@ -459,7 +468,19 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
     }
     
     public void processAfterGiveParentInfoRelay() {
-        
+        //if exploration by relay enabled
+        if (settings.attemptExplorationByRelay) {
+            RendezvousAgentData rvd = agent.getRendezvousAgentData();
+            Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
+            //Check if we have at least T=15 timesteps to spare.
+            int timeMeeting = rvd.getChildRendezvous().getTimeMeeting();
+            if ((path.getLength() / Constants.DEFAULT_SPEED) + agent.getTimeElapsed() <= (timeMeeting - 15)) {
+                //If we do, calc frontiers and check if we can reach the center of any of them, and get to RV in time
+                //if we can, go to that frontier.
+                //Adapt explore state / frontier exploration to only go to frontiers that we have time to explore. Then we can simply go to explore state above, and once it's time to go back go back into GoToParent state.
+                agent.setState(BasicAgent.ExploreState.Explore);
+            }
+        }
     }
     
     public void processAfterGetInfoFromChild() {

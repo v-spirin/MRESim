@@ -42,14 +42,16 @@ package exploration;
 
 import agents.*;
 import agents.BasicAgent.ExploreState;
+import communication.CommLink;
 import config.Constants;
-import config.RobotConfig;
 import config.SimulatorConfig;
-import config.SimulatorConfig.frontiertype;
-import environment.*;
-import java.util.*;
+import exploration.rendezvous.MultiPointRendezvousStrategy;
+import static exploration.rendezvous.MultiPointRendezvousStrategy.FindCommLinks;
+import static exploration.rendezvous.MultiPointRendezvousStrategy.findNearestPointInBaseCommRange;
+import static exploration.rendezvous.MultiPointRendezvousStrategy.getBetterCommLocation;
 import java.awt.*;
 import path.Path;
+import java.util.List;
 
 /**
  *
@@ -259,6 +261,17 @@ public class UtilityExploration {
             if (existingPath != null)
                 agent.addDirtyCells(existingPath.getAllPathPixels());
             //</editor-fold>  
+            
+            if (simConfig.getBaseRange()) {
+                List<NearRVPoint> generatedPoints = 
+                        MultiPointRendezvousStrategy.SampleEnvironmentPoints(agent, simConfig.getSamplingDensity());
+                NearRVPoint agentPoint = new NearRVPoint(agent.getLocation().x, agent.getLocation().y);
+                List<CommLink> connectionsToBase = MultiPointRendezvousStrategy.FindCommLinks(generatedPoints, agent);
+                findNearestPointInBaseCommRange(agentPoint, connectionsToBase, agent);
+                if (agentPoint.parentPoint != null)
+                    baseLocation = agentPoint.parentPoint.getLocation();
+            }
+            
             agent.forceUpdateTopologicalMap(false);
             Path path = agent.calculatePath(agent.getLocation(), baseLocation);
             //<editor-fold defaultstate="collapsed" desc="If path not found, try A*">
@@ -304,11 +317,24 @@ public class UtilityExploration {
             agent.setPath(null);
             return RandomWalk.takeStep(agent);
         }
-        
-        // If we reach this point, we're at the base station; go back to exploring.
-        agent.setState(RealAgent.ExploreState.Explore);
-        agent.setStateTimer(0);
-        return takeStep_Explore(agent, simConfig);
+        if (simConfig.getBaseRange()) {
+            Point point1 = agent.getLocation();
+            Point point2 = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
+            Point newPoint = getBetterCommLocation(point1, point2, agent);
+            if (!point1.equals(newPoint)) return newPoint;
+            else {
+                //still not in range of base. We should really reevaluate our comms model here, but for now, just revert to
+                // LOS comms
+                simConfig.setBaseRange(false);
+                return takeStep_ReturnToParent(agent, simConfig);
+            }                
+        } else {
+
+            // If we reach this point, we're at the base station; go back to exploring.
+            agent.setState(RealAgent.ExploreState.Explore);
+            agent.setStateTimer(0);
+            return takeStep_Explore(agent, simConfig);
+        }
     }
     // </editor-fold>     
 
