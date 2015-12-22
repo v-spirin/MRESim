@@ -46,9 +46,9 @@ import agents.TeammateAgent;
 import communication.CommLink;
 import communication.PropModel1;
 import config.Constants;
+import environment.Frontier;
 import environment.OccupancyGrid;
 import exploration.NearRVPoint;
-import exploration.RandomWalk;
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
@@ -77,7 +77,8 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     
     public void calculateRendezvousExplorerWithRelay() {
         //calculateRendezvousRandomSampling();
-        calculateRendezvousAAMAS();
+        //calculateRendezvousAAMAS();
+        calculateRendezvousFrontier();
         //calculateRendezvousNearAAMAS();
     }
 
@@ -352,18 +353,40 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     
     private void calculateRVTimings() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
+        Point parentPoint = rvd.getParentRendezvous().getParentLocation();
+        Point childPoint = rvd.getParentRendezvous().getChildLocation();        
+        Point basePoint = rvd.getParentRendezvous().parentsRVLocation.getChildLocation();
+        int timeToMeeting = calculateRVTimings(parentPoint, childPoint, basePoint);
+        if (timeToMeeting > 0) {
+            rvd.getParentRendezvous().setTimeMeeting(timeToMeeting);
+            //rvd.getParentRendezvous().setMinTimeMeeting(timeToMeeting);
+            rvd.getParentRendezvous().setTimeWait(Constants.WAIT_AT_RV_BEFORE_REPLAN);
+            calculateParentTimeToBackupRV();
+        }
+    }
+    
+    //returns meetingTime
+    private int calculateRVTimings(Point parentPoint, Point childPoint, Point basePoint) {
+        RendezvousAgentData rvd = agent.getRendezvousAgentData();
         TeammateAgent relay = agent.getParentTeammate();
-        
+        boolean useSingleMeetingTime = true; //assume that we are using single meeting point to time RV.
+        //use this to make sure we do not RV more often that we would have if we were using single point RV.
         
         Point frontierCentre = getExplorerFrontier();
-        Point parentPoint = rvd.getParentRendezvous().getParentLocation();
-        Point childPoint = rvd.getParentRendezvous().getChildLocation();
+        //Point parentPoint = rvd.getParentRendezvous().getParentLocation();
+        //Point childPoint = rvd.getParentRendezvous().getChildLocation();
         
-        Point basePoint = rvd.getParentRendezvous().parentsRVLocation.getChildLocation();
+        //Point basePoint = rvd.getParentRendezvous().parentsRVLocation.getChildLocation();
         if ((relay == null) || (basePoint == null) || (relay.getLocation() == null)) {
             System.out.println("!!! Somehow we don't have a relay?! Not recalcing rv timings...");
-            return;
+            return -1;
         }
+        
+        if (useSingleMeetingTime) {
+            basePoint = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
+            parentPoint = childPoint;
+        }
+        
         double timeRelayToBase = agent.calculatePath(relay.getLocation(), basePoint).getLength();
         double timeBaseToRV = agent.calculatePath(basePoint, parentPoint).getLength();
         double timeExpToFrontier = agent.calculatePath(agent.getLocation(), frontierCentre).getLength();
@@ -374,16 +397,13 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         double timeToMeetingE = timeExpToFrontier + timeFrontierToRV;
         timeToMeetingE = timeElapsed + Constants.FRONTIER_MIN_EXPLORE_TIME + timeToMeetingE / Constants.DEFAULT_SPEED;
         int timeToMeeting = (int)Math.ceil(Math.max(timeToMeetingR, timeToMeetingE));
-        rvd.getParentRendezvous().setTimeMeeting(timeToMeeting);
-        //rvd.getParentRendezvous().setMinTimeMeeting(timeToMeeting);
-        rvd.getParentRendezvous().setTimeWait(Constants.WAIT_AT_RV_BEFORE_REPLAN);
-        
-        calculateParentTimeToBackupRV();
         
         System.out.println(agent + " timeToMeetingR: " + timeToMeetingR + ", timeToMeetingE: " + timeToMeetingE + 
                 ", timeToMeeting: " + timeToMeeting + ", timeRelayToBase: " + timeRelayToBase + 
                 ", timeBaseToRV: " + timeBaseToRV + ", basePoint: " + basePoint + 
                 ", relay loc: " + relay.getLocation() + ", parentPoint: " + parentPoint);
+        
+        return timeToMeeting;
     }
     
     
@@ -554,6 +574,144 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         Point result = str.calculateRVPoint(agent);
         displayData.setSPRDisplayData((SinglePointRendezvousStrategyDisplayData)str.getRendezvousDisplayData());
         return result;
+    }
+    
+    //Explorer selects point as in DeHoog's AAMAS2010 paper, relay selects point such that it can explore nearby frontiers
+    private void calculateRendezvousFrontier() {
+        RendezvousAgentData rvd = agent.getRendezvousAgentData();
+        // Only calculate rv every several time steps at most
+        if(rvd.getTimeSinceLastRVCalc() < Constants.RV_REPLAN_INTERVAL)
+            return;
+        else
+            rvd.setTimeSinceLastRVCalc(0);
+        
+        Point explorerPoint = getExplorerRVPoint();
+        TeammateAgent relay = agent.getParentTeammate();
+        
+        //Do same as sampling method, except we already have explorer point
+        //need to find nearest point to base's comms range
+        System.out.print(Constants.INDENT + "Generating random points ... ");
+        generatedPoints = SampleEnvironmentPoints(agent, settings.SamplePointDensity);
+        
+        NearRVPoint explorerRVPoint = new NearRVPoint(explorerPoint.x, explorerPoint.y);
+        generatedPoints.add(explorerRVPoint);
+
+        System.out.print(Constants.INDENT + "Finding commlinks ... ");        
+        connectionsToBase = FindCommLinks(generatedPoints, agent);
+        System.out.println(agent + " connectionsToBase count is " + connectionsToBase.size());        
+        int pathsCalculated = 0;
+        
+        int meetingTime = 
+                calculateRVTimings(explorerPoint, explorerPoint, agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
+        
+        PriorityQueue<Frontier> frontiers = agent.getFrontiers();
+        
+        int maxFrontierExploreTime = 0;
+        
+        Point currentRelayBasePoint = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
+        
+        if ((rvd != null) && (rvd.getParentRendezvous() != null) && (rvd.getParentRendezvous().parentsRVLocation != null)
+                && (rvd.getParentRendezvous().parentsRVLocation.getChildLocation() != null))
+            currentRelayBasePoint = rvd.getParentRendezvous().parentsRVLocation.getChildLocation();
+        
+        Frontier bestFrontier = null;
+        CommLink bestLink = null;
+        
+        for(Frontier f: frontiers) {
+            if (!f.equals(agent.getLastFrontier())) { //potential frontier for the relay to explore
+                //can relay even get to frontier in time, if the meeting point was at frontier centre?
+                double timeToFrontier = 0;
+                timeToFrontier += agent.calculatePath(relay.getLocation(), currentRelayBasePoint).getLength();
+                timeToFrontier += agent.calculatePath(currentRelayBasePoint, f.getCentre()).getLength();
+                double hereToFrontier = timeToFrontier;
+                double delta = explorerPoint.distance(f.getCentre()) - agent.getCommRange();
+                if (delta < 0) delta = 0;
+                timeToFrontier += delta;
+                timeToFrontier = timeToFrontier / agent.getSpeed();
+                timeToFrontier += agent.getTimeElapsed();
+                if (timeToFrontier > meetingTime) continue; //cannot possibly reach frontier in time.
+                if (meetingTime - timeToFrontier < maxFrontierExploreTime) continue; //we already have a frontier we can explore for longer
+                
+                double minDistToBase = Double.MAX_VALUE;            
+                for(CommLink link: explorerRVPoint.commLinks) {
+                    NearRVPoint connectedPoint = link.getRemotePoint();
+
+                    Path frontierToMeeting = agent.calculatePath(f.getCentre(), connectedPoint.getLocation());
+                    double totalTime = (hereToFrontier + frontierToMeeting.getLength()) / agent.getSpeed();
+                    totalTime += agent.getTimeElapsed();
+                    if (totalTime > meetingTime) continue; //cannot make it to meeting point in time
+                    if (meetingTime - totalTime < maxFrontierExploreTime) continue; //we already have a better point
+                    
+                    maxFrontierExploreTime = (int)(meetingTime - totalTime);
+                    bestFrontier = f;
+                    bestLink = link;
+                    
+                    /*pathsCalculated = findNearestPointInBaseCommRange(connectedPoint, connectionsToBase, agent);
+
+                    if (connectedPoint.distanceToParent < minDistToBase) {
+                        minDistToBase = connectedPoint.distanceToParent;
+                        explorerRVPoint.commLinkClosestToBase = link;
+                    }*/
+                }
+            }
+        }
+        
+        NearRVPoint parentPoint;
+        NearRVPoint childPoint = explorerRVPoint;
+        if (bestFrontier != null && bestLink != null) {
+            pathsCalculated = findNearestPointInBaseCommRange(bestLink.getRemotePoint(), connectionsToBase, agent);
+
+            explorerRVPoint.commLinkClosestToBase = bestLink;
+            parentPoint = childPoint.commLinkClosestToBase.getRemotePoint();
+        } else {
+            parentPoint = explorerRVPoint;
+            pathsCalculated = findNearestPointInBaseCommRange(parentPoint, connectionsToBase, agent);
+        }
+        
+            //At this point, for explorerRVPoint, we know:
+            //  1. Connected point explorerRVPoint' that is nearest to comm range of Base
+            //  2. Distance from explorerRVPoint' to comm range of Base
+            //  3. Nearest point from explorerRVPoint' that is within comm range of Base
+        if (explorerRVPoint.commLinkClosestToBase == null || explorerRVPoint.commLinkClosestToBase.getRemotePoint() == null) {
+            //something went wrong, set RV to backup and return
+            Rendezvous meetingLocation = new Rendezvous(explorerPoint);
+            meetingLocation.setParentLocation(explorerPoint);
+            Point baseLocation = agent.getTeammate(agent.getParentTeammate().getParent()).getLocation();
+            Rendezvous parentsMeetingLocation = new Rendezvous(baseLocation);
+            System.out.println("    base location: " + baseLocation);
+            parentsMeetingLocation.setParentLocation(baseLocation);
+            meetingLocation.parentsRVLocation = parentsMeetingLocation;
+            rvd.setParentRendezvous(meetingLocation);
+            Rendezvous backupRV = new Rendezvous(explorerPoint);
+            rvd.setParentBackupRendezvous(backupRV);
+            calculateRVTimings();
+            return;
+        }        
+        //End method. Now just set the found points as RV.
+        
+        
+        
+        Rendezvous meetingLocation = new Rendezvous(childPoint);
+        meetingLocation.setParentLocation(parentPoint);
+        
+        Rendezvous parentsMeetingLocation = new Rendezvous(parentPoint.parentPoint);
+        Point baseLocation = agent.getTeammate(agent.getParentTeammate().getParent()).getLocation();
+        System.out.println("    base location: " + baseLocation);
+        parentsMeetingLocation.setParentLocation(agent.getTeammate(agent.getParentTeammate().getParent()).getLocation());
+        
+        meetingLocation.parentsRVLocation = parentsMeetingLocation;
+        rvd.setParentRendezvous(meetingLocation);
+        
+        Rendezvous backupRV = new Rendezvous(childPoint);
+        rvd.setParentBackupRendezvous(backupRV);
+        
+        calculateRVTimings();
+        
+        displayData.setGeneratedPoints(generatedPoints);
+        
+        System.out.print(Constants.INDENT + "Choosing advanced RV complete, chose " + 
+                rvd.getParentRendezvous().getChildLocation().x + "," + 
+                rvd.getParentRendezvous().getChildLocation().y + ". ");
     }
     
     //Explorer selects point as in DeHoog's AAMAS2010 paper, relay selects point nearest to base in range of explorer's point

@@ -973,7 +973,7 @@ public class SimulationFramework implements ActionListener {
         
         Point basePoint = rvd.getParentRendezvous().parentsRVLocation.getChildLocation();
         if (basePoint == null) {
-            System.out.println("!!! Somehow we don't have a relay?! Not recalcing rv timings...");
+            System.out.println("!!! basePoint is null...");
         }
     }
 

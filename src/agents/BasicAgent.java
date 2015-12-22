@@ -79,11 +79,13 @@ public class BasicAgent implements Agent {
 
     public static enum ExploreState {Initial, Explore, ReturnToParent, WaitForParent, GiveParentInfo, GoToChild, WaitForChild, GetInfoFromChild, OutOfService}
     private ExploreState state;
+    private ExploreState prevExploreState;
 
     int parent;             // Should keep ID and NOT RobotNumber of the parent
     int child;              // Should keep ID and NOT RobotNumber of the child
     
     private int stateTimer;  // keeps track of how much time spent in this state
+    private int timeSinceGetChildInfo; //how long since we got child info
     
     public Map<Integer, Double> knowledgeData = new HashMap(); // Keeps historical data about agent knowledge
         
@@ -103,6 +105,7 @@ public class BasicAgent implements Agent {
         parent = p;
         child = c;
         speed = sp;
+        timeSinceGetChildInfo = 0;
     }
     
 // </editor-fold>     
@@ -162,9 +165,14 @@ public class BasicAgent implements Agent {
         return state;
     }
     
+    public ExploreState getPrevState() {
+        return prevExploreState;
+    }
+    
     public void setState(ExploreState s) {
         if (this.state != s)
         {
+            prevExploreState = this.state;
             this.setStateTimer(0);
             this.state = s;
         }
@@ -175,6 +183,8 @@ public class BasicAgent implements Agent {
     }
     
     public void setStateTimer(int t) {
+        if (t != 0)
+            timeSinceGetChildInfo++;
         stateTimer = t;
     }
     
@@ -230,6 +240,13 @@ public class BasicAgent implements Agent {
         return child;
     }
 
+    public int getTimeSinceGetChildInfo() {
+        return timeSinceGetChildInfo;
+    }
+    
+    public void setTimeSinceGetChildInfo(int val) {
+        timeSinceGetChildInfo = val;
+    }
 // </editor-fold>     
 
  

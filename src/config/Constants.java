@@ -138,7 +138,7 @@ public class Constants {
     public static final int UNEXPLORED_NODE_ID = Integer.MAX_VALUE;
     
     // Time an agent needs to be in a state, before he starts communicating with the parent for RoleBasedExploration
-    public static final int MIN_TIME_IN_EXPLORE_STATE = 5;
+    public static final int MIN_TIME_IN_EXPLORE_STATE = 15;
     
     public static final int BASE_STATION_TEAMMATE_ID = 1;
     public static final int BASE_STATION_AGENT_ID = 0;

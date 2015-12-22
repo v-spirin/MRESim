@@ -180,8 +180,12 @@ public class RoleBasedExploration {
         //    agent.setTimeUntilRendezvous(agent.getTimeUntilRendezvous() - 1);
         // </editor-fold>
         //if we are a relay, check if we are due to return to child and return if it's time
+        int mintimeinexplorestate = Constants.MIN_TIME_IN_EXPLORE_STATE;
         if (agent.getRole() == RobotConfig.roletype.Relay) {
-            if((agent.getChildTeammate().isInRange()) /*&& !agent.getParentTeammate().isInRange()*/) {
+            if((agent.getChildTeammate().isInRange() && //and we haven't been in GetInfoFromChild state with this child
+                                                        //in the last MIN_TIME_IN_EXPLORE_STATE steps
+                    agent.getTimeSinceGetChildInfo() > mintimeinexplorestate
+                    ) /*&& !agent.getParentTeammate().isInRange()*/) {
                 agent.setState(RealAgent.ExploreState.GetInfoFromChild);
                 agent.setStateTimer(0);
 
@@ -612,13 +616,18 @@ public class RoleBasedExploration {
         if(agent.getStateTimer() == 0) {
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
             Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
-
+            /*if (agent.getChildTeammate().getState() == BasicAgent.ExploreState.GiveParentInfo) {
+                agent.setTimeSinceGetChildInfo(0);
+            }*/
             agent.setPath(path);
             agent.setStateTimer(1);
             agent.setCurrentGoal(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
             return agent.getLocation();
         }
         else {
+            if (agent.getChildTeammate().getState() == BasicAgent.ExploreState.GiveParentInfo) {
+                agent.setTimeSinceGetChildInfo(0);
+            }
             agent.setState(RealAgent.ExploreState.ReturnToParent);
             return takeStep_ReturnToParent(agent);
         }

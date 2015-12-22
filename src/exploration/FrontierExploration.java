@@ -172,6 +172,10 @@ public class FrontierExploration {
                     foundFrontier = true;
             }
         }
+        
+        if ((agent.getRole() == RobotConfig.roletype.Relay) && (agent.getState() == BasicAgent.ExploreState.GoToChild)) {
+            return RoleBasedExploration.takeStep_GoToChild(agent);
+        }
 
         //<editor-fold defaultstate="collapsed" desc="If no frontier could be assigned, then go back to base.">
         if(!foundFrontier && timeElapsed > 100){
@@ -329,6 +333,8 @@ public class FrontierExploration {
                     if (timeToRV > timeMeeting) {
                         System.out.println(agent + "Cannot explore frontier with centre " + ute.frontier.getCentre() + ", timeToRV is " + timeToRV + ", timeMeeting is " + timeMeeting + ", utility was " + ute.utility + ", setting utility to " + (ute.utility - 100000000));
                         ute.utility = ute.utility - 100000000;
+                        if (agent.getRole() == RobotConfig.roletype.Relay)
+                            ute.utility = -1;
                     }
                 }
                 
@@ -548,6 +554,10 @@ public class FrontierExploration {
                 //System.out.println("UtilityExact: " + best.utility);
                 if((utilities.size() == 0) || (best.utility >= utilities.peek().utility)){
                     if(best.ID == agent.getID()){
+                        if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
+                            agent.setState(BasicAgent.ExploreState.GoToChild);
+                            return null;
+                        }
                         agent.setLastFrontier(best.frontier);
                         agent.setCurrentGoal(best.frontier.getCentre());
                         if(agent.getPath() != null)

@@ -65,6 +65,9 @@ public class Rendezvous {
     public Rendezvous parentsRVLocation; //this is the RV location for our parent to meet with its parent (we calculate it).
     
     public Rendezvous(Point location) {
+        if (location == null) {
+            System.out.println("!!! location is null? This should never happen!");
+        }
         childLocation = location;
         parentLocation = location;
         timeMeeting = Constants.MAX_TIME; //meeting time not agreed
@@ -73,6 +76,10 @@ public class Rendezvous {
     }
     
     public Rendezvous copy() {
+        if (childLocation == null) {
+            System.out.println("!!! childLocation is null? This should never happen!");
+            return null;
+        };
         Rendezvous locCopy = new Rendezvous(childLocation);
         locCopy.setChildLocation(new Point(childLocation));
         locCopy.setParentLocation(new Point(parentLocation));

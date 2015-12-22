@@ -71,6 +71,7 @@ public class RealAgent extends BasicAgent implements Agent {
     // Data
     AgentStats stats;
     
+    
     int prevX, prevY;             // Previous position in environment
     public int periodicReturnInterval;   // how long to wait until going back to BS
     public int frontierPeriodicState;   // bit of a hack: state of periodic return frontier exp robots (0=exploring; 1=returning)
