@@ -95,6 +95,8 @@ public class SimulatorConfig {
     //samplingDensity pixels. E.g. if samplingDensity = 100, we will roughly get one point per 10x10 pixel square.
     private boolean exploreReplan; //Should explorer replan the meeting with relay to take into account comm range
     private boolean relayExplore; //Should relay also explore if it gets a chance in RBE
+    private boolean tryToGetToExplorerRV;
+    private boolean useSingleMeetingTime;
 
     public SimulatorConfig() {
         boolean oldEnvVariableConfigFound = loadOldSimulatorConfig();
@@ -122,6 +124,8 @@ public class SimulatorConfig {
             samplingDensity = 400;
             exploreReplan = false;
             relayExplore = false;
+            tryToGetToExplorerRV = false;
+            useSingleMeetingTime = false;
         }
         
         boolean oldWallConfigFound = loadOldWallConfig();
@@ -336,6 +340,22 @@ public class SimulatorConfig {
         return relayExplore;
     }
     
+    public void setTryToGetToExplorerRV(boolean s) {
+        tryToGetToExplorerRV = s;
+    }
+    
+    public boolean getTryToGetToExplorerRV() {
+        return tryToGetToExplorerRV;
+    }
+    
+    public void setUseSingleMeetingTime(boolean s) {
+        useSingleMeetingTime = s;
+    }
+    
+    public boolean getUseSingleMeetingTime() {
+        return useSingleMeetingTime;
+    }
+    
     public void setExploreReplan(boolean s) {
         exploreReplan = s;
     }
@@ -453,6 +473,22 @@ public class SimulatorConfig {
                 {
                     exploreReplan = false;
                 }
+                
+                try
+                {
+                    tryToGetToExplorerRV = Boolean.parseBoolean(inFile.readLine());
+                } catch (Exception e)
+                {
+                    tryToGetToExplorerRV = false;
+                }
+                
+                try
+                {
+                    useSingleMeetingTime = Boolean.parseBoolean(inFile.readLine());
+                } catch (Exception e)
+                {
+                    useSingleMeetingTime = false;
+                }
 
                 inFile.close();
                 return true;
@@ -520,6 +556,8 @@ public class SimulatorConfig {
             outFile.println(samplingDensity);
             outFile.println(relayExplore);
             outFile.println(exploreReplan);
+            outFile.println(tryToGetToExplorerRV);
+            outFile.println(useSingleMeetingTime);
             
             outFile.close();
             return true;

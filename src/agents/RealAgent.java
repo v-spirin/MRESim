@@ -98,6 +98,8 @@ public class RealAgent extends BasicAgent implements Agent {
     HashMap<Frontier, Boolean> badFrontiers;
     
     int relayMarks;
+    
+    public int totalSpareTime; //total time this mission that this relay might have used for exploration
 
     // Path
     Path path;
@@ -154,6 +156,8 @@ public class RealAgent extends BasicAgent implements Agent {
         timeTopologicalMapUpdated = -1;
         timeElapsed = 0;
         relayID = -1;
+        
+        totalSpareTime = 0;
         
         occGrid = new OccupancyGrid(envWidth, envHeight);
         topologicalMap = new TopologicalMap(null);

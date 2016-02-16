@@ -401,8 +401,8 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         
     }
     
-    public void processGoToChildReplan() {
-        
+    public Path processGoToChildReplan() {
+        return null;
     }
     
     public Point processWaitForParent() {

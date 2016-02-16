@@ -460,6 +460,16 @@ public class RoleBasedExploration {
             //</editor-fold>
             //<editor-fold defaultstate="collapsed" desc="Relay - process & go to child">
             else {
+                //--the below section is for logging only
+                //---------------------------------------
+                Path pathToMeeting = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
+                //Check if we have at least T=15 timesteps to spare.
+                int timeMeeting = agent.getRendezvousAgentData().getChildRendezvous().getTimeMeeting();
+                int spareTime = (int)Math.round((pathToMeeting.getLength() / Constants.DEFAULT_SPEED) + agent.getTimeElapsed() - timeMeeting);
+                agent.totalSpareTime += spareTime;
+                //---------------------------------------
+                //--end of section-----------------------
+                    
                 agent.getRendezvousStrategy().processAfterGiveParentInfoRelay();
                 if (agent.getState() == RealAgent.ExploreState.Explore) {
                     agent.setStateTimer(0);
@@ -527,9 +537,10 @@ public class RoleBasedExploration {
             if (existingPath != null)
                 agent.addDirtyCells(existingPath.getAllPathPixels());
             
-            agent.getRendezvousStrategy().processGoToChildReplan();
+            Path path = agent.getRendezvousStrategy().processGoToChildReplan();            
             
-            Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
+            if (path == null)
+                path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
             //<editor-fold defaultstate="collapsed" desc="Could not find full path! Trying pure A*">
             if (!path.found)
             {
@@ -568,7 +579,8 @@ public class RoleBasedExploration {
         // path is empty, so we must have reached rendezvous point.
         // Just check to make sure we are though and if not take random step.
         
-        if(agent.getLocation().distance(rvd.getChildRendezvous().getParentLocation()) > 2*Constants.STEP_SIZE)
+        if ((agent.getLocation().distance(rvd.getChildRendezvous().getParentLocation()) > 2*Constants.STEP_SIZE)
+                && (agent.getLocation().distance(rvd.getChildRendezvous().getChildLocation()) > 2*Constants.STEP_SIZE))
         {
             System.out.println(agent.toString() + 
                     "!!!ERROR! We should have reached child RV, but we are too far from it! Taking random step");

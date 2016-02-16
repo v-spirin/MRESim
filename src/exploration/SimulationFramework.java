@@ -376,6 +376,10 @@ public class SimulationFramework implements ActionListener {
                 if (multiPoint) {                    
                     String exploreReplan = runs.getJSONObject(index).getString("exploreReplan");
                     simConfig.setExploreReplan(Boolean.parseBoolean(exploreReplan));
+                    String tryToGetToExplorerRV = runs.getJSONObject(index).getString("tryToGetToExplorerRV");
+                    simConfig.setTryToGetToExplorerRV(Boolean.parseBoolean(tryToGetToExplorerRV));
+                    String useSingleMeetingTime = runs.getJSONObject(index).getString("useSingleMeetingTime");
+                    simConfig.setUseSingleMeetingTime(Boolean.parseBoolean(useSingleMeetingTime));
                 } else {
                     
                 }
@@ -512,7 +516,7 @@ public class SimulationFramework implements ActionListener {
                 allAgentsAtBase = false;
         }
         
-        if(timeElapsed >= 10000 || allAgentsDone() || allAgentsAtBase) {
+        if(timeElapsed >= 3000 || allAgentsDone() || allAgentsAtBase) {
             timer.stop();
             runNumber++;
             if(isBatch && (runNumber < runNumMax))
@@ -988,8 +992,12 @@ public class SimulationFramework implements ActionListener {
                 (agent2.getState() == ExploreState.GetInfoFromChild) ||
                 (agent2.getState() == ExploreState.GiveParentInfo) ||
                 (agent2.getState() == ExploreState.WaitForChild) ||
-                (agent2.getState() == ExploreState.WaitForParent))
+                (agent2.getState() == ExploreState.WaitForParent)) {
+            System.out.println("Not swapping roles, " + agent1 + " is in state " + agent1.getState() + ", " + agent2 + 
+                    "is in state " + agent2.getState());
             return false;
+        }
+            
         
         if(agent1.getRendezvousAgentData().getTimeSinceLastRoleSwitch() < 4 ||
            agent2.getRendezvousAgentData().getTimeSinceLastRoleSwitch() < 4)
@@ -1142,7 +1150,8 @@ public class SimulationFramework implements ActionListener {
                 outFile.print(agent[i].getCurrentGoal().getX() + " ");
                 outFile.print(agent[i].getCurrentGoal().getY() + " ");
                 outFile.print(agent[i].getRole() + " ");
-                outFile.print(agent[i].getState() + " ");                
+                outFile.print(agent[i].getState() + " ");
+                outFile.print(agent[i].totalSpareTime + " ");
             }
             outFile.println();
             outFile.close();

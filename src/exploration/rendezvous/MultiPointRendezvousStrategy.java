@@ -77,9 +77,11 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     
     public void calculateRendezvousExplorerWithRelay() {
         //calculateRendezvousRandomSampling();
-        //calculateRendezvousAAMAS();
-        calculateRendezvousFrontier();
-        //calculateRendezvousNearAAMAS();
+        //
+        if (settings.attemptExplorationByRelay)
+            calculateRendezvousFrontier();
+        else
+            calculateRendezvousAAMAS();
     }
 
     public void calculateRendezvousRelayWithRelay() {
@@ -169,8 +171,20 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         
     }
 
-    public void processGoToChildReplan() {
-        
+    public Path processGoToChildReplan() {
+        if (settings.tryToGetToExplorerRV) {
+            RendezvousAgentData rvd = agent.getRendezvousAgentData();
+            //if we have enough time, we should actually just go to childLocation - this way the child may travel less
+            //as it is more likely it will enter our comms range sooner. This only really makes a difference with multipoint RV
+            Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getChildLocation());
+            boolean pathWorked = false;
+            if (path.found) {
+                double timeToChild = path.getLength() / agent.getSpeed() + agent.getTimeElapsed();
+                if (timeToChild <= rvd.getChildRendezvous().getTimeMeeting()) pathWorked = true;
+            }
+            if (pathWorked) return path;
+        }
+        return null;
     }
 
     public Point processWaitForParent() {
@@ -369,7 +383,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     private int calculateRVTimings(Point parentPoint, Point childPoint, Point basePoint) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         TeammateAgent relay = agent.getParentTeammate();
-        boolean useSingleMeetingTime = true; //assume that we are using single meeting point to time RV.
+        boolean useSingleMeetingTime = settings.useSingleMeetingTime; //assume that we are using single meeting point to time RV.
         //use this to make sure we do not RV more often that we would have if we were using single point RV.
         
         Point frontierCentre = getExplorerFrontier();
@@ -610,9 +624,11 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         
         Point currentRelayBasePoint = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
         
-        if ((rvd != null) && (rvd.getParentRendezvous() != null) && (rvd.getParentRendezvous().parentsRVLocation != null)
+        if ((rvd.getParentRendezvous() != null) && (rvd.getParentRendezvous().parentsRVLocation != null)
                 && (rvd.getParentRendezvous().parentsRVLocation.getChildLocation() != null))
             currentRelayBasePoint = rvd.getParentRendezvous().parentsRVLocation.getChildLocation();
+        
+        System.out.println("Current relay base point is " + currentRelayBasePoint);
         
         Frontier bestFrontier = null;
         CommLink bestLink = null;
@@ -629,8 +645,14 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
                 timeToFrontier += delta;
                 timeToFrontier = timeToFrontier / agent.getSpeed();
                 timeToFrontier += agent.getTimeElapsed();
-                if (timeToFrontier > meetingTime) continue; //cannot possibly reach frontier in time.
-                if (meetingTime - timeToFrontier < maxFrontierExploreTime) continue; //we already have a frontier we can explore for longer
+                if (timeToFrontier > meetingTime) {
+                    System.out.println("Skipping frontier test1 at " + f.getCentre() + "; timeToFrontier is " + timeToFrontier + ", meetingTime is " + meetingTime);
+                    continue;
+                } //cannot possibly reach frontier in time.
+                if (meetingTime - timeToFrontier < maxFrontierExploreTime) {
+                    System.out.println("Skipping frontier test1 at " + f.getCentre() + "; timeToFrontier is " + timeToFrontier + ", meetingTime is " + meetingTime + ", maxFrontierExploreTime is " + maxFrontierExploreTime);
+                    continue;
+                } //we already have a frontier we can explore for longer
                 
                 double minDistToBase = Double.MAX_VALUE;            
                 for(CommLink link: explorerRVPoint.commLinks) {
@@ -639,12 +661,25 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
                     Path frontierToMeeting = agent.calculatePath(f.getCentre(), connectedPoint.getLocation());
                     double totalTime = (hereToFrontier + frontierToMeeting.getLength()) / agent.getSpeed();
                     totalTime += agent.getTimeElapsed();
-                    if (totalTime > meetingTime) continue; //cannot make it to meeting point in time
-                    if (meetingTime - totalTime < maxFrontierExploreTime) continue; //we already have a better point
+                    
+                    if (!frontierToMeeting.found) {
+                        System.out.println("Skipping frontier test2 at " + f.getCentre() + "; path not found! (between " + f.getCentre() + " and " + connectedPoint.getLocation());
+                        continue;
+                    }
+                    
+                    if (totalTime > meetingTime) {
+                        System.out.println("Skipping frontier test2 at " + f.getCentre() + "; timeToFrontier is " + timeToFrontier + ", meetingTime is " + meetingTime + ", totalTime is " + totalTime);
+                        continue;
+                    } //cannot make it to meeting point in time
+                    if (meetingTime - totalTime < maxFrontierExploreTime) {
+                        System.out.println("Skipping frontier test2 at " + f.getCentre() + "; timeToFrontier is " + timeToFrontier + ", meetingTime is " + meetingTime + ", maxFrontierExploreTime is " + maxFrontierExploreTime);
+                        continue;
+                    } //we already have a better point
                     
                     maxFrontierExploreTime = (int)(meetingTime - totalTime);
                     bestFrontier = f;
                     bestLink = link;
+                    
                     
                     /*pathsCalculated = findNearestPointInBaseCommRange(connectedPoint, connectionsToBase, agent);
 
@@ -663,9 +698,12 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
 
             explorerRVPoint.commLinkClosestToBase = bestLink;
             parentPoint = childPoint.commLinkClosestToBase.getRemotePoint();
+            System.out.println("Ended up selecting frontier " + bestFrontier.getCentre() + ", parentPoint is " + parentPoint.toString() + ", basePoint is " + parentPoint.parentPoint.toString());
         } else {
             parentPoint = explorerRVPoint;
             pathsCalculated = findNearestPointInBaseCommRange(parentPoint, connectionsToBase, agent);
+            CommLink selfLink = new CommLink(parentPoint, parentPoint);
+            explorerRVPoint.commLinkClosestToBase = selfLink;
         }
         
             //At this point, for explorerRVPoint, we know:

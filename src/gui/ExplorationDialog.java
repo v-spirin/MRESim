@@ -179,7 +179,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
 
         groupExplorationAlgorithm.add(radioLog);
         radioLog.setFont(new java.awt.Font("Arial", 1, 11)); // NOI18N
-        radioLog.setMnemonic('0');
+        radioLog.setMnemonic('1');
         radioLog.setText("Run From Log");
         radioLog.setFocusable(false);
         radioLog.setNextFocusableComponent(buttonOK);
@@ -257,7 +257,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
 
         groupExplorationAlgorithm.add(radioLeaderFollower);
         radioLeaderFollower.setFont(new java.awt.Font("Arial", 1, 11)); // NOI18N
-        radioLeaderFollower.setMnemonic('1');
+        radioLeaderFollower.setMnemonic('2');
         radioLeaderFollower.setText("Leader-Follower");
         radioLeaderFollower.setFocusable(false);
         radioLeaderFollower.addActionListener(new java.awt.event.ActionListener() {
@@ -307,7 +307,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
 
         groupExplorationAlgorithm.add(radioFrontier);
         radioFrontier.setFont(new java.awt.Font("Arial", 1, 11)); // NOI18N
-        radioFrontier.setMnemonic('2');
+        radioFrontier.setMnemonic('3');
         radioFrontier.setText("Frontier-based");
         radioFrontier.setFocusable(false);
         radioFrontier.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -444,7 +444,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
 
         groupExplorationAlgorithm.add(radioRole);
         radioRole.setFont(new java.awt.Font("Arial", 1, 11)); // NOI18N
-        radioRole.setMnemonic('3');
+        radioRole.setMnemonic('4');
         radioRole.setText("Role-Based");
         radioRole.setFocusable(false);
         radioRole.setVerticalAlignment(javax.swing.SwingConstants.TOP);

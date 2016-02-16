@@ -57,6 +57,8 @@ public class RendezvousStrategyFactory {
             rvSettings.SamplePointDensity = simConfig.getSamplingDensity(); //roughly every 20 sq. units
             rvSettings.replanOurMeetingPoint = simConfig.getExploreReplan();
             rvSettings.attemptExplorationByRelay = simConfig.getRelayExplore();
+            rvSettings.tryToGetToExplorerRV = simConfig.getTryToGetToExplorerRV();
+            rvSettings.useSingleMeetingTime = simConfig.getUseSingleMeetingTime();
             IRendezvousStrategy rendezvousStrategy = new MultiPointRendezvousStrategy(agent, rvSettings);
             return rendezvousStrategy;
         }

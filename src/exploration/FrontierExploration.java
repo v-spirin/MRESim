@@ -317,17 +317,31 @@ public class FrontierExploration {
                 Point RVDestination = null;
                 int timeMeeting = Integer.MAX_VALUE;
                 RendezvousAgentData rvd = agent.getRendezvousAgentData();
+                Path frontierToRV = null;
                 if (agent.getRole() == RobotConfig.roletype.Explorer) {
                     RVDestination = rvd.getParentRendezvous().getChildLocation();
+                    if (RVDestination != null) {
+                        frontierToRV = agent.calculatePath(ute.frontier.getCentre(), RVDestination);
+                    }
                     timeMeeting = rvd.getParentRendezvous().getTimeMeeting();
                 } else if (agent.getRole() == RobotConfig.roletype.Relay) {
                     RVDestination = rvd.getChildRendezvous().getParentLocation();
+                    if (RVDestination != null) {
+                        Path frontierToParent = agent.calculatePath(ute.frontier.getCentre(), RVDestination);
+                        Path frontierToChild = agent.calculatePath(ute.frontier.getCentre(), rvd.getChildRendezvous().getChildLocation());
+                        if (frontierToParent.getLength() < frontierToChild.getLength() && frontierToParent.found) {
+                            frontierToRV = frontierToParent;
+                        } else if (frontierToParent.getLength() >= frontierToChild.getLength() && frontierToChild.found) {
+                            frontierToRV = frontierToChild;
+                        } else
+                            frontierToRV = frontierToParent;
+                    }
                     timeMeeting = rvd.getChildRendezvous().getTimeMeeting();
                 }
                 if (RVDestination != null) {
                     Path meToFrontier = p;
-                    Path frontierToRV = agent.calculatePath(ute.frontier.getCentre(), RVDestination);
-                
+                    
+                    
                     int timeToRV = (int)((meToFrontier.getLength() + frontierToRV.getLength()) / Constants.DEFAULT_SPEED) + agent.getTimeElapsed();
                     //if time available is less than time to frontier, set utility to low value
                     if (timeToRV > timeMeeting) {

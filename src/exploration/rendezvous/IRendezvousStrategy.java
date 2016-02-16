@@ -42,6 +42,7 @@ package exploration.rendezvous;
 
 import agents.RealAgent;
 import java.awt.Point;
+import path.Path;
 
 /**
  *
@@ -80,7 +81,7 @@ public interface IRendezvousStrategy {
     //This method called just before we check if we are due to return to RV. We can change the meeting point for us here.
     void processExplorerCheckDueReturnToRV();
     //This method is called when we are replanning path to child in GoToChild state
-    void processGoToChildReplan();
+    Path processGoToChildReplan();
     
     //This method is called when we are waiting for parent to arrive at RV. We move to the point returned by the method.
     Point processWaitForParent();

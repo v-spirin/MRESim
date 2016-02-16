@@ -59,4 +59,7 @@ public class MultiPointRendezvousStrategySettings {
     public double SamplePointDensity;
     public boolean replanOurMeetingPoint;
     public boolean attemptExplorationByRelay; //should relay try to explore some frontiers if otherwise it will arrive at RV too early
+    public boolean tryToGetToExplorerRV; //if the relay has time, should it try to go to explorer's RV location instead of its own?
+                                         //this improves the chances that explorer will enter relay's range sooner when it heads back to RV
+    public boolean useSingleMeetingTime; //should we plan to arrive at RV at the same time as if we were using a single RV point?
 }
