@@ -532,7 +532,7 @@ public class RealAgent extends BasicAgent implements Agent {
         
         //pruneUnexploredSpace();
         
-        System.out.println(this.toString() +  "Taking step complete, moving from " + getLocation() + " to " + nextStep + ", took " + (System.currentTimeMillis()-realtimeStartAgentStep) + "ms.");
+        System.out.println(this.toString() +  "Taking step complete, moving from (" + (int)getLocation().getX() + "," + (int)getLocation().getX() + ") to (" + (int)nextStep.getX() + "," + (int)nextStep.getX() + "), took " + (System.currentTimeMillis()-realtimeStartAgentStep) + "ms.");
 
         return nextStep;
     }
@@ -626,7 +626,7 @@ public class RealAgent extends BasicAgent implements Agent {
                 timeTopologicalMapUpdated = -1;
                 return calculatePath(startPoint, goalPoint);
             } else if (!topologicalMap.getPath().found) {
-                System.out.println(this +"at location " + getLocation() + "failed to plan path " + startPoint + " to " + goalPoint + ", not retrying; " +
+                System.out.println(this +"at location (" + (int)getLocation().getX() + "," + (int)getLocation().getX()+ ") failed to plan path (" + (int)startPoint.getX() + "," + (int)startPoint.getX()+ ") to (" + (int)goalPoint.getX() + "," + (int)goalPoint.getX()+ "), not retrying; " +
                         "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed + 
                         ", mapCellsChanged: " + occGrid.getMapCellsChanged() + "/" + Constants.MAP_CHANGED_THRESHOLD);
             } 

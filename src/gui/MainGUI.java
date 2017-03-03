@@ -583,9 +583,9 @@ public class MainGUI extends javax.swing.JFrame {
 
         scrollPaneRobots.setViewportView(panelRobotInfo);
 
-        labelAvgCycle.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
+        labelAvgCycle.setFont(new java.awt.Font("Arial", 0, 10)); // NOI18N
         labelAvgCycle.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        labelAvgCycle.setText("Avg Cycle:");
+        labelAvgCycle.setText("Avg Cycle ms:");
 
         labelAvgCycleUpdate.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         labelAvgCycleUpdate.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -604,11 +604,11 @@ public class MainGUI extends javax.swing.JFrame {
             }
         });
         menuExploration1.addMenuDragMouseListener(new javax.swing.event.MenuDragMouseListener() {
-            public void menuDragMouseDragged(javax.swing.event.MenuDragMouseEvent evt) {
-            }
             public void menuDragMouseEntered(javax.swing.event.MenuDragMouseEvent evt) {
             }
             public void menuDragMouseExited(javax.swing.event.MenuDragMouseEvent evt) {
+            }
+            public void menuDragMouseDragged(javax.swing.event.MenuDragMouseEvent evt) {
             }
             public void menuDragMouseReleased(javax.swing.event.MenuDragMouseEvent evt) {
                 menuExplorationMenuDragMouseReleased(evt);
@@ -627,11 +627,11 @@ public class MainGUI extends javax.swing.JFrame {
             }
         });
         menuCommunication1.addMenuDragMouseListener(new javax.swing.event.MenuDragMouseListener() {
-            public void menuDragMouseDragged(javax.swing.event.MenuDragMouseEvent evt) {
-            }
             public void menuDragMouseEntered(javax.swing.event.MenuDragMouseEvent evt) {
             }
             public void menuDragMouseExited(javax.swing.event.MenuDragMouseEvent evt) {
+            }
+            public void menuDragMouseDragged(javax.swing.event.MenuDragMouseEvent evt) {
             }
             public void menuDragMouseReleased(javax.swing.event.MenuDragMouseEvent evt) {
                 menuCommunicationMenuDragMouseReleased(evt);
@@ -650,11 +650,11 @@ public class MainGUI extends javax.swing.JFrame {
             }
         });
         menuEnvironment1.addMenuDragMouseListener(new javax.swing.event.MenuDragMouseListener() {
-            public void menuDragMouseDragged(javax.swing.event.MenuDragMouseEvent evt) {
-            }
             public void menuDragMouseEntered(javax.swing.event.MenuDragMouseEvent evt) {
             }
             public void menuDragMouseExited(javax.swing.event.MenuDragMouseEvent evt) {
+            }
+            public void menuDragMouseDragged(javax.swing.event.MenuDragMouseEvent evt) {
             }
             public void menuDragMouseReleased(javax.swing.event.MenuDragMouseEvent evt) {
                 menuEnvironmentMenuDragMouseReleased(evt);
@@ -673,11 +673,11 @@ public class MainGUI extends javax.swing.JFrame {
             }
         });
         menuRobots1.addMenuDragMouseListener(new javax.swing.event.MenuDragMouseListener() {
-            public void menuDragMouseDragged(javax.swing.event.MenuDragMouseEvent evt) {
-            }
             public void menuDragMouseEntered(javax.swing.event.MenuDragMouseEvent evt) {
             }
             public void menuDragMouseExited(javax.swing.event.MenuDragMouseEvent evt) {
+            }
+            public void menuDragMouseDragged(javax.swing.event.MenuDragMouseEvent evt) {
             }
             public void menuDragMouseReleased(javax.swing.event.MenuDragMouseEvent evt) {
                 menuRobotsMenuDragMouseReleased(evt);
@@ -696,11 +696,11 @@ public class MainGUI extends javax.swing.JFrame {
             }
         });
         menuLogs1.addMenuDragMouseListener(new javax.swing.event.MenuDragMouseListener() {
-            public void menuDragMouseDragged(javax.swing.event.MenuDragMouseEvent evt) {
-            }
             public void menuDragMouseEntered(javax.swing.event.MenuDragMouseEvent evt) {
             }
             public void menuDragMouseExited(javax.swing.event.MenuDragMouseEvent evt) {
+            }
+            public void menuDragMouseDragged(javax.swing.event.MenuDragMouseEvent evt) {
             }
             public void menuDragMouseReleased(javax.swing.event.MenuDragMouseEvent evt) {
                 menuLogsMenuDragMouseReleased(evt);

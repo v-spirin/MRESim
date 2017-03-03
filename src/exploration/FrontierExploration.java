@@ -460,7 +460,7 @@ public class FrontierExploration {
         
         @Override
         public String toString() {
-            return "Utility ID: " + ID + ", agentLocation: " + agentLocation + ", frontier: " + frontier 
+            return "Utility ID: " + ID + ", agentLocation: (" + (int)agentLocation.getX() + "," + (int)agentLocation.getX()+ "), frontier: " + frontier 
                     + ", utility: " + utility;
         }
     }

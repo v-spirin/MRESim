@@ -137,8 +137,8 @@ public class AgentStepRunnable implements Runnable{
             }
             else
             {
-                System.out.println(agent + " !!! setting envError because direct line not possible between " 
-                        + agent.getLocation() + " and " + nextStep);
+                System.out.println(agent + " !!! setting envError because direct line not possible between (" 
+                         + (int)agent.getLocation().getX() + "," + (int)agent.getLocation().getX()+ ") and " + nextStep);
                 //Remove safe space status for the points along the line, so that obstacles can be sensed there
                 if (nextStep.distance(agent.getLocation()) == 1) {
                     //We are bordering next step, and because we cannot move there it must be an obstacle

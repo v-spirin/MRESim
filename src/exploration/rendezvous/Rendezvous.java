@@ -199,8 +199,8 @@ public class Rendezvous {
     
     @Override
     public String toString() {
-        return "parentLoc: " + parentLocation + ", childLoc: " + childLocation + 
-                ", timeMeeting: " + timeMeeting + ", timeWait: " + timeWait;
+        return "parentLoc: (" + (int)parentLocation.getX() + "," + (int)parentLocation.getX() + "), childLoc: (" + (int)childLocation.getX() + "," + (int)childLocation.getX() + 
+                "), timeMeeting: " + timeMeeting + ", timeWait: " + timeWait;
     }
     
     
@@ -214,7 +214,7 @@ public class Rendezvous {
     }
     
     public void setTimeMeeting(int timeMeeting) {
-        System.out.println("Setting meeting time to " + timeMeeting);
+        //System.out.println("Setting meeting time to " + timeMeeting);
         this.timeMeeting = timeMeeting;
     }
     
