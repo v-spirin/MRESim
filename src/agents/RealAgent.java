@@ -536,7 +536,7 @@ public class RealAgent extends BasicAgent implements Agent {
         
         //pruneUnexploredSpace();
         if(saveOccupancyGrid)
-            occGrid.saveToPNG("logs/occuGrid " + this.toString() + System.currentTimeMillis());
+            occGrid.saveToPNG("logs/occuGrid " + this.toString() + System.currentTimeMillis() + ".png");
         System.out.println(this.toString() +  "Taking step complete, moving from (" + (int)getLocation().getX() + "," + (int)getLocation().getX() + ") to (" + (int)nextStep.getX() + "," + (int)nextStep.getX() + "), took " + (System.currentTimeMillis()-realtimeStartAgentStep) + "ms.");
 
         return nextStep;

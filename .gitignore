@@ -5,4 +5,5 @@ config/lastEnvironment.png
 config/lastSimulatorConfig.txt
 *.swp
 config/lastTeamConfig.txt
+logs/*
 
