@@ -63,6 +63,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Scanner;
@@ -292,7 +293,12 @@ public class SimulationFramework implements ActionListener {
         System.out.println(this.toString() + "updateGUI took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
         time4 += (System.currentTimeMillis()-localTimer);
         //timer = System.currentTimeMillis();
+        mainGUI.updateRobotConfig();
         logging();                  // perform logging as required
+        robotTeamConfig.getRobotTeam().entrySet().stream().filter((entry) -> (entry.getValue().getLoggingState())).forEach((entry) -> {
+            RealAgent a = agent[entry.getValue().getRobotNumber()-1];
+            a.getOccupancyGrid().saveToPNG("logs/occuGrid " + a.toString() + System.currentTimeMillis() + ".png");
+        });
         //if ((timeElapsed % 10) == 0) verifyNoInfoGotLost(); //verify relaying works fine
         //System.out.println(this.toString() + "logging took " + (System.currentTimeMillis()-timer) + "ms.\n");
         int currentCycleTime = (int)(System.currentTimeMillis()-realtimeStartCycle);

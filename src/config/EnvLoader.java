@@ -139,7 +139,7 @@ public class EnvLoader {
             return null;
 
         try{
-            System.out.print(className() + "Trying to load text based environment ... ");
+            System.out.println(className() + "Trying to load text based environment ... ");
             BufferedReader inFile = new BufferedReader(new FileReader(file));
 
             int rows = Integer.parseInt(inFile.readLine());
@@ -195,7 +195,7 @@ public class EnvLoader {
             return null;
 
         try{
-            System.out.print(className() + "Trying to load image based environment ... ");
+            System.out.println(className() + "Trying to load image based environment ... ");
             BufferedImage image = ImageIO.read(file);
             Raster raster = image.getRaster();
 

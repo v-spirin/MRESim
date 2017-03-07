@@ -641,7 +641,7 @@ public class FrontierExploration {
         }
         agent.setFrontiers(frontiers);
 
-        System.out.print("retained " + contourCounter + " of them, disregarded due to size " + contoursSmall + 
+        System.out.println("retained " + contourCounter + " of them, disregarded due to size " + contoursSmall + 
                 ", disregarded as bad " + contoursBad + ". Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }

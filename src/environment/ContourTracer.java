@@ -227,8 +227,8 @@ public class ContourTracer {
                 }
                 
             }
-        System.out.print("[findAllContours] contours processed: " + contourCounter);
-        System.out.print("[findAllContours] main loop took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        System.out.println("[findAllContours] contours processed: " + contourCounter);
+        System.out.println("[findAllContours] main loop took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         
         return contourList;
     }

@@ -422,10 +422,7 @@ public class ExplorationImage {
         setPixel(xCoord, yCoord, Constants.MapColor.background());
         
         for (int i = agents.length - 1; i >= 0; i--) {
-            if ((agents[i].getRole() == RobotConfig.roletype.BaseStation) && agentsSettings[i].showFreeSpace)
-                agentsSettings[i].showBaseSpace = true;
-            else
-                agentsSettings[i].showBaseSpace = false;
+            agentsSettings[i].showBaseSpace = (agents[i].getRole() == RobotConfig.roletype.BaseStation) && agentsSettings[i].showFreeSpace;
             updatePixelAgent(agentsSettings[i], agents[i].getOccupancyGrid(), xCoord, yCoord);
         }
     }
@@ -874,7 +871,7 @@ public class ExplorationImage {
         try {
             for(Point p : list2)
                 list1.add(p);
-        } catch (Exception e) {};
+        } catch (Exception e) {}
         return list1;
     }
     
@@ -902,8 +899,8 @@ public class ExplorationImage {
                 int color = 1;
                 float x = 0.0f;
                 float y = 0.0f;
-                float xsqr = 0.0f;
-                float ysqr = 0.0f;
+                float xsqr;
+                float ysqr;
                 do {
                     xsqr = x*x;
                     ysqr = y*y;

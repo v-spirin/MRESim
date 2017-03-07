@@ -40,11 +40,11 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="panelRobotConfig" min="-2" pref="208" max="-2" attributes="1"/>
                       <EmptySpace max="32767" attributes="0"/>
-                      <Component id="toggleSaveOccupancyGrid" min="-2" max="-2" attributes="0"/>
+                      <Component id="toggleLoggingState" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace pref="11" max="32767" attributes="0"/>
+              <EmptySpace pref="5" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -54,7 +54,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="panelRobotConfig" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
-                      <Component id="toggleSaveOccupancyGrid" min="-2" max="-2" attributes="0"/>
+                      <Component id="toggleLoggingState" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -497,12 +497,12 @@
     </Container>
     <Component class="javax.swing.JSeparator" name="jSeparator1">
     </Component>
-    <Component class="javax.swing.JToggleButton" name="toggleSaveOccupancyGrid">
+    <Component class="javax.swing.JToggleButton" name="toggleLoggingState">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Oc"/>
+        <Property name="text" type="java.lang.String" value="Log"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleSaveOccupancyGridActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleLoggingStateActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

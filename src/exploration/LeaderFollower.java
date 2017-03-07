@@ -584,14 +584,14 @@ public class LeaderFollower {
 
     public static void calculateFrontiers(RealAgent agent) {
         long realtimeStart = System.currentTimeMillis();
-        System.out.print(agent.toString() + "Calculating frontiers. ");
+        System.out.println(agent.toString() + "Calculating frontiers. ");
 
         // If recalculating frontiers, must set old frontiers dirty for image rendering
         for(Frontier f : agent.getFrontiers())
             agent.addDirtyCells(f.getPolygonOutline());
 
         LinkedList <LinkedList> contours = ContourTracer.findAllContours(agent.getOccupancyGrid());
-        System.out.print("Found " + contours.size() + " contours, ");
+        System.out.println("Found " + contours.size() + " contours, ");
         PriorityQueue<Frontier> frontiers = new PriorityQueue();
         Frontier currFrontier;
 
@@ -615,7 +615,7 @@ public class LeaderFollower {
         }
         agent.setFrontiers(frontiers);
 
-        System.out.print("retained " + contourCounter + " of them. ");
+        System.out.println("retained " + contourCounter + " of them. ");
         System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 

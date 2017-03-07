@@ -136,8 +136,8 @@ public class RobotPanel extends javax.swing.JPanel {
         return toggleRVWalls.isSelected();
     }
     
-    public boolean saveOccupancyGrid() {
-        return toggleSaveOccupancyGrid.isSelected();
+    public boolean loggingState() {
+        return toggleLoggingState.isSelected();
     }
     
     /** This method is called from within the constructor to
@@ -166,7 +166,7 @@ public class RobotPanel extends javax.swing.JPanel {
         toggleBorderSkeleton = new javax.swing.JToggleButton();
         toggleRVWalls = new javax.swing.JToggleButton();
         jSeparator1 = new javax.swing.JSeparator();
-        toggleSaveOccupancyGrid = new javax.swing.JToggleButton();
+        toggleLoggingState = new javax.swing.JToggleButton();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         setMaximumSize(new java.awt.Dimension(275, 80));
@@ -436,10 +436,10 @@ public class RobotPanel extends javax.swing.JPanel {
         });
         jToolBar1.add(toggleRVWalls);
 
-        toggleSaveOccupancyGrid.setText("Oc");
-        toggleSaveOccupancyGrid.addActionListener(new java.awt.event.ActionListener() {
+        toggleLoggingState.setText("Log");
+        toggleLoggingState.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                toggleSaveOccupancyGridActionPerformed(evt);
+                toggleLoggingStateActionPerformed(evt);
             }
         });
 
@@ -454,9 +454,9 @@ public class RobotPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(panelRobotConfig, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(toggleSaveOccupancyGrid)
+                        .addComponent(toggleLoggingState)
                         .addGap(16, 16, 16)))
-                .addContainerGap(11, Short.MAX_VALUE))
+                .addContainerGap(5, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -464,7 +464,7 @@ public class RobotPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(panelRobotConfig, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(toggleSaveOccupancyGrid)
+                        .addComponent(toggleLoggingState)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -571,9 +571,9 @@ private void toggleRendezvousActionPerformed(java.awt.event.ActionEvent evt) {//
         mainGUI.updateShowSettingsAgents();
     }//GEN-LAST:event_toggleRVWallsActionPerformed
 
-    private void toggleSaveOccupancyGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleSaveOccupancyGridActionPerformed
+    private void toggleLoggingStateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleLoggingStateActionPerformed
         mainGUI.updateShowSettingsAgents();
-    }//GEN-LAST:event_toggleSaveOccupancyGridActionPerformed
+    }//GEN-LAST:event_toggleLoggingStateActionPerformed
     
    
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -590,11 +590,11 @@ private void toggleRendezvousActionPerformed(java.awt.event.ActionEvent evt) {//
     private javax.swing.JToggleButton toggleCommRange;
     private javax.swing.JToggleButton toggleFreeSpace;
     private javax.swing.JToggleButton toggleFrontiers;
+    private javax.swing.JToggleButton toggleLoggingState;
     private javax.swing.JToggleButton togglePath;
     private javax.swing.JToggleButton toggleRVWalls;
     private javax.swing.JToggleButton toggleRendezvous;
     private javax.swing.JToggleButton toggleSafeSpace;
-    private javax.swing.JToggleButton toggleSaveOccupancyGrid;
     private javax.swing.JToggleButton toggleSkeleton;
     // End of variables declaration//GEN-END:variables
 

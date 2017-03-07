@@ -214,14 +214,23 @@ public class MainGUI extends javax.swing.JFrame {
             updateShowSettings();
             updateShowSettingsAgents();
             
+
+
+            
        }
        catch (NullPointerException e) {
-           System.out.println("Updating from robotTeamConfig: null pointer exception.");
-       }
-   }
+            System.out.println("Updating from robotTeamConfig: null pointer exception.");
+        }
+    }
 
-   private void updateFromEnvConfig() {
-       try {
+    public void updateRobotConfig() {
+        robotTeamConfig.getRobotTeam().forEach((i, robotConfig) -> {
+            robotConfig.setLoggingState(getRobotPanel(i - 1).loggingState());
+        });//.get(i).setLoggingState(getRobotPanel(i).saveOccupancyGrid());
+    }
+
+    private void updateFromEnvConfig() {
+        try {
             explorationImage = new ExplorationImage(simConfig.getEnv());
             explorationImage.redrawEnvAndAgents(this, robotTeamConfig, simConfig);
             labelImageHolder.setIcon(new ImageIcon(explorationImage.getImage()));
@@ -278,7 +287,6 @@ public class MainGUI extends javax.swing.JFrame {
                 showSettingsAgents[i].showRVCandidatePointInfo = getRobotPanel(i).showSkeleton();
                 showSettingsAgents[i].showBorderSkel = getRobotPanel(i).showBorderSkel();
                 showSettingsAgents[i].showRVWalls = getRobotPanel(i).showRVWalls();
-                showSettingsAgents[i].saveOccupancyGrid = getRobotPanel(i).saveOccupancyGrid();
            }
        }
    }

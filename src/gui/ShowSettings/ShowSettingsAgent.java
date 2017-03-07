@@ -58,7 +58,6 @@ public class ShowSettingsAgent {
     public boolean showTestSpace;
     public boolean showBorderSkel;
     public boolean showRVWalls;
-    public boolean saveOccupancyGrid;
     
     public ShowSettingsAgent()
     {
@@ -75,6 +74,5 @@ public class ShowSettingsAgent {
         showTestSpace = false;
         showBorderSkel = false;
         showRVWalls = false;
-        saveOccupancyGrid = false;
     }
 }

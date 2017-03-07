@@ -57,6 +57,7 @@ public class RobotConfig {
     private int sensingRange;
     private int commRange;
     private int batteryLife;
+    private boolean loggingState;
         
     public static enum roletype {BaseStation, Relay, Explorer}
     private roletype role;
@@ -91,6 +92,7 @@ public class RobotConfig {
         role = roletype.valueOf(newRole);
         parent = newParent;
         child = newChild;
+        loggingState = false;
     }
     
     public RobotConfig(String newRobotNumber, String newName, String start, String newSensingRange, String newCommRange, String newBatteryLife, String newRole, String newParent, String newChild) {
@@ -115,7 +117,13 @@ public class RobotConfig {
         child = Integer.parseInt(newChild);
     }
     
+    public void setLoggingState(boolean loggingState) {
+        this.loggingState = loggingState;
+    }
     
+    public boolean getLoggingState() {
+        return this.loggingState;
+    }
     public int getRobotNumber() {
         return this.robotNumber;
     }
