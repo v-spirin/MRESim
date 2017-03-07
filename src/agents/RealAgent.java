@@ -110,6 +110,8 @@ public class RealAgent extends BasicAgent implements Agent {
     
     //This is used only for logging - direct reference to other agents. DO NOT use this for anything else
     private SimulationFramework simFramework;
+    private boolean saveOccupancyGrid;
+    
     public void setSimFramework(SimulationFramework simFramework) {
         this.simFramework = simFramework;
     }
@@ -182,6 +184,8 @@ public class RealAgent extends BasicAgent implements Agent {
         currentGoal = new Point(x,y);
         
         nearestBasePoint = null;
+        
+        saveOccupancyGrid = true;
     }
   
 // </editor-fold>     
@@ -531,7 +535,8 @@ public class RealAgent extends BasicAgent implements Agent {
         }
         
         //pruneUnexploredSpace();
-        
+        if(saveOccupancyGrid)
+            occGrid.saveToPNG("logs/occuGrid " + this.toString() + System.currentTimeMillis());
         System.out.println(this.toString() +  "Taking step complete, moving from (" + (int)getLocation().getX() + "," + (int)getLocation().getX() + ") to (" + (int)nextStep.getX() + "," + (int)nextStep.getX() + "), took " + (System.currentTimeMillis()-realtimeStartAgentStep) + "ms.");
 
         return nextStep;

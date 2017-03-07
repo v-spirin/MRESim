@@ -612,7 +612,7 @@ public class FrontierExploration {
             agent.addDirtyCells(f.getPolygonOutline());
         
         LinkedList <LinkedList> contours = ContourTracer.findAllContours(agent.getOccupancyGrid());
-        System.out.print(agent + "Found " + contours.size() + " contours, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        System.out.println(agent + "Found " + contours.size() + " contours, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         realtimeStart = System.currentTimeMillis();
         PriorityQueue<Frontier> frontiers = new PriorityQueue();
         Frontier currFrontier;

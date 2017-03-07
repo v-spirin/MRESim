@@ -247,7 +247,7 @@ public class MainGUI extends javax.swing.JFrame {
        labelCycleUpdate.setText(Integer.toString(timeElapsed));
        //labelExploredUpdate.setText(Integer.toString(pctAreaKnown));
        labelExploredUpdate.setText(oneDigit.format(pctAreaKnown));
-       labelAvgCycleUpdate.setText(avgCycleTime + " ms");
+       labelAvgCycleUpdate.setText(avgCycleTime + "");
        //if (timeElapsed % Constants.UPDATE_GRAPH_INTERVAL == 0) updateKnowledgeGraph(agent);
    }
    
@@ -278,6 +278,7 @@ public class MainGUI extends javax.swing.JFrame {
                 showSettingsAgents[i].showRVCandidatePointInfo = getRobotPanel(i).showSkeleton();
                 showSettingsAgents[i].showBorderSkel = getRobotPanel(i).showBorderSkel();
                 showSettingsAgents[i].showRVWalls = getRobotPanel(i).showRVWalls();
+                showSettingsAgents[i].saveOccupancyGrid = getRobotPanel(i).saveOccupancyGrid();
            }
        }
    }
@@ -720,7 +721,7 @@ public class MainGUI extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(panelExploration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(scrollPaneRobots, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(scrollPaneRobots, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(labelSpeed, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -744,14 +745,14 @@ public class MainGUI extends javax.swing.JFrame {
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(labelAvgCycle, javax.swing.GroupLayout.PREFERRED_SIZE, 70, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(labelAvgCycleUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                                .addComponent(labelAvgCycleUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addGap(65, 65, 65)
                         .addComponent(toggleEnv, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(toggleHierarchy, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
                         .addComponent(buttonData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(46, 89, Short.MAX_VALUE)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

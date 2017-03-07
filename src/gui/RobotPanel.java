@@ -41,6 +41,7 @@
 package gui;
 
 import config.RobotConfig;
+import environment.OccupancyGrid;
 import javax.swing.JLabel;
 /**
  *
@@ -135,6 +136,10 @@ public class RobotPanel extends javax.swing.JPanel {
         return toggleRVWalls.isSelected();
     }
     
+    public boolean saveOccupancyGrid() {
+        return toggleSaveOccupancyGrid.isSelected();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -161,6 +166,7 @@ public class RobotPanel extends javax.swing.JPanel {
         toggleBorderSkeleton = new javax.swing.JToggleButton();
         toggleRVWalls = new javax.swing.JToggleButton();
         jSeparator1 = new javax.swing.JSeparator();
+        toggleSaveOccupancyGrid = new javax.swing.JToggleButton();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         setMaximumSize(new java.awt.Dimension(275, 80));
@@ -233,7 +239,6 @@ public class RobotPanel extends javax.swing.JPanel {
         toggleAgent.setFocusable(false);
         toggleAgent.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         toggleAgent.setIconTextGap(0);
-        toggleAgent.setMargin(new java.awt.Insets(0, 0, 0, 0));
         toggleAgent.setMaximumSize(new java.awt.Dimension(25, 25));
         toggleAgent.setMinimumSize(new java.awt.Dimension(25, 25));
         toggleAgent.setPreferredSize(new java.awt.Dimension(25, 25));
@@ -254,7 +259,6 @@ public class RobotPanel extends javax.swing.JPanel {
         togglePath.setFocusable(false);
         togglePath.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         togglePath.setIconTextGap(0);
-        togglePath.setMargin(new java.awt.Insets(0, 0, 0, 0));
         togglePath.setMaximumSize(new java.awt.Dimension(25, 25));
         togglePath.setMinimumSize(new java.awt.Dimension(25, 25));
         togglePath.setPreferredSize(new java.awt.Dimension(25, 25));
@@ -432,25 +436,40 @@ public class RobotPanel extends javax.swing.JPanel {
         });
         jToolBar1.add(toggleRVWalls);
 
+        toggleSaveOccupancyGrid.setText("Oc");
+        toggleSaveOccupancyGrid.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toggleSaveOccupancyGridActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jSeparator1, javax.swing.GroupLayout.Alignment.TRAILING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(panelRobotConfig, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jToolBar1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(panelRobotConfig, javax.swing.GroupLayout.PREFERRED_SIZE, 208, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(toggleSaveOccupancyGrid)
+                        .addGap(16, 16, 16)))
+                .addContainerGap(11, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(panelRobotConfig, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(panelRobotConfig, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(toggleSaveOccupancyGrid)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 30, Short.MAX_VALUE)
+                .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 1, Short.MAX_VALUE))
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 4, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -551,8 +570,12 @@ private void toggleRendezvousActionPerformed(java.awt.event.ActionEvent evt) {//
         redrawImage();
         mainGUI.updateShowSettingsAgents();
     }//GEN-LAST:event_toggleRVWallsActionPerformed
+
+    private void toggleSaveOccupancyGridActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleSaveOccupancyGridActionPerformed
+        mainGUI.updateShowSettingsAgents();
+    }//GEN-LAST:event_toggleSaveOccupancyGridActionPerformed
     
-    
+   
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JToolBar jToolBar1;
@@ -571,7 +594,8 @@ private void toggleRendezvousActionPerformed(java.awt.event.ActionEvent evt) {//
     private javax.swing.JToggleButton toggleRVWalls;
     private javax.swing.JToggleButton toggleRendezvous;
     private javax.swing.JToggleButton toggleSafeSpace;
+    private javax.swing.JToggleButton toggleSaveOccupancyGrid;
     private javax.swing.JToggleButton toggleSkeleton;
     // End of variables declaration//GEN-END:variables
-    
+
 }

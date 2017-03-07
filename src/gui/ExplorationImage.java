@@ -198,7 +198,7 @@ public class ExplorationImage {
 
 // </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Update - Dirty and Full">
+// <editor-fold defaultstate="collapsed" desc="Update Dirty and Full">
     public void dirtyUpdate(ShowSettings settings, ShowSettingsAgent[] agentSettings, 
             Environment env, RealAgent[] agent, Polygon[] agentRange) 
     {
@@ -245,9 +245,9 @@ public class ExplorationImage {
         setPixel(startpoint.x, startpoint.y, Color.GREEN);
         setPixel(endpoint.x, endpoint.y, Color.RED);
     }
-    
+    //</editor-fold>
     //draw RV generation process
-    /*public void fullUpdateRVPoints(OccupancyGrid agentGrid, PriorityQueue<NearRVPoint> rvPoints, 
+/*public void fullUpdateRVPoints(OccupancyGrid agentGrid, PriorityQueue<NearRVPoint> rvPoints, 
             LinkedList<NearRVPoint> generatedPoints, Point frontierCenter,
             ShowSettingsAgent agentSettings) {
         setG2D();
@@ -317,7 +317,7 @@ public class ExplorationImage {
     {
         setG2D();
         
-        if (!dirtOnly)
+        if (dirtOnly)
         {
             for(int i=0; i<width; i++)
                 for(int j=0; j<height; j++)

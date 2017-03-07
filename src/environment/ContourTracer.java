@@ -183,7 +183,7 @@ public class ContourTracer {
         for(int i=0; i<labels.length; i++)
             for(int j=0; j<labels[0].length; j++)
                 labels[i][j] = 0;
-        System.out.print("[findAllContours] labels init took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        System.out.println("[findAllContours] labels init took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         realtimeStart = System.currentTimeMillis();
         
         int contourCounter = 0;
