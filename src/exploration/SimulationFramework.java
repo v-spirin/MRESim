@@ -677,7 +677,7 @@ public class SimulationFramework implements ActionListener {
                     sensorData[i] = nextLoc.distance(prevRayX, prevRayY);
                     break;
                 }
-                else if(env.statusAt(currRayX, currRayY) == Environment.Status.obstacle) {
+                else if(env.statusAt(currRayX, currRayY).ordinal() >= Environment.Status.obstacle.ordinal()) {
                     sensorData[i] = nextLoc.distance(currRayX, currRayY);
                     break;
                 }
@@ -1235,7 +1235,7 @@ public class SimulationFramework implements ActionListener {
             for(int k=0; k<env.getRows(); k++)
                 for(int i=0; i<agent.length; i++) 
                     if ((agent[i].getOccupancyGrid().freeSpaceAt(j,k))
-                            && (env.statusAt(j, k) != Status.obstacle)){
+                            && (env.statusAt(j, k).ordinal() < Status.obstacle.ordinal())){
                         known++; //"true" area known, excluding false empty spaces
                         i = agent.length;
                     }
@@ -1442,7 +1442,7 @@ public class SimulationFramework implements ActionListener {
     private void openGate(int yTop) {
         for(int i=yTop; i<yTop+67; i++)
             for(int j=250; j<258; j++)
-                env.setStatus(j, i, Status.unexplored);
+                env.setStatus(j, i, Status.explored);
     }
 
     

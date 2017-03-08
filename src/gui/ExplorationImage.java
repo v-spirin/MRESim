@@ -655,7 +655,7 @@ public class ExplorationImage {
     public void drawWalls(Environment.Status[][] status) {
         for(int i=0; i<width; i++)
             for(int j=0; j<height; j++)
-                if(status[i][j] == Environment.Status.obstacle)
+                if(status[i][j] == Environment.Status.barrier)
                     setPixel(i,j,Constants.MapColor.wall());
     }
     

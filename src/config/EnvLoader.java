@@ -41,6 +41,7 @@
 package config;
 
 import environment.Environment;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.Raster;
 import java.io.BufferedReader;
@@ -69,10 +70,25 @@ public class EnvLoader {
 
             for(int i=0; i<Constants.MAX_COLS; i++)
                 for(int j=0; j<Constants.MAX_ROWS; j++)
-                    if(env.obstacleAt(i, j))
+                    switch (env.statusAt(i, j)){
+                        case unexplored: image.setRGB(i, j, Color.blue.getRGB());
+                        break;
+                        case explored: image.setRGB(i, j, Color.white.getRGB());
+                        break;
+                        case slope: image.setRGB(i, j, Color.yellow.getRGB());
+                        break;
+                        case hill: image.setRGB(i, j, Color.orange.getRGB());
+                        break;
+                        case obstacle: image.setRGB(i, j, Color.red.getRGB());
+                        break;
+                        case barrier: image.setRGB(i, j, Color.black.getRGB());
+                        break;
+                        
+                    }
+                    /*if(env.obstacleAt(i, j))
                         image.setRGB(i, j, 0);
                     else
-                        image.setRGB(i,j,16777215); // int rgb value for white
+                        image.setRGB(i,j,16777215); // int rgb value for white*/
 
             ImageIO.write(image, "png", new File(fileName));
 
@@ -81,10 +97,7 @@ public class EnvLoader {
             return true;
         }
         catch (IOException e) {
-            System.out.println(className() + "Error: could not read data from " + fileName);
-        }
-        catch (NumberFormatException e) {
-            System.out.println(className() + "Error: incorrect data format in file " + fileName);
+            System.out.println(className() + "Error: could not write data to " + fileName);
         }
 
         return false;
@@ -98,10 +111,11 @@ public class EnvLoader {
             outFile.println(env.getColumns());
             for(int i=0; i<env.getRows(); i++){
                 for(int j=0; j<env.getColumns(); j++)
-                    if(env.statusAt(j, i) == Environment.Status.obstacle)
+                    outFile.print(env.statusAt(i, j).ordinal());
+                   /* if(env.statusAt(j, i) == Environment.Status.obstacle)
                         outFile.print("1");
                     else
-                        outFile.print("0");
+                        outFile.print("0");*/
                 outFile.println();
             }
 
@@ -139,7 +153,7 @@ public class EnvLoader {
             return null;
 
         try{
-            System.out.println(className() + "Trying to load text based environment ... ");
+            System.out.println(className() + "Trying to load text based environment from " + fileName + "... ");
             BufferedReader inFile = new BufferedReader(new FileReader(file));
 
             int rows = Integer.parseInt(inFile.readLine());
@@ -158,10 +172,18 @@ public class EnvLoader {
             for(int i=0; i<rows; i++){
                 for(int j=0; j<columns; j++){
                     currValue = (char)inFile.read() - '0';
-                    if(currValue == 1)
+                    switch (currValue) {
+                        case 0: env.setStatus(offsetX+j, offsetY+i, Environment.Status.unexplored); break;
+                        case 1: env.setStatus(offsetX+j, offsetY+i, Environment.Status.explored); break;
+                        case 2: env.setStatus(offsetX+j, offsetY+i, Environment.Status.slope); break;
+                        case 3: env.setStatus(offsetX+j, offsetY+i, Environment.Status.hill); break;
+                        case 4: env.setStatus(offsetX+j, offsetY+i, Environment.Status.obstacle); break;
+                        case 5: env.setStatus(offsetX+j, offsetY+i, Environment.Status.barrier); break;
+                    }
+                    /*if(currValue == 1)
                         env.setStatus(offsetX+j, offsetY+i, Environment.Status.obstacle);
                     else
-                        env.setStatus(offsetX+j, offsetY+i, Environment.Status.unexplored);
+                        env.setStatus(offsetX+j, offsetY+i, Environment.Status.unexplored);*/
                 }
 
                 // If file has been saved in unix/mac, only LF at end of line
@@ -191,43 +213,76 @@ public class EnvLoader {
     public static Environment loadWallConfig_ImageBased(String fileName) {
         File file = new File(fileName);
 
-        if (!file.exists())
+        if (!file.exists()) {
             return null;
+        }
 
-        try{
-            System.out.println(className() + "Trying to load image based environment ... ");
+        try {
             BufferedImage image = ImageIO.read(file);
-            Raster raster = image.getRaster();
+            System.out.println(className() + "Trying to load image based environment from " + fileName + "... ");
+            //Raster raster = image.getRaster();
 
             int columns = image.getWidth();
             int rows = image.getHeight();
             System.out.println(columns + " columns, " + rows + " rows.");
 
-            if(!checkDimensions(rows, columns))
+            if (!checkDimensions(rows, columns)) {
                 return null;
+            }
 
             int offsetX = (Constants.MAX_COLS - columns) / 2;
             int offsetY = (Constants.MAX_ROWS - rows) / 2;
 
             Environment env = new Environment(Constants.MAX_ROWS, Constants.MAX_COLS);
+            if (image.getColorModel().getNumColorComponents() == 1) { //GreyScale-Hack
+                Raster raster = image.getRaster();
+                for (int i = 0; i < columns; i++) {
+                    for (int j = 0; j < rows; j++) {
+                        if (raster.getSample(i, j, 0) == 0) {
+                            env.setStatus(offsetX + i, offsetY + j, Environment.Status.barrier);
+                        } else {
+                            env.setStatus(offsetX + i, offsetY + j, Environment.Status.unexplored);
+                        }
+                    }
+                }
+            } else {
+                for (int i = 0; i < columns; i++) {
+                    for (int j = 0; j < rows; j++) {
+                        switch (image.getRGB(i, j)) {
+                            case -16777216:
+                                env.setStatus(offsetX + i, offsetY + j, Environment.Status.barrier);
+                                break; //black
+                            case 16777215:
+                                env.setStatus(offsetX + i, offsetY + j, Environment.Status.unexplored);
+                                break;//white
+                            case 16753920:
+                                env.setStatus(offsetX + i, offsetY + j, Environment.Status.hill);
+                                break; //orange
+                            case 16776960:
+                                env.setStatus(offsetX + i, offsetY + j, Environment.Status.slope);
+                                break; //yellow
+                            case 16711680:
+                                env.setStatus(offsetX + i, offsetY + j, Environment.Status.obstacle);
+                                break; //red
+                            default:
+                                env.setStatus(offsetX + i, offsetY + j, Environment.Status.unexplored);
 
-            for(int i=0; i<columns; i++)
-                for(int j=0; j<rows; j++)
-                    if(raster.getSample(i, j, 0) == 0)
-                        env.setStatus(offsetX+i, offsetY+j, Environment.Status.obstacle);
+                        }
+                    }
+                }
+            }
+            /*if(raster.getSample(i, j, 0) == 0)
+                        env.setStatus(offsetX+i, offsetY+j, Environment.Status.barrier);
                     else
-                        env.setStatus(offsetX+i, offsetY+j, Environment.Status.unexplored);
+                        env.setStatus(offsetX+i, offsetY+j, Environment.Status.unexplored);*/
 
             System.out.println(className() + "Environment loaded successfully.");
             return env;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.out.println(className() + "Error: could not read data from " + fileName);
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             System.out.println(className() + "Error: incorrect data format in file " + fileName);
         }
-
         return null;
     }
 

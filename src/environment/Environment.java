@@ -55,7 +55,13 @@ public class Environment{
     private int rows;           // The environment's size
     private int columns;
 
-    public enum Status {explored, unexplored, obstacle}
+    public enum Status {
+        unexplored, // 0 UNEXPLORED
+        explored,   // 1 easy to traverse
+        slope,      // 2 ok to traverse
+        hill,       // 3 hard to traverse
+        obstacle,   // 4 not traversable but might change
+        barrier}    // 5 not traversable
     private Status status[][];
 
 
@@ -88,7 +94,7 @@ public class Environment{
     }
 
     public boolean obstacleAt(int i, int j) {
-        return (statusAt(i,j) == Status.obstacle);
+        return (statusAt(i,j).ordinal() <= Status.obstacle.ordinal());
     }
 
     public Status[][] getFullStatus() {
@@ -126,22 +132,24 @@ public class Environment{
         int runningTotal = 0;
         for(int i=0; i<rows; i++)
             for(int j=0; j<columns; j++)
-                if(status[j][i]!=Status.obstacle)
+                if(status[j][i].ordinal() < Status.obstacle.ordinal())
                     runningTotal++;
 
         return runningTotal;
     }
-    
-    
     public boolean directLinePossible(int sourceX, int sourceY, int destX, int destY) {
+        return directLinePossible(sourceX, sourceY, destX, destY, 2);
+    }
+    
+    public boolean directLinePossible(int sourceX, int sourceY, int destX, int destY, int ability) {
         if(!locationExists(sourceX, sourceY) || !locationExists(destX, destY))
             return false;
-        if (status[destX][destY] == Environment.Status.obstacle)
+        if (status[destX][destY].ordinal() > ability)// == Environment.Status.obstacle)
             return false;
         for(int i=Math.min(sourceX, destX); i<=Math.max(sourceX, destX); i++)
             for(int j=Math.min(sourceY, destY); j<=Math.max(sourceY, destY); j++)
                 if((distPointToLine(sourceX,sourceY,destX,destY,i,j) < 0.5) &&
-                   (status[i][j] == Environment.Status.obstacle))
+                   (status[i][j].ordinal() > ability)) //== Environment.Status.obstacle))
                     return false;
         
         return true;
@@ -193,7 +201,7 @@ public class Environment{
             currX = x1 + (int)(Math.cos(angle) * i);
             currY = y1 + (int)(Math.sin(angle) * i);
             
-            if(this.statusAt(currX, currY) == Status.obstacle){
+            if(this.statusAt(currX, currY).ordinal() >= Status.obstacle.ordinal()){
                 if (!insideWall) {
                     counter++;
                     insideWall = true;
