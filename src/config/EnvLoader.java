@@ -77,7 +77,7 @@ public class EnvLoader {
                         break;
                         case slope: image.setRGB(i, j, Color.yellow.getRGB());
                         break;
-                        case hill: image.setRGB(i, j, Color.orange.getRGB());
+                        case hill: image.setRGB(i, j, new Color(255,69,0).getRGB());
                         break;
                         case obstacle: image.setRGB(i, j, Color.red.getRGB());
                         break;
@@ -248,25 +248,20 @@ public class EnvLoader {
             } else {
                 for (int i = 0; i < columns; i++) {
                     for (int j = 0; j < rows; j++) {
-                        switch (image.getRGB(i, j)) {
-                            case -16777216:
+                        Color c = new Color(image.getRGB(i, j));
+                        if(c.equals(Color.BLACK)){
                                 env.setStatus(offsetX + i, offsetY + j, Environment.Status.barrier);
-                                break; //black
-                            case 16777215:
+                                //System.out.println("BLACK");
+                        } else if(c.equals(Color.WHITE))
                                 env.setStatus(offsetX + i, offsetY + j, Environment.Status.unexplored);
-                                break;//white
-                            case 16753920:
+                        else if(c.equals(new Color(255,69,0)))
                                 env.setStatus(offsetX + i, offsetY + j, Environment.Status.hill);
-                                break; //orange
-                            case 16776960:
+                        else if(c.equals(Color.YELLOW))
                                 env.setStatus(offsetX + i, offsetY + j, Environment.Status.slope);
-                                break; //yellow
-                            case 16711680:
+                        else if(c.equals(Color.RED))
                                 env.setStatus(offsetX + i, offsetY + j, Environment.Status.obstacle);
-                                break; //red
-                            default:
+                        else {
                                 env.setStatus(offsetX + i, offsetY + j, Environment.Status.unexplored);
-
                         }
                     }
                 }

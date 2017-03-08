@@ -333,7 +333,7 @@ public class ExplorationImage {
         resetDirt(agents);
 
         if(settings.showEnv)
-            drawWalls(env.getFullStatus());
+            drawEnvironment(env.getFullStatus());
 
         if(settings.showHierarchy)
             drawHierarchy(agents);
@@ -452,7 +452,7 @@ public class ExplorationImage {
 
     public void redrawEnvAndAgents(MainGUI mainGUI, RobotTeamConfig rtc, SimulatorConfig simConfig) {
         if(mainGUI.showEnv())        
-            drawWalls(simConfig.getEnv().getFullStatus());
+            drawEnvironment(simConfig.getEnv().getFullStatus());
         try {
             RobotConfig curr = new RobotConfig();
             for(int i=0; i<rtc.getNumRobots(); i++) {
@@ -652,11 +652,19 @@ public class ExplorationImage {
         agent.getRendezvousStrategy().getRendezvousDisplayData().drawRendezvousLocation(this, agent);
     }
     
-    public void drawWalls(Environment.Status[][] status) {
+    public void drawEnvironment(Environment.Status[][] status) {
         for(int i=0; i<width; i++)
             for(int j=0; j<height; j++)
-                if(status[i][j] == Environment.Status.barrier)
-                    setPixel(i,j,Constants.MapColor.wall());
+                        switch(status[i][j]) {
+                            case barrier: setPixel(i,j,Constants.MapColor.wall()); break;
+                            case obstacle: setPixel(i,j,Constants.MapColor.obstacle()); break;
+                            case slope: setPixel(i,j,Constants.MapColor.slope()); break;
+                            case hill: setPixel(i,j,Constants.MapColor.hill()); break;
+                            case explored:
+                            case unexplored:
+                            default:
+                        }
+                    
     }
     
     public void drawHierarchy(RealAgent[] agent) {

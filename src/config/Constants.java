@@ -196,7 +196,10 @@ public class Constants {
         public static final Color comStation() {return Color.BLACK;}
         public static final Color sensed() {return Color.CYAN;}
         public static final Color comm() {return Color.BLUE;}
-        public static final Color obstacle() {return Color.BLACK;}
+        public static final Color obstacle() {return Color.RED;}
+        public static final Color barrier() {return Color.BLACK;}
+        public static final Color slope() {return Color.YELLOW;}
+        public static final Color hill() {return new Color(255,150,0);}
         public static final Color wall() {return Color.BLACK;}
         public static final Color text() {return Color.BLACK;}
         public static final Color link() {return Color.GREEN;}
