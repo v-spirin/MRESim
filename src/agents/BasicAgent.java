@@ -76,7 +76,7 @@ public class BasicAgent implements Agent {
     double distanceToBase;
     
     RobotConfig.roletype role;
-    private final int ability;
+    public int ability;
 
     public static enum ExploreState {Initial, Explore, ReturnToParent, WaitForParent, GiveParentInfo, GoToChild, WaitForChild, GetInfoFromChild, OutOfService}
     private ExploreState state;
