@@ -238,11 +238,11 @@ public class OccupancyGrid {
     
     public boolean frontierCellAt(int xCoord, int yCoord) {
         return
-                (
-                freeSpaceAt(xCoord, yCoord) && 
+                //(
+                //freeSpaceAt(xCoord, yCoord) && 
                //!safeSpaceAt(xCoord, yCoord) &&
-               !obstacleAt(xCoord, yCoord)
-                ) ||
+               //!obstacleAt(xCoord, yCoord)
+                //) ||
                 (
                 freeSpaceAt(xCoord, yCoord) &&
                 !obstacleAt(xCoord, yCoord) &&
