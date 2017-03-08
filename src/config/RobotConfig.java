@@ -47,7 +47,7 @@ package config;
 public class RobotConfig {
     
     // start x, y and heading count as a single field, comma delimited.
-    public static int NUMROBOTCONFIGFIELDS = 9;
+    public static int NUMROBOTCONFIGFIELDS = 10;
     
     private int robotNumber;
     private String name;
@@ -58,6 +58,7 @@ public class RobotConfig {
     private int commRange;
     private int batteryLife;
     private boolean loggingState;
+    private int ability;
         
     public static enum roletype {BaseStation, Relay, Explorer}
     private roletype role;
@@ -78,9 +79,10 @@ public class RobotConfig {
         role = roletype.Relay;
         parent = 1;
         child = 1;
+        ability = 2;
     }
 
-    public RobotConfig(int newRobotNo, String newName, int newStartX, int newStartY, double newStartHeading, int newSensingRange, int newCommRange, int newBatteryLife, String newRole, int newParent, int newChild) {
+    public RobotConfig(int newRobotNo, String newName, int newStartX, int newStartY, double newStartHeading, int newSensingRange, int newCommRange, int newBatteryLife, String newRole, int newParent, int newChild, int newAbility) {
         robotNumber = newRobotNo;
         name = newName;
         startX = newStartX;
@@ -93,9 +95,10 @@ public class RobotConfig {
         parent = newParent;
         child = newChild;
         loggingState = false;
+        ability = newAbility;
     }
     
-    public RobotConfig(String newRobotNumber, String newName, String start, String newSensingRange, String newCommRange, String newBatteryLife, String newRole, String newParent, String newChild) {
+    public RobotConfig(String newRobotNumber, String newName, String start, String newSensingRange, String newCommRange, String newBatteryLife, String newRole, String newParent, String newChild, String newAbility) {
         robotNumber = Integer.parseInt(newRobotNumber);
         name = newName;
         
@@ -115,6 +118,15 @@ public class RobotConfig {
         role = roletype.valueOf(newRole);
         parent = Integer.parseInt(newParent);
         child = Integer.parseInt(newChild);
+        ability = Integer.parseInt(newAbility);
+    }
+    
+    public int getAbility() {
+        return ability;
+    }
+
+    public void setAbility(int ability) {
+        this.ability = ability;
     }
     
     public void setLoggingState(boolean loggingState) {
@@ -182,7 +194,8 @@ public class RobotConfig {
                 String.valueOf(batteryLife) + " " +
                 role + " " +
                 String.valueOf(parent) + " " +
-                String.valueOf(child));
+                String.valueOf(child) + " " +
+                String.valueOf(ability));
 
     }
 }

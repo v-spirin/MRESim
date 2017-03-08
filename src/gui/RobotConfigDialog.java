@@ -150,7 +150,12 @@ public class RobotConfigDialog extends JDialog {
                     column.setHeaderValue("Child");
                     column.setPreferredWidth(60);
                     column.setCellRenderer(editableNumberRenderer);
-                    break;                                      
+                    break;
+                case 9:
+                    column.setHeaderValue("Ability");
+                    column.setPreferredWidth(60);
+                    column.setCellRenderer(editableNumberRenderer);
+                    break;
             }
         } 
         
@@ -351,6 +356,7 @@ public class RobotConfigDialog extends JDialog {
             addLine[6] = String.valueOf(currRobot.getRole());
             addLine[7] = String.valueOf(currRobot.getParent());
             addLine[8] = String.valueOf(currRobot.getChild());
+            addLine[9] = String.valueOf(currRobot.getAbility());
             
             model.addRow(addLine);
         }

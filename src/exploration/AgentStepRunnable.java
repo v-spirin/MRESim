@@ -101,7 +101,7 @@ public class AgentStepRunnable implements Runnable{
             System.out.println(agent.toString() + "Get next step took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
                         
             //<editor-fold defaultstate="collapsed" desc="Check to make sure step is legal">
-            if(env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y)) {
+            if(env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y, agent.ability)) {
                 //check here we don't 'teleport'
                 double dist = agent.getLocation().distance(nextStep);
                 //System.out.println(agent.toString() + "1 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
@@ -114,7 +114,7 @@ public class AgentStepRunnable implements Runnable{
                     double ratio = distance_left / dist;
                     nextStep.x = agent.getX() + (int)Math.round((nextStep.x - agent.getX()) * ratio);
                     nextStep.y = agent.getY() + (int)Math.round((nextStep.y - agent.getY()) * ratio);
-                    if (!env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y))
+                    if (!env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y, agent.ability))
                     {
                         nextStep.x = agent.getX();
                         nextStep.y = agent.getY();

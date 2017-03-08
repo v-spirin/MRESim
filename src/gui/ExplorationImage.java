@@ -92,6 +92,11 @@ public class ExplorationImage {
         return height;
     }
 
+    public Color getPixelColor(int row, int column) {
+        if ((row < 0) || (column < 0)) return Color.WHITE;
+        return new Color(image.getRGB(row, column));
+    }
+    
     public void setPixel(int row, int column, int color) {
         if ((row < 0) || (column < 0)) return;
         try{
@@ -138,7 +143,7 @@ public class ExplorationImage {
         }
     }
     
-    public void resetImage() {
+    public final void resetImage() {
         byte[] pixels = generatePixels(width, height, new Rectangle2D.Float(0, 0, width, height));
         DataBuffer dbuf = new DataBufferByte(pixels, width*height, 0);
         int bitMasks[] = new int[]{(byte)0xf};
@@ -317,6 +322,9 @@ public class ExplorationImage {
     {
         setG2D();
         
+        if(settings.showEnv)
+            drawEnvironment(env.getFullStatus());
+        
         if (dirtOnly)
         {
             for(int i=0; i<width; i++)
@@ -331,9 +339,9 @@ public class ExplorationImage {
         }
 
         resetDirt(agents);
-
-        if(settings.showEnv)
-            drawEnvironment(env.getFullStatus());
+        
+        if(settings.showEnv) //UUUGGGLLLYYYYY Fix for crazy Java-Color Crap
+            drawEnvironmentAgain(env.getFullStatus());
 
         if(settings.showHierarchy)
             drawHierarchy(agents);
@@ -419,7 +427,7 @@ public class ExplorationImage {
     private void updatePixel(ShowSettingsAgent[] agentsSettings, RealAgent[] agents, int xCoord, int yCoord)
     {
         if ((xCoord < 0) || (yCoord < 0)) return;
-        setPixel(xCoord, yCoord, Constants.MapColor.background());
+        //setPixel(xCoord, yCoord, Constants.MapColor.background());
         
         for (int i = agents.length - 1; i >= 0; i--) {
             agentsSettings[i].showBaseSpace = (agents[i].getRole() == RobotConfig.roletype.BaseStation) && agentsSettings[i].showFreeSpace;
@@ -429,14 +437,16 @@ public class ExplorationImage {
     
     private void updatePixelAgent(ShowSettingsAgent agentSettings, OccupancyGrid agentGrid, int xCoord, int yCoord)
     {
-        if ((xCoord < 0) || (yCoord < 0)) return;
-        if(agentSettings.showFreeSpace &&
-                agentGrid.freeSpaceAt(xCoord, yCoord))
-            setPixel(xCoord,yCoord,Constants.MapColor.explored());
         
-        if(agentSettings.showBaseSpace &&
-                agentGrid.freeSpaceAt(xCoord, yCoord))
+        if ((xCoord < 0) || (yCoord < 0)) return;
+        if(agentSettings.showFreeSpace && agentGrid.freeSpaceAt(xCoord, yCoord)){
+            setPixel(xCoord,yCoord,Constants.MapColor.explored());
+        }
+        
+        if(agentSettings.showBaseSpace && agentGrid.freeSpaceAt(xCoord, yCoord)){
             setPixel(xCoord,yCoord,Constants.MapColor.explored_base());
+        }
+            
         
         //Update safe space
         if(agentSettings.showSafeSpace &&
@@ -446,7 +456,7 @@ public class ExplorationImage {
         // Update obstacles
         if(agentSettings.showFreeSpace &&
                 agentGrid.obstacleAt(xCoord, yCoord))
-            setPixel(xCoord,yCoord,Constants.MapColor.obstacle());        
+            setPixel(xCoord,yCoord,Constants.MapColor.obstacle());    
     }
     //</editor-fold>
 
@@ -663,6 +673,19 @@ public class ExplorationImage {
                             case explored:
                             case unexplored:
                             default:
+                                setPixel(i, j, Constants.MapColor.background());
+                        }
+                    
+    }
+    
+    public void drawEnvironmentAgain(Environment.Status[][] status) {
+        for(int i=0; i<width; i++)
+            for(int j=0; j<height; j++)
+                        switch(status[i][j]) {
+                            case obstacle: setPixel(i,j,Constants.MapColor.obstacle()); break;
+                            case slope: setPixel(i,j,Constants.MapColor.slope()); break;
+                            case hill: setPixel(i,j,Constants.MapColor.hill()); break;
+                            default:
                         }
                     
     }
@@ -786,7 +809,7 @@ public class ExplorationImage {
     public void drawText(String text, int x, int y, Color c) {
         setG2D();
         g2D.setPaint(c);
-        g2D.drawString(text, x, y);
+        //g2D.drawString(text, x, y);
     }
 
     public void drawPoint(int x, int y, Color c) {

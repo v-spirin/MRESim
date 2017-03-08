@@ -76,6 +76,7 @@ public class BasicAgent implements Agent {
     double distanceToBase;
     
     RobotConfig.roletype role;
+    private final int ability;
 
     public static enum ExploreState {Initial, Explore, ReturnToParent, WaitForParent, GiveParentInfo, GoToChild, WaitForChild, GetInfoFromChild, OutOfService}
     private ExploreState state;
@@ -90,7 +91,7 @@ public class BasicAgent implements Agent {
     public Map<Integer, Double> knowledgeData = new HashMap(); // Keeps historical data about agent knowledge
         
 
-    public BasicAgent(int no, String n, int id, int newX, int newY, double h, int sr, int cr, int bp, RobotConfig.roletype r, int p, int c, double sp) {
+    public BasicAgent(int no, String n, int id, int newX, int newY, double h, int sr, int cr, int bp, RobotConfig.roletype r, int p, int c, double sp, int ab) {
         robotNumber = no;
         name = n;
         ID = id;
@@ -105,6 +106,7 @@ public class BasicAgent implements Agent {
         parent = p;
         child = c;
         speed = sp;
+        ability = ab;
         timeSinceGetChildInfo = 0;
     }
     
@@ -112,6 +114,10 @@ public class BasicAgent implements Agent {
 
     
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
+    
+    public int getAbility() {
+        return ability;
+    }
     
     public int getRobotNumber() {
         return this.robotNumber;

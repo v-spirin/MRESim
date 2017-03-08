@@ -126,7 +126,7 @@ public class Rendezvous {
                 );*/
         Polygon commPoly = PropModel1.getRangeForRV(occGrid, 
                 new BasicAgent(0, "", 0, firstRV.x, firstRV.y, 0, 0, 200, 0, 
-                        RobotConfig.roletype.Relay, 0, 0, 0)
+                        RobotConfig.roletype.Relay, 0, 0, 0, 2)
                 );
         
         int counter = 0;

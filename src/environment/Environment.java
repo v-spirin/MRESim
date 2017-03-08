@@ -94,7 +94,11 @@ public class Environment{
     }
 
     public boolean obstacleAt(int i, int j) {
-        return (statusAt(i,j).ordinal() <= Status.obstacle.ordinal());
+        return (statusAt(i,j).ordinal() > Status.obstacle.ordinal());
+    }
+    
+    public boolean obstacleAt(int i, int j, int ability) {
+        return (statusAt(i,j).ordinal() > ability);
     }
 
     public Status[][] getFullStatus() {
@@ -155,22 +159,24 @@ public class Environment{
         return true;
     }
     
-    public boolean legalMove(int sourceX, int sourceY, int destX, int destY) {
+    public boolean legalMove(int sourceX, int sourceY, int destX, int destY){
+        return legalMove(sourceX, sourceY, destX, destY, 2);
+    }
+    
+    public boolean legalMove(int sourceX, int sourceY, int destX, int destY, int ability) {
         int dx = destX - sourceX;
         int dy = destY - sourceY;
         
-        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) return directLinePossible(sourceX, sourceY, destX, destY);
+        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) return directLinePossible(sourceX, sourceY, destX, destY, ability);
         
         if (dx != 0 && dy != 0) {
-            //diagonal move
-            if (locationExists(sourceX + dx, sourceY) && !obstacleAt(sourceX + dx, sourceY) &&
-                locationExists(sourceX, sourceY + dy) && !obstacleAt(sourceX, sourceY + dy) &&
-                    locationExists(destX, destY) && !obstacleAt(destX, destY))
-                return true;
-            else return false;
+            //diagonal move   
+            return locationExists(sourceX + dx, sourceY) && !obstacleAt(sourceX + dx, sourceY, ability)
+                    && locationExists(sourceX, sourceY + dy) && !obstacleAt(sourceX, sourceY + dy, ability)
+                    && locationExists(destX, destY) && !obstacleAt(destX, destY, ability);
         } else {
             //horizontal or vertical move
-            return locationExists(destX, destY) && !obstacleAt(destX, destY);
+            return locationExists(destX, destY) && !obstacleAt(destX, destY, ability);
         }
         
     }

@@ -111,6 +111,7 @@ public class RealAgent extends BasicAgent implements Agent {
     //This is used only for logging - direct reference to other agents. DO NOT use this for anything else
     private SimulationFramework simFramework;
     private boolean saveOccupancyGrid;
+    public int ability;
     
     public void setSimFramework(SimulationFramework simFramework) {
         this.simFramework = simFramework;
@@ -145,7 +146,8 @@ public class RealAgent extends BasicAgent implements Agent {
               robot.getRole(),
               robot.getParent(),
               robot.getChild(),
-              Constants.DEFAULT_SPEED);
+              Constants.DEFAULT_SPEED,
+              robot.getAbility());
 
         stats = new AgentStats();
         
