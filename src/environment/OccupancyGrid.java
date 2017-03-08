@@ -240,7 +240,7 @@ public class OccupancyGrid {
         return
                 (
                 freeSpaceAt(xCoord, yCoord) && 
-               !safeSpaceAt(xCoord, yCoord) &&
+               //!safeSpaceAt(xCoord, yCoord) &&
                !obstacleAt(xCoord, yCoord)
                 ) ||
                 (
@@ -278,7 +278,7 @@ public class OccupancyGrid {
         if (xCoord > width) return false;
         if (yCoord > height) return false;
         return(!freeSpaceAt(xCoord, yCoord) &&
-               !safeSpaceAt(xCoord, yCoord) &&
+               //!safeSpaceAt(xCoord, yCoord) &&
                !obstacleAt(xCoord, yCoord));
     }
 

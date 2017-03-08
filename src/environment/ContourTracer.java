@@ -41,8 +41,13 @@
 package environment;
 
 import config.Constants;
+import java.awt.Color;
 import java.util.LinkedList;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 /**
  *
  * @author julh
@@ -169,6 +174,24 @@ public class ContourTracer {
         return labels;
     }
     
+    public static void saveLabelsToPNG(String filename, int[][] labels) {
+        try {
+            // retrieve image
+            BufferedImage bi = new BufferedImage(800, 600, BufferedImage.TYPE_INT_RGB);
+            //Graphics g = bi.getGraphics();
+            for (int i = 0; i < 800; i++) {
+                for (int j = 0; j < 600; j++) {
+                    if (labels[i][j] == 1) bi.setRGB(i, j, Color.WHITE.getRGB());
+                    else bi.setRGB(i, j, Color.BLACK.getRGB());
+                }
+            }
+            File outputfile = new File(filename);
+            ImageIO.write(bi, "png", outputfile);
+        } catch (IOException e) {
+            
+        }
+    }
+    
     public static LinkedList <LinkedList> findAllContours(OccupancyGrid occGrid) {
         LinkedList <LinkedList> contourList = new LinkedList<LinkedList>();
         LinkedList <Point> currContour;
@@ -229,7 +252,7 @@ public class ContourTracer {
             }
         System.out.println("[findAllContours] contours processed: " + contourCounter);
         System.out.println("[findAllContours] main loop took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-        
+        //saveLabelsToPNG(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "contours", labels);
         return contourList;
     }
 }
