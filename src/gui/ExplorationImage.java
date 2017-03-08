@@ -391,7 +391,7 @@ public class ExplorationImage {
 
     public void saveScreenshot(String dirName, int timeElapsed) {
         try {
-            ImageIO.write(image, "png", new File(dirName + "\\" + timeElapsed + ".png"));
+            ImageIO.write(image, "png", new File(dirName + "explorationImage " + timeElapsed + ".png"));
         }
         catch (IOException e){
             System.out.println(this.toString() + "Screenshot saving -- Error writing to file!" + e);

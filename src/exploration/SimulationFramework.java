@@ -121,6 +121,8 @@ public class SimulationFramework implements ActionListener {
 
     RobotTeamConfig robotTeamConfig;
     
+    boolean logging_agent;
+    
 
     public SimulationFramework(MainGUI maingui, RobotTeamConfig newRobotTeamConfig, SimulatorConfig newSimConfig, ExplorationImage img) {
         random = new Random();
@@ -129,6 +131,8 @@ public class SimulationFramework implements ActionListener {
         simConfig = newSimConfig;
         env = simConfig.getEnv();
         robotTeamConfig = newRobotTeamConfig;
+        
+        logging_agent = false;
         
         reset();
     }
@@ -295,10 +299,18 @@ public class SimulationFramework implements ActionListener {
         //timer = System.currentTimeMillis();
         mainGUI.updateRobotConfig();
         logging();                  // perform logging as required
+        
         robotTeamConfig.getRobotTeam().entrySet().stream().filter((entry) -> (entry.getValue().getLoggingState())).forEach((entry) -> {
             RealAgent a = agent[entry.getValue().getRobotNumber()-1];
-            a.getOccupancyGrid().saveToPNG("logs/occuGrid " + a.toString() + System.currentTimeMillis() + ".png");
+            a.getOccupancyGrid().saveToPNG(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "occuGrid " + a.toString() + timeElapsed + ".png");
+            logging_agent = true; //There is a logging-wish
         });
+        if (logging_agent){  //do non-agent-based logging if there is a wish to log for any robot
+            EnvLoader.saveWallConfig(env, Constants.DEFAULT_IMAGE_LOG_DIRECTORY +"environment " + timeElapsed + ".png");
+            image.saveScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY, timeElapsed);
+        }
+        logging_agent = false; //reset logging-wish for next cycle
+        
         //if ((timeElapsed % 10) == 0) verifyNoInfoGotLost(); //verify relaying works fine
         //System.out.println(this.toString() + "logging took " + (System.currentTimeMillis()-timer) + "ms.\n");
         int currentCycleTime = (int)(System.currentTimeMillis()-realtimeStartCycle);

@@ -41,6 +41,8 @@
 package config;
 
 import java.awt.Color;
+import java.io.File;
+import java.nio.file.Paths;
 
 /**
  *
@@ -178,8 +180,10 @@ public class Constants {
     public static final long MAX_TIME_DISTANCE_BY_SKELETON = 100;
     
     public static final boolean OUTPUT_PATH_ERROR = false;
-    public static final String DEFAULT_PATH_LOG_DIRECTORY = "C:\\Users\\Victor\\Sources\\University\\MRESim\\GIT\\MRESim\\patherror\\";//System.getProperty("user.dir") + "\\patherror\\";
-    
+    public static final String DEFAULT_PATH_LOG_DIRECTORY = Paths.get(System.getProperty("user.dir"), "patherror").toString() + File.separator;
+    public static final String DEFAULT_LOG_DIRECTORY = Paths.get(System.getProperty("user.dir"), "logs").toString() + File.separator;
+    public static final String DEFAULT_IMAGE_LOG_DIRECTORY = Paths.get(System.getProperty("user.dir"), "logs", "images").toString() + File.separator;
+
     // Colors to be used on map
     public static class MapColor {
         public static final Color background() {return Color.LIGHT_GRAY;}
