@@ -63,6 +63,7 @@ public class SimulatorConfig {
     private boolean useComStations;
     private double comStationDropChance;
 
+
     
     public static enum commtype {StaticCircle, DirectLine, PropModel1}
     private commtype commModel;
@@ -141,6 +142,13 @@ public class SimulatorConfig {
     
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
 
+    public boolean isUseComStations() {
+        return useComStations;
+    }
+
+    public double getComStationDropChance() {
+        return comStationDropChance;
+    }
     public void setUseComStations(boolean selected) {
         this.useComStations = selected;
     }

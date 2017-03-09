@@ -80,7 +80,7 @@ public class BasicAgent implements Agent {
 
     RobotConfig.roletype role;
 
-    public static enum ExploreState {Initial, Explore, ReturnToParent, WaitForParent, GiveParentInfo, GoToChild, WaitForChild, GetInfoFromChild, OutOfService}
+    public static enum ExploreState {Initial, Explore, ReturnToParent, WaitForParent, GiveParentInfo, GoToChild, WaitForChild, GetInfoFromChild, OutOfService, RELAY, INACTIVE}
     private ExploreState state;
     private ExploreState prevExploreState;
 
@@ -266,7 +266,7 @@ public class BasicAgent implements Agent {
         timeSinceGetChildInfo = val;
     }
     public void addComStation(ComStation com){
-        if (comStationLimit < comStations.size()) {
+        if (comStationLimit > comStations.size()) {
             this.comStations.add(com);
         }
     }

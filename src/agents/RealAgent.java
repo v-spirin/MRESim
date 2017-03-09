@@ -52,8 +52,6 @@ import exploration.rendezvous.MultiPointRendezvousStrategy;
 import static exploration.rendezvous.MultiPointRendezvousStrategy.findNearestPointInBaseCommRange;
 import exploration.rendezvous.RendezvousAgentData;
 import exploration.rendezvous.RendezvousStrategyFactory;
-import exploration.rendezvous.SinglePointRendezvousStrategy;
-import exploration.rendezvous.SinglePointRendezvousStrategySettings;
 import java.util.*;
 import java.awt.*;
 import path.Path;
@@ -514,12 +512,20 @@ public class RealAgent extends BasicAgent implements Agent {
                                                         timeElapsed, simConfig.getFrontierAlgorithm());
                                              if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn))
                                                 nextStep = UtilityExploration.takeStep(this, timeElapsed, simConfig);
+                                             if (simConfig.isUseComStations() && Math.random() < simConfig.getComStationDropChance()){
+                                                 this.dropComStation();
+                                             }
                                              break;
                 case RoleBasedExploration:   
                                              nextStep = RoleBasedExploration.takeStep(this, timeElapsed, rendezvousStrategy);
                                              break;
                 case Testing:
-                    System.out.println("Just testing for now");
+                                             nextStep = FrontierExploration.takeStep(this, timeElapsed, simConfig.getFrontierAlgorithm());
+                                             if (simConfig.isUseComStations() && Math.random() < simConfig.getComStationDropChance()){
+                                                 this.dropComStation();
+                                             }
+                                             
+                                             break;
                 default:                     break;
             }
         } else
@@ -1182,5 +1188,14 @@ public class RealAgent extends BasicAgent implements Agent {
         //System.out.println("Complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 // </editor-fold>     
+
+    private void dropComStation() {
+        if (comStations.size() > 0) {
+            ComStation comStation = this.comStations.remove(0);
+            comStation.setState(ExploreState.RELAY);
+            comStation.setX(this.x);
+            comStation.setY(this.y);
+        }
+    }
 
 }

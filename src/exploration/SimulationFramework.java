@@ -179,10 +179,16 @@ public class SimulationFramework implements ActionListener {
         agent[0] = new ComStation(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(1), simConfig);
         teammate[0] = new TeammateAgent(robotTeamConfig.getRobotTeam().get(1));
         
-        for(int i=1; i<numRobots; i++) {
-            agent[i] = new RealAgent(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(i+1), simConfig);
+        for(int i = 1; i < numRobots; i++) {
+            if (!robotTeamConfig.getRobotTeam().get(i + 1).getRole().equals(roletype.RelayStation)) {
+                agent[i] = new RealAgent(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(i + 1), simConfig);
+            } else {
+                agent[i] = new ComStation(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(i + 1), simConfig);
+                RealAgent realAgent = agent[agent[i].getParent()-1];
+                realAgent.addComStation((ComStation)agent[i]);
+            }
             agentRange[i] = null;
-            teammate[i] = new TeammateAgent(robotTeamConfig.getRobotTeam().get(i+1));
+            teammate[i] = new TeammateAgent(robotTeamConfig.getRobotTeam().get(i + 1));
         }
         
         for(int i=1; i<numRobots; i++) {

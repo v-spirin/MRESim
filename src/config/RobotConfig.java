@@ -61,7 +61,7 @@ public class RobotConfig {
     private int ability;
     private int comStationLimit;
         
-    public static enum roletype {BaseStation, Relay, Explorer}
+    public static enum roletype {BaseStation, Relay, Explorer, RelayStation}
     private roletype role;
 
     private int parent;
