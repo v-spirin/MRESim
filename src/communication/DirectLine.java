@@ -59,7 +59,7 @@ public class DirectLine {
         for(int i=0; i<agent.length-1; i++)
             for(int j=i+1; j<agent.length; j++) 
                 if(agent[i].distanceTo(agent[j]) < (agent[i].getCommRange() + agent[j].getCommRange()) &&
-                   env.directLinePossible(agent[i].getX(), agent[i].getY(), agent[j].getX(), agent[j].getY())) {
+                   env.directLinePossible(agent[i].getX(), agent[i].getY(), agent[j].getX(), agent[j].getY(), 3)) {
                     commTable[i][j] = 1;
                     commTable[j][i] = 1;
                 }
