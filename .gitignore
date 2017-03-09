@@ -1,9 +1,7 @@
 /dist/
 /build/
 /nbproject/private/
-config/lastEnvironment.png
-config/lastSimulatorConfig.txt
+config/*
 *.swp
-config/lastTeamConfig.txt
 logs/*
 
