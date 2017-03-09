@@ -383,7 +383,7 @@ public class TopologicalMap {
             
             Polygon commPoly = PropModel1.getRangeForRV(occGrid,
                     new BasicAgent(0, "", 0, baseLoc.x, baseLoc.y, 0, 0, 400, 0,
-                            RobotConfig.roletype.Relay, 0, 0, 0, 2)
+                            RobotConfig.roletype.Relay, 0, 0, 0, 2, 1)
             );
             
             LinkedList<Point> candidatePoints = new LinkedList<Point>();

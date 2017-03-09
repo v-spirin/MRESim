@@ -156,6 +156,11 @@ public class RobotConfigDialog extends JDialog {
                     column.setPreferredWidth(60);
                     column.setCellRenderer(editableNumberRenderer);
                     break;
+                case 10:
+                    column.setHeaderValue("ComSt.Limit");
+                    column.setPreferredWidth(60);
+                    column.setCellRenderer(editableNumberRenderer);
+                    break;
             }
         } 
         
@@ -357,6 +362,7 @@ public class RobotConfigDialog extends JDialog {
             addLine[7] = String.valueOf(currRobot.getParent());
             addLine[8] = String.valueOf(currRobot.getChild());
             addLine[9] = String.valueOf(currRobot.getAbility());
+            addLine[10] = String.valueOf(currRobot.getComStationLimit());
             
             model.addRow(addLine);
         }

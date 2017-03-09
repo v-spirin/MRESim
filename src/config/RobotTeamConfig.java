@@ -61,7 +61,7 @@ public class RobotTeamConfig {
         if(!oldConfigFound) {
             numRobots = 1;
             robotTeam = new Hashtable<Integer,RobotConfig>();    
-            RobotConfig comStation = new RobotConfig("1","ComStation","1,1,0","0","100","1000","BaseStation","1","1", "2");
+            RobotConfig comStation = new RobotConfig("1","ComStation","1,1,0","0","100","1000","BaseStation","1","1", "2", "1");
             robotTeam.put(comStation.getRobotNumber(), comStation);
         }
     }
@@ -104,7 +104,8 @@ public class RobotTeamConfig {
                                         (String)(model.getValueAt(i, 6)),
                                         (String)(model.getValueAt(i, 7)),
                                         (String)(model.getValueAt(i, 8)),
-                                        (String)(model.getValueAt(i, 9)));
+                                        (String)(model.getValueAt(i, 9)),
+                                        (String)(model.getValueAt(i, 10)));
             robotTeam.put(currRobot.getRobotNumber(), currRobot);
         }
     }
@@ -200,7 +201,8 @@ public class RobotTeamConfig {
                                                     tokens[8],
                                                     Integer.parseInt(tokens[9]),
                                                     Integer.parseInt(tokens[10]),
-                                                    Integer.parseInt(tokens[11]));
+                                                    Integer.parseInt(tokens[11]),
+                                                    Integer.parseInt(tokens[12]));
             numRobots++;
             robotTeam.put(currRobot.getRobotNumber(), currRobot);
         }

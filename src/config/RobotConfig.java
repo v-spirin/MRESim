@@ -47,7 +47,7 @@ package config;
 public class RobotConfig {
     
     // start x, y and heading count as a single field, comma delimited.
-    public static int NUMROBOTCONFIGFIELDS = 10;
+    public static int NUMROBOTCONFIGFIELDS = 11;
     
     private int robotNumber;
     private String name;
@@ -59,6 +59,7 @@ public class RobotConfig {
     private int batteryLife;
     private boolean loggingState;
     private int ability;
+    private int comStationLimit;
         
     public static enum roletype {BaseStation, Relay, Explorer}
     private roletype role;
@@ -80,9 +81,10 @@ public class RobotConfig {
         parent = 1;
         child = 1;
         ability = 2;
+        comStationLimit = 1;
     }
 
-    public RobotConfig(int newRobotNo, String newName, int newStartX, int newStartY, double newStartHeading, int newSensingRange, int newCommRange, int newBatteryLife, String newRole, int newParent, int newChild, int newAbility) {
+    public RobotConfig(int newRobotNo, String newName, int newStartX, int newStartY, double newStartHeading, int newSensingRange, int newCommRange, int newBatteryLife, String newRole, int newParent, int newChild, int newAbility, int newComStationLimit) {
         robotNumber = newRobotNo;
         name = newName;
         startX = newStartX;
@@ -96,9 +98,10 @@ public class RobotConfig {
         child = newChild;
         loggingState = false;
         ability = newAbility;
+        comStationLimit = newComStationLimit;
     }
     
-    public RobotConfig(String newRobotNumber, String newName, String start, String newSensingRange, String newCommRange, String newBatteryLife, String newRole, String newParent, String newChild, String newAbility) {
+    public RobotConfig(String newRobotNumber, String newName, String start, String newSensingRange, String newCommRange, String newBatteryLife, String newRole, String newParent, String newChild, String newAbility, String newComStationLimit) {
         robotNumber = Integer.parseInt(newRobotNumber);
         name = newName;
         
@@ -119,6 +122,15 @@ public class RobotConfig {
         parent = Integer.parseInt(newParent);
         child = Integer.parseInt(newChild);
         ability = Integer.parseInt(newAbility);
+        comStationLimit = Integer.parseInt(newComStationLimit);
+    }
+
+    public int getComStationLimit() {
+        return comStationLimit;
+    }
+
+    public void setComStationLimit(int comStationLimit) {
+        this.comStationLimit = comStationLimit;
     }
     
     public int getAbility() {
@@ -195,7 +207,9 @@ public class RobotConfig {
                 role + " " +
                 String.valueOf(parent) + " " +
                 String.valueOf(child) + " " +
-                String.valueOf(ability));
+                String.valueOf(ability) + " " +
+                String.valueOf(comStationLimit)
+                );
 
     }
 }

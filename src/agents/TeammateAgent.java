@@ -86,7 +86,9 @@ public class TeammateAgent extends BasicAgent implements Agent {
               robot.getParent(),
               robot.getChild(),
               Constants.STEP_SIZE,
-              robot.getAbility());
+              robot.getAbility(),
+              robot.getComStationLimit()
+        );
         
         inRange = false;
         timeSinceLastComm = 0;
@@ -108,7 +110,9 @@ public class TeammateAgent extends BasicAgent implements Agent {
               toCopy.getParent(),
               toCopy.getChild(),
               toCopy.getSpeed(),
-              toCopy.getAbility());
+              toCopy.getAbility(),
+              toCopy.getComStationLimit()
+        );
         this.childRendezvous = toCopy.childRendezvous;
         this.parentRendezvous = toCopy.parentRendezvous;
         this.timeLastCentralCommand = toCopy.timeLastCentralCommand;

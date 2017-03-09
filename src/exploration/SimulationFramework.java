@@ -62,6 +62,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -567,11 +568,13 @@ public class SimulationFramework implements ActionListener {
         agent[0].flush();
         
         List<Thread> threads = new ArrayList<Thread>();
-        
-        for(int i=1; i<agent.length; i++) {
-            Runnable task = new AgentStepRunnable(agent[i], simConfig, timeElapsed, env, this);
+        for (RealAgent agent1 : agent) {
+            if (agent1.getClass().toString().equals(ComStation.class.toString())) {
+                continue;
+            }
+            Runnable task = new AgentStepRunnable(agent1, simConfig, timeElapsed, env, this);
             Thread worker = new Thread(task);
-            worker.setName(agent[i].toString());
+            worker.setName(agent1.toString());
             worker.start();
             threads.add(worker);
             
@@ -579,11 +582,10 @@ public class SimulationFramework implements ActionListener {
             /*
             //realtimeStartAgentCycle = System.currentTimeMillis();
             double distance_left = agent[i].getSpeed();
-            while (distance_left > 0)
-            {
+            while (distance_left > 0) {
                 System.out.println(agent[i].toString() + " distance left: " + distance_left);
                 nextStep = agent[i].takeStep(timeElapsed, simConfig);
-                if(nextStep == null) {   
+                if (nextStep == null) {
                     //mainGUI.runComplete();  // run complete
                     //return;
                     System.out.println("ERROR: agent " + i + " chose NULL step!");
@@ -592,41 +594,40 @@ public class SimulationFramework implements ActionListener {
                 agent[i].flush();
 
                 // Check to make sure step is legal
-                if(env.directLinePossible(agent[i].getX(), agent[i].getY(), nextStep.x, nextStep.y)) {
+                if (env.directLinePossible(agent[i].getX(), agent[i].getY(), nextStep.x, nextStep.y)) {
                     //check here we don't 'teleport'
                     double dist = agent[i].getLocation().distance(nextStep);
-                    if (dist < 0.01) break;
-                    if (dist > 5)
-                    {
+                    if (dist < 0.01) {
+                        break;
+                    }
+                    if (dist > 5) {
                         System.out.println(agent[i].toString() + " !!!!! SOMETHING SERIOUSLY WRONG !!!!!");
                         System.out.println(agent[i].toString() + " dist is " + dist);
                         System.out.println(agent[i].toString() + " location is (" + agent[i].getX() + ", " + agent[i].getY() + ")");
                         System.out.println(agent[i].toString() + " next step is " + nextStep);
-                        System.out.println(agent[i].toString() + " goal is " + agent[i].getCurrentGoal());                        
+                        System.out.println(agent[i].toString() + " goal is " + agent[i].getCurrentGoal());
                     }
                     System.out.println(agent[i].toString() + " distance to next path point: " + dist);
                     if (dist > distance_left) {
                         System.out.println(agent[i].toString() + " exceeded speed. Distance left: " + distance_left + ", dist to next path point: " + dist);
                         double ratio = distance_left / dist;
-                        nextStep.x = agent[i].getX() + (int)Math.round((nextStep.x - agent[i].getX()) * ratio);
-                        nextStep.y = agent[i].getY() + (int)Math.round((nextStep.y - agent[i].getY()) * ratio);
-                        if (!env.directLinePossible(agent[i].getX(), agent[i].getY(), nextStep.x, nextStep.y))
-                        {
+                        nextStep.x = agent[i].getX() + (int) Math.round((nextStep.x - agent[i].getX()) * ratio);
+                        nextStep.y = agent[i].getY() + (int) Math.round((nextStep.y - agent[i].getY()) * ratio);
+                        if (!env.directLinePossible(agent[i].getX(), agent[i].getY(), nextStep.x, nextStep.y)) {
                             nextStep.x = agent[i].getX();
                             nextStep.y = agent[i].getY();
                             System.out.println(agent[i].toString() + " directLinePossible returned wrong result!");
                         }
                         System.out.println(agent[i].toString() + " speed corrected. Now is: " + agent[i].getLocation().distance(nextStep));
                         distance_left = 0;
-                    } else
-                    {
+                    } else {
                         distance_left = distance_left - dist;
                     }
                     sensorData = findSensorData(agent[i], nextStep);
                     agent[i].writeStep(nextStep, sensorData);
-                }
-                else
+                } else {
                     agent[i].setEnvError(true);
+                }
 
                 //System.out.println(agent[i].toString() + "Agent cycle complete, took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
             }

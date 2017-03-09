@@ -146,7 +146,9 @@ public class RealAgent extends BasicAgent implements Agent {
               robot.getParent(),
               robot.getChild(),
               Constants.DEFAULT_SPEED,
-              robot.getAbility());
+              robot.getAbility(),
+              robot.getComStationLimit()
+        );
 
         stats = new AgentStats();
         
