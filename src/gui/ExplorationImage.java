@@ -322,20 +322,34 @@ public class ExplorationImage {
     {
         setG2D();
         
-        if(settings.showEnv)
-            drawEnvironment(env.getFullStatus());
+        //if(settings.showEnv)
+        //    drawEnvironment(env.getFullStatus());
         
-        if (dirtOnly)
+        if (!dirtOnly)
         {
+            if(settings.showEnv)
+                drawEnvironment(env.getFullStatus());
+            
             for(int i=0; i<width; i++)
                 for(int j=0; j<height; j++)
                     updatePixel(agentSettings, agents, i, j);
         } else
         {
-            LinkedList<Point> allDirt = findAllDirt(agents);    
-
-            for(Point currCell : allDirt)
+            LinkedList<Point> allDirt = findAllDirt(agents);  
+            
+            if(settings.showEnv)
+                drawEnvironment(env.getFullStatus(), allDirt);
+            
+            allDirt.parallelStream().forEach((currCell) -> {
                 updatePixel(agentSettings, agents, currCell.x, currCell.y);
+            });
+            
+
+            
+            setPixel(1, 1, Color.MAGENTA);
+            setPixel(1, 2, Color.MAGENTA);
+            setPixel(2, 1, Color.MAGENTA);
+            setPixel(2, 2, Color.MAGENTA);
         }
 
         resetDirt(agents);
@@ -662,6 +676,36 @@ public class ExplorationImage {
         agent.getRendezvousStrategy().getRendezvousDisplayData().drawRendezvousLocation(this, agent);
     }
     
+    public void drawEnvironment(Environment.Status[][] status, LinkedList<Point> allDirt) {
+        allDirt.parallelStream().forEach((p) -> {
+            switch(status[p.x][p.y]) {
+                            case barrier: setPixel(p.x,p.y,Constants.MapColor.wall()); break;
+                            case obstacle: setPixel(p.x,p.y,Constants.MapColor.obstacle()); break;
+                            case slope: setPixel(p.x,p.y,Constants.MapColor.slope()); break;
+                            case hill: setPixel(p.x,p.y,Constants.MapColor.hill()); break;
+                            case explored:
+                            case unexplored:
+                            default:
+                                setPixel(p.x,p.y, Constants.MapColor.background());
+                        }
+        });
+        
+        /*for(Point p : allDirt){
+                        switch(status[p.x][p.y]) {
+                            case barrier: setPixel(p.x,p.y,Constants.MapColor.wall()); break;
+                            case obstacle: setPixel(p.x,p.y,Constants.MapColor.obstacle()); break;
+                            case slope: setPixel(p.x,p.y,Constants.MapColor.slope()); break;
+                            case hill: setPixel(p.x,p.y,Constants.MapColor.hill()); break;
+                            case explored:
+                            case unexplored:
+                            default:
+                                setPixel(p.x,p.y, Constants.MapColor.background());
+                        }
+        }*/
+                    
+    }
+   
+        
     public void drawEnvironment(Environment.Status[][] status) {
         for(int i=0; i<width; i++)
             for(int j=0; j<height; j++)
