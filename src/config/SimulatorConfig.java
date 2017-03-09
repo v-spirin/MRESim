@@ -60,12 +60,15 @@ public class SimulatorConfig {
     private String logScreenshotsDirname;
     private String runFromLogFilename;
     private String batchFilename;
+    private boolean useComStations;
+    private double comStationDropChance;
+
     
     public static enum commtype {StaticCircle, DirectLine, PropModel1}
     private commtype commModel;
     private int simRate;
     private Environment env;
-    public static enum exptype {BatchRun, RunFromLog, LeaderFollower, FrontierExploration, RoleBasedExploration}
+    public static enum exptype {BatchRun, RunFromLog, LeaderFollower, FrontierExploration, RoleBasedExploration, Testing}
     public static enum frontiertype {RangeConstrained, PeriodicReturn, ReturnWhenComplete, UtilReturn}
     public double TARGET_INFO_RATIO;
     private exptype expAlgorithm;
@@ -126,6 +129,8 @@ public class SimulatorConfig {
             relayExplore = false;
             tryToGetToExplorerRV = false;
             useSingleMeetingTime = false;
+            comStationDropChance = 0;
+            useComStations = false;
         }
         
         boolean oldWallConfigFound = loadOldWallConfig();
@@ -135,6 +140,14 @@ public class SimulatorConfig {
 // </editor-fold>
     
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
+
+    public void setUseComStations(boolean selected) {
+        this.useComStations = selected;
+    }
+
+    public void setComStationDropChance(double parseDouble) {
+        this.comStationDropChance = parseDouble;
+    }
 
     public commtype getCommModel() {
         return commModel;
@@ -489,6 +502,20 @@ public class SimulatorConfig {
                 {
                     useSingleMeetingTime = false;
                 }
+                try
+                {
+                    useComStations = Boolean.parseBoolean(inFile.readLine());
+                } catch (Exception e)
+                {
+                    useComStations = false;
+                }
+                try
+                {
+                    comStationDropChance = Double.parseDouble(inFile.readLine());
+                } catch (Exception e)
+                {
+                    comStationDropChance = 0.02;
+                }
 
                 inFile.close();
                 return true;
@@ -558,6 +585,8 @@ public class SimulatorConfig {
             outFile.println(exploreReplan);
             outFile.println(tryToGetToExplorerRV);
             outFile.println(useSingleMeetingTime);
+            outFile.println(useComStations);
+            outFile.println(comStationDropChance);
             
             outFile.close();
             return true;

@@ -518,6 +518,8 @@ public class RealAgent extends BasicAgent implements Agent {
                 case RoleBasedExploration:   
                                              nextStep = RoleBasedExploration.takeStep(this, timeElapsed, rendezvousStrategy);
                                              break;
+                case Testing:
+                    System.out.println("Just testing for now");
                 default:                     break;
             }
         } else
