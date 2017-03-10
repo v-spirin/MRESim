@@ -66,7 +66,7 @@ public class Rendezvous {
     
     public Rendezvous(Point location) {
         if (location == null) {
-            System.out.println("!!! location is null? This should never happen!");
+            System.err.println("!!! location is null? This should never happen!");
         }
         childLocation = location;
         parentLocation = location;
@@ -77,7 +77,7 @@ public class Rendezvous {
     
     public Rendezvous copy() {
         if (childLocation == null) {
-            System.out.println("!!! childLocation is null? This should never happen!");
+            System.err.println("!!! childLocation is null? This should never happen!");
             return null;
         };
         Rendezvous locCopy = new Rendezvous(childLocation);

@@ -103,7 +103,7 @@ public class ExplorationImage {
             image.setRGB(row, column, color);
         }
         catch(ArrayIndexOutOfBoundsException e) {
-            System.out.println(this.toString() + "Error: pixel out of image bounds (" + row + ", " + column + ")");
+            System.err.println(this.toString() + "Error: pixel out of image bounds (" + row + ", " + column + ")");
         }
     }
 
@@ -416,7 +416,7 @@ public class ExplorationImage {
             ImageIO.write(image, "png", new File(dirName + "explorationImage " + timeElapsed + ".png"));
         }
         catch (IOException e){
-            System.out.println(this.toString() + "Screenshot saving -- Error writing to file!" + e);
+            System.err.println(this.toString() + "Screenshot saving -- Error writing to file!" + e);
         }
     }
     
@@ -425,10 +425,12 @@ public class ExplorationImage {
         String filename = fmt.format(new Date());
         try {
             ImageIO.write(image, "png", new File(dirName + "\\" + filename + ".png"));
-            System.out.println("Filename is: " + filename + ".png");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println("Filename is: " + filename + ".png");
+            }
         }
         catch (IOException e){
-            System.out.println(this.toString() + "Screenshot saving -- Error writing to file!" + e);
+            System.err.println(this.toString() + "Screenshot saving -- Error writing to file!" + e);
         }
     }
 
@@ -494,7 +496,7 @@ public class ExplorationImage {
             }
         }
         catch(NullPointerException npe) {
-            System.out.println("Error: could not draw agents");
+            System.err.println("Error: could not draw agents");
         }
     }
     

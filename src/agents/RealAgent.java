@@ -327,7 +327,9 @@ public class RealAgent extends BasicAgent implements Agent {
             }
         }
         pathToBase = calculatePath(getLocation(), nearestBasePoint);
-        System.out.println(this.toString() + "Path to base computation took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println(this.toString() + "Path to base computation took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
+        }
     }
     
     public Path getPathToBaseStation() {
@@ -374,10 +376,14 @@ public class RealAgent extends BasicAgent implements Agent {
             //System.out.println(toString() + "findKeyPoints, " + (System.currentTimeMillis()-timeStart) + "ms.");
             topologicalMap.generateKeyAreas();
             timeTopologicalMapUpdated = timeElapsed;
-            System.out.println(toString() + "generated topological map, " + (System.currentTimeMillis()-timeStart) + "ms.");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(toString() + "generated topological map, " + (System.currentTimeMillis()-timeStart) + "ms.");
+            }
             occGrid.setMapHasChangedToFalse();
         } else {
-            System.out.println(this + " Occupancy Grid not changed since last update, skipping topological map update");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(this + " Occupancy Grid not changed since last update, skipping topological map update");
+            }
         }
     }
 
@@ -546,7 +552,9 @@ public class RealAgent extends BasicAgent implements Agent {
         }
         
         //pruneUnexploredSpace();
-        System.out.println(this.toString() +  "Taking step complete, moving from (" + (int)getLocation().getX() + "," + (int)getLocation().getX() + ") to (" + (int)nextStep.getX() + "," + (int)nextStep.getX() + "), took " + (System.currentTimeMillis()-realtimeStartAgentStep) + "ms.");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println(this.toString() +  "Taking step complete, moving from (" + (int)getLocation().getX() + "," + (int)getLocation().getX() + ") to (" + (int)nextStep.getX() + "," + (int)nextStep.getX() + "), took " + (System.currentTimeMillis()-realtimeStartAgentStep) + "ms.");
+        }
 
         return nextStep;
     }
@@ -636,20 +644,26 @@ public class RealAgent extends BasicAgent implements Agent {
             //System.out.println(this + "calculating topological path from " + startPoint + " to " + goalPoint);
             topologicalMap.getTopologicalPath();
             if (!topologicalMap.getPath().found && !topologicalMapUpdated) {
-                System.out.println(this + "Trying to rebuild topological map and replan path " + startPoint + " to " + goalPoint);
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(this + "Trying to rebuild topological map and replan path " + startPoint + " to " + goalPoint);
+                }
                 timeTopologicalMapUpdated = -1;
                 return calculatePath(startPoint, goalPoint);
             } else if (!topologicalMap.getPath().found) {
-                System.out.println(this +"at location (" + (int)getLocation().getX() + "," + (int)getLocation().getX()+ ") failed to plan path (" + (int)startPoint.getX() + "," + (int)startPoint.getX()+ ") to (" + (int)goalPoint.getX() + "," + (int)goalPoint.getX()+ "), not retrying; " +
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(this +"at location (" + (int)getLocation().getX() + "," + (int)getLocation().getX()+ ") failed to plan path (" + (int)startPoint.getX() + "," + (int)startPoint.getX()+ ") to (" + (int)goalPoint.getX() + "," + (int)goalPoint.getX()+ "), not retrying; " +
                         "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed + 
                         ", mapCellsChanged: " + occGrid.getMapCellsChanged() + "/" + Constants.MAP_CHANGED_THRESHOLD);
+                }
             } 
         } else
         {
-            System.out.println(this + "calculating jump path from " + startPoint + " to " + goalPoint);
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(this + "calculating jump path from " + startPoint + " to " + goalPoint);
+            }
             topologicalMap.getJumpPath();
             if (topologicalMap.getPath() == null)
-                System.out.println("!!!! CATASTROPHIC FAILURE !!!!!");
+                System.err.println("!!!! CATASTROPHIC FAILURE !!!!!");
         }
         return topologicalMap.getPath();
         //return new Path(occGrid, startPoint, goalPoint, false);
@@ -780,7 +794,9 @@ public class RealAgent extends BasicAgent implements Agent {
         if (getID() == Constants.BASE_STATION_TEAMMATE_ID) //base station
             return;
         if (ag.timeToBase() == timeToBase()) { //robots overlapping in sim; couldn't happen in real life.
-            System.out.println(toString() + " timeToBase same as " + ag.name + " (" + timeToBase() + " vs " + ag.timeToBase() + ")");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(toString() + " timeToBase same as " + ag.name + " (" + timeToBase() + " vs " + ag.timeToBase() + ")");
+            }
             return;                          //anyway, this means there is symmetry so could potentially lose new data
         }
         
@@ -791,9 +807,13 @@ public class RealAgent extends BasicAgent implements Agent {
         int new_counter = 0;
         boolean iAmCloserToBase = (ag.timeToBase() > timeToBase()); //buffer to prevent oscillations
         if (iAmCloserToBase)
-            System.out.println(toString() + " relaying for " + ag.name + " (" + timeToBase() + " vs " + ag.timeToBase() + ")");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(toString() + " relaying for " + ag.name + " (" + timeToBase() + " vs " + ag.timeToBase() + ")");
+            }
         else
-            System.out.println(ag.name + " relaying for " + toString() + " (" + ag.timeToBase() + " vs " + timeToBase() + ")");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(ag.name + " relaying for " + toString() + " (" + ag.timeToBase() + " vs " + timeToBase() + ")");
+            }
         
         if (iAmCloserToBase) {
             for (Point point : ag.occGrid.getOwnedCells()) {
@@ -808,7 +828,9 @@ public class RealAgent extends BasicAgent implements Agent {
             if (new_counter > 0) {
                 //Set new info to 1 to prevent oscillations - this get updated properly in updateAreaKnown
                 if (stats.getNewInfo() == 0) stats.setNewInfo(1);
-                System.out.println(toString() + "setGotUnrelayed: " + new_counter);
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(toString() + "setGotUnrelayed: " + new_counter);
+                }
             }
            
             
@@ -830,7 +852,9 @@ public class RealAgent extends BasicAgent implements Agent {
                 // Need to iterate over a copy of getOwnedCells list, as the list gets changed by setGotRelayed.
                 new_counter = occGrid.setOwnedCellsRelayed();
                 if (new_counter > 0)
-                    System.out.println(toString() + "setGotRelayed: " + new_counter);
+                    if (Constants.DEBUG_OUTPUT) {
+                        System.out.println(toString() + "setGotRelayed: " + new_counter);
+                    }
             }
         }
         

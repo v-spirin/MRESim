@@ -96,10 +96,14 @@ public class TopologicalMap {
     {
         long realtimeStart = System.currentTimeMillis();
         skeletonGrid = Skeleton.skeletonize(Skeleton.findSkeleton(occGrid));
-        System.out.println("Skeletonize & findSkeleton took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("Skeletonize & findSkeleton took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        }
         realtimeStart = System.currentTimeMillis();
         skeletonPoints = Skeleton.gridToList(skeletonGrid);
-        System.out.println("Skeletonize gridToList took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("Skeletonize gridToList took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        }
     }
     
     public void findKeyPoints()
@@ -156,12 +160,16 @@ public class TopologicalMap {
         // calculate the areas for each node
         long realtimeStart = System.currentTimeMillis();
         areaGrid = Skeleton.fillKeyAreas(occGrid, keyPoints, topologicalNodes);        
-        System.out.println("FillKeyAreas took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("FillKeyAreas took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        }
         //find node neighbours
         realtimeStart = System.currentTimeMillis();
         //System.out.println("Generating node neighbour relationships...");
         generateBorderPoints();
-        System.out.println("GenerateBorderPoints took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("GenerateBorderPoints took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        }
         
         long timeSpentOnPaths = 0;
         for (Point p: getBorderPoints())
@@ -189,18 +197,22 @@ public class TopologicalMap {
                                             neighbourNode.getPosition().x, neighbourNode.getPosition().y);
                                     if (pathCache.containsKey(pathCoords)) {                                        
                                         pathToNode = pathCache.get(pathCoords);
-                                        System.out.println("Retrieved from cache path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")" );
+                                        if (Constants.DEBUG_OUTPUT) {
+                                            System.out.println("Retrieved from cache path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")" );
+                                        }
                                     } else {
                                         pathToNode = new Path();
                                         pathToNode.setStartPoint((Point)node.getPosition().clone());
                                         pathToNode.setGoalPoint((Point)neighbourNode.getPosition().clone());
 
-                                        System.out.println("Generating path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + ")");
+                                        if (Constants.DEBUG_OUTPUT) {
+                                            System.out.println("Generating path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + ")");
+                                        }
                                         //pathToNode.getAStarPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
                                         pathToNode.getJumpPath(occGrid, (Point)node.getPosition().clone(), (Point)neighbourNode.getPosition().clone(), false);
                                         if (!pathToNode.getStartPoint().equals(node.getPosition()) ||
                                                 !pathToNode.getGoalPoint().equals(neighbourNode.getPosition())) {
-                                            System.out.println("CATASTROPHIC ERROR!! Path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")");
+                                            System.err.println("CATASTROPHIC ERROR!! Path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")");
                                         }
                                         pathCache.put(pathCoords, pathToNode);
                                         Path reversePath = pathToNode.generateReversePath();
@@ -232,7 +244,9 @@ public class TopologicalMap {
                 }
             }
         }
-        System.out.println("Time spent calculating paths between regions: " + timeSpentOnPaths + "ms.");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("Time spent calculating paths between regions: " + timeSpentOnPaths + "ms.");
+        }
         
     }
     
@@ -327,7 +341,9 @@ public class TopologicalMap {
         
         if (minElement != -1)
         {
-            System.out.println(agent.toString() + " evaluating " + keyPointsBorder.get(minElement) + " - " + secondKeyPointsBorder.get(minElement));
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(agent.toString() + " evaluating " + keyPointsBorder.get(minElement) + " - " + secondKeyPointsBorder.get(minElement));
+            }
             result.setChildLocation(keyPointsBorder.get(minElement));
             result.setParentLocation(secondKeyPointsBorder.get(minElement));
             
@@ -448,12 +464,16 @@ public class TopologicalMap {
             Path Relay2Base = agent.calculatePath(agent.getParentTeammate().getLocation(), baseComm);
 
             Path Base2OldRV = agent.calculatePath(baseComm, oldComm);
-            System.out.println(agent.toString() + " baseComm: " + baseComm + ", oldComm: " + oldComm + 
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(agent.toString() + " baseComm: " + baseComm + ", oldComm: " + oldComm + 
                     ", baseLoc: " + baseLoc + ", baseRV: " + oldRV);
+            }
             
             if (!Base2OldRV.found)
             {
-                System.out.println(agent.toString() + " !!!! Base2OldRv not found, baseComm: " + baseComm + ", oldComm: " + oldComm);
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(agent.toString() + " !!!! Base2OldRv not found, baseComm: " + baseComm + ", oldComm: " + oldComm);
+                }
                 Base2OldRV = agent.calculatePath(baseLoc, oldRV);
             }
             
@@ -464,8 +484,10 @@ public class TopologicalMap {
             {
                 result.setChildLocation(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
                 result.setParentLocation(agent.getRendezvousAgentData().getParentRendezvous().getParentLocation());
-                System.out.println(agent.toString() + " using conventional RV point !!!!! Relay1Base.found is " + Relay2Base.found + " Base2OldRV.found is " + Base2OldRV.found + " Base2NewRV.found is " + Base2NewRV.found);
-                System.out.println(agent.toString() + " baseComm: " + baseComm + ", oldComm: " + oldComm);
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(agent.toString() + " using conventional RV point !!!!! Relay1Base.found is " + Relay2Base.found + " Base2OldRV.found is " + Base2OldRV.found + " Base2NewRV.found is " + Base2NewRV.found);
+                    System.out.println(agent.toString() + " baseComm: " + baseComm + ", oldComm: " + oldComm);
+                }
                 return result;
             }
             
@@ -478,7 +500,9 @@ public class TopologicalMap {
                 frontierCentre = agent.getLastFrontier().getCentre();//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
             else
             {
-                System.out.println(agent + " setting frontierCentre to agentLoc");
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(agent + " setting frontierCentre to agentLoc");
+                }
                 frontierCentre = agent.getLocation();
             }
             if (frontierCentre != null)
@@ -489,7 +513,9 @@ public class TopologicalMap {
                 
                 if (!Explorer2Frontier.found || !Front2NewRV.found || !Front2NewRV.found)
                 {
-                    System.out.println(agent.toString() + " using conventional RV point !!!!! Explorer2Frontier.found is " + Explorer2Frontier.found + " Front2NewRV.found is " + Front2NewRV.found + " Front2NewRV.found is " + Front2NewRV.found);
+                    if (Constants.DEBUG_OUTPUT) {
+                        System.out.println(agent.toString() + " using conventional RV point !!!!! Explorer2Frontier.found is " + Explorer2Frontier.found + " Front2NewRV.found is " + Front2NewRV.found + " Front2NewRV.found is " + Front2NewRV.found);
+                    }
                     result.setChildLocation(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
                     result.setParentLocation(agent.getRendezvousAgentData().getParentRendezvous().getParentLocation());
                     return result;
@@ -499,12 +525,16 @@ public class TopologicalMap {
                         + Constants.FRONTIER_MIN_EXPLORE_TIME * Constants.DEFAULT_SPEED;
                 explorerPathLengthNew = Explorer2Frontier.getLength() + Front2NewRV.getLength()
                         + Constants.FRONTIER_MIN_EXPLORE_TIME * Constants.DEFAULT_SPEED;
-                System.out.println(agent.toString() + " frontierCentre: " + frontierCentre + ", agentLocation: " + agent.getLocation() + ", Exp2Front: " + Explorer2Frontier.getLength() + ", Front2OldRV: " + Front2OldRV.getLength() + ", Front2NewRV: " + Front2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew + ", minExploreTime = " + Constants.FRONTIER_MIN_EXPLORE_TIME);
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(agent.toString() + " frontierCentre: " + frontierCentre + ", agentLocation: " + agent.getLocation() + ", Exp2Front: " + Explorer2Frontier.getLength() + ", Front2OldRV: " + Front2OldRV.getLength() + ", Front2NewRV: " + Front2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew + ", minExploreTime = " + Constants.FRONTIER_MIN_EXPLORE_TIME);
+                }
             } else
             {
                 result.setChildLocation(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
                 result.setParentLocation(agent.getRendezvousAgentData().getParentRendezvous().getParentLocation());
-                System.out.println(agent.toString() + " using conventional RV point !!!!! frontierCenter is null");
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(agent.toString() + " using conventional RV point !!!!! frontierCenter is null");
+                }
                 return result;
                 //explorerPathLengthOld = agent.calculatePath(agent.getLocation(), agent.getParentRendezvous().getChildLocation()).getLength();
                 //explorerPathLengthNew = agent.calculatePath(agent.getLocation(), result.getChildLocation()).getLength();
@@ -516,17 +546,23 @@ public class TopologicalMap {
 
             if (overallTimeNew > overallTimeOld * Constants.MIN_RV_THROUGH_WALL_ACCEPT_RATIO)
             {
-                System.out.println(agent.toString() + " using conventional RV point");
-                System.out.println(agent.toString() + " overallTimeNew: " + overallTimeNew + ", overallTimeOld: " + overallTimeOld + ", relay2Base: " + Relay2Base.getLength() + ", Base2OldRV: " + Base2OldRV.getLength() + ", Base2NewRV: " + Base2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew);
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(agent.toString() + " using conventional RV point");
+                    System.out.println(agent.toString() + " overallTimeNew: " + overallTimeNew + ", overallTimeOld: " + overallTimeOld + ", relay2Base: " + Relay2Base.getLength() + ", Base2OldRV: " + Base2OldRV.getLength() + ", Base2NewRV: " + Base2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew);
+                }
                 result.setChildLocation(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
                 result.setParentLocation(agent.getRendezvousAgentData().getParentRendezvous().getParentLocation());
             } else
             {
-                System.out.println(agent.toString() + " is meeting the relay through the wall!!");
-                System.out.println(agent.toString() + " overallTimeNew: " + overallTimeNew + ", overallTimeOld: " + overallTimeOld + ", relay2Base: " + Relay2Base.getLength() + ", Base2OldRV: " + Base2OldRV.getLength() + ", Base2NewRV: " + Base2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew);
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(agent.toString() + " is meeting the relay through the wall!!");
+                    System.out.println(agent.toString() + " overallTimeNew: " + overallTimeNew + ", overallTimeOld: " + overallTimeOld + ", relay2Base: " + Relay2Base.getLength() + ", Base2OldRV: " + Base2OldRV.getLength() + ", Base2NewRV: " + Base2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew);
+                }
             }
         } else {
-            System.out.println(agent.toString() + " !!!!! no rvpairs found?!");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(agent.toString() + " !!!!! no rvpairs found?!");
+            }
         }
         
         return result;

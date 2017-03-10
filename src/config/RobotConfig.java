@@ -108,7 +108,9 @@ public class RobotConfig {
         String tokens[] = start.split(",");
 
         if(tokens.length != 3) {
-            System.out.println("Error: incorrect number of data for start location of robot " + newName);
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println("Error: incorrect number of data for start location of robot " + newName);
+            }
             return;
         }
 

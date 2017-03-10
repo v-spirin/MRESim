@@ -133,7 +133,7 @@ public class RobotTeamConfig {
             return true;
         }
         catch(IOException e){
-            System.out.println("Error writing to file " + fileName);
+            System.err.println("Error writing to file " + fileName);
         }
 
         return false;
@@ -173,7 +173,7 @@ public class RobotTeamConfig {
                 return true;
             }
             catch (IOException e) {
-                System.out.println("Error: could not read data from " + fileName);
+                System.err.println("Error: could not read data from " + fileName);
             }
         }
         return false;
@@ -183,7 +183,7 @@ public class RobotTeamConfig {
         String tokens[] = inputLine.split("\\s");
 
         if(tokens.length != (RobotConfig.NUMROBOTCONFIGFIELDS+2)) {
-            System.out.println("Error: incorrect number of data for robot on line " + lineNum + " in file " + fileName);
+            System.err.println("Error: incorrect number of data for robot on line " + lineNum + " in file " + fileName);
             return;
         }
 
@@ -207,10 +207,10 @@ public class RobotTeamConfig {
             robotTeam.put(currRobot.getRobotNumber(), currRobot);
         }
         catch (NumberFormatException nfe) {
-            System.out.println("Error: Could not understand input data for robot on line " + lineNum + " in file " + fileName);
+            System.err.println("Error: Could not understand input data for robot on line " + lineNum + " in file " + fileName);
         }
         catch (ArrayIndexOutOfBoundsException aiobe) {
-            System.out.println("Error: Could not understand input data for robot on line " + lineNum + " in file " + fileName);
+            System.err.println("Error: Could not understand input data for robot on line " + lineNum + " in file " + fileName);
         }
     }
     

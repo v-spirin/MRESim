@@ -314,7 +314,7 @@ public class Walls {
             outFile.close();
         }
         catch(IOException e){
-            System.out.println("Error writing to file " + fileName);
+            System.err.println("Error writing to file " + fileName);
         }
     }
 }

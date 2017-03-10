@@ -137,8 +137,10 @@ public class DataMessage implements IDataMessage {
         if (agent.getSimConfig().timeStampTeammateDataEnabled()) {
             for(TeammateAgent remoteTeammateInfo: teammates) {
                 TeammateAgent localTeammateInfo = agent.getTeammateByNumber(remoteTeammateInfo.getRobotNumber());
-                System.out.println(agent + "remoteTeammate: " + remoteTeammateInfo + 
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(agent + "remoteTeammate: " + remoteTeammateInfo + 
                         ", localTeammate: " + localTeammateInfo);
+                }
                 if (localTeammateInfo != null) {
                     if (localTeammateInfo.getTimeSinceLastComm() > remoteTeammateInfo.getTimeSinceLastComm()) {
                         localTeammateInfo.setX(remoteTeammateInfo.getX());

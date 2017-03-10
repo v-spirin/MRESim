@@ -124,7 +124,7 @@ public class ContourTracer {
     
     private static LinkedList <Point> traceContour(OccupancyGrid occGrid, int[][] label, int startX, int startY, direction startDir, int componentIndex) {
         if (!occGrid.frontierCellAt(startX, startY)) {
-            System.out.println("This cannot happen!");
+            System.err.println("This cannot happen!");
         }
             
         Point currPixel, nextPixel;
@@ -206,7 +206,9 @@ public class ContourTracer {
         for(int i=0; i<labels.length; i++)
             for(int j=0; j<labels[0].length; j++)
                 labels[i][j] = 0;
-        System.out.println("[findAllContours] labels init took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("[findAllContours] labels init took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        }
         realtimeStart = System.currentTimeMillis();
         
         int contourCounter = 0;
@@ -250,8 +252,10 @@ public class ContourTracer {
                 }
                 
             }
-        System.out.println("[findAllContours] contours processed: " + contourCounter);
-        System.out.println("[findAllContours] main loop took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("[findAllContours] contours processed: " + contourCounter);
+            System.out.println("[findAllContours] main loop took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        }
         //saveLabelsToPNG(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "contours", labels);
         return contourList;
     }

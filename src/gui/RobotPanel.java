@@ -478,7 +478,7 @@ public class RobotPanel extends javax.swing.JPanel {
             mainGUI.getExploration().updateImage(true);
         }
         catch (NullPointerException e) {
-            System.out.println("Error: toggle button pressed, no image to update.");
+            System.err.println("Error: toggle button pressed, no image to update.");
         }
     }
 private void toggleAgentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleAgentActionPerformed

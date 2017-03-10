@@ -42,6 +42,7 @@ package exploration;
 
 import agents.BasicAgent;
 import agents.RealAgent;
+import config.Constants;
 import config.SimulatorConfig;
 import static config.SimulatorConfig.exptype.RunFromLog;
 import environment.Environment;
@@ -92,13 +93,17 @@ public class AgentStepRunnable implements Runnable{
             nextStep = agent.takeStep(timeElapsed);
             if(nextStep == null) {
                 nextStep = agent.getLocation();
-                System.out.println(agent + " !!! setting envError because nextStep is null, distance_left is " + distance_left);
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(agent + " !!! setting envError because nextStep is null, distance_left is " + distance_left);
+                }
                 agent.setEnvError(true);
                 distance_left = 0;
             }
             agent.flush();
             //</editor-fold>
-            System.out.println(agent.toString() + "Get next step took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(agent.toString() + "Get next step took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
+            }
                         
             //<editor-fold defaultstate="collapsed" desc="Check to make sure step is legal">
             if(env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y, agent.ability)) {
@@ -118,7 +123,9 @@ public class AgentStepRunnable implements Runnable{
                     {
                         nextStep.x = agent.getX();
                         nextStep.y = agent.getY();
-                        System.out.println(agent.toString() + " directLinePossible returned wrong result!");
+                        if (Constants.DEBUG_OUTPUT) {
+                            System.out.println(agent.toString() + " directLinePossible returned wrong result!");
+                        }
                     }
                     //System.out.println(agent.toString() + " speed corrected. Now is: " + agent.getLocation().distance(nextStep));
                     distance_left = 0;
@@ -137,8 +144,10 @@ public class AgentStepRunnable implements Runnable{
             }
             else
             {
-                System.out.println(agent + " !!! setting envError because direct line not possible between (" 
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println(agent + " !!! setting envError because direct line not possible between (" 
                          + (int)agent.getLocation().getX() + "," + (int)agent.getLocation().getX()+ ") and " + nextStep);
+                }
                 //Remove safe space status for the points along the line, so that obstacles can be sensed there
                 if (nextStep.distance(agent.getLocation()) == 1) {
                     //We are bordering next step, and because we cannot move there it must be an obstacle
@@ -184,7 +193,9 @@ public class AgentStepRunnable implements Runnable{
             agent.updateTrueAreaKnown(env);*/
         //benchmark
         agent.getStats().incrementTimeLastCentralCommand();
-        System.out.println(agent.toString() + "Agent cycle complete, took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println(agent.toString() + "Agent cycle complete, took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
+        }
     }
 
 }

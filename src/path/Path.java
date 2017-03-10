@@ -78,10 +78,12 @@ public class Path {
                 agentSettings.showBaseSpace = false;
                 img.fullUpdatePath(agentGrid, startpoint, endpoint, agentSettings);
                 img.saveScreenshot(dir);
-                System.out.println("Outputting path debug screens to: " + dir);
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println("Outputting path debug screens to: " + dir);
+                }
             } catch (Exception e)
             {
-                System.out.println("Couldn't save path error screenshot, reason: " + e.getMessage());
+                System.err.println("Couldn't save path error screenshot, reason: " + e.getMessage());
             }
         }
     }
@@ -99,10 +101,12 @@ public class Path {
                 agentSettings.showTopologicalMap = true;
                 img.fullUpdatePath(agentGrid, tMap, startpoint, endpoint, agentSettings);
                 img.saveScreenshot(dir);
-                System.out.println("Outputting path debug screens to: " + dir);
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println("Outputting path debug screens to: " + dir);
+                }
             } catch (Exception e)
             {
-                System.out.println("Couldn't save path error screenshot, reason: " + e.getMessage());
+                System.err.println("Couldn't save path error screenshot, reason: " + e.getMessage());
             }
         }
     }
@@ -144,10 +148,14 @@ public class Path {
                 {
                     // there cannot be an obstacle here, as we are planning a path from this point!
                     agentGrid.setNoObstacleAt(startpoint.x, startpoint.y);
-                    System.out.println("There was an obstacle at startpoint! Aborting.");
+                    if (Constants.DEBUG_OUTPUT) {
+                        System.out.println("There was an obstacle at startpoint! Aborting.");
+                    }
                     return;
                 }
-                System.out.println("startNode is null: " + startpoint + ", aborting");
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println("startNode is null: " + startpoint + ", aborting");
+                }
             }
             if (goalNode == null) 
             {
@@ -156,10 +164,14 @@ public class Path {
                     goalNode = topologicalNodes.get(Constants.UNEXPLORED_NODE_ID);
                 } else
                 {
-                    System.out.println("There was an obstacle at goalpoint! Aborting.");
+                    if (Constants.DEBUG_OUTPUT) {
+                        System.out.println("There was an obstacle at goalpoint! Aborting.");
+                    }
                     return;
                 }
-                System.out.println("goalNode is null: " + endpoint + ", aborting");
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println("goalNode is null: " + endpoint + ", aborting");
+                }
             }
             return;
         }
@@ -199,13 +211,19 @@ public class Path {
             if (!pathFound)
             {
                 pathFound = getAStarPath(agentGrid, startpoint, endpoint, limit);
-                System.out.println("Jump path did not work either... trying A* path");
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println("Jump path did not work either... trying A* path");
+                }
                 if (!pathFound)
                 {
-                    System.out.println("Cannot use topological map, startpoint is " + startpoint.toString() + 
+                    if (Constants.DEBUG_OUTPUT) {
+                        System.out.println("Cannot use topological map, startpoint is " + startpoint.toString() + 
                             ", endpoint is " + endpoint.toString() + ", trying A*...");
+                    }
                     OutputPathError(agentGrid, tMap, startpoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
-                    System.out.println("A* and JumpPath did not work either... :(");
+                    if (Constants.DEBUG_OUTPUT) {
+                        System.out.println("A* and JumpPath did not work either... :(");
+                    }
                     OutputPathError(agentGrid, startpoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
                 }
             }
@@ -217,7 +235,9 @@ public class Path {
         
         if (startNode.getID() == Constants.UNEXPLORED_NODE_ID)
         {
-            System.out.println("Start point " + startpoint + " in unexplored space!");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println("Start point " + startpoint + " in unexplored space!");
+            }
             findNearestExploredNode(agentGrid, areaGrid, startpoint, endpoint, topologicalNodes);
             List<Point> pathToExploredPoints = pathPoints;
             if (pathPoints.size() == 0)
@@ -235,7 +255,9 @@ public class Path {
         }
         if (goalNode.getID() == Constants.UNEXPLORED_NODE_ID)
         {
-            System.out.println("Goal point " + endpoint + " in unexplored space!");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println("Goal point " + endpoint + " in unexplored space!");
+            }
             findNearestExploredNode(agentGrid, areaGrid, endpoint, startpoint, topologicalNodes);
             List<Point> pathToExploredPoints = pathPoints;
             if (pathPoints.size() == 0)
@@ -288,8 +310,10 @@ public class Path {
         getAStarPath(startNode, goalNode);
         if (pathNodes.size() == 0) //No path found
         {
-            System.out.println("Could not find topological path, startpoint is " + startpoint.toString() + 
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println("Could not find topological path, startpoint is " + startpoint.toString() + 
                         ", endpoint is " + endpoint.toString() + ", trying A*...");
+            }
             OutputPathError(agentGrid, tMap, startpoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
             boolean pathFound = getAStarPath(agentGrid, startpoint, endpoint, limit);
             if (!pathFound)
@@ -297,12 +321,16 @@ public class Path {
                 pathFound = getJumpPath(agentGrid, startpoint, endpoint, limit);
                 if (!pathFound)
                 {
-                    System.out.println("A* and JumpPath did not work either... :(");
+                    if (Constants.DEBUG_OUTPUT) {
+                        System.out.println("A* and JumpPath did not work either... :(");
+                    }
                     OutputPathError(agentGrid, startpoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
                 }
             } else
             {
-                System.out.println("A* worked! Successfully recovered full path");
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println("A* worked! Successfully recovered full path");
+                }
             }
             return;
         }
@@ -310,15 +338,19 @@ public class Path {
         Path p2 = new Path(agentGrid, (Point)pathNodes.get(pathNodes.size() - 2).getPosition().clone(), endpoint, false, true);
         
         if (!p1.found) {
-            System.out.println("Could not find p1! From " + startpoint + " to " + (Point)pathNodes.get(1).getPosition());
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println("Could not find p1! From " + startpoint + " to " + (Point)pathNodes.get(1).getPosition());
+            }
             OutputPathError(agentGrid, startpoint, (Point)pathNodes.get(1).getPosition().clone(), Constants.DEFAULT_PATH_LOG_DIRECTORY);
             found = false;
             return;
         }
         
         if (!p2.found) {
-            System.out.println("Could not find p2! From " + (Point)pathNodes.get(pathNodes.size() - 2).getPosition() +
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println("Could not find p2! From " + (Point)pathNodes.get(pathNodes.size() - 2).getPosition() +
                     " to " + endpoint);
+            }
             OutputPathError(agentGrid, (Point)pathNodes.get(pathNodes.size() - 2).getPosition().clone(), 
                     endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
             found = false;
@@ -491,8 +523,10 @@ public class Path {
             long time_elapsed = System.currentTimeMillis() - realtimeStart;
             if ((time_elapsed > Constants.MAX_PATH_SEARCH_TIME) /*&& (limit)*/)
             {
-                System.out.println("Took too long (A*), startpoint is " + startpoint.toString() + 
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println("Took too long (A*), startpoint is " + startpoint.toString() + 
                         ", endpoint is " + endpoint.toString() + "time elapsed: " + time_elapsed + "ms.");
+                }
                 OutputPathError(agentGrid, startpoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
                 StackTraceElement[] cause = Thread.currentThread().getStackTrace();
                 limit_hit = true;
@@ -594,7 +628,9 @@ public class Path {
             long time_elapsed = System.currentTimeMillis() - realtimeStart;
             if ((time_elapsed > Constants.MAX_PATH_SEARCH_TIME) && (limit))
             {
-                System.out.println("Took too long, time elapsed: " + time_elapsed + "ms.");
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println("Took too long, time elapsed: " + time_elapsed + "ms.");
+                }
                 limit_hit = true;
                 break;
             }

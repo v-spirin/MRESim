@@ -229,8 +229,9 @@ public class SimulationFramework implements ActionListener {
         long realtimeStartCycle; 
         realtimeStartCycle = System.currentTimeMillis();
         if (timeElapsed == 1) simStartTime = System.currentTimeMillis();
-        System.out.println("\n" + this.toString() + "************** CYCLE " + timeElapsed + " ******************\n");
-        
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println("\n" + this.toString() + "************** CYCLE " + timeElapsed + " ******************\n");
+        }
         //set exploration goals at the start of the mission
         if (timeElapsed == 0)
         {
@@ -249,12 +250,16 @@ public class SimulationFramework implements ActionListener {
                     agent[j].getTeammate(agent[i].getID()).setInRange(true);
                 }
         agentSteps();               // move agents, simulate sensor data
-        System.out.println(this.toString() + "agentSteps took " + (System.currentTimeMillis()-realtimeStartCycle) + "ms.\n");
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println(this.toString() + "agentSteps took " + (System.currentTimeMillis()-realtimeStartCycle) + "ms.\n");
+        }
         time1 += (System.currentTimeMillis()-realtimeStartCycle);
         //if(timeElapsed % 7 == 0 || timeElapsed % 7 == 1) {
         long localTimer = System.currentTimeMillis();
         simulateCommunication();    // simulate communication
-        System.out.println(this.toString() + "simulateCommunication took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println(this.toString() + "simulateCommunication took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
+        }
         time2 += (System.currentTimeMillis()-localTimer);
         //timer = System.currentTimeMillis();
         if ((simConfig != null) && (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RoleBasedExploration)
@@ -275,7 +280,9 @@ public class SimulationFramework implements ActionListener {
                                 agent[i].setState(ExploreState.GoToChild);
                                 agent[i].setStateTimer(0);
                                 agent[i].addDirtyCells(agent[i].getPath().getAllPathPixels());
-                                System.out.println("\nSecondary switch: " + agent[i].getName() + " and " + agent[j].getName() + "\n");
+                                if(Constants.DEBUG_OUTPUT){
+                                    System.out.println("\nSecondary switch: " + agent[i].getName() + " and " + agent[j].getName() + "\n");
+                                }
                                 Path path = agent[i].calculatePath(agent[i].getLocation(), agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
                                 agent[i].setPath(path);
                                 agent[i].setCurrentGoal(agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
@@ -294,14 +301,18 @@ public class SimulationFramework implements ActionListener {
         updateGlobalData();         // update data
         //System.out.println(this.toString() + "updateGlobalData took " + (System.currentTimeMillis()-realtimeStartCycle) + "ms.\n");
        
-        System.out.println(this.toString() + "updateGlobalData took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println(this.toString() + "updateGlobalData took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
+        }
         time3 += (System.currentTimeMillis()-localTimer);
         //timer = System.currentTimeMillis();
         
         //System.out.println(this.toString() + "updateAgentKnowledgeData took " + (System.currentTimeMillis()-timer) + "ms.\n");
         localTimer = System.currentTimeMillis();
         updateGUI();                // update GUI
-        System.out.println(this.toString() + "updateGUI took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println(this.toString() + "updateGUI took " + (System.currentTimeMillis()-localTimer) + "ms.\n");
+        }
         time4 += (System.currentTimeMillis()-localTimer);
         //timer = System.currentTimeMillis();
         mainGUI.updateRobotConfig();
@@ -321,12 +332,16 @@ public class SimulationFramework implements ActionListener {
         //if ((timeElapsed % 10) == 0) verifyNoInfoGotLost(); //verify relaying works fine
         //System.out.println(this.toString() + "logging took " + (System.currentTimeMillis()-timer) + "ms.\n");
         int currentCycleTime = (int)(System.currentTimeMillis()-realtimeStartCycle);
-        System.out.println(this.toString() + "Cycle complete, took " + currentCycleTime + "ms.\n");
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println(this.toString() + "Cycle complete, took " + currentCycleTime + "ms.\n");
+        }
         //avgCycleTime = (((timeElapsed - 1) * avgCycleTime) + currentCycleTime) / timeElapsed;
         checkPause();               // check whether user wanted to pause
         avgCycleTime = (int)(System.currentTimeMillis() - simStartTime) / timeElapsed;
         checkRunFinish();           // for scripting multiple runs, to max number of cycles
-        System.out.println("Time1 = " + time1 + ", time2 = " + time2 + ", time3 = " + time3 +", time4 = " + time4);
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println("Time1 = " + time1 + ", time2 = " + time2 + ", time3 = " + time3 +", time4 = " + time4);
+        }
     }
     
 // </editor-fold>     
@@ -427,7 +442,9 @@ public class SimulationFramework implements ActionListener {
             simConfig.loadWallConfig(envDir + "\\" +  map);            
             robotTeamConfig.loadConfig(envDir + "\\" + conf);
             
-            System.out.println(simConfig.toString());
+            if(Constants.DEBUG_OUTPUT){
+                System.out.println(simConfig.toString());
+            }
             PrintWriter out = new PrintWriter(outputDir + "\\config.txt");
             out.println(simConfig.toString());
             out.close();
@@ -495,7 +512,9 @@ public class SimulationFramework implements ActionListener {
         }
         //simConfig.TARGET_INFO_RATIO = 0.90;
         RandomWalk.generator.setSeed(Constants.RANDOM_SEED);
-        System.out.println(this.toString() + "Starting exploration!");
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println(this.toString() + "Starting exploration!");
+        }
         timer.start();
         simStartTime = System.currentTimeMillis();
     }
@@ -504,7 +523,9 @@ public class SimulationFramework implements ActionListener {
         if (isBatch)
             updateRunConfig();
         reset();
-        System.out.println(this.toString() + "Restarting exploration!");
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println(this.toString() + "Restarting exploration!");
+        }
         simStartTime = System.currentTimeMillis();
         timer.start();
     }
@@ -551,12 +572,16 @@ public class SimulationFramework implements ActionListener {
     
     public void pause() {
         timer.stop();
-        System.out.println(this.toString() + "Pausing exploration!");
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println(this.toString() + "Pausing exploration!");
+        }
     }
     
     public void kill() {
         timer.stop();
-        System.out.println(this.toString() + "Resetting exploration!");
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println(this.toString() + "Resetting exploration!");
+        }
     }
     
     public void actionPerformed(ActionEvent e) {
@@ -647,7 +672,7 @@ public class SimulationFramework implements ActionListener {
                 threads.get(i).join();
             } catch (Exception e)
             {
-                System.out.println("Thread " + i + " threw exception " + e.getMessage());
+                System.err.println("Thread " + i + " threw exception " + e.getMessage());
             }
         }
     }
@@ -736,10 +761,12 @@ public class SimulationFramework implements ActionListener {
                     agent[i].receiveMessage(msgFromSecond);
                     agent[j].receiveMessage(msgFromFirst);
 
-                    System.out.println(Constants.INDENT + "Communication between " +
+                    if(Constants.DEBUG_OUTPUT){
+                        System.out.println(Constants.INDENT + "Communication between " +
                                         agent[i].getName() + " and " +
                                         agent[j].getName() + " took " + 
                             (System.currentTimeMillis()-realtimeStart2) + "ms.");
+                    }
                     // For periodic return frontier exp
                     if(simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration &&
                        simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.PeriodicReturn &&
@@ -890,18 +917,24 @@ public class SimulationFramework implements ActionListener {
 // <editor-fold defaultstate="collapsed" desc="Role Switch">
     
     private void switchRoles(RealAgent agent1, RealAgent agent2, Path p1, Path p2) {
-        System.out.println(this.toString() + "Switching " + agent1.getName() + " and " + agent2.getName() + "... ");
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println(this.toString() + "Switching " + agent1.getName() + " and " + agent2.getName() + "... ");
+        }
 
         // create temp copy of each agent for teammate maintenance
         TeammateAgent copyAgent1 = agent2.getTeammate(agent1.getID()).copy();
         TeammateAgent copyAgent2 = agent1.getTeammate(agent2.getID()).copy();
 
-        System.out.println("Before switch: agent1 is " + agent1 + ", agent2 is " + agent2);
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println("Before switch: agent1 is " + agent1 + ", agent2 is " + agent2);
+        }
         // switch ID
         int tempID = agent1.getID();
         agent1.setID(agent2.getID());
         agent2.setID(tempID);
-        System.out.println("After: agent1 is " + agent1 + ", agent2 is " + agent2);
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println("After: agent1 is " + agent1 + ", agent2 is " + agent2);
+        }
 
         // reinit time since last plan 
         //agent1.setTimeSinceLastPlan(15);
@@ -927,8 +960,10 @@ public class SimulationFramework implements ActionListener {
         agent2.getRendezvousAgentData().setParentRendezvous(tempParentRV);*/
         
         // exchange RendezvousAgentData
-        System.out.println("Before exchange RV data: agent1: " + agent1.getRendezvousAgentData() 
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println("Before exchange RV data: agent1: " + agent1.getRendezvousAgentData() 
                 + ", agent2: " + agent2.getRendezvousAgentData());
+        }
         RendezvousAgentData tempData = agent1.getRendezvousAgentData();
         agent1.setRendezvousAgentData(agent2.getRendezvousAgentData());
         agent2.setRendezvousAgentData(tempData);
@@ -940,15 +975,19 @@ public class SimulationFramework implements ActionListener {
         agent2.setState(tempExploreState);
 
         // exchange parent
-        System.out.println("Before exchange parent: agent1: " + agent1.getParentTeammate()
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println("Before exchange parent: agent1: " + agent1.getParentTeammate()
                 + ", agent2: " + agent2.getParentTeammate());
+        }
         int tempParent = agent1.getParent();
         agent1.setParent(agent2.getParent());
         agent2.setParent(tempParent);
 
         // exchange child
-        System.out.println("Before exchange child: agent1: " + agent1.getChildTeammate()
+        if(Constants.DEBUG_OUTPUT){
+            System.out.println("Before exchange child: agent1: " + agent1.getChildTeammate()
                 + ", agent2: " + agent2.getChildTeammate());
+        }
         int tempChild = agent1.getChild();
         agent1.setChild(agent2.getChild());
         agent2.setChild(tempChild);
@@ -991,18 +1030,20 @@ public class SimulationFramework implements ActionListener {
         copyAgent2.setRobotNumber(agent1.getRobotNumber());
         agent2.addTeammate(copyAgent2);
         
-        System.out.println("After exchange parent: agent1: " + agent1.getParentTeammate()
-                + ", agent2: " + agent2.getParentTeammate());
-        System.out.println("After exchange child: agent1: " + agent1.getChildTeammate()
-                + ", agent2: " + agent2.getChildTeammate());
-        System.out.println("After exchange RV data: agent1: " + agent1.getRendezvousAgentData() 
-                + ", agent2: " + agent2.getRendezvousAgentData());
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("After exchange parent: agent1: " + agent1.getParentTeammate()
+                    + ", agent2: " + agent2.getParentTeammate());
+            System.out.println("After exchange child: agent1: " + agent1.getChildTeammate()
+                    + ", agent2: " + agent2.getChildTeammate());
+            System.out.println("After exchange RV data: agent1: " + agent1.getRendezvousAgentData()
+                    + ", agent2: " + agent2.getRendezvousAgentData());
+        }
         
         RendezvousAgentData rvd = agent1.getRendezvousAgentData();
         
         Point basePoint = rvd.getParentRendezvous().parentsRVLocation.getChildLocation();
         if (basePoint == null) {
-            System.out.println("!!! basePoint is null...");
+            System.err.println("!!! basePoint is null...");
         }
     }
 
@@ -1018,8 +1059,10 @@ public class SimulationFramework implements ActionListener {
                 (agent2.getState() == ExploreState.GiveParentInfo) ||
                 (agent2.getState() == ExploreState.WaitForChild) ||
                 (agent2.getState() == ExploreState.WaitForParent)) {
-            System.out.println("Not swapping roles, " + agent1 + " is in state " + agent1.getState() + ", " + agent2 + 
+            if(Constants.DEBUG_OUTPUT){
+                System.out.println("Not swapping roles, " + agent1 + " is in state " + agent1.getState() + ", " + agent2 + 
                     "is in state " + agent2.getState());
+            }
             return false;
         }
             
@@ -1090,15 +1133,18 @@ public class SimulationFramework implements ActionListener {
                         double yesRoleSwitch = Math.min( a1ToRV2.getLength() + rv2ToCS.getLength(),
                                                          a2ToRV1.getLength() + rv1ToCS.getLength());
 
+                        if (Constants.DEBUG_OUTPUT) {
                             System.out.println("\n\n\n\n\n*********************************");
                             System.out.println("     No role switch: " + noRoleSwitch);
                             System.out.println("    Yes role switch: " + yesRoleSwitch);
                             System.out.println("*********************************\n\n\n\n");
-
+                        }
                         if(noRoleSwitch <= yesRoleSwitch) {
-                            System.out.println("\n\n*********************************");
-                            System.out.println("    SWITCH DENIED");
-                            System.out.println("*********************************\n");
+                            if (Constants.DEBUG_OUTPUT) {
+                                System.out.println("\n\n*********************************");
+                                System.out.println("    SWITCH DENIED");
+                                System.out.println("*********************************\n");
+                            }
                             return false;
                         }
                     }
@@ -1124,7 +1170,9 @@ public class SimulationFramework implements ActionListener {
             return;
         
         long realtimeStart = System.currentTimeMillis();
-        System.out.println(this.toString() + "Checking for role switch ... ");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println(this.toString() + "Checking for role switch ... ");
+        }
 
         // Note, need timeout on number of swaps a robot can do (at least 3 timestep gap?)
         if(timeElapsed > 5 && timeElapsed % 10 == 0)
@@ -1182,7 +1230,7 @@ public class SimulationFramework implements ActionListener {
             outFile.close();
         }
         catch(IOException e){
-            System.out.println(this.toString() + "Agent logging - error writing data to file!" + e);
+            System.err.println(this.toString() + "Agent logging - error writing data to file!" + e);
         }
     }
 
@@ -1354,7 +1402,7 @@ public class SimulationFramework implements ActionListener {
                 outFile.close();
             }
             catch(IOException e){
-                System.out.println(this.toString() + "Error writing data to file!" + e);
+                System.err.println(this.toString() + "Error writing data to file!" + e);
             }
         }        
         //System.out.println("Complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");

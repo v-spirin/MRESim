@@ -529,10 +529,10 @@ public class SimulatorConfig {
                 return true;
             }
             catch (IOException e) {
-                System.out.println(this.toString() + "Error: could not read data from " + fileName);
+                System.err.println(this.toString() + "Error: could not read data from " + fileName);
             }
             catch (NumberFormatException e) {
-                System.out.println(this.toString() + "Error: incorrect data format in file " + fileName);
+                System.err.println(this.toString() + "Error: incorrect data format in file " + fileName);
             }
         }
         return false;
@@ -600,7 +600,7 @@ public class SimulatorConfig {
             return true;
         }
         catch(IOException e){
-            System.out.println(this.toString() + "Error writing to file " + fileName);
+            System.err.println(this.toString() + "Error writing to file " + fileName);
         }
 
         return false;

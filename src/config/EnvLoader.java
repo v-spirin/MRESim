@@ -65,7 +65,9 @@ public class EnvLoader {
 
     public static boolean saveWallConfig_ImageBased(Environment env, String fileName) {
         try{
-            System.out.println(className() + "Trying to save image based environment ... ");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(className() + "Trying to save image based environment ... ");
+            }
             BufferedImage image = new BufferedImage(Constants.MAX_COLS, Constants.MAX_ROWS, BufferedImage.TYPE_INT_RGB);
 
             for(int i=0; i<Constants.MAX_COLS; i++)
@@ -93,11 +95,13 @@ public class EnvLoader {
             ImageIO.write(image, "png", new File(fileName));
 
 
-            System.out.println(className() + "Environment saved successfully.");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(className() + "Environment saved successfully.");
+            }
             return true;
         }
         catch (IOException e) {
-            System.out.println(className() + "Error: could not write data to " + fileName);
+            System.err.println(className() + "Error: could not write data to " + fileName);
         }
 
         return false;
@@ -123,7 +127,7 @@ public class EnvLoader {
             return true;
         }
         catch(IOException e){
-            System.out.println(className() + "Error writing to file " + fileName);
+            System.err.println(className() + "Error writing to file " + fileName);
         }
 
         return false;
@@ -153,12 +157,16 @@ public class EnvLoader {
             return null;
 
         try{
-            System.out.println(className() + "Trying to load text based environment from " + fileName + "... ");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(className() + "Trying to load text based environment from " + fileName + "... ");
+            }
             BufferedReader inFile = new BufferedReader(new FileReader(file));
 
             int rows = Integer.parseInt(inFile.readLine());
             int columns = Integer.parseInt(inFile.readLine());
-            System.out.println(columns + " columns, " + rows + " rows.");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(columns + " columns, " + rows + " rows.");
+            }
 
             if(!checkDimensions(rows, columns))
                 return null;
@@ -197,14 +205,16 @@ public class EnvLoader {
 
             //Temp for debugging:
             //saveWallConfig(fileName + "2");
-            System.out.println(className() + "Environment loaded successfully.");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(className() + "Environment loaded successfully.");
+            }
             return env;
         }
         catch (IOException e) {
-            System.out.println(className() + "Error: could not read data from " + fileName);
+            System.err.println(className() + "Error: could not read data from " + fileName);
         }
         catch (NumberFormatException e) {
-            System.out.println(className() + "Error: incorrect data format in file " + fileName);
+            System.err.println(className() + "Error: incorrect data format in file " + fileName);
         }
 
         return null;
@@ -219,12 +229,16 @@ public class EnvLoader {
 
         try {
             BufferedImage image = ImageIO.read(file);
-            System.out.println(className() + "Trying to load image based environment from " + fileName + "... ");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(className() + "Trying to load image based environment from " + fileName + "... ");
+            }
             //Raster raster = image.getRaster();
 
             int columns = image.getWidth();
             int rows = image.getHeight();
-            System.out.println(columns + " columns, " + rows + " rows.");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(columns + " columns, " + rows + " rows.");
+            }
 
             if (!checkDimensions(rows, columns)) {
                 return null;
@@ -271,12 +285,14 @@ public class EnvLoader {
                     else
                         env.setStatus(offsetX+i, offsetY+j, Environment.Status.unexplored);*/
 
-            System.out.println(className() + "Environment loaded successfully.");
+            if (Constants.DEBUG_OUTPUT) {
+                System.out.println(className() + "Environment loaded successfully.");
+            }
             return env;
         } catch (IOException e) {
-            System.out.println(className() + "Error: could not read data from " + fileName);
+            System.err.println(className() + "Error: could not read data from " + fileName);
         } catch (NumberFormatException e) {
-            System.out.println(className() + "Error: incorrect data format in file " + fileName);
+            System.err.println(className() + "Error: incorrect data format in file " + fileName);
         }
         return null;
     }

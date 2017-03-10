@@ -219,7 +219,7 @@ public class MainGUI extends javax.swing.JFrame {
             
        }
        catch (NullPointerException e) {
-            System.out.println("Updating from robotTeamConfig: null pointer exception.");
+            System.err.println("Updating from robotTeamConfig: null pointer exception.");
         }
     }
 
@@ -237,7 +237,7 @@ public class MainGUI extends javax.swing.JFrame {
             validate();
        }
        catch (NullPointerException e) {
-           System.out.println("Updating from envConfig: null pointer exception.");
+           System.err.println("Updating from envConfig: null pointer exception.");
        }
    }
    
@@ -867,7 +867,7 @@ public class MainGUI extends javax.swing.JFrame {
                 this.updateFromEnvConfig();
             }
             catch (NullPointerException e) {
-                System.out.println("Error: No exploration that can be stopped.");
+                System.err.println("Error: No exploration that can be stopped.");
             }
         }
 }//GEN-LAST:event_buttonStopActionPerformed
@@ -906,7 +906,7 @@ public class MainGUI extends javax.swing.JFrame {
                 updateFromEnvConfig();
         }
         catch (NullPointerException e) {
-            System.out.println("Error: toggle button pressed, no image to update.");
+            System.err.println("Error: toggle button pressed, no image to update.");
         }
         updateShowSettings();
     }//GEN-LAST:event_toggleEnvActionPerformed
@@ -978,7 +978,7 @@ public class MainGUI extends javax.swing.JFrame {
                 updateFromEnvConfig();        
         }
         catch (NullPointerException e) {
-            System.out.println("Error: toggle button pressed, no image to update.");
+            System.err.println("Error: toggle button pressed, no image to update.");
         }
         updateShowSettings();
     }//GEN-LAST:event_toggleHierarchyActionPerformed
@@ -990,7 +990,7 @@ public class MainGUI extends javax.swing.JFrame {
             else
                 updateFromEnvConfig();        }
         catch (NullPointerException e) {
-            System.out.println("Error: toggle button pressed, no image to update.");
+            System.err.println("Error: toggle button pressed, no image to update.");
         }
         updateShowSettings();
     }//GEN-LAST:event_buttonDataActionPerformed

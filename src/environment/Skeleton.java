@@ -257,7 +257,9 @@ public class Skeleton {
                                          found = true;
                    }
            if(!found || counter==max) {
-               System.out.println("skeletonize method took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+               if (Constants.DEBUG_OUTPUT) {
+                   System.out.println("skeletonize method took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+               }
                return u2;
            }
            for(int i=2; i<width-2; i++)
@@ -267,7 +269,9 @@ public class Skeleton {
            counter++;
        }
 
-       System.out.println("skeletonize method took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+       if (Constants.DEBUG_OUTPUT) {
+           System.out.println("skeletonize method took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+       }
        return null;
     }
 
@@ -336,7 +340,9 @@ public class Skeleton {
             skeleton = skeletonize(freeSpaceGrid);
         else
             skeleton = skeletonizeNearBorders(freeSpaceGrid);
-        System.out.println("findSkeleton took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("findSkeleton took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        }
         return skeleton;
     }
 
@@ -616,11 +622,13 @@ public class Skeleton {
                         pointsOfInterest.put(new Point(p.x + 1, p.y + 1), true);
                 } else
                 {
-                    System.out.println("!!!!TOPOLOGICAL map might contain errors, pointsofinterest queue exhausted!");
+                    System.err.println("!!!!TOPOLOGICAL map might contain errors, pointsofinterest queue exhausted!");
                 }
             }
         }
-        System.out.println("Max queue size: " + maxQueueSize);
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("Max queue size: " + maxQueueSize);
+        }
 
         //Are there some areas we haven't assigned to a node yet?
         /*for (int i = 1; i < areaGrid.length-1; i++)
@@ -790,7 +798,9 @@ public class Skeleton {
     
     public static LinkedList<Point> findSecondBorderRVPoints(LinkedList<Point> borderRVPoints, RealAgent agent, Point goal) {
         LinkedList<Point> secondRVPoints = new LinkedList<Point>();
-        System.out.println("Border points: " + borderRVPoints.size());
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("Border points: " + borderRVPoints.size());
+        }
         long realtimeStart = System.currentTimeMillis();
         int counter = 1;
         for (Point rvPoint : borderRVPoints)
@@ -799,7 +809,9 @@ public class Skeleton {
             secondRVPoints.add(Rendezvous.findSecondRVPoint(agent, rvPoint, goal, Constants.MIN_RV_THROUGH_WALL_ACCEPT_RATIO));
             counter++;
         }
-        System.out.println("Checked all candidate points, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("Checked all candidate points, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        }
         return secondRVPoints;
     }
     
@@ -818,7 +830,7 @@ public class Skeleton {
             outFile.close();
         }
         catch(IOException e){
-            System.out.println("Error writing to file!");
+            System.err.println("Error writing to file!");
         }
 
     }

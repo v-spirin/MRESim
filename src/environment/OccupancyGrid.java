@@ -231,7 +231,9 @@ public class OccupancyGrid {
                 assert (this.getByteNoRelay(i,j) == partnerOccGrid.getByteNoRelay(i,j));
             }
         }
-        System.out.println("Cells transerred: " + totalCellsTransferred + ", set known at base: " + cellsSetKnownAtBase);
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("Cells transerred: " + totalCellsTransferred + ", set known at base: " + cellsSetKnownAtBase);
+        }
         return cellsUpdated;
     }
     
@@ -329,8 +331,10 @@ public class OccupancyGrid {
                 if (freeSpaceAt(xCoord, yCoord)) {
                     Integer success = cellsFreeNotKnownAtBaseNotRelayed.remove(new Point(xCoord, yCoord));
                     if (success == null)
-                        System.out.println("@@@@@@@@@@ Tried to remove cellsFreeNotKnownAtBaseNotRelayed element "
+                        if (Constants.DEBUG_OUTPUT) {
+                            System.out.println("@@@@@@@@@@ Tried to remove cellsFreeNotKnownAtBaseNotRelayed element "
                                 + "that is not in the list! xCoord = " + xCoord + ", yCoord = " + yCoord);
+                        }
                 }
             }
         }
@@ -355,8 +359,10 @@ public class OccupancyGrid {
             if (updateOwnedCellsList && freeSpaceAt(xCoord, yCoord) && !isKnownAtBase(xCoord, yCoord)) {
                 Integer success = cellsFreeNotKnownAtBaseNotRelayed.remove(new Point(xCoord, yCoord));
                 if (success == null)
-                    System.out.println("@@@@@@@@@@ Tried to remove cellsFreeNotKnownAtBaseNotRelayed element "
+                    if (Constants.DEBUG_OUTPUT) {
+                        System.out.println("@@@@@@@@@@ Tried to remove cellsFreeNotKnownAtBaseNotRelayed element "
                             + "that is not in the list! xCoord = " + xCoord + ", yCoord = " + yCoord);
+                    }
             }
         }
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.GotRelayed, 1);
@@ -424,8 +430,10 @@ public class OccupancyGrid {
                 else {
                     Integer success = cellsFreeNotKnownAtBaseNotRelayed.remove(new Point(xCoord, yCoord));
                     if (success == null)
-                        System.out.println("@@@@@@@@@@ Tried to remove cellsFreeNotKnownAtBaseNotRelayed element "
+                        if (Constants.DEBUG_OUTPUT) {
+                            System.out.println("@@@@@@@@@@ Tried to remove cellsFreeNotKnownAtBaseNotRelayed element "
                             + "that is not in the list! xCoord = " + xCoord + ", yCoord = " + yCoord);
+                        }
                 }
             }
         }
@@ -439,7 +447,7 @@ public class OccupancyGrid {
             setFreeSpaceAt(xCoord, yCoord);
         }
         catch(ArrayIndexOutOfBoundsException  e) {
-            System.out.println(this.toString() + "Error: ArrayIndexOutOfBoundsException.  Did not set as no obstacle.");
+            System.err.println(this.toString() + "Error: ArrayIndexOutOfBoundsException.  Did not set as no obstacle.");
         }
     }
 
@@ -476,7 +484,7 @@ public class OccupancyGrid {
             setNoFreeSpaceAt(xCoord, yCoord);
         }
         catch(ArrayIndexOutOfBoundsException  e) {
-            System.out.println(this.toString() + "Error: ArrayIndexOutOfBoundsException.  Did not set as obstacle.");
+            System.err.println(this.toString() + "Error: ArrayIndexOutOfBoundsException.  Did not set as obstacle.");
         }
     }
     
@@ -531,7 +539,7 @@ public class OccupancyGrid {
             return 0;
         }
         catch(ArrayIndexOutOfBoundsException e) {
-            System.out.println("ERROR: Array index out of bounds at x=" + xCoord + ", y=" + yCoord + ".");
+            System.err.println("ERROR: Array index out of bounds at x=" + xCoord + ", y=" + yCoord + ".");
             return 0;
         }
     }
