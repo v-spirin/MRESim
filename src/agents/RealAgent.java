@@ -109,6 +109,7 @@ public class RealAgent extends BasicAgent implements Agent {
     //This is used only for logging - direct reference to other agents. DO NOT use this for anything else
     private SimulationFramework simFramework;
     private boolean saveOccupancyGrid;
+    private int oldTimeElapsed;
     
     public void setSimFramework(SimulationFramework simFramework) {
         this.simFramework = simFramework;
@@ -464,7 +465,8 @@ public class RealAgent extends BasicAgent implements Agent {
     // Overwrite any useless data from previous step
     public void flush() {
         prevX = x;
-        prevY = y;        
+        prevY = y;   
+        this.oldTimeElapsed = this.timeElapsed;
 
         // Only for testing, uncommenting the line below leads to massive slow down
         //occGrid.initializeTestBits();
@@ -473,10 +475,10 @@ public class RealAgent extends BasicAgent implements Agent {
     public Point takeStep(int timeElapsed) {
         //this.simConfig = simConfig;
         long realtimeStartAgentStep = System.currentTimeMillis(); 
-        Point nextStep = new Point(0,0);
+        Point nextStep = null;
         
         //previous time elapsed, used to check if we advanced to a new time cycle or are still in the old one
-        int oldTimeElapsed = this.timeElapsed; 
+        this.oldTimeElapsed = this.timeElapsed; 
         this.timeElapsed = timeElapsed;
         
         //shall we go out of service?
@@ -530,7 +532,7 @@ public class RealAgent extends BasicAgent implements Agent {
                                              if (simConfig.isUseComStations() && Math.random() < simConfig.getComStationDropChance()){
                                                  this.dropComStation();
                                              }
-                                             
+                                             System.out.println("I Try");
                                              break;
                 default:                     break;
             }
@@ -553,7 +555,8 @@ public class RealAgent extends BasicAgent implements Agent {
         
         //pruneUnexploredSpace();
         if (Constants.DEBUG_OUTPUT) {
-            System.out.println(this.toString() +  "Taking step complete, moving from (" + (int)getLocation().getX() + "," + (int)getLocation().getX() + ") to (" + (int)nextStep.getX() + "," + (int)nextStep.getX() + "), took " + (System.currentTimeMillis()-realtimeStartAgentStep) + "ms.");
+            String nxt = nextStep == null ? "NOTHING" : ((int)nextStep.getX() + "," + (int)nextStep.getY());
+            System.out.println(this.toString() +  "Taking step complete, moving from (" + (int)getLocation().getX() + "," + (int)getLocation().getY() + ") to (" + nxt + "), took " + (System.currentTimeMillis()-realtimeStartAgentStep) + "ms.");
         }
 
         return nextStep;
@@ -651,7 +654,7 @@ public class RealAgent extends BasicAgent implements Agent {
                 return calculatePath(startPoint, goalPoint);
             } else if (!topologicalMap.getPath().found) {
                 if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(this +"at location (" + (int)getLocation().getX() + "," + (int)getLocation().getX()+ ") failed to plan path (" + (int)startPoint.getX() + "," + (int)startPoint.getX()+ ") to (" + (int)goalPoint.getX() + "," + (int)goalPoint.getX()+ "), not retrying; " +
+                    System.out.println(this +"at location (" + (int)getLocation().getX() + "," + (int)getLocation().getY()+ ") failed to plan path (" + (int)startPoint.getX() + "," + (int)startPoint.getY()+ ") to (" + (int)goalPoint.getX() + "," + (int)goalPoint.getY()+ "), not retrying; " +
                         "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed + 
                         ", mapCellsChanged: " + occGrid.getMapCellsChanged() + "/" + Constants.MAP_CHANGED_THRESHOLD);
                 }

@@ -177,7 +177,7 @@ public class Path {
         }
         
         // not sure why this can happen, but consider those nodes unexplored as workaround
-        if (!startNode.equals(goalNode) && (startNode.getListOfNeighbours().size() == 0))
+        if (!startNode.equals(goalNode) && (startNode.getListOfNeighbours().isEmpty()))
         {            
             for (int i = 0; i < areaGrid.length; i++)
             {
@@ -190,7 +190,7 @@ public class Path {
             startNode.setID(Constants.UNEXPLORED_NODE_ID);        
         }
         
-        if (!startNode.equals(goalNode) && (goalNode.getListOfNeighbours().size() == 0))
+        if (!startNode.equals(goalNode) && (goalNode.getListOfNeighbours().isEmpty()))
         {
             for (int i = 0; i < areaGrid.length; i++)
             {
@@ -203,11 +203,11 @@ public class Path {
             goalNode.setID(Constants.UNEXPLORED_NODE_ID);
         }
         
-        if ((startNode == null) || (goalNode == null) || startNode.equals(goalNode) 
+        if (startNode.equals(goalNode) 
                 || (startNode.getListOfNeighbours().contains(goalNode) && (goalNode.getID() != Constants.UNEXPLORED_NODE_ID))
                 || ((startNode.getID() == Constants.UNEXPLORED_NODE_ID) && (goalNode.getID() == Constants.UNEXPLORED_NODE_ID)))
         {            
-            boolean pathFound = getJumpPath(agentGrid, startpoint, endpoint, limit);
+            boolean pathFound = false; //getJumpPath(agentGrid, startpoint, endpoint, limit);
             if (!pathFound)
             {
                 pathFound = getAStarPath(agentGrid, startpoint, endpoint, limit);

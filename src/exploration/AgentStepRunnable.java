@@ -102,7 +102,7 @@ public class AgentStepRunnable implements Runnable{
             agent.flush();
             //</editor-fold>
             if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent.toString() + "Get next step took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
+                System.out.println(agent.toString() + "Get next step (" + nextStep.x + "," + nextStep.y + ") took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
             }
                         
             //<editor-fold defaultstate="collapsed" desc="Check to make sure step is legal">
@@ -146,7 +146,7 @@ public class AgentStepRunnable implements Runnable{
             {
                 if (Constants.DEBUG_OUTPUT) {
                     System.out.println(agent + " !!! setting envError because direct line not possible between (" 
-                         + (int)agent.getLocation().getX() + "," + (int)agent.getLocation().getX()+ ") and " + nextStep);
+                         + (int)agent.getLocation().getX() + "," + (int)agent.getLocation().getY()+ ") and (" + nextStep.x + "," + nextStep.y + ")");
                 }
                 //Remove safe space status for the points along the line, so that obstacles can be sensed there
                 if (nextStep.distance(agent.getLocation()) == 1) {

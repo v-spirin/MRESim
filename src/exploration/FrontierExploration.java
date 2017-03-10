@@ -123,6 +123,7 @@ public class FrontierExploration {
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(agent.toString() + "takeStep took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
         }
+        System.out.println("#####################" + nextStep);
         return nextStep;
     }   
 
@@ -237,7 +238,8 @@ public class FrontierExploration {
         // Check that we have a path, otherwise take random step
         if ((agent.getPath() == null) || 
                 agent.getPath().getPoints() == null ||
-                agent.getPath().getPoints().isEmpty())
+                agent.getPath().getPoints().isEmpty() ||
+                agent.getPath().getPoints().size() == 1)
         {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent + " has no path, taking random step.");
