@@ -516,8 +516,7 @@ public class RealAgent extends BasicAgent implements Agent {
                                              break;
                 case FrontierExploration:    
                                              if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.ReturnWhenComplete))
-                                                nextStep = FrontierExploration.takeStep(this, 
-                                                        timeElapsed, simConfig.getFrontierAlgorithm());
+                                                nextStep = FrontierExploration.takeStep(this, timeElapsed, simConfig.getFrontierAlgorithm());
                                              if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn))
                                                 nextStep = UtilityExploration.takeStep(this, timeElapsed, simConfig);
                                              if (simConfig.isUseComStations() && Math.random() < simConfig.getComStationDropChance()){
@@ -532,12 +531,11 @@ public class RealAgent extends BasicAgent implements Agent {
                                              if (simConfig.isUseComStations() && Math.random() < simConfig.getComStationDropChance()){
                                                  this.dropComStation();
                                              }
-                                             System.out.println("I Try");
                                              break;
                 default:                     break;
             }
         } else
-        {            
+        {
             switch(simConfig.getExpAlgorithm()) {
                 case RunFromLog:             break;
                 case LeaderFollower:         nextStep = this.getNextPathPoint();
@@ -548,6 +546,8 @@ public class RealAgent extends BasicAgent implements Agent {
                         && (this.getState() != ExploreState.GetInfoFromChild) && (this.getState() != ExploreState.WaitForChild)
                         && (this.getState() != ExploreState.WaitForParent))
                                                 nextStep = this.getNextPathPoint();
+                                             break;
+                case Testing:               nextStep = this.getNextPathPoint();
                                              break;
                 default:                     break;
             }

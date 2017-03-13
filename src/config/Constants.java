@@ -50,7 +50,7 @@ import java.nio.file.Paths;
  */
 public class Constants {
     
-    public static final boolean DEBUG_OUTPUT = true;
+    public static final boolean DEBUG_OUTPUT = false;
     
     // Max number of rows in environment
     public static final int MAX_ROWS = 600;

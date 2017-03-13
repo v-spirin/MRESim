@@ -123,7 +123,6 @@ public class FrontierExploration {
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(agent.toString() + "takeStep took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
         }
-        System.out.println("#####################" + nextStep);
         return nextStep;
     }   
 

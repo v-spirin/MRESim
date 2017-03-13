@@ -246,8 +246,8 @@ public class SimulationFramework implements ActionListener {
                 if(multihopCommTable[i][j] == 1) {
                     agent[i].getTeammate(agent[j].getID()).setInRange(true);
                     agent[j].getTeammate(agent[i].getID()).setInRange(true);
-                }
-        agentSteps();               // move agents, simulate sensor data
+                }     
+        agentSteps();               // move agents, simulate sensor data     
         if(Constants.DEBUG_OUTPUT){
             System.out.println(this.toString() + "agentSteps took " + (System.currentTimeMillis()-realtimeStartCycle) + "ms.\n");
         }
@@ -289,7 +289,7 @@ public class SimulationFramework implements ActionListener {
 
         }
         //timer = System.currentTimeMillis();   
-        simulateDebris();           // simulate dynamic environment
+        //simulateDebris();           // simulate dynamic environment
         //System.out.println(this.toString() + "simulateDebris took " + (System.currentTimeMillis()-timer) + "ms.\n");
         localTimer = System.currentTimeMillis();
         if (timeElapsed % Constants.UPDATE_AGENT_KNOWLEDGE_INTERVAL == 0)

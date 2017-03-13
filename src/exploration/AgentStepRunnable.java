@@ -93,9 +93,9 @@ public class AgentStepRunnable implements Runnable{
             nextStep = agent.takeStep(timeElapsed);
             if(nextStep == null) {
                 nextStep = agent.getLocation();
-                if (Constants.DEBUG_OUTPUT) {
+                //if (Constants.DEBUG_OUTPUT) {
                     System.out.println(agent + " !!! setting envError because nextStep is null, distance_left is " + distance_left);
-                }
+                //}
                 agent.setEnvError(true);
                 distance_left = 0;
             }
@@ -144,10 +144,10 @@ public class AgentStepRunnable implements Runnable{
             }
             else
             {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(agent + " !!! setting envError because direct line not possible between (" 
+                //if (Constants.DEBUG_OUTPUT) {
+                    System.err.println(agent + " !!! setting envError because direct line not possible between (" 
                          + (int)agent.getLocation().getX() + "," + (int)agent.getLocation().getY()+ ") and (" + nextStep.x + "," + nextStep.y + ")");
-                }
+                //}
                 //Remove safe space status for the points along the line, so that obstacles can be sensed there
                 if (nextStep.distance(agent.getLocation()) == 1) {
                     //We are bordering next step, and because we cannot move there it must be an obstacle

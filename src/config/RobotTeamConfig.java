@@ -206,10 +206,7 @@ public class RobotTeamConfig {
             numRobots++;
             robotTeam.put(currRobot.getRobotNumber(), currRobot);
         }
-        catch (NumberFormatException nfe) {
-            System.err.println("Error: Could not understand input data for robot on line " + lineNum + " in file " + fileName);
-        }
-        catch (ArrayIndexOutOfBoundsException aiobe) {
+        catch (NumberFormatException | ArrayIndexOutOfBoundsException nfe) {
             System.err.println("Error: Could not understand input data for robot on line " + lineNum + " in file " + fileName);
         }
     }

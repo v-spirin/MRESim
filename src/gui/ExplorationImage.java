@@ -44,7 +44,6 @@ import gui.ShowSettings.ShowSettings;
 import config.*;
 import agents.*;
 import environment.*;
-import exploration.NearRVPoint;
 import gui.ShowSettings.ShowSettingsAgent;
 import java.awt.*;
 import java.awt.image.*;

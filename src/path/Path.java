@@ -1241,6 +1241,9 @@ public class Path {
     
     @Override
     public String toString() {
-        return("[Path Planner] ");
+        if (this.start != null && this.goal != null)
+            return("[Path Planner] (" + this.start.x + "," + this.start.y + ") -> (" + this.goal.x + "," + this.goal.y + ")");
+        else
+            return ("[Path Planner] null-Path");
     }
 }
