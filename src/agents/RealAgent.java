@@ -1192,7 +1192,7 @@ public class RealAgent extends BasicAgent implements Agent {
         needUpdatingAreaKnown = true;
         
         //replan?
-        stats.setTimeSinceLastPlan(Integer.MAX_VALUE);
+        //stats.setTimeSinceLastPlan(Integer.MAX_VALUE);
     }
     
     public boolean isCommunicating() {
