@@ -529,8 +529,16 @@ public class ExplorationImage {
                                               Constants.AGENT_RADIUS*2);
             g2D.fill(tempRect);
             g2D.draw(tempRect);
-        }
-        else{
+        } else if (role.equals(RobotConfig.roletype.RelayStation)) {
+            // Draw ComStation 
+            g2D.setPaint(Constants.MapColor.comStation());
+            tempRect = new Rectangle2D.Double(xLoc - Constants.AGENT_RADIUS,
+                                              yLoc - Constants.AGENT_RADIUS,
+                                              Constants.AGENT_RADIUS*2,
+                                              Constants.AGENT_RADIUS*2);
+            g2D.fill(tempRect);
+            g2D.draw(tempRect);
+        } else {
             if(role.equals(RobotConfig.roletype.Relay))
                 g2D.setPaint(Constants.MapColor.relay());
             else
