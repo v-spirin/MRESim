@@ -13,3 +13,8 @@ ratings:
   - "**.java"
 exclude_paths:
 - config/
+- environments/
+- logs/
+- nbproject/
+- resources/
+- lib/

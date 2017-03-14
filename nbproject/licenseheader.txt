@@ -1,4 +1,6 @@
-/* 
+<#if licenseFirst??>
+${licenseFirst}
+</#if>
  *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
@@ -40,17 +42,6 @@
  *
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
- */
-package communication;
-
-import agents.RealAgent;
-import agents.TeammateAgent;
-
-/**
- *
- * @author Victor
- */
-public interface IDataMessage {
-    //Message received from teammate to agent
-    void receiveMessage(RealAgent agent, TeammateAgent teammate);
-}
+<#if licenseLast??>
+${licenseLast}
+</#if>

@@ -1,7 +1,9 @@
-/*
- *     Copyright 2010, 2015 Julian de Hoog (julian@dehoog.ca), Victor Spirin (victor.spirin@cs.ox.ac.uk)
+/* 
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+ *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
+ *     Christian Clausen (christian.clausen@uni-bremen.de
  *
- *     This file is part of MRESim 2.2, a simulator for testing the behaviour
+ *     This file is part of MRESim 2.3, a simulator for testing the behaviour
  *     of multiple robots exploring unknown environments.
  *
  *     If you use MRESim, I would appreciate an acknowledgement and/or a citation
@@ -11,7 +13,8 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
+ *         booktitle = 
+ *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
  *     }
