@@ -45,8 +45,10 @@ package environment;
 
 import agents.RealAgent;
 import config.Constants;
-import java.util.*;
-import java.awt.*;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.util.LinkedList;
+import java.util.Random;
 
 /**
  *
@@ -90,6 +92,7 @@ public class Frontier implements Comparable<Frontier>  {
         return new Frontier(polygonOutline, areaPolygon, area, centre, distanceToCentre);
     }
 
+    @Override
     public int compareTo(Frontier other) {
         if((other.area / other.getDistanceToCentre()) > (this.area / this.distanceToCentre))
             return 1;
@@ -193,24 +196,22 @@ public class Frontier implements Comparable<Frontier>  {
     }
 
     public boolean hasUnknownBoundary(OccupancyGrid grid) {
-        for(Point p: polygonOutline)
-            if(grid.frontierBorderCellAt(p.x, p.y))
-                return true;
-        return false;
+        return polygonOutline.stream().anyMatch((p) -> (grid.frontierBorderCellAt(p.x, p.y)));
     }
 
     private Polygon createAreaPolygonFromList(LinkedList<Point> list) {
         Polygon newP = new Polygon();
-        for(Point p: list)
+        list.stream().forEach((p) -> {
             newP.addPoint(p.x, p.y);
+        });
         
         return newP;
     }
     
     private double calculatePerimeterApprox() {
         double runningTotal = 0;
-        int dx = 0;
-        int dy = 0;
+        int dx;
+        int dy;
         
         for(int i=0; i<areaPolygon.npoints-1; i++)
         {
@@ -301,8 +302,8 @@ public class Frontier implements Comparable<Frontier>  {
     
     @Override
     public String toString() {
-        return new String("Frontier found with area " + area +
-                          ", and centre (" + centre.x + "," + centre.y + ").");
+        return "Frontier found with area " + area +
+                ", and centre (" + centre.x + "," + centre.y + ").";
     }
     
 // </editor-fold>     

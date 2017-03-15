@@ -43,25 +43,40 @@
  */
 package gui;
 
-import java.awt.event.*; 
-import javax.swing.*;
-import java.io.*;
-import java.text.*;
-import config.*;
-import exploration.*;
-import agents.*;
+import agents.RealAgent;
+import config.RobotConfig;
+import config.RobotTeamConfig;
+import config.SimulatorConfig;
+import exploration.SimulationFramework;
 import gui.ShowSettings.ShowSettings;
 import gui.ShowSettings.ShowSettingsAgent;
+import java.awt.BasicStroke;
+import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.awt.Toolkit;
-
-import org.jfree.chart.*;
-import org.jfree.chart.plot.*;
-import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.File;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.jfree.data.xy.*;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
 /**
  *
  * @author  Julian de Hoog

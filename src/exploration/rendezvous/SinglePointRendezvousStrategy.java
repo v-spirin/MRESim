@@ -52,7 +52,6 @@ import static environment.Skeleton.gridToList;
 import static environment.Skeleton.neighborTraversal;
 import static environment.Skeleton.numNonzeroNeighbors;
 import exploration.NearRVPoint;
-import exploration.RoleBasedExploration;
 import static exploration.RoleBasedExploration.timeElapsed;
 import java.awt.Point;
 import java.util.LinkedList;
@@ -158,8 +157,9 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
     
     private PriorityQueue<NearRVPoint> PruneByFrontierProximity(List<Point> pts) {
         LinkedList<Point> rvPtsCopy = new LinkedList();
-        for(Point p: pts)
+        pts.stream().forEach((p) -> {
             rvPtsCopy.add(new Point(p.x, p.y));
+        });
 
         PriorityQueue<NearRVPoint> nearRVPoints = new PriorityQueue<NearRVPoint>();
         if(agent.getLastFrontier() != null)
@@ -336,6 +336,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         }
     }
     
+    @Override
     public void calculateRendezvousExplorerWithRelay() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         // Only calculate rv every several time steps at most
@@ -368,6 +369,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
     }
     
     //For the case of Relay having an RV with another relay
+    @Override
     public void calculateRendezvousRelayWithRelay() {
         throw new UnsupportedOperationException("Not supported yet.");
         /*long realtimeStart = System.currentTimeMillis();
@@ -415,6 +417,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");*/
     }
     
+    @Override
     public void processExplorerStartsHeadingToRV() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         if (!settings.useImprovedRendezvous) {
@@ -424,18 +427,22 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         }
     }
     
+    @Override
     public void processExplorerCheckDueReturnToRV() {
         
     }
     
+    @Override
     public void processReturnToParentReplan() {
         
     }
     
+    @Override
     public Path processGoToChildReplan() {
         return null;
     }
     
+    @Override
     public Point processWaitForParent() {
         /*if (agent.getParentTeammate().getID() == Constants.BASE_STATION_AGENT_ID) {
             //if we are returning to base station, we should never get into this state, because base station doesn't move.
@@ -447,6 +454,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         return new Point(agent.getX(), agent.getY());
     }
     
+    @Override
     public void processJustGotIntoParentRange() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="Case 1: Explorer">
@@ -493,11 +501,13 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         
     }
     
+    @Override
     public void processAfterGiveParentInfoExplorer() {
         calculateParentTimeToRV();
         calculateParentTimeToBackupRV();
     }
     
+    @Override
     public void processAfterGiveParentInfoRelay() {
         //if exploration by relay enabled
         if (settings.attemptExplorationByRelay) {
@@ -514,26 +524,32 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         }
     }
     
+    @Override
     public void processAfterGetInfoFromChild() {
         
     }
 
+    @Override
     public Point processWaitForChild() {
         return agent.getLocation();
     }
 
+    @Override
     public Point processWaitForChildTimeoutNoBackup() {
         return agent.getLocation();
     }
 
+    @Override
     public IRendezvousDisplayData getRendezvousDisplayData() {
         return displayData;
     }
     
+    @Override
     public RealAgent getAgent() {
         return agent;
     }
     
+    @Override
     public void setAgent(RealAgent ag) {
         agent = ag;
     }

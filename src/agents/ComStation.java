@@ -43,7 +43,8 @@
  */
 package agents;
 
-import config.*;
+import config.RobotConfig;
+import config.SimulatorConfig;
 import java.awt.Point;
 
 

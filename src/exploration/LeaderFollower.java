@@ -93,7 +93,7 @@ public class LeaderFollower {
 
     public static Point takeStep_Relay(RealAgent agent, int timeElapsed) {
         agent.setMissionComplete(true); // to stop scripted runs when all agents complete mission
-        Point nextStep = new Point(agent.getX(), agent.getY());
+        Point nextStep;
 
         // CHECK 0
         // Wait for a few time steps at start (to let Explorer get some moves in).
@@ -201,7 +201,7 @@ public class LeaderFollower {
     }
 
     public static Point takeStep_Explorer(RealAgent agent, int timeElapsed) {
-        Point nextStep = new Point(agent.getX(), agent.getY());
+        Point nextStep;
 
         // CHECK 0
         // Take a couple of random steps to start (just to gather some sensor data).
@@ -303,7 +303,7 @@ public class LeaderFollower {
         // utility, no need to recalculate
 
         // If no path could be found, take random step.
-        if(agent.getPath() == null || agent.getPath().getPoints() == null || agent.getPath().getPoints().size() == 0){
+        if(agent.getPath() == null || agent.getPath().getPoints() == null || agent.getPath().getPoints().isEmpty()){
             System.out.println(agent.toString() + "No path found, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
@@ -328,8 +328,9 @@ public class LeaderFollower {
         PriorityQueue<Frontier> copy = new PriorityQueue();
         LinkedList<Frontier> list = new LinkedList();
 
-        for(Frontier f : frontiers)
+        frontiers.stream().forEach((f) -> {
             copy.add(f.copy());
+        });
 
         Frontier currFrontier;
         int counter = 0;
@@ -431,14 +432,14 @@ public class LeaderFollower {
         PriorityQueue<Utility> utilities = new PriorityQueue<Utility>();
 
         // For each frontier of interest
-        for(Frontier frontier : frontiers) {
+        frontiers.stream().forEach((frontier) -> {
             // Add own utilities
             utilities.add(new Utility(99,
-                                      p,
-                                      frontier,
-                                      utilityEstimate(p, frontier),
-                                      null));
-         }
+                    p,
+                    frontier,
+                    utilityEstimate(p, frontier),
+                    null));
+        });
 
         return utilities;
     }
@@ -459,6 +460,7 @@ public class LeaderFollower {
             path = p;
         }
 
+        @Override
         public int compareTo(Utility other) {
             if(other.utility > this.utility)
                 return 1;
@@ -488,10 +490,10 @@ public class LeaderFollower {
                                "Utility " + p.utility + "." );*/
 
         // Step 3
-        Utility best = null;
+        Utility best;
         LinkedList<Utility> removal;
         int counter = 0;
-        boolean isLastFrontier = false;
+        boolean isLastFrontier;
 
         while(!utilities.isEmpty()) {    // && counter < 5) {
             best = utilities.poll();
@@ -590,8 +592,9 @@ public class LeaderFollower {
         System.out.println(agent.toString() + "Calculating frontiers. ");
 
         // If recalculating frontiers, must set old frontiers dirty for image rendering
-        for(Frontier f : agent.getFrontiers())
+        agent.getFrontiers().stream().forEach((f) -> {
             agent.addDirtyCells(f.getPolygonOutline());
+        });
 
         LinkedList <LinkedList> contours = ContourTracer.findAllContours(agent.getOccupancyGrid());
         System.out.println("Found " + contours.size() + " contours, ");

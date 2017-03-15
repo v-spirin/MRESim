@@ -111,8 +111,7 @@ public class EnvLoader {
     }
 
     public static boolean saveWallConfig_TextBased(Environment env, String fileName) {
-        try{
-            PrintWriter outFile = new PrintWriter(new FileWriter(fileName));
+        try(PrintWriter outFile = new PrintWriter(new FileWriter(fileName))) {
 
             outFile.println(env.getRows());
             outFile.println(env.getColumns());
@@ -126,14 +125,12 @@ public class EnvLoader {
                 outFile.println();
             }
 
-            outFile.close();
-            return true;
         }
         catch(IOException e){
             System.err.println(className() + "Error writing to file " + fileName);
+            return false;
         }
-
-        return false;
+        return true;
     }
 
     public static boolean saveWallConfig(Environment env, String fileName) {
@@ -159,11 +156,11 @@ public class EnvLoader {
         if (!file.exists())
             return null;
 
-        try{
+        Environment env;
+        try(BufferedReader inFile = new BufferedReader(new FileReader(file))) {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(className() + "Trying to load text based environment from " + fileName + "... ");
             }
-            BufferedReader inFile = new BufferedReader(new FileReader(file));
 
             int rows = Integer.parseInt(inFile.readLine());
             int columns = Integer.parseInt(inFile.readLine());
@@ -177,8 +174,8 @@ public class EnvLoader {
             int offsetX = (Constants.MAX_COLS - columns) / 2;
             int offsetY = (Constants.MAX_ROWS - rows) / 2;
 
-            Environment env = new Environment(rows, columns);
-            int currValue = 0;
+            env = new Environment(rows, columns);
+            int currValue;
 
             for(int i=0; i<rows; i++){
                 for(int j=0; j<columns; j++){
@@ -198,29 +195,28 @@ public class EnvLoader {
                 }
 
                 // If file has been saved in unix/mac, only LF at end of line
-                if(inFile.read() == 10)
-                    continue;
-                else   // if file has been saved in windows, additional CR exists
+                // else file has been saved in windows, additional CR exists
+                if(inFile.read() != 10)
                     inFile.read();
             }
 
-            inFile.close();
-
-            //Temp for debugging:
-            //saveWallConfig(fileName + "2");
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(className() + "Environment loaded successfully.");
-            }
-            return env;
         }
         catch (IOException e) {
             System.err.println(className() + "Error: could not read data from " + fileName);
+            return null;
         }
         catch (NumberFormatException e) {
             System.err.println(className() + "Error: incorrect data format in file " + fileName);
+            return null;
         }
+        //Temp for debugging:
+        //saveWallConfig(fileName + "2");
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println(className() + "Environment loaded successfully.");
+        }
+        return env;
 
-        return null;
+        
     }
 
     public static Environment loadWallConfig_ImageBased(String fileName) {

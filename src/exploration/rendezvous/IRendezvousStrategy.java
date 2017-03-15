@@ -66,7 +66,6 @@ public interface IRendezvousStrategy {
      *     -- Time at which backup rendezvous is called off
      *   - Parent teammate rendezvous location (parentRenedzvous.parentsRVLocation)
      * i.e., where our relay will communicate with base station
-     * @param agent - child, calculates rendezvous for itself and the parent
      */
     void calculateRendezvousExplorerWithRelay();
     

@@ -233,13 +233,13 @@ public class TopologicalMap {
                                     node.addNeighbour(neighbourNode, null);
                                     neighbourNode.addNeighbour(node, null);
                                     if (areaGrid[p.x+i][p.y+j] == Constants.UNEXPLORED_NODE_ID)
-                                        for (Point nodeCell : node.getCellList()) {
+                                        node.getCellList().stream().forEach((nodeCell) -> {
                                             occGrid.unsetFinalTopologicalMapCell(nodeCell.x, nodeCell.y);
-                                        }
+                                    });
                                     else
-                                        for (Point nodeCell : neighbourNode.getCellList()) {
+                                        neighbourNode.getCellList().stream().forEach((nodeCell) -> {
                                             occGrid.unsetFinalTopologicalMapCell(nodeCell.x, nodeCell.y);
-                                        }
+                                    });
                                 }
                             }
                         }  
@@ -390,10 +390,10 @@ public class TopologicalMap {
             
             return result;*/
             
-            double relayPathLengthOld = 0;
-            double relayPathLengthNew = 0;
-            double explorerPathLengthOld = 0;
-            double explorerPathLengthNew = 0;
+            double relayPathLengthOld;
+            double relayPathLengthNew;
+            double explorerPathLengthOld;
+            double explorerPathLengthNew;
             
             //<editor-fold defaultstate="collapsed" desc="let's find the point, where RV will actually communicate with base">
             Point baseLoc = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
@@ -498,7 +498,7 @@ public class TopologicalMap {
             relayPathLengthNew = Relay2Base.getLength() + Base2NewRV.getLength();
             
             //<editor-fold defaultstate="collapsed" desc="Check time for explorer to reach frontier, to make sure he has time to explore before returning">
-            Point frontierCentre = null;
+            Point frontierCentre;
             if(agent.getLastFrontier() != null)
                 frontierCentre = agent.getLastFrontier().getCentre();//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
             else

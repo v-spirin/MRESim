@@ -48,7 +48,7 @@ import agents.RealAgent;
 import config.Constants;
 import config.SimulatorConfig;
 import exploration.rendezvous.Rendezvous;
-import java.awt.*;
+import java.awt.Point;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -91,8 +91,7 @@ public class Skeleton {
                     matrix[i][j] = 1;
 */
         for(int i=0; i<width; i++)
-            for(int j=0; j<height; j++)
-                matrix[i][j] = inputGrid[i][j];
+            System.arraycopy(inputGrid[i], 0, matrix[i], 0, height);
         
         // Forward pass
         for(int j=0; j<height; j++)
@@ -266,8 +265,7 @@ public class Skeleton {
                return u2;
            }
            for(int i=2; i<width-2; i++)
-               for(int j=2; j<height-2; j++) 
-                   u1[i][j] = u2[i][j];
+               System.arraycopy(u2[i], 2, u1[i], 2, height-2 - 2);
 
            counter++;
        }
@@ -290,8 +288,9 @@ public class Skeleton {
 
     static void printMatrix(int[][] mat) {
        for(int j=0; j<mat[0].length; j++) {
-           for(int i=0; i<mat.length; i++)
-               System.out.print(mat[i][j] + " ");
+           for (int[] mat1 : mat) {
+               System.out.print(mat1[j] + " ");
+           }
            System.out.println();
        }
        System.out.println();
@@ -819,18 +818,17 @@ public class Skeleton {
     }
     
     public static void writeToFile(int[][] grid) {
-        try{
-            PrintWriter outFile = new PrintWriter(new FileWriter("skeleton1.txt"));
+        try(PrintWriter outFile = new PrintWriter(new FileWriter("skeleton1.txt"))) {
             
             outFile.println(grid[0].length);
             outFile.println(grid.length);
             for(int i=0; i<grid[0].length; i++){
-                for(int j=0; j<grid.length; j++)
-                    outFile.print(grid[j][i]);
+                for (int[] grid1 : grid) {
+                    outFile.print(grid1[i]);
+                }
                 outFile.println();
             }
 
-            outFile.close();
         }
         catch(IOException e){
             System.err.println("Error writing to file!");

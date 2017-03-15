@@ -65,7 +65,11 @@ public class ExplorationDialog extends javax.swing.JDialog {
     String logFilename;
     String batchFilename;
     
-    /** Creates new form CommunicationDialog */
+    /** Creates new form CommunicationDialog
+     * @param parent
+     * @param modal
+     * @param sc 
+     */
     public ExplorationDialog(java.awt.Frame parent, boolean modal, SimulatorConfig sc) {
         super(parent, modal);
         

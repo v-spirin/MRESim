@@ -52,13 +52,13 @@ import config.Constants;
 import environment.Frontier;
 import environment.OccupancyGrid;
 import exploration.NearRVPoint;
+import static exploration.RoleBasedExploration.timeElapsed; //TODO REMOVE THIS!!!
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
-import org.apache.commons.math3.random.SobolSequenceGenerator;
 import path.Path;
-import static exploration.RoleBasedExploration.timeElapsed;
 import java.util.List;
+import org.apache.commons.math3.random.SobolSequenceGenerator;
 
 /**
  *
@@ -78,6 +78,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         this.settings = settings;
     }
     
+    @Override
     public void calculateRendezvousExplorerWithRelay() {
         //calculateRendezvousRandomSampling();
         //
@@ -87,10 +88,12 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             calculateRendezvousAAMAS();
     }
 
+    @Override
     public void calculateRendezvousRelayWithRelay() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
+    @Override
     public void processExplorerCheckDueReturnToRV() {
         //Here we can recalc where we can meet relay (could be, that from our location, it's better to meet relay
         //at another point, i.e. change our part of the RV location pair.
@@ -166,14 +169,17 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         }
     }
 
+    @Override
     public void processExplorerStartsHeadingToRV() {
         
     }
 
+    @Override
     public void processReturnToParentReplan() {
         
     }
 
+    @Override
     public Path processGoToChildReplan() {
         if (settings.tryToGetToExplorerRV) {
             RendezvousAgentData rvd = agent.getRendezvousAgentData();
@@ -190,6 +196,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         return null;
     }
 
+    @Override
     public Point processWaitForParent() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         if (settings.moveToBetterCommsWhileWaiting) {
@@ -221,6 +228,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         }
     }
 
+    @Override
     public Point processWaitForChild() {
         if (settings.moveToBetterCommsWhileWaiting) {
             //<editor-fold defaultstate="collapsed" desc="Try to move to a cell with better comms">
@@ -266,10 +274,12 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         //}
     }
 
+    @Override
     public Point processWaitForChildTimeoutNoBackup() {
         return agent.getLocation();
     }
 
+    @Override
     public void processJustGotIntoParentRange() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="Case 1: Explorer">
@@ -311,10 +321,12 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         //</editor-fold>
     }
 
+    @Override
     public void processAfterGiveParentInfoExplorer() {
         calculateRVTimings();
     }
 
+    @Override
     public void processAfterGiveParentInfoRelay() {
         //if exploration by relay enabled
         if (settings.attemptExplorationByRelay) {
@@ -331,14 +343,17 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         }
     }
 
+    @Override
     public void processAfterGetInfoFromChild() {
         
     }
 
+    @Override
     public IRendezvousDisplayData getRendezvousDisplayData() {
         return displayData;
     }
 
+    @Override
     public RealAgent getAgent() {
         return agent;
     }
@@ -565,6 +580,8 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     * comm range of the Base station
     * @param origPoint  
     * @param connectionsToBase
+     * @param ag
+     * @return 
     */
     public static int findNearestPointInBaseCommRange(NearRVPoint origPoint, List<CommLink> connectionsToBase, RealAgent ag) {
         int pathsCalculated = 0;
@@ -1010,6 +1027,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         }
     }
     
+    @Override
     public void setAgent(RealAgent ag) {
         agent = ag;
     }

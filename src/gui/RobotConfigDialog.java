@@ -45,13 +45,29 @@ package gui;
 
 import config.RobotTeamConfig;
 import config.RobotConfig;
-import javax.swing.table.*;
-import java.awt.*;
-import java.awt.event.*;
-import javax.swing.*;
+import java.awt.Color;
 import java.awt.Component;
-import java.io.*;
+import java.awt.Dimension;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.io.File;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 public class RobotConfigDialog extends JDialog {
 
@@ -164,6 +180,11 @@ public class RobotConfigDialog extends JDialog {
                     column.setPreferredWidth(60);
                     column.setCellRenderer(editableNumberRenderer);
                     break;
+                case 11:
+                    column.setHeaderValue("Speed");
+                    column.setPreferredWidth(60);
+                    column.setCellRenderer(editableNumberRenderer);
+                    break;
             }
         } 
         
@@ -225,6 +246,13 @@ public class RobotConfigDialog extends JDialog {
         scrollpane = new JScrollPane(table);  
         setTitle("Robot Team Configuration");
         
+        this.addWindowListener(new java.awt.event.WindowAdapter() {
+            public void actionPerformed(ActionEvent event) {
+                buttonCancelClicked();
+            
+            }
+        });
+
         JComboBox comboRole = new JComboBox(robotTeamConfig.getAllRoles());
         comboRole.setEditable(false);
         DefaultCellEditor editor = new DefaultCellEditor(comboRole);
@@ -234,50 +262,38 @@ public class RobotConfigDialog extends JDialog {
 
         buttonLoad = new JButton("Load");
         buttonLoad.setFont(new java.awt.Font("Arial", 0, 11));
-        buttonLoad.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                buttonLoadClicked();
-            }
+        buttonLoad.addActionListener((ActionEvent event) -> {
+            buttonLoadClicked();
         });
 
         buttonSave = new JButton("Save");
         buttonSave.setFont(new java.awt.Font("Arial", 0, 11));
-        buttonSave.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                buttonSaveClicked();
-            }
+        buttonSave.addActionListener((ActionEvent event) -> {
+            buttonSaveClicked();
         });
 
         buttonAdd = new JButton("Add");
         buttonAdd.setFont(new java.awt.Font("Arial", 0, 11));
-        buttonAdd.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                buttonAddClicked();
-            }
+        buttonAdd.addActionListener((ActionEvent event) -> {
+            buttonAddClicked();
         });
 
         buttonRemove = new JButton("Remove");
         buttonRemove.setFont(new java.awt.Font("Arial", 0, 11));
-        buttonRemove.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                buttonRemoveClicked();
-            }
+        buttonRemove.addActionListener((ActionEvent event) -> {
+            buttonRemoveClicked();
         });
         
         buttonOK = new JButton("OK");
         buttonOK.setFont(new java.awt.Font("Arial", 0, 11));
-        buttonOK.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                buttonOKClicked();
-            }
+        buttonOK.addActionListener((ActionEvent event) -> {
+            buttonOKClicked();
         });
         
         buttonCancel = new JButton("Cancel");
         buttonCancel.setFont(new java.awt.Font("Arial", 0, 11));
-        buttonCancel.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent event) {
-                buttonCancelClicked();
-            }
+        buttonCancel.addActionListener((ActionEvent event) -> {
+            buttonCancelClicked();
         });
         
         JPanel inputPanel = new JPanel();

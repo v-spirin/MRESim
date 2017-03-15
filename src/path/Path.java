@@ -50,7 +50,10 @@ import environment.TopologicalMap;
 import gui.ExplorationImage;
 import gui.ShowSettings.ShowSettingsAgent;
 import java.awt.Point;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  *
@@ -182,12 +185,11 @@ public class Path {
         // not sure why this can happen, but consider those nodes unexplored as workaround
         if (!startNode.equals(goalNode) && (startNode.getListOfNeighbours().isEmpty()))
         {            
-            for (int i = 0; i < areaGrid.length; i++)
-            {
-                for (int j = 0; j < areaGrid[0].length; j++)
-                {
-                   if (areaGrid[i][j] == startNode.getID())
-                       areaGrid[i][j] = Constants.UNEXPLORED_NODE_ID;
+            for (int[] areaGrid1 : areaGrid) {
+                for (int j = 0; j < areaGrid[0].length; j++) {
+                    if (areaGrid1[j] == startNode.getID()) {
+                        areaGrid1[j] = Constants.UNEXPLORED_NODE_ID;
+                    }
                 }
             }
             startNode.setID(Constants.UNEXPLORED_NODE_ID);        
@@ -195,12 +197,11 @@ public class Path {
         
         if (!startNode.equals(goalNode) && (goalNode.getListOfNeighbours().isEmpty()))
         {
-            for (int i = 0; i < areaGrid.length; i++)
-            {
-                for (int j = 0; j < areaGrid[0].length; j++)
-                {
-                   if (areaGrid[i][j] == goalNode.getID())
-                       areaGrid[i][j] = Constants.UNEXPLORED_NODE_ID;
+            for (int[] areaGrid1 : areaGrid) {
+                for (int j = 0; j < areaGrid[0].length; j++) {
+                    if (areaGrid1[j] == goalNode.getID()) {
+                        areaGrid1[j] = Constants.UNEXPLORED_NODE_ID;
+                    }
                 }
             }
             goalNode.setID(Constants.UNEXPLORED_NODE_ID);
@@ -243,7 +244,7 @@ public class Path {
             }
             findNearestExploredNode(agentGrid, areaGrid, startpoint, endpoint, topologicalNodes);
             List<Point> pathToExploredPoints = pathPoints;
-            if (pathPoints.size() == 0)
+            if (pathPoints.isEmpty())
                 return;
             Point lastPoint = pathPoints.get(pathPoints.size() - 1);
             //System.out.println("New start point is " + lastPoint);
@@ -263,7 +264,7 @@ public class Path {
             }
             findNearestExploredNode(agentGrid, areaGrid, endpoint, startpoint, topologicalNodes);
             List<Point> pathToExploredPoints = pathPoints;
-            if (pathPoints.size() == 0)
+            if (pathPoints.isEmpty())
                 return;
             Point lastPoint = pathPoints.get(pathPoints.size() - 1);
             //System.out.println("New goal point is " + lastPoint);
@@ -295,10 +296,9 @@ public class Path {
                 }
                 startpoint = p0.start;
             }
-            for (Point p : p1.getPoints())
-            {
+            p1.getPoints().stream().forEach((p) -> {
                 pathPoints.add(p);
-            }
+            });
             if (p3 != null)
             {
                 for (Point p : p3.getPoints())
@@ -376,10 +376,9 @@ public class Path {
             
             if (n.equals(startNode))
             {
-                for (Point p : p1.getPoints())
-                {
+                p1.getPoints().stream().forEach((p) -> {
                     pathPoints.add(p);
-                }
+                });
             }
             
             if (!n.equals(startNode) && !n.equals(goalNode) && !pathNodes.get(index+1).equals(goalNode))
@@ -390,10 +389,9 @@ public class Path {
             
             if (n.equals(goalNode))
             {
-                for (Point p : p2.getPoints())
-                {
+                p2.getPoints().stream().forEach((p) -> {
                     pathPoints.add(p);
-                }
+                });
             }                      
             
             index++;
@@ -531,7 +529,6 @@ public class Path {
                         ", endpoint is " + endpoint.toString() + "time elapsed: " + time_elapsed + "ms.");
                 }
                 OutputPathError(agentGrid, startpoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
-                StackTraceElement[] cause = Thread.currentThread().getStackTrace();
                 limit_hit = true;
                 break;
             }
@@ -912,7 +909,7 @@ public class Path {
             int current_index = getLowestScoreInList(openSet, f_score);
             current = openSet.get(current_index);
             if ((areaGrid[current.x][current.y] != Constants.UNEXPLORED_NODE_ID) && (topologicalNodes.get(areaGrid[current.x][current.y]) != null)
-                    && (topologicalNodes.get(areaGrid[current.x][current.y]).getListOfNeighbours().size() != 0))
+                    && (!topologicalNodes.get(areaGrid[current.x][current.y]).getListOfNeighbours().isEmpty()))
             {
                 //came_from.put(goal, current);
                 reconstructPath(came_from, current);
@@ -1223,9 +1220,9 @@ public class Path {
     
     //Adds all points in list2 to list1 (no duplicates), returns merged list.
     public LinkedList<Point> mergeLists(LinkedList<Point> list1, LinkedList<Point> list2) {
-        for(Point p : list2)
-            if(!list1.contains(p))
-                list1.add(p);
+        list2.stream().filter((p) -> (!list1.contains(p))).forEach((p) -> {
+            list1.add(p);
+        });
         
         return list1;
     }

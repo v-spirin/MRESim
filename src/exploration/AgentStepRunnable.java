@@ -47,7 +47,6 @@ import agents.BasicAgent;
 import agents.RealAgent;
 import config.Constants;
 import config.SimulatorConfig;
-import static config.SimulatorConfig.exptype.RunFromLog;
 import environment.Environment;
 import java.awt.Point;
 import java.util.LinkedList;
@@ -76,14 +75,14 @@ public class AgentStepRunnable implements Runnable{
     @Override
     public void run() 
     {
-        Point nextStep = null;
-        double[] sensorData = null;
+        Point nextStep;
+        double[] sensorData;
         double distance_left = agent.getSpeed();
         //profiling
         long realtimeStartAgentCycle = System.currentTimeMillis();
         
         //<editor-fold defaultstate="collapsed" desc="Continue along the path, until we have exhausted agent 'speed' per cycle or run out of path">
-        if (simConfig.getExpAlgorithm() == RunFromLog) {
+        if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
             nextStep = agent.takeStep(timeElapsed);
             agent.flush();
             sensorData = simFramework.findSensorData(agent, nextStep);
@@ -162,9 +161,9 @@ public class AgentStepRunnable implements Runnable{
                     LinkedList<Point> ptsNonSafe = 
                             agent.getOccupancyGrid().pointsAlongSegment(agent.getLocation().x, agent.getLocation().y, 
                                     nextStep.x, nextStep.y);
-                    for (Point p: ptsNonSafe)
-                        if (!p.equals(agent.getLocation()))
-                            agent.getOccupancyGrid().setNoSafeSpaceAt(p.x, p.y);
+                    ptsNonSafe.stream().filter((p) -> (!p.equals(agent.getLocation()))).forEach((p) -> {
+                        agent.getOccupancyGrid().setNoSafeSpaceAt(p.x, p.y);
+                        });
                 }
                 nextStep.x = agent.getX();
                 nextStep.y = agent.getY();

@@ -79,11 +79,13 @@ public class SinglePointRendezvousStrategyDisplayData implements IRendezvousDisp
         rvPoints = list;
     }
 
+    @Override
     public List<Point> getDirtyCells(ExplorationImage image, RealAgent agent) {
         List<Point> dirtyCells = new LinkedList<Point>();
         // Erase old skeleton
-        for(Point p: getSkeleton())
+        getSkeleton().stream().forEach((p) -> {
             dirtyCells.add(p);
+        });
         
         // Erase old RV points
         for(Point rv: getRVPoints()) 
@@ -100,18 +102,22 @@ public class SinglePointRendezvousStrategyDisplayData implements IRendezvousDisp
         return dirtyCells;
     }
 
+    @Override
     public void drawCandidatePointInfo(ExplorationImage image) {
         try{
-            for(Point p: getSkeleton())
+            getSkeleton().stream().forEach((p) -> {
                 image.setPixel(p.x, p.y, Constants.MapColor.skeleton());
+            });
             
-            for(Point p: getRVPoints())
+            getRVPoints().stream().forEach((p) -> {
                 image.drawPoint(p.x, p.y, Constants.MapColor.rvPoints());
+            });
         }
         catch(java.lang.NullPointerException e) {
         }
     }
 
+    @Override
     public void drawRendezvousLocation(ExplorationImage image, RealAgent agent) {
         int x,y;
         RendezvousAgentData rvd = agent.getRendezvousAgentData();

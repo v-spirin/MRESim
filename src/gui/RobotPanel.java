@@ -44,7 +44,6 @@
 package gui;
 
 import config.RobotConfig;
-import environment.OccupancyGrid;
 import javax.swing.JLabel;
 /**
  *
@@ -53,7 +52,9 @@ import javax.swing.JLabel;
 public class RobotPanel extends javax.swing.JPanel {
     private MainGUI mainGUI;
     
-    /** Creates new form RobotPanel */
+    /** Creates new form RobotPanel
+     * @param main
+     * @param currRobot */
     public RobotPanel(MainGUI main, RobotConfig currRobot) {
         mainGUI = main;
         

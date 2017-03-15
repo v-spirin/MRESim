@@ -43,19 +43,26 @@
  */
 package exploration;
 
-import agents.*;
-import agents.BasicAgent.ExploreState;
-import environment.*;
-import config.*;
-import gui.*;
-import communication.*;
-import config.RobotConfig.roletype;
-import config.SimulatorConfig.exptype;
-import config.SimulatorConfig.frontiertype;
+import agents.BasicAgent;
+import agents.ComStation;
+import agents.RealAgent;
+import agents.TeammateAgent;
+import communication.DataMessage;
+import communication.DirectLine;
+import communication.PropModel1;
+import communication.StaticCircle;
+import config.Constants;
+import config.EnvLoader;
+import config.RobotConfig;
+import config.RobotTeamConfig;
+import config.SimulatorConfig;
+import environment.Environment;
 import environment.Environment.Status;
+import environment.Frontier;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.RendezvousAgentData;
-import javax.swing.*;
+import gui.ExplorationImage;
+import gui.MainGUI;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.Point;
@@ -69,8 +76,12 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Scanner;
+import javax.swing.ImageIcon;
+import javax.swing.Timer;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import path.Path;
-import org.json.*;
 
 /**
  *
@@ -181,7 +192,7 @@ public class SimulationFramework implements ActionListener {
         teammate[0] = new TeammateAgent(robotTeamConfig.getRobotTeam().get(1));
         
         for(int i = 1; i < numRobots; i++) {
-            if (!robotTeamConfig.getRobotTeam().get(i + 1).getRole().equals(roletype.RelayStation)) {
+            if (!robotTeamConfig.getRobotTeam().get(i + 1).getRole().equals(RobotConfig.roletype.RelayStation)) {
                 agent[i] = new RealAgent(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(i + 1), simConfig);
             } else {
                 agent[i] = new ComStation(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(i + 1), simConfig);
@@ -274,11 +285,11 @@ public class SimulationFramework implements ActionListener {
             for(int i=1; i<numRobots; i++)
                 for(int j=1; j<numRobots; j++)
                     if(i != j)
-                        if(agent[i].getState() == ExploreState.ReturnToParent && !agent[i].isExplorer() &&
-                           agent[j].getState() == ExploreState.ReturnToParent && !agent[j].isExplorer() &&
+                        if(agent[i].getState() == BasicAgent.ExploreState.ReturnToParent && !agent[i].isExplorer() &&
+                           agent[j].getState() == BasicAgent.ExploreState.ReturnToParent && !agent[j].isExplorer() &&
                            agent[i].getTeammate(agent[j].getID()).isInRange() &&
                            agent[i].getPath().getLength() < agent[j].getPath().getLength()) {
-                                agent[i].setState(ExploreState.GoToChild);
+                                agent[i].setState(BasicAgent.ExploreState.GoToChild);
                                 agent[i].setStateTimer(0);
                                 agent[i].addDirtyCells(agent[i].getPath().getAllPathPixels());
                                 if(Constants.DEBUG_OUTPUT){
@@ -384,47 +395,54 @@ public class SimulationFramework implements ActionListener {
             
             int index = runNumber;
             String strategy = runs.getJSONObject(index).getString("strategy");
-            if (strategy.equals("greedy")) {
-                simConfig.setExpAlgorithm(exptype.FrontierExploration);
-                simConfig.setFrontierAlgorithm(frontiertype.ReturnWhenComplete);
-            } else if (strategy.equals("ratio")) {
-                String ratio = runs.getJSONObject(index).getString("ratio");
-                boolean baseRange = Boolean.parseBoolean(runs.getJSONObject(index).getString("baseRange"));
-                simConfig.setBaseRange(baseRange);
-                if (baseRange) {
-                    String samplingDensity = runs.getJSONObject(index).getString("samplingDensity");
-                    simConfig.setSamplingDensity(Double.parseDouble(samplingDensity));
-                }
-                simConfig.setExpAlgorithm(exptype.FrontierExploration);
-                simConfig.setFrontierAlgorithm(frontiertype.UtilReturn);
-                simConfig.TARGET_INFO_RATIO = Double.parseDouble(ratio);
-            } else if (strategy.equals("role-based")) {
-                boolean multiPoint = Boolean.parseBoolean(runs.getJSONObject(index).getString("multiPoint"));                
-                boolean baseRange = Boolean.parseBoolean(runs.getJSONObject(index).getString("baseRange"));
-                simConfig.setBaseRange(baseRange);
-                if (baseRange) {
-                    String samplingDensity = runs.getJSONObject(index).getString("samplingDensity");
-                    simConfig.setSamplingDensity(Double.parseDouble(samplingDensity));
-                }
-                String relayExplore = runs.getJSONObject(index).getString("relayExplore");
-                String rvcalc = runs.getJSONObject(index).getString("rvcalc");
-                simConfig.setExpAlgorithm(exptype.RoleBasedExploration);
-                simConfig.setRoleSwitchAllowed(true);
-                simConfig.setReplanningAllowed(false);
-                simConfig.setStrictRoleSwitch(false);
-                simConfig.setUseImprovedRendezvous(rvcalc.equals("improved"));
-                simConfig.setRelayExplore(Boolean.parseBoolean(relayExplore));
-                if (multiPoint) {                    
-                    String exploreReplan = runs.getJSONObject(index).getString("exploreReplan");
-                    simConfig.setExploreReplan(Boolean.parseBoolean(exploreReplan));
-                    String tryToGetToExplorerRV = runs.getJSONObject(index).getString("tryToGetToExplorerRV");
-                    simConfig.setTryToGetToExplorerRV(Boolean.parseBoolean(tryToGetToExplorerRV));
-                    String useSingleMeetingTime = runs.getJSONObject(index).getString("useSingleMeetingTime");
-                    simConfig.setUseSingleMeetingTime(Boolean.parseBoolean(useSingleMeetingTime));
-                } else {
-                    
-                }
-                simConfig.setRVThroughWallsEnabled(multiPoint);
+            switch (strategy) {
+                case "greedy":
+                    simConfig.setExpAlgorithm(SimulatorConfig.exptype.FrontierExploration);
+                    simConfig.setFrontierAlgorithm(SimulatorConfig.frontiertype.ReturnWhenComplete);
+                    break;
+                case "ratio":
+                    {
+                        String ratio = runs.getJSONObject(index).getString("ratio");
+                        boolean baseRange = Boolean.parseBoolean(runs.getJSONObject(index).getString("baseRange"));
+                        simConfig.setBaseRange(baseRange);
+                        if (baseRange) {
+                            String samplingDensity = runs.getJSONObject(index).getString("samplingDensity");
+                            simConfig.setSamplingDensity(Double.parseDouble(samplingDensity));
+                        }       simConfig.setExpAlgorithm(SimulatorConfig.exptype.FrontierExploration);
+                        simConfig.setFrontierAlgorithm(SimulatorConfig.frontiertype.UtilReturn);
+                        simConfig.TARGET_INFO_RATIO = Double.parseDouble(ratio);
+                        break;
+                    }
+                case "role-based":
+                    {
+                        boolean multiPoint = Boolean.parseBoolean(runs.getJSONObject(index).getString("multiPoint"));
+                        boolean baseRange = Boolean.parseBoolean(runs.getJSONObject(index).getString("baseRange"));
+                        simConfig.setBaseRange(baseRange);
+                        if (baseRange) {
+                            String samplingDensity = runs.getJSONObject(index).getString("samplingDensity");
+                            simConfig.setSamplingDensity(Double.parseDouble(samplingDensity));
+                        }       String relayExplore = runs.getJSONObject(index).getString("relayExplore");
+                        String rvcalc = runs.getJSONObject(index).getString("rvcalc");
+                        simConfig.setExpAlgorithm(SimulatorConfig.exptype.RoleBasedExploration);
+                        simConfig.setRoleSwitchAllowed(true);
+                        simConfig.setReplanningAllowed(false);
+                        simConfig.setStrictRoleSwitch(false);
+                        simConfig.setUseImprovedRendezvous(rvcalc.equals("improved"));
+                        simConfig.setRelayExplore(Boolean.parseBoolean(relayExplore));
+                        if (multiPoint) {
+                            String exploreReplan = runs.getJSONObject(index).getString("exploreReplan");
+                            simConfig.setExploreReplan(Boolean.parseBoolean(exploreReplan));
+                            String tryToGetToExplorerRV = runs.getJSONObject(index).getString("tryToGetToExplorerRV");
+                            simConfig.setTryToGetToExplorerRV(Boolean.parseBoolean(tryToGetToExplorerRV));
+                            String useSingleMeetingTime = runs.getJSONObject(index).getString("useSingleMeetingTime");
+                            simConfig.setUseSingleMeetingTime(Boolean.parseBoolean(useSingleMeetingTime));
+                        } else {
+                            
+                        }       simConfig.setRVThroughWallsEnabled(multiPoint);
+                        break;
+                    }
+                default:
+                    break;
             }
             
             String map = runs.getJSONObject(index).getString("map");
@@ -446,12 +464,12 @@ public class SimulationFramework implements ActionListener {
             if(Constants.DEBUG_OUTPUT){
                 System.out.println(simConfig.toString());
             }
-            PrintWriter out = new PrintWriter(outputDir + "\\config.txt");
-            out.println(simConfig.toString());
-            out.close();
+            try (PrintWriter out = new PrintWriter(outputDir + "\\config.txt")) {
+                out.println(simConfig.toString());
+            }
             
             mainGUI.updateFromRobotTeamConfig();
-        } catch (Exception e) {
+        } catch (IOException | JSONException | NumberFormatException e) {
             
         }
         
@@ -503,9 +521,7 @@ public class SimulationFramework implements ActionListener {
     public void start() {
         runNumber = 0;
         //Check if we are running batch
-        if (simConfig.getExpAlgorithm() == exptype.BatchRun) {
-            isBatch = true;
-        } else isBatch = false;
+        isBatch = simConfig.getExpAlgorithm() == SimulatorConfig.exptype.BatchRun;
         
         if (isBatch) {
             updateRunConfig(); //this should set runNumMax;
@@ -585,6 +601,7 @@ public class SimulationFramework implements ActionListener {
         }
     }
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         simulationCycle();
     }
@@ -731,11 +748,10 @@ public class SimulationFramework implements ActionListener {
     // update area known if needed
     private void updateAgentKnowledgeData()
     {
-        if (simConfig.getExpAlgorithm() == exptype.RunFromLog)
+        if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog)
             return; //Nothing to do here
-        
-        for(int i = 0; i < agent.length; i++) {
-            agent[i].updateAreaKnown();
+        for (RealAgent agent1 : agent) {
+            agent1.updateAreaKnown();
         }
         
     }
@@ -971,7 +987,7 @@ public class SimulationFramework implements ActionListener {
         
 
         // exchange exploreState
-        ExploreState tempExploreState = agent1.getState();
+        BasicAgent.ExploreState tempExploreState = agent1.getState();
         agent1.setState(agent2.getState());
         agent2.setState(tempExploreState);
 
@@ -994,7 +1010,7 @@ public class SimulationFramework implements ActionListener {
         agent2.setChild(tempChild);
 
         // exchange role
-        roletype tempRole = agent1.getRole();
+        RobotConfig.roletype tempRole = agent1.getRole();
         agent1.setRole(agent2.getRole());
         agent2.setRole(tempRole);
         
@@ -1052,14 +1068,14 @@ public class SimulationFramework implements ActionListener {
         RealAgent agent1 = agent[first];
         RealAgent agent2 = agent[second];
         
-        if ((agent1.getState() == ExploreState.GetInfoFromChild) ||
-                (agent1.getState() == ExploreState.GiveParentInfo) ||
-                (agent1.getState() == ExploreState.WaitForChild) ||
-                (agent1.getState() == ExploreState.WaitForParent) ||
-                (agent2.getState() == ExploreState.GetInfoFromChild) ||
-                (agent2.getState() == ExploreState.GiveParentInfo) ||
-                (agent2.getState() == ExploreState.WaitForChild) ||
-                (agent2.getState() == ExploreState.WaitForParent)) {
+        if ((agent1.getState() == BasicAgent.ExploreState.GetInfoFromChild) ||
+                (agent1.getState() == BasicAgent.ExploreState.GiveParentInfo) ||
+                (agent1.getState() == BasicAgent.ExploreState.WaitForChild) ||
+                (agent1.getState() == BasicAgent.ExploreState.WaitForParent) ||
+                (agent2.getState() == BasicAgent.ExploreState.GetInfoFromChild) ||
+                (agent2.getState() == BasicAgent.ExploreState.GiveParentInfo) ||
+                (agent2.getState() == BasicAgent.ExploreState.WaitForChild) ||
+                (agent2.getState() == BasicAgent.ExploreState.WaitForParent)) {
             if(Constants.DEBUG_OUTPUT){
                 System.out.println("Not swapping roles, " + agent1 + " is in state " + agent1.getState() + ", " + agent2 + 
                     "is in state " + agent2.getState());
@@ -1116,8 +1132,8 @@ public class SimulationFramework implements ActionListener {
             if(simConfig.strictRoleSwitch()) {
 
                     // Case 1:  Two explorers both in state explore
-                    if(agent1.isExplorer() && agent1.getState() == ExploreState.Explore &&
-                       agent2.isExplorer() && agent2.getState() == ExploreState.Explore) {
+                    if(agent1.isExplorer() && agent1.getState() == BasicAgent.ExploreState.Explore &&
+                       agent2.isExplorer() && agent2.getState() == BasicAgent.ExploreState.Explore) {
 
                         Path rv1ToCS = agent1.calculatePath(agent1.getRendezvousAgentData().getParentRendezvous().getParentLocation(), 
                                 agent1.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
@@ -1203,7 +1219,7 @@ public class SimulationFramework implements ActionListener {
         if(simConfig.logScreenshots())
             logScreenshot();
         
-        if (simConfig.getExpAlgorithm() == exptype.RunFromLog)
+        if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog)
             return; //Nothing to do here
         
         // Log agent positions
@@ -1214,8 +1230,7 @@ public class SimulationFramework implements ActionListener {
     }
 
     private void logAgents() {        
-        try{
-            PrintWriter outFile = new PrintWriter(new FileWriter(simConfig.getLogAgentFilename(), true));
+        try(PrintWriter outFile = new PrintWriter(new FileWriter(simConfig.getLogAgentFilename(), true))) {
 
             outFile.print(timeElapsed + " ");
             for(int i=0; i<numRobots; i++) {
@@ -1228,7 +1243,6 @@ public class SimulationFramework implements ActionListener {
                 outFile.print(agent[i].totalSpareTime + " ");
             }
             outFile.println();
-            outFile.close();
         }
         catch(IOException e){
             System.err.println(this.toString() + "Agent logging - error writing data to file!" + e);
@@ -1362,8 +1376,7 @@ public class SimulationFramework implements ActionListener {
             
             
 
-            try{
-                PrintWriter outFile = new PrintWriter(new FileWriter(simConfig.getLogDataFilename(), true));
+            try(PrintWriter outFile = new PrintWriter(new FileWriter(simConfig.getLogDataFilename(), true))) {
 
                 outFile.print(timeElapsed + " ");
                 outFile.print(System.currentTimeMillis() + " ");
@@ -1400,7 +1413,6 @@ public class SimulationFramework implements ActionListener {
                             agent[i].getStats().getTimeDoubleSensing()) + " ");
                 }
                 outFile.println();
-                outFile.close();
             }
             catch(IOException e){
                 System.err.println(this.toString() + "Error writing data to file!" + e);

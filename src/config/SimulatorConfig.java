@@ -42,8 +42,17 @@
  *     If not, see <http://www.gnu.org/licenses/>.
  */
 package config;
-import java.io.*;
-import environment.*;
+//import java.io.*;
+//import environment.*;
+
+import environment.Environment;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+
 
 /**
  * Describes the model of the simulator configuration.
@@ -408,8 +417,7 @@ public class SimulatorConfig {
 
         if ( file.exists() )           
         {                                         
-            try{
-                BufferedReader inFile = new BufferedReader(new FileReader(file));
+            try(BufferedReader inFile = new BufferedReader(new FileReader(file))) {
 
                 expAlgorithm = exptype.valueOf(inFile.readLine());
                 frontierAlgorithm = frontiertype.valueOf(inFile.readLine());
@@ -431,7 +439,7 @@ public class SimulatorConfig {
                 try
                 {
                     TARGET_INFO_RATIO = Double.parseDouble(inFile.readLine());
-                } catch (Exception e)
+                } catch (IOException | NumberFormatException e)
                 {
                     TARGET_INFO_RATIO = 0.9;
                 }
@@ -477,7 +485,7 @@ public class SimulatorConfig {
                 try
                 {
                     samplingDensity = Double.parseDouble(inFile.readLine());
-                } catch (Exception e)
+                } catch (IOException | NumberFormatException e)
                 {
                     samplingDensity = 400;
                 }
@@ -523,13 +531,11 @@ public class SimulatorConfig {
                 try
                 {
                     comStationDropChance = Double.parseDouble(inFile.readLine());
-                } catch (Exception e)
+                } catch (IOException | NumberFormatException e)
                 {
                     comStationDropChance = 0.02;
                 }
 
-                inFile.close();
-                return true;
             }
             catch (IOException e) {
                 System.err.println(this.toString() + "Error: could not read data from " + fileName);
@@ -537,6 +543,7 @@ public class SimulatorConfig {
             catch (NumberFormatException e) {
                 System.err.println(this.toString() + "Error: incorrect data format in file " + fileName);
             }
+            return true;
         }
         return false;
     }
@@ -554,10 +561,7 @@ public class SimulatorConfig {
     public boolean loadWallConfig(String fileName) {
         env = EnvLoader.loadWallConfig(fileName);
 
-        if(env != null)
-            return true;
-        else
-            return false;
+        return env != null;
     }
     
     public boolean saveSimulatorConfig() {
@@ -565,8 +569,7 @@ public class SimulatorConfig {
     }
 
     public boolean saveSimulatorConfig(String fileName) {
-        try{
-            PrintWriter outFile = new PrintWriter(new FileWriter(fileName));
+        try(PrintWriter outFile = new PrintWriter(new FileWriter(fileName))) {
             
             outFile.println(expAlgorithm.toString());
             outFile.println(frontierAlgorithm.toString());
@@ -599,14 +602,13 @@ public class SimulatorConfig {
             outFile.println(useComStations);
             outFile.println(comStationDropChance);
             
-            outFile.close();
-            return true;
         }
         catch(IOException e){
             System.err.println(this.toString() + "Error writing to file " + fileName);
+            return false;
         }
+        return true;
 
-        return false;
     }
 
     public boolean saveWallConfig() {

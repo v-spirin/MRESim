@@ -222,8 +222,7 @@ public class MapTools {
             }
 
         for(int i=0; i<800; i++)
-            for(int j=0; j<600; j++)
-                vals[i][j] = newVals[i][j];
+            System.arraycopy(newVals[i], 0, vals[i], 0, 600);
 
         // dirty as.  do it all once more.
         for(int i=2; i<=797; i++)

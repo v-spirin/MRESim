@@ -92,6 +92,7 @@ import java.util.LinkedList;
             this.utility = calcUtility();
         }
         
+        @Override
         public int compareTo(NearRVPoint other) {
             if(other.utility > this.utility)
                 return 1;

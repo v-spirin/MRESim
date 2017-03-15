@@ -47,7 +47,8 @@ import agents.BasicAgent;
 import environment.Environment;
 import agents.RealAgent;
 import environment.OccupancyGrid;
-import java.awt.*;
+import java.awt.Point;
+import java.awt.Polygon;
 
 public class PropModel1 {
     

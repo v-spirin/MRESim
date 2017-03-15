@@ -78,6 +78,7 @@ public class RendezvousDataMessage implements IDataMessage{
             childBackupRendezvous = null;
     }
 
+    @Override
     public void receiveMessage(RealAgent agent, TeammateAgent teammate) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         

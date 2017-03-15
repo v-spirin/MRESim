@@ -43,10 +43,14 @@
  */
 package config;
 
-import java.io.*;
-import java.util.*;
-
 import gui.RobotConfigTableModel;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
 
 /**
  *
@@ -57,14 +61,14 @@ public class RobotTeamConfig {
 // <editor-fold defaultstate="collapsed" desc="Variables and Constructor">
 
     private int numRobots;
-    private Hashtable<Integer,RobotConfig> robotTeam;
+    private HashMap<Integer,RobotConfig> robotTeam;
     
     public RobotTeamConfig() {
         boolean oldConfigFound = loadOldConfig();
         if(!oldConfigFound) {
             numRobots = 1;
-            robotTeam = new Hashtable<Integer,RobotConfig>();    
-            RobotConfig comStation = new RobotConfig("1","ComStation","1,1,0","0","100","1000","BaseStation","1","1", "2", "1");
+            robotTeam = new HashMap<Integer,RobotConfig>();    
+            RobotConfig comStation = new RobotConfig("1","ComStation","1,1,0","0","100","1000","BaseStation","1","1", "2", "1", "10");
             robotTeam.put(comStation.getRobotNumber(), comStation);
         }
     }
@@ -76,7 +80,7 @@ public class RobotTeamConfig {
         return this.numRobots;
     }
     
-    public Hashtable<Integer,RobotConfig> getRobotTeam() {
+    public HashMap<Integer,RobotConfig> getRobotTeam() {
         return this.robotTeam;
     }
     
@@ -93,10 +97,10 @@ public class RobotTeamConfig {
  
     public void updateFromGUI(RobotConfigTableModel model) {
         //erase old data
-        robotTeam = new Hashtable();
+        robotTeam = new HashMap();
         
         numRobots = model.getRowCount();
-        RobotConfig currRobot = new RobotConfig();
+        RobotConfig currRobot;
         for(int i=0; i<numRobots; i++) {
             currRobot = new RobotConfig((String)(model.getValueAt(i, 0)),
                                         (String)(model.getValueAt(i, 1)),
@@ -108,7 +112,8 @@ public class RobotTeamConfig {
                                         (String)(model.getValueAt(i, 7)),
                                         (String)(model.getValueAt(i, 8)),
                                         (String)(model.getValueAt(i, 9)),
-                                        (String)(model.getValueAt(i, 10)));
+                                        (String)(model.getValueAt(i, 10)),
+                                        (String)(model.getValueAt(i, 11)));
             robotTeam.put(currRobot.getRobotNumber(), currRobot);
         }
     }
@@ -122,20 +127,18 @@ public class RobotTeamConfig {
     }
     
     public boolean saveConfig(String fileName) {
-        
-        try{
-            PrintWriter outFile = new PrintWriter(new FileWriter(fileName));
+
+        try (PrintWriter outFile = new PrintWriter(new FileWriter(fileName))) {
             RobotConfig currRobot;
-            
-            for(int i=1; i<=numRobots; i++) {
-                currRobot = (RobotConfig)(robotTeam.get(i));
+
+            for (int i = 1; i <= numRobots; i++) {
+                currRobot = (RobotConfig) (robotTeam.get(i));
                 //Debug: System.out.println(currRobot.toString());
                 outFile.println(currRobot.toString());
             }
-            outFile.close();
+
             return true;
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             System.err.println("Error writing to file " + fileName);
         }
 
@@ -152,30 +155,25 @@ public class RobotTeamConfig {
     }
     
     public boolean loadConfig(String fileName) {
-        File file = new File(fileName); 
+        File file = new File(fileName);
         int lineNum = 1;
 
-        if ( file.exists() )           
-        {                                         
-            try{
-                BufferedReader inFile = new BufferedReader(new FileReader(file));
-
+        if (file.exists()) {
+            try (BufferedReader inFile = new BufferedReader(new FileReader(file))) {
                 String line = inFile.readLine();
-                
+
                 // Since a new team will be loaded, must delete old
-                this.robotTeam = new Hashtable();
+                this.robotTeam = new HashMap();
                 this.numRobots = 0;
-                
-                while ( line != null ) {
+
+                while (line != null) {
                     processLine(line, lineNum, fileName);
                     lineNum++;
                     line = inFile.readLine();
                 }
 
-                inFile.close();
                 return true;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 System.err.println("Error: could not read data from " + fileName);
             }
         }
@@ -233,7 +231,10 @@ public class RobotTeamConfig {
                              currRobot.getBatteryLife() + " " + 
                              currRobot.getRole() + " " + 
                              currRobot.getParent() + " " + 
-                             currRobot.getChild() + "\n");
+                             currRobot.getChild() + " " + 
+                             currRobot.getAbility()+ " " + 
+                             currRobot.getComStationLimit()+ " " + 
+                             currRobot.getSpeed()+ "\n");
         }
         System.out.println("-------------------------------------------------------------");
     }

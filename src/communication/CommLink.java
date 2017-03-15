@@ -45,7 +45,6 @@ package communication;
 
 import exploration.NearRVPoint;
 import java.awt.Point;
-import path.TopologicalNode;
 
 /**
  *
@@ -78,6 +77,7 @@ public class CommLink implements Comparable<CommLink>{
         //this.remoteNode = remoteNode;
     }
     
+    @Override
     public int compareTo(CommLink other) {
         if (other.utility > this.utility)
             return 1;

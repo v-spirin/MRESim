@@ -50,11 +50,9 @@ import agents.RealAgent;
 import config.Constants;
 import config.RobotConfig;
 import config.SimulatorConfig;
-import environment.*;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.RendezvousAgentData;
-import java.util.*;
-import java.awt.*;
+import java.awt.Point;
 import java.util.concurrent.atomic.AtomicReference;
 import path.Path;
 

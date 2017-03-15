@@ -45,8 +45,8 @@ package exploration;
 
 import agents.RealAgent;
 import config.Constants;
-import java.util.*;
 import java.awt.Point;
+import java.util.Random;
 import path.Path;
 
 /**
@@ -60,7 +60,10 @@ public class RandomWalk {
     
     public static Point takeStep(RealAgent agent) {
         int maxcounter = 100;
-        int ranVar = 0, newX = agent.getX(), newY = agent.getY(), counter = 0;
+        int ranVar;
+        int newX = agent.getX();
+        int newY = agent.getY();
+        int counter = 0;
         
         boolean found = false;
         

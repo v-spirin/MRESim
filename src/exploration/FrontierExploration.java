@@ -43,14 +43,19 @@
  */
 package exploration;
 
-import agents.*;
+import agents.BasicAgent;
+import agents.RealAgent;
+import agents.TeammateAgent;
 import config.Constants;
 import config.RobotConfig;
 import config.SimulatorConfig;
-import environment.*;
+import environment.ContourTracer;
+import environment.Frontier;
+import environment.OccupancyGrid;
 import exploration.rendezvous.RendezvousAgentData;
-import java.util.*;
-import java.awt.*;
+import java.awt.Point;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
 import path.Path;
 
 /**
@@ -65,7 +70,7 @@ public class FrontierExploration {
             SimulatorConfig.frontiertype frontierExpType) {
         long realtimeStartAgentCycle = System.currentTimeMillis();
         
-        Point nextStep = new Point(agent.getX(), agent.getY());
+        Point nextStep;
 
         //<editor-fold defaultstate="collapsed" desc="If base station is in range, update timeLastDirectContactCS and lastContactAreaKnown">
         if(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
@@ -267,8 +272,9 @@ public class FrontierExploration {
         PriorityQueue<Frontier> copy = new PriorityQueue();
         LinkedList<Frontier> list = new LinkedList();
 
-        for(Frontier f : frontiers)
+        frontiers.stream().forEach((f) -> {
             copy.add(f.copy());
+        });
         
         Frontier currFrontier;
         int counter = 0;
@@ -366,7 +372,7 @@ public class FrontierExploration {
                     }
                     timeMeeting = rvd.getChildRendezvous().getTimeMeeting();
                 }
-                if (RVDestination != null) {
+                if (RVDestination != null && frontierToRV != null) {
                     Path meToFrontier = p;
                     
                     
@@ -457,14 +463,14 @@ public class FrontierExploration {
         PriorityQueue<Utility> utilities = new PriorityQueue<Utility>();
 
         // For each frontier of interest
-        for(Frontier frontier : frontiers) {
+        frontiers.stream().forEach((frontier) -> {
             // Add own utilities
             utilities.add(new Utility(99,
-                                      p,
-                                      frontier,
-                                      utilityEstimate(p, frontier),
-                                      null));
-         }
+                    p,
+                    frontier,
+                    utilityEstimate(p, frontier),
+                    null));
+        });
 
         return utilities;
     }
@@ -485,6 +491,7 @@ public class FrontierExploration {
             path = p;
         }
         
+        @Override
         public int compareTo(Utility other) {
             if(other.utility > this.utility)
                 return 1;
@@ -520,7 +527,7 @@ public class FrontierExploration {
             System.out.println(agent + " frontier utilities: " + utilities.size());
         }
         // Step 3
-        Utility best = null;
+        Utility best;
         LinkedList<Utility> removal;
         boolean isLastFrontier = false;
         int counter = 0;
@@ -610,7 +617,7 @@ public class FrontierExploration {
                     
             } else {
                 //System.out.println("UtilityExact: " + best.utility);
-                if((utilities.size() == 0) || (best.utility >= utilities.peek().utility)){
+                if((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)){
                     if(best.ID == agent.getID()){
                         if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
                             agent.setState(BasicAgent.ExploreState.GoToChild);
@@ -652,10 +659,10 @@ public class FrontierExploration {
     public static void calculateFrontiers(RealAgent agent, SimulatorConfig.frontiertype frontierExpType) {
         long realtimeStart = System.currentTimeMillis();
         //System.out.print(agent.toString() + "Calculating frontiers. ");
-
         // If recalculating frontiers, must set old frontiers dirty for image rendering
-        for(Frontier f : agent.getFrontiers())
+        agent.getFrontiers().stream().forEach((f) -> {
             agent.addDirtyCells(f.getPolygonOutline());
+        });
         
         LinkedList <LinkedList> contours = ContourTracer.findAllContours(agent.getOccupancyGrid());
         if (Constants.DEBUG_OUTPUT) {

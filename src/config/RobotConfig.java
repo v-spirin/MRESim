@@ -50,7 +50,7 @@ package config;
 public class RobotConfig {
     
     // start x, y and heading count as a single field, comma delimited.
-    public static int NUMROBOTCONFIGFIELDS = 11;
+    public static int NUMROBOTCONFIGFIELDS = 12;
     
     private int robotNumber;
     private String name;
@@ -63,6 +63,7 @@ public class RobotConfig {
     private boolean loggingState;
     private int ability;
     private int comStationLimit;
+    private int speed;
         
     public static enum roletype {BaseStation, Relay, Explorer, RelayStation}
     private roletype role;
@@ -85,6 +86,7 @@ public class RobotConfig {
         child = 1;
         ability = 2;
         comStationLimit = 1;
+        speed = 10;
     }
 
     public RobotConfig(int newRobotNo, String newName, int newStartX, int newStartY, double newStartHeading, int newSensingRange, int newCommRange, int newBatteryLife, String newRole, int newParent, int newChild, int newAbility, int newComStationLimit) {
@@ -102,9 +104,10 @@ public class RobotConfig {
         loggingState = false;
         ability = newAbility;
         comStationLimit = newComStationLimit;
+        speed = 10;
     }
     
-    public RobotConfig(String newRobotNumber, String newName, String start, String newSensingRange, String newCommRange, String newBatteryLife, String newRole, String newParent, String newChild, String newAbility, String newComStationLimit) {
+    public RobotConfig(String newRobotNumber, String newName, String start, String newSensingRange, String newCommRange, String newBatteryLife, String newRole, String newParent, String newChild, String newAbility, String newComStationLimit, String newSpeed) {
         robotNumber = Integer.parseInt(newRobotNumber);
         name = newName;
         
@@ -128,6 +131,15 @@ public class RobotConfig {
         child = Integer.parseInt(newChild);
         ability = Integer.parseInt(newAbility);
         comStationLimit = Integer.parseInt(newComStationLimit);
+        speed = Integer.parseInt(newSpeed);
+    }
+
+    public int getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(int speed) {
+        this.speed = speed;
     }
 
     public int getComStationLimit() {
@@ -213,7 +225,8 @@ public class RobotConfig {
                 String.valueOf(parent) + " " +
                 String.valueOf(child) + " " +
                 String.valueOf(ability) + " " +
-                String.valueOf(comStationLimit)
+                String.valueOf(comStationLimit) + " " +
+                String.valueOf(speed)
                 );
 
     }

@@ -48,7 +48,6 @@ import agents.RealAgent;
 import communication.PropModel1;
 import config.Constants;
 import config.RobotConfig;
-import environment.Environment;
 import environment.OccupancyGrid;
 import java.awt.Point;
 import java.awt.Polygon;
@@ -82,7 +81,7 @@ public class Rendezvous {
         if (childLocation == null) {
             System.err.println("!!! childLocation is null? This should never happen!");
             return null;
-        };
+        }
         Rendezvous locCopy = new Rendezvous(childLocation);
         locCopy.setChildLocation(new Point(childLocation));
         locCopy.setParentLocation(new Point(parentLocation));
@@ -172,7 +171,7 @@ public class Rendezvous {
             //System.out.println("1, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
             //realtimeStart = System.currentTimeMillis();
             
-            double minDistanceDirect = Integer.MAX_VALUE;
+            double minDistanceDirect;
             /*for (Point p: directPoints)
             {
                 double distance = agent.calculatePath(p, goal).getLength();

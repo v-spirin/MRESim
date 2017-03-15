@@ -171,8 +171,9 @@ public class ContourTracer {
     
     
     private static int[][] updateLabels(int[][] labels, LinkedList<Point> contour) {
-        for(Point p: contour)
+        contour.stream().forEach((p) -> {
             labels[p.x][p.y] = 1;
+        });
         
         return labels;
     }
@@ -206,9 +207,11 @@ public class ContourTracer {
         int[][] labels = new int[occGrid.width][occGrid.height];
         int componentIndex = 1;
         
-        for(int i=0; i<labels.length; i++)
-            for(int j=0; j<labels[0].length; j++)
-                labels[i][j] = 0;
+        for (int[] label : labels) {
+            for (int j = 0; j<labels[0].length; j++) {
+                label[j] = 0;
+            }
+        }
         if (Constants.DEBUG_OUTPUT) {
             System.out.println("[findAllContours] labels init took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         }

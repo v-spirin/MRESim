@@ -223,6 +223,7 @@ public class TeammateAgent extends BasicAgent implements Agent {
         return this.newInfo;
     }
     
+    @Override
     public int getID() {
         return ID;
     }

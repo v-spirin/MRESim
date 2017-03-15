@@ -116,6 +116,7 @@ public class DataMessage implements IDataMessage {
         messages.add(rvDataMessage);
     }
 
+    @Override
     public void receiveMessage(RealAgent agent, TeammateAgent teammate) {
         teammate.setInRange(true);
         teammate.setInDirectRange(directComm);
@@ -158,10 +159,9 @@ public class DataMessage implements IDataMessage {
         }
         
         //Merge bad frontier information
-        for (Frontier badFrontier: badFrontiers) {
-            if (!agent.isBadFrontier(badFrontier))
-                agent.addBadFrontier(badFrontier);
-        }
+        badFrontiers.stream().filter((badFrontier) -> (!agent.isBadFrontier(badFrontier))).forEach((badFrontier) -> {
+            agent.addBadFrontier(badFrontier);
+        });
         
         if(teammate.getTimeLastCentralCommand() < timeLastCentralCommand)
             timeLastCentralCommand = teammate.getTimeLastCentralCommand();
@@ -179,9 +179,9 @@ public class DataMessage implements IDataMessage {
             agent.getStats().commWithBaseStation(agent.getTimeElapsed());
         
         //Process other messages
-        for (IDataMessage msg: messages) {
+        messages.stream().forEach((msg) -> {
             msg.receiveMessage(agent, teammate);
-        }
+        });
     }
 
 }

@@ -44,19 +44,13 @@
 package agents;
 
 import config.Constants;
-import java.util.*;
-import java.awt.*;
-
 import config.RobotConfig;
-import path.Path;
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
-/**
- *
- * @author Julian de Hoog
- *
- * This class maintains basic agent functionality / data required by any agent
- *
- */
 
 
 public class BasicAgent implements Agent {
@@ -281,10 +275,9 @@ public class BasicAgent implements Agent {
     //Adds all points in list2 to list1 (no duplicates), returns merged list.
     public LinkedList<Point> mergeLists(LinkedList<Point> list1, LinkedList<Point> list2) {
         if (list2 == null) return list1; // needs to be fixed, not sure why it is null
-        for(Point p : list2)
-            if(!list1.contains(p))
-                list1.add(p);
-
+        list2.stream().filter((p) -> (!list1.contains(p))).forEach((p) -> {
+            list1.add(p);
+        });
         return list1;
     }
 

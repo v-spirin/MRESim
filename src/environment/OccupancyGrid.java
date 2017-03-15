@@ -44,11 +44,13 @@
 package environment;
 
 import config.Constants;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Point;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -113,6 +115,7 @@ public class OccupancyGrid {
         return copyGrid;
     }
     
+    @Override
     public boolean equals(Object obj) 
     {
         if (obj == null)
@@ -122,7 +125,7 @@ public class OccupancyGrid {
         if (obj.getClass() != getClass())
             return false;
         
-        return grid.equals(((OccupancyGrid)obj).grid);
+        return Arrays.equals(grid, ((OccupancyGrid)obj).grid);
     }
     
     public void saveToPNG(String filename) {
@@ -345,10 +348,7 @@ public class OccupancyGrid {
     }
     
     public boolean isGotRelayed(int xCoord, int yCoord) {
-        if(getBit(xCoord, yCoord, OccGridBit.GotRelayed.ordinal()) == 1)
-            return true;
-        else
-            return false;
+        return getBit(xCoord, yCoord, OccGridBit.GotRelayed.ordinal()) == 1;
     }
      
     // Marks this cell as being relayed to base by another robot
@@ -455,10 +455,7 @@ public class OccupancyGrid {
     }
 
     public boolean safeSpaceAt(int xCoord, int yCoord) {
-        if(getBit(xCoord, yCoord, OccGridBit.SafeSpace.ordinal()) == 1)
-            return true;
-        else
-            return false;
+        return getBit(xCoord, yCoord, OccGridBit.SafeSpace.ordinal()) == 1;
     }
 
     public void setSafeSpaceAt(int xCoord, int yCoord) {        
@@ -474,10 +471,7 @@ public class OccupancyGrid {
     }
 
     public boolean obstacleAt(int xCoord, int yCoord) {
-        if(getBit(xCoord, yCoord, OccGridBit.Obstacle.ordinal()) == 1)
-            return true;
-        else
-            return false;
+        return getBit(xCoord, yCoord, OccGridBit.Obstacle.ordinal()) == 1;
     }
 
     public void setObstacleAt(int xCoord, int yCoord) {
@@ -502,8 +496,9 @@ public class OccupancyGrid {
     // Returns number of cells affected
     // Used in UtilityExploration
     public int setOwnedCellsRelayed() {
-        for (Point point : getOwnedCells())
+        getOwnedCells().stream().forEach((point) -> {
             setGotRelayed(point.x, point.y, false);
+        });
         int counter = getOwnedCells().size();
         resetOwnedCells();
         return counter;
@@ -549,7 +544,9 @@ public class OccupancyGrid {
     
     public String toString(int xCoord, int yCoord) {
         String bitString = new String();
-        for(int i=0; i<8; i++) bitString.concat(Integer.toString(getBit(xCoord, yCoord, i)));
+        for(int i=0; i<8; i++) {
+            bitString = bitString.concat(Integer.toString(getBit(xCoord, yCoord, i)));
+        }
         return (this.toString() + "Byte at " + xCoord + ", " + yCoord + " has value " + bitString);
     }
     

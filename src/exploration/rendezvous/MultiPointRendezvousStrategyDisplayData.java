@@ -90,6 +90,7 @@ public class MultiPointRendezvousStrategyDisplayData implements IRendezvousDispl
         generatedPoints = points;
     }
 
+    @Override
     public List<Point> getDirtyCells(ExplorationImage image, RealAgent agent) {
         List<Point> dirtyCells = new LinkedList<Point>();
         // Erase old skeleton
@@ -118,6 +119,7 @@ public class MultiPointRendezvousStrategyDisplayData implements IRendezvousDispl
         return dirtyCells;
     }
 
+    @Override
     public void drawCandidatePointInfo(ExplorationImage image) {
         if (sprDisplayData != null) {
             sprDisplayData.drawCandidatePointInfo(image);
@@ -186,6 +188,7 @@ public class MultiPointRendezvousStrategyDisplayData implements IRendezvousDispl
         //g2D.drawOval(frontierCenter.x-5, frontierCenter.y-5, 10, 10);
     }
 
+    @Override
     public void drawRendezvousLocation(ExplorationImage image, RealAgent agent) {
         if (sprDisplayData != null) {
             sprDisplayData.drawRendezvousLocation(image, agent);

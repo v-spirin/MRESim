@@ -43,16 +43,13 @@
  */
 package exploration;
 
-import agents.*;
-import agents.BasicAgent.ExploreState;
+import agents.BasicAgent;
+import agents.RealAgent;
 import communication.CommLink;
 import config.Constants;
 import config.SimulatorConfig;
 import exploration.rendezvous.MultiPointRendezvousStrategy;
-import static exploration.rendezvous.MultiPointRendezvousStrategy.FindCommLinks;
-import static exploration.rendezvous.MultiPointRendezvousStrategy.findNearestPointInBaseCommRange;
-import static exploration.rendezvous.MultiPointRendezvousStrategy.getBetterCommLocation;
-import java.awt.*;
+import java.awt.Point;
 import path.Path;
 import java.util.List;
 
@@ -161,7 +158,7 @@ public class UtilityExploration {
         {
             System.out.println(agent.toString() + " Decided to return. infoRatio = " + 
                     infoRatio +", Target = " + simConfig.TARGET_INFO_RATIO);     
-            agent.setState(ExploreState.ReturnToParent);
+            agent.setState(BasicAgent.ExploreState.ReturnToParent);
             //agent.setRole(RobotConfig.roletype.Relay);
             agent.computePathToBaseStation();
             agent.setPathToBaseStation();
@@ -270,7 +267,7 @@ public class UtilityExploration {
                         MultiPointRendezvousStrategy.SampleEnvironmentPoints(agent, simConfig.getSamplingDensity());
                 NearRVPoint agentPoint = new NearRVPoint(agent.getLocation().x, agent.getLocation().y);
                 List<CommLink> connectionsToBase = MultiPointRendezvousStrategy.FindCommLinks(generatedPoints, agent);
-                findNearestPointInBaseCommRange(agentPoint, connectionsToBase, agent);
+                MultiPointRendezvousStrategy.findNearestPointInBaseCommRange(agentPoint, connectionsToBase, agent);
                 if (agentPoint.parentPoint != null)
                     baseLocation = agentPoint.parentPoint.getLocation();
             }
@@ -323,7 +320,7 @@ public class UtilityExploration {
         if (simConfig.getBaseRange()) {
             Point point1 = agent.getLocation();
             Point point2 = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
-            Point newPoint = getBetterCommLocation(point1, point2, agent);
+            Point newPoint = MultiPointRendezvousStrategy.getBetterCommLocation(point1, point2, agent);
             if (!point1.equals(newPoint)) return newPoint;
             else {
                 //still not in range of base. We should really reevaluate our comms model here, but for now, just revert to

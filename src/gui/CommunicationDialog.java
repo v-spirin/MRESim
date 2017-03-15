@@ -60,7 +60,10 @@ public class CommunicationDialog extends javax.swing.JDialog {
     
     SimulatorConfig simConfig;
     
-    /** Creates new form CommunicationDialog */
+    /** Creates new form CommunicationDialog
+     * @param parent
+     * @param modal
+     * @param sc */
     public CommunicationDialog(java.awt.Frame parent, boolean modal, SimulatorConfig sc) {
         super(parent, modal);
         

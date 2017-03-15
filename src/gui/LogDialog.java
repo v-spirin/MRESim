@@ -66,7 +66,10 @@ public class LogDialog extends javax.swing.JDialog {
     boolean logScreenshots;
     String logScreenshotsDirname;
     
-    /** Creates new form CommunicationDialog */
+    /** Creates new form CommunicationDialog
+     * @param parent
+     * @param modal
+     * @param ec */
     public LogDialog(java.awt.Frame parent, boolean modal, SimulatorConfig ec) {
         super(parent, modal);
         

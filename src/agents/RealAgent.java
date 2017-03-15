@@ -45,17 +45,30 @@ package agents;
 
 import communication.CommLink;
 import communication.DataMessage;
-import config.*;
+import config.Constants;
+import config.RobotConfig;
 import config.RobotConfig.roletype;
-import environment.*;
-import exploration.*;
+import config.SimulatorConfig;
+import environment.Frontier;
+import environment.OccupancyGrid;
+import environment.TopologicalMap;
+import exploration.FrontierExploration;
+import exploration.LeaderFollower;
+import exploration.NearRVPoint;
+import exploration.RoleBasedExploration;
+import exploration.RunFromLog;
+import exploration.SimulationFramework;
+import exploration.UtilityExploration;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.MultiPointRendezvousStrategy;
-import static exploration.rendezvous.MultiPointRendezvousStrategy.findNearestPointInBaseCommRange;
 import exploration.rendezvous.RendezvousAgentData;
 import exploration.rendezvous.RendezvousStrategyFactory;
-import java.awt.*;
-import java.util.*;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.PriorityQueue;
+import java.util.Set;
 import path.Path;
 
 /**
@@ -143,7 +156,7 @@ public class RealAgent extends BasicAgent implements Agent {
                 robot.getRole(),
                 robot.getParent(),
                 robot.getChild(),
-                Constants.DEFAULT_SPEED,
+                robot.getSpeed(),
                 robot.getAbility(),
                 robot.getComStationLimit()
         );
@@ -323,7 +336,7 @@ public class RealAgent extends BasicAgent implements Agent {
                     = MultiPointRendezvousStrategy.SampleEnvironmentPoints(this, simConfig.getSamplingDensity());
             NearRVPoint agentPoint = new NearRVPoint(this.getLocation().x, this.getLocation().y);
             java.util.List<CommLink> connectionsToBase = MultiPointRendezvousStrategy.FindCommLinks(generatedPoints, this);
-            findNearestPointInBaseCommRange(agentPoint, connectionsToBase, this);
+            MultiPointRendezvousStrategy.findNearestPointInBaseCommRange(agentPoint, connectionsToBase, this);
             if (agentPoint.parentPoint != null) {
                 baseLocation = agentPoint.parentPoint.getLocation();
                 nearestBasePoint = baseLocation;
@@ -457,9 +470,9 @@ public class RealAgent extends BasicAgent implements Agent {
 // </editor-fold>     
 // <editor-fold defaultstate="collapsed" desc="Flush, take step, write step">
     public void flushComms() {
-        for (TeammateAgent teammate : teammates.values()) {
+        teammates.values().stream().forEach((teammate) -> {
             teammate.setInRange(false);
-        }
+        });
     }
 
     // Overwrite any useless data from previous step
@@ -1219,25 +1232,15 @@ public class RealAgent extends BasicAgent implements Agent {
     }
 
     public boolean isCommunicating() {
-        for (TeammateAgent teammate : teammates.values()) {
-            if (teammate.isInRange()) {
-                return true;
-            }
-        }
-        return false;
+        return teammates.values().stream().anyMatch((teammate) -> (teammate.isInRange()));
     }
 
     public void updateAfterCommunication() {
         //long realtimeStart = System.currentTimeMillis();
         //System.out.print(this.toString() + "Updating post-communication ... ");
-
-        for (TeammateAgent teammate : teammates.values()) {
-            if (!teammate.isInRange()) {
-                teammate.setTimeSinceLastComm(teammate.getTimeSinceLastComm() + 1);
-            }
-        }
-
-        //processRelayMarks();
+        teammates.values().stream().filter((teammate) -> (!teammate.isInRange())).forEach((teammate) -> {
+            teammate.setTimeSinceLastComm(teammate.getTimeSinceLastComm() + 1);
+        }); //processRelayMarks();
         //System.out.println("Complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 // </editor-fold>     

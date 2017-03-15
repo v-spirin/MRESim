@@ -43,18 +43,42 @@
  */
 package gui;
 
+import agents.RealAgent;
+import agents.TeammateAgent;
+import config.Constants;
+import config.RobotConfig;
+import config.RobotTeamConfig;
+import config.SimulatorConfig;
+import environment.Environment;
+import environment.Frontier;
+import environment.OccupancyGrid;
+import environment.TopologicalMap;
 import gui.ShowSettings.ShowSettings;
-import config.*;
-import agents.*;
-import environment.*;
 import gui.ShowSettings.ShowSettingsAgent;
-import java.awt.*;
-import java.awt.image.*;
-import javax.imageio.*;
-import java.io.*;
-import java.awt.geom.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Point;
+import java.awt.Polygon;
+import java.awt.Rectangle;
+import java.awt.Shape;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
+import java.awt.image.IndexColorModel;
+import java.awt.image.Raster;
+import java.awt.image.SampleModel;
+import java.awt.image.SinglePixelPackedSampleModel;
+import java.awt.image.WritableRaster;
+import java.io.File;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedList;
+import javax.imageio.ImageIO;
 import path.Path;
 
     /**
@@ -523,41 +547,42 @@ public class ExplorationImage {
         
         setG2D();
 
-        if(role.equals(RobotConfig.roletype.BaseStation)) {
-            // Draw ComStation 
-            g2D.setPaint(Constants.MapColor.comStation());
-            tempRect = new Rectangle2D.Double(xLoc - Constants.AGENT_RADIUS,
-                                              yLoc - Constants.AGENT_RADIUS,
-                                              Constants.AGENT_RADIUS*2,
-                                              Constants.AGENT_RADIUS*2);
-            g2D.fill(tempRect);
-            g2D.draw(tempRect);
-        } else if (role.equals(RobotConfig.roletype.RelayStation)) {
-            // Draw ComStation 
-            g2D.setPaint(Constants.MapColor.comStation());
-            tempRect = new Rectangle2D.Double(xLoc - Constants.AGENT_RADIUS,
-                                              yLoc - Constants.AGENT_RADIUS,
-                                              Constants.AGENT_RADIUS*2,
-                                              Constants.AGENT_RADIUS*2);
-            g2D.fill(tempRect);
-            g2D.draw(tempRect);
-        } else {
-            if(role.equals(RobotConfig.roletype.Relay))
-                g2D.setPaint(Constants.MapColor.relay());
-            else
-                g2D.setPaint(Constants.MapColor.explorer());
-            tempPoly = new Polygon();
-            tempPoly.addPoint((int)(xLoc + 2*Constants.AGENT_RADIUS * Math.cos((float)head)),
-                              (int)(yLoc + 2*Constants.AGENT_RADIUS * Math.sin((float)head)));
-
-            tempPoly.addPoint((int)(xLoc + 2*Constants.AGENT_RADIUS * Math.cos((float)head+(5*Math.PI/6))),
-                              (int)(yLoc + 2*Constants.AGENT_RADIUS * Math.sin((float)head+(5*Math.PI/6))));
-
-            tempPoly.addPoint((int)(xLoc + 2*Constants.AGENT_RADIUS * Math.cos((float)head-(5*Math.PI/6))),
-                              (int)(yLoc + 2*Constants.AGENT_RADIUS * Math.sin((float)head-(5*Math.PI/6))));
-
-            g2D.fillPolygon(tempPoly);
-            g2D.draw(tempPoly);
+        switch (role) {
+            case BaseStation:
+                // Draw ComStation
+                g2D.setPaint(Constants.MapColor.comStation());
+                tempRect = new Rectangle2D.Double(xLoc - Constants.AGENT_RADIUS,
+                        yLoc - Constants.AGENT_RADIUS,
+                        Constants.AGENT_RADIUS*2,
+                        Constants.AGENT_RADIUS*2);
+                g2D.fill(tempRect);
+                g2D.draw(tempRect);
+                break;
+            case RelayStation:
+                // Draw ComStation
+                g2D.setPaint(Constants.MapColor.comStation());
+                tempRect = new Rectangle2D.Double(xLoc - Constants.AGENT_RADIUS,
+                        yLoc - Constants.AGENT_RADIUS,
+                        Constants.AGENT_RADIUS*2,
+                        Constants.AGENT_RADIUS*2);
+                g2D.fill(tempRect);
+                g2D.draw(tempRect);
+                break;
+            default:
+                if(role.equals(RobotConfig.roletype.Relay))
+                    g2D.setPaint(Constants.MapColor.relay());
+                else
+                    g2D.setPaint(Constants.MapColor.explorer());
+                tempPoly = new Polygon();
+                tempPoly.addPoint((int)(xLoc + 2*Constants.AGENT_RADIUS * Math.cos((float)head)),
+                        (int)(yLoc + 2*Constants.AGENT_RADIUS * Math.sin((float)head)));
+                tempPoly.addPoint((int)(xLoc + 2*Constants.AGENT_RADIUS * Math.cos((float)head+(5*Math.PI/6))),
+                        (int)(yLoc + 2*Constants.AGENT_RADIUS * Math.sin((float)head+(5*Math.PI/6))));
+                tempPoly.addPoint((int)(xLoc + 2*Constants.AGENT_RADIUS * Math.cos((float)head-(5*Math.PI/6))),
+                        (int)(yLoc + 2*Constants.AGENT_RADIUS * Math.sin((float)head-(5*Math.PI/6))));
+                g2D.fillPolygon(tempPoly);
+                g2D.draw(tempPoly);
+                break;
         }
         
         // Draw name
@@ -601,8 +626,7 @@ public class ExplorationImage {
     }
     
     public void drawFrontierOutlines(RealAgent agent) {
-        for(Iterator i=agent.getFrontiers().iterator(); i.hasNext();){
-            Frontier f = (Frontier)i.next();
+        for (Frontier f : agent.getFrontiers()) {
             for(Point p : f.getPolygonOutline()) {
                 setPixel(p.x, p.y, Constants.MapColor.frontier());
                 agent.getDirtyCells().add(new Point(p.x, p.y));
@@ -615,7 +639,7 @@ public class ExplorationImage {
                         agent.getDirtyCells().add(new Point(q, j));
                     }
                 }
-           for(int q=f.getCentre().x - 1; q< f.getCentre().x+1; q++)
+            for(int q=f.getCentre().x - 1; q< f.getCentre().x+1; q++)
                 for(int j=f.getCentre().y - 1; j< f.getCentre().y+1; j++)
                     if ((q >= 0) && (j >= 0))
                         setPixel(q, j, Color.YELLOW);
@@ -675,10 +699,9 @@ public class ExplorationImage {
                         setPixel(i, j, c);
                     } //else setPixel(i, j, Color.RED);
                 }
-            for (Point p: borderPoints)
-            {
+            borderPoints.stream().forEach((p) -> {
                 setPixel(p.x, p.y, Color.BLACK);
-            }
+            });
         }
         catch(java.lang.NullPointerException e) {
         }
@@ -748,9 +771,9 @@ public class ExplorationImage {
     
     public void drawHierarchy(RealAgent[] agent) {
         for(int i=1; i<agent.length; i++) {
-            for(int j=0; j<agent.length; j++) {
-                if(agent[j].getID() == agent[i].getParent()) {
-                    for(Point p : pointsAlongThickSegment(agent[i].getLocation(), agent[j].getLocation())) {
+            for (RealAgent agent1 : agent) {
+                if (agent1.getID() == agent[i].getParent()) {
+                    for (Point p : pointsAlongThickSegment(agent[i].getLocation(), agent1.getLocation())) {
                         if(agent[i].getParentTeammate().isInRange())
                             setPixel(p.x, p.y, Constants.MapColor.link());
                         else
@@ -819,7 +842,7 @@ public class ExplorationImage {
     }
 
     public void drawConnections(RealAgent[] agent) {
-        return;/*
+        /*
             for(int i=0; i<agent.length; i++) {
 
             // TEMP SSRR presentation update comm link
@@ -955,10 +978,9 @@ public class ExplorationImage {
     //Adds all points in list2 to list1 (duplicates allowed), returns merged list.
     public LinkedList<Point> mergeLists(LinkedList<Point> list1, LinkedList<Point> list2) {
         if (list1 == list2) return list1;
-        try {
-            for(Point p : list2)
+            list2.stream().forEach((p) -> {
                 list1.add(p);
-        } catch (Exception e) {}
+            });
         return list1;
     }
     

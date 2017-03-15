@@ -48,7 +48,6 @@ package gui;
  * @author Julian de Hoog
  */
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.*;
 
 
 
@@ -58,10 +57,7 @@ public class RobotConfigTableModel extends DefaultTableModel{
     public boolean isCellEditable(int row, int column)
     {
         // Set Rank column to be uneditable
-        if (column == 0)
-            return false;
-        else
-            return true;
+        return column != 0;
     }
     
     

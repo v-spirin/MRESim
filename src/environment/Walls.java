@@ -42,7 +42,10 @@
  *     If not, see <http://www.gnu.org/licenses/>.
  */
 package environment;
-import java.io.*;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
 /**
  *
@@ -303,18 +306,17 @@ public class Walls {
     public static void main(String args[]) {
         String fileName = System.getProperty("user.dir") + "/config/lastWallConfig.txt";
         
-        try{
-            PrintWriter outFile = new PrintWriter(new FileWriter(fileName));
+        try(PrintWriter outFile = new PrintWriter(new FileWriter(fileName))) {
             
             createWallSet2();    
             
             for(int i=0; i<walls[0].length; i++){
-                for(int j=0; j<walls.length; j++)
-                    outFile.print(walls[j][i]);
+                for (int[] wall : walls) {
+                    outFile.print(wall[i]);
+                }
                 outFile.println();
             }
 
-            outFile.close();
         }
         catch(IOException e){
             System.err.println("Error writing to file " + fileName);

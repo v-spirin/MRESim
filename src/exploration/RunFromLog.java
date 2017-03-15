@@ -63,15 +63,13 @@ public class RunFromLog {
 
         if ( file.exists() )           
         {                                         
-            try{
-                BufferedReader inFile = new BufferedReader(new FileReader(file));
+            try(BufferedReader inFile = new BufferedReader(new FileReader(file))) {
                 for(int i=0; i<time; i++)
                     inFile.readLine();
                 
                 String tokens[] = inFile.readLine().split("\\s");
                 nextStep.x = Integer.parseInt(tokens[(agentNo-1)*6 + 1]);
                 nextStep.y = Integer.parseInt(tokens[(agentNo-1)*6 + 2]);                
-                inFile.close();
             }
             catch (NullPointerException e) {
                 // No more data, run finished.
@@ -94,15 +92,13 @@ public class RunFromLog {
 
         if ( file.exists() )           
         {                                         
-            try{
-                BufferedReader inFile = new BufferedReader(new FileReader(file));
+            try(BufferedReader inFile = new BufferedReader(new FileReader(file))) {
                 for(int i=0; i<time; i++)
                     inFile.readLine();
                 
                 String tokens[] = inFile.readLine().split("\\s");
                 nextStep.x = (int)Double.parseDouble(tokens[(agentNo-1)*6 + 3]);
                 nextStep.y = (int)Double.parseDouble(tokens[(agentNo-1)*6 + 4]);                
-                inFile.close();
             }
             catch (NullPointerException e) {
                 // No more data, run finished.
@@ -125,8 +121,7 @@ public class RunFromLog {
 
         if ( file.exists() )           
         {                                         
-            try{
-                BufferedReader inFile = new BufferedReader(new FileReader(file));
+            try(BufferedReader inFile = new BufferedReader(new FileReader(file))) {
                 for(int i=0; i<time; i++)
                     inFile.readLine();
                 
@@ -141,7 +136,6 @@ public class RunFromLog {
                 if (state.equals("ReturnToParent")) return ExploreState.ReturnToParent;
                 if (state.equals("WaitForChild")) return ExploreState.WaitForChild;
                 if (state.equals("WaitForParent")) return ExploreState.WaitForParent;
-                inFile.close();
             }
             catch (NullPointerException e) {
                 // No more data, run finished.
@@ -164,8 +158,7 @@ public class RunFromLog {
 
         if ( file.exists() )           
         {                                         
-            try{
-                BufferedReader inFile = new BufferedReader(new FileReader(file));
+            try(BufferedReader inFile = new BufferedReader(new FileReader(file))) {
                 for(int i=0; i<time; i++)
                     inFile.readLine();
                 
@@ -174,7 +167,6 @@ public class RunFromLog {
                 if (role.equals("BaseStation")) return RobotConfig.roletype.BaseStation;
                 if (role.equals("Explorer")) return RobotConfig.roletype.Explorer;
                 if (role.equals("Relay")) return RobotConfig.roletype.Relay;            
-                inFile.close();
             }
             catch (NullPointerException e) {
                 // No more data, run finished.
