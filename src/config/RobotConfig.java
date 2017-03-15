@@ -89,7 +89,7 @@ public class RobotConfig {
         speed = 10;
     }
 
-    public RobotConfig(int newRobotNo, String newName, int newStartX, int newStartY, double newStartHeading, int newSensingRange, int newCommRange, int newBatteryLife, String newRole, int newParent, int newChild, int newAbility, int newComStationLimit) {
+    public RobotConfig(int newRobotNo, String newName, int newStartX, int newStartY, double newStartHeading, int newSensingRange, int newCommRange, int newBatteryLife, String newRole, int newParent, int newChild, int newAbility, int newComStationLimit, int newSpeed) {
         robotNumber = newRobotNo;
         name = newName;
         startX = newStartX;
@@ -104,7 +104,7 @@ public class RobotConfig {
         loggingState = false;
         ability = newAbility;
         comStationLimit = newComStationLimit;
-        speed = 10;
+        speed = newSpeed;
     }
     
     public RobotConfig(String newRobotNumber, String newName, String start, String newSensingRange, String newCommRange, String newBatteryLife, String newRole, String newParent, String newChild, String newAbility, String newComStationLimit, String newSpeed) {

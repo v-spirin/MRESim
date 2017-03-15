@@ -85,9 +85,11 @@ public class RobotTeamConfig {
     }
     
     public String[] getAllRoles() {
-        String[] roles = new String[2];
-        roles[0] = RobotConfig.roletype.Explorer.name();
-        roles[1] = RobotConfig.roletype.Relay.name();
+        String[] roles = new String[4];
+        roles[0] = RobotConfig.roletype.BaseStation.name();
+        roles[1] = RobotConfig.roletype.Explorer.name();
+        roles[2] = RobotConfig.roletype.Relay.name();
+        roles[3] = RobotConfig.roletype.RelayStation.name();
         return roles;
     }
     
@@ -203,7 +205,9 @@ public class RobotTeamConfig {
                                                     Integer.parseInt(tokens[9]),
                                                     Integer.parseInt(tokens[10]),
                                                     Integer.parseInt(tokens[11]),
-                                                    Integer.parseInt(tokens[12]));
+                                                    Integer.parseInt(tokens[12]),
+                                                    Integer.parseInt(tokens[13])
+            );
             numRobots++;
             robotTeam.put(currRobot.getRobotNumber(), currRobot);
         }

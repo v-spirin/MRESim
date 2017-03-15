@@ -347,7 +347,7 @@ public class RobotConfigDialog extends JDialog {
 
         // Let window X being clicked be handled by windowClosing method
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-        setSize(749, 330);
+        setSize(950, 330);
         this.addWindowListener(windowListener);
         
         // center on screen
@@ -382,6 +382,7 @@ public class RobotConfigDialog extends JDialog {
             addLine[8] = String.valueOf(currRobot.getChild());
             addLine[9] = String.valueOf(currRobot.getAbility());
             addLine[10] = String.valueOf(currRobot.getComStationLimit());
+            addLine[11] = String.valueOf(currRobot.getSpeed());
             
             model.addRow(addLine);
         }
