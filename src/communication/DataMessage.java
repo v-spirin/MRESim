@@ -60,6 +60,7 @@ import java.util.Set;
  * @author julh
  */
 public class DataMessage implements IDataMessage {
+
     public int ID;
     public int x;
     public int y;
@@ -81,22 +82,24 @@ public class DataMessage implements IDataMessage {
     //TODO: the above need to be encapsulated into ...DataMessage classes by group, and made final, like below
     public final List<IDataMessage> messages;
     public int newInfo;
-    
+
     public DataMessage(RealAgent agent, int direct) {
         ID = agent.getRobotNumber();
         x = agent.getX();
         y = agent.getY();
-        if (agent.getOccupancyGrid() != null)
+        if (agent.getOccupancyGrid() != null) {
             occGrid = agent.getOccupancyGrid().copy();
+        }
         timeLastCentralCommand = agent.getStats().getTimeLastCentralCommand();
         lastContactAreaKnown = agent.getStats().getLastContactAreaKnown();
-        if(agent.getPath() != null)
+        if (agent.getPath() != null) {
             pathLength = agent.getPath().getLength();
-        else
-            pathLength = 0;        
+        } else {
+            pathLength = 0;
+        }
         missionComplete = agent.isMissionComplete();
         state = agent.getState();
-        directComm = (direct==1);
+        directComm = (direct == 1);
         distToBase = agent.distanceToBase();
         speed = agent.getSpeed();
         relayID = agent.getID();
@@ -105,12 +108,13 @@ public class DataMessage implements IDataMessage {
         teammates = agent.getAllTeammates().values();
         timeBaseMessageListSize = agent.getStats().getTimeBaseMessageListSize();
         newInfo = agent.getStats().getNewInfo();
-        
-        if(agent.getLastFrontier() != null)
+
+        if (agent.getLastFrontier() != null) {
             frontierCentre = new Point(agent.getLastFrontier().getCentre());//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid()));
-        else
+        } else {
             frontierCentre = new Point(agent.getLocation());
-        
+        }
+
         messages = new LinkedList<IDataMessage>();
         RendezvousDataMessage rvDataMessage = new RendezvousDataMessage(agent.getRendezvousAgentData());
         messages.add(rvDataMessage);
@@ -132,52 +136,57 @@ public class DataMessage implements IDataMessage {
         teammate.setRelayID(relayID);
         teammate.setFrontierCentre(frontierCentre);
         teammate.setNewInfo(newInfo); //needed for UtilExploration to correctly execute updateAreaRelayed
-        if(teammate.getID() == agent.getChild() && teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
+        if (teammate.getID() == agent.getChild() && teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
             agent.setMissionComplete(missionComplete);
         }
         teammate.setTimeSinceLastComm(0);
-        
+
         //Update information about other teammates
         if (agent.getSimConfig().timeStampTeammateDataEnabled()) {
-            for(TeammateAgent remoteTeammateInfo: teammates) {
+            for (TeammateAgent remoteTeammateInfo : teammates) {
                 TeammateAgent localTeammateInfo = agent.getTeammateByNumber(remoteTeammateInfo.getRobotNumber());
                 if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(agent + "remoteTeammate: " + remoteTeammateInfo + 
-                        ", localTeammate: " + localTeammateInfo);
+                    System.out.println(agent + "remoteTeammate: " + remoteTeammateInfo
+                            + ", localTeammate: " + localTeammateInfo);
                 }
                 if (localTeammateInfo != null) {
                     if (localTeammateInfo.getTimeSinceLastComm() > remoteTeammateInfo.getTimeSinceLastComm()) {
                         localTeammateInfo.setX(remoteTeammateInfo.getX());
                         localTeammateInfo.setY(remoteTeammateInfo.getY());
                         localTeammateInfo.setSpeed(remoteTeammateInfo.getSpeed());
-                        if (remoteTeammateInfo.getFrontierCentre() != null)
+                        if (remoteTeammateInfo.getFrontierCentre() != null) {
                             localTeammateInfo.setFrontierCentre(new Point(remoteTeammateInfo.getFrontierCentre()));
+                        }
                         localTeammateInfo.setTimeSinceLastComm(remoteTeammateInfo.getTimeSinceLastComm());
                     }
                 }
             }
         }
-        
+
         //Merge bad frontier information
         badFrontiers.stream().filter((badFrontier) -> (!agent.isBadFrontier(badFrontier))).forEach((badFrontier) -> {
             agent.addBadFrontier(badFrontier);
         });
-        
-        if(teammate.getTimeLastCentralCommand() < timeLastCentralCommand)
+
+        if (teammate.getTimeLastCentralCommand() < timeLastCentralCommand) {
             timeLastCentralCommand = teammate.getTimeLastCentralCommand();
-        if (teammate.getLastContactAreaKnown() > agent.getStats().getLastContactAreaKnown())
+        }
+        if (teammate.getLastContactAreaKnown() > agent.getStats().getLastContactAreaKnown()) {
             agent.getStats().setLastContactAreaKnown(teammate.getLastContactAreaKnown());
-        
+        }
+
         double rateOfInfoGatheringBelief = maxRateOfInfoGatheringBelief;
-        if (rateOfInfoGatheringBelief > agent.getStats().getMaxRateOfInfoGatheringBelief())
+        if (rateOfInfoGatheringBelief > agent.getStats().getMaxRateOfInfoGatheringBelief()) {
             agent.getStats().setMaxRateOfInfoGatheringBelief(rateOfInfoGatheringBelief);
-        
+        }
+
         // This is for max/avg latency for message from base station
-        if (teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID)
+        if (teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
             agent.getStats().commWithTeammate(agent.getTimeElapsed(), timeBaseMessageListSize);
-        else
+        } else {
             agent.getStats().commWithBaseStation(agent.getTimeElapsed());
-        
+        }
+
         //Process other messages
         messages.stream().forEach((msg) -> {
             msg.receiveMessage(agent, teammate);

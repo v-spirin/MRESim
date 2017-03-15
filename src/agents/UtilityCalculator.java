@@ -48,21 +48,20 @@ package agents;
  * @author Victor
  */
 public class UtilityCalculator {
-    public static double calculateComStationUtility(double informationGain, int timeOfAcquiring, int current_time)
-    {
+
+    public static double calculateComStationUtility(double informationGain, int timeOfAcquiring, int current_time) {
         return calculateComStationUtility(informationGain, timeOfAcquiring, current_time, 1000000);
     }
-    
-    public static double calculateComStationUtility(double informationGain, int timeOfAcquiring, int current_time, int N)
-    {
+
+    public static double calculateComStationUtility(double informationGain, int timeOfAcquiring, int current_time, int N) {
         //int change_limit = 500;
         //current_time += timeOfAcquiring;
         int time_limit = N;//current_time * 100; //after this limit, utility gets negative
         //if (current_time > change_limit) time_limit = current_time * 750;
         //double scaling_factor = 1 - (double)timeOfAcquiring / time_limit; // utility diminishes linearly over time
-        double scaling_factor = -Math.pow((double)(timeOfAcquiring)/1000, 6);
+        double scaling_factor = -Math.pow((double) (timeOfAcquiring) / 1000, 6);
         //if (scaling_factor < 0) scaling_factor = 0;
-       return (informationGain * scaling_factor);
+        return (informationGain * scaling_factor);
         //return (int) (informationGain * (-Math.exp((double)timeOfAcquiring / (double)time_limit)));
     }
 }

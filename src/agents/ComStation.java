@@ -47,7 +47,6 @@ import config.RobotConfig;
 import config.SimulatorConfig;
 import java.awt.Point;
 
-
 /**
  *
  * @author julh
@@ -55,8 +54,6 @@ import java.awt.Point;
 public class ComStation extends RealAgent implements Agent {
 
 // <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">
-
-
     public ComStation(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig) {
         super(envWidth, envHeight, robot, simConfig);
         this.setChild(1);
@@ -64,7 +61,6 @@ public class ComStation extends RealAgent implements Agent {
         this.speed = 0;
     }
 // </editor-fold>   
-
 
     @Override
     public void writeStep(Point nextLoc, double[] sensorData) {

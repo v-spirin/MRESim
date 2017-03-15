@@ -52,13 +52,16 @@ import exploration.rendezvous.RendezvousAgentData;
 import java.awt.Point;
 
 /**
- * The TeammateAgent class is used to store the knowledge of an agent about their teammates.
- * Fields in this class represent what the agent can know about their teammates.
+ * The TeammateAgent class is used to store the knowledge of an agent about
+ * their teammates. Fields in this class represent what the agent can know about
+ * their teammates.
+ *
  * @author julh
  */
 public class TeammateAgent extends BasicAgent implements Agent {
-    
-    int timeLastCentralCommand;   /* units of time elapsed since command 
+
+    int timeLastCentralCommand;
+    /* units of time elapsed since command 
                                      received from ComStation */
     int lastContactAreaKnown;
     private boolean inRange;
@@ -72,49 +75,49 @@ public class TeammateAgent extends BasicAgent implements Agent {
     private double pathLength;
     int relayID;
     private int newInfo;
-    
+
     private RendezvousAgentData rendezvousAgentData;
 
     public TeammateAgent(RobotConfig robot) {
-        super(robot.getRobotNumber(), 
-              robot.getName(), 
-              robot.getRobotNumber(), 
-              robot.getStartX(), 
-              robot.getStartY(), 
-              robot.getStartHeading(),
-              robot.getSensingRange(), 
-              robot.getCommRange(), 
-              robot.getBatteryLife(), 
-              robot.getRole(),
-              robot.getParent(),
-              robot.getChild(),
-              Constants.STEP_SIZE,
-              robot.getAbility(),
-              robot.getComStationLimit()
+        super(robot.getRobotNumber(),
+                robot.getName(),
+                robot.getRobotNumber(),
+                robot.getStartX(),
+                robot.getStartY(),
+                robot.getStartHeading(),
+                robot.getSensingRange(),
+                robot.getCommRange(),
+                robot.getBatteryLife(),
+                robot.getRole(),
+                robot.getParent(),
+                robot.getChild(),
+                Constants.STEP_SIZE,
+                robot.getAbility(),
+                robot.getComStationLimit()
         );
-        
+
         inRange = false;
         timeSinceLastComm = 0;
         pathLength = 0;
         rendezvousAgentData = new RendezvousAgentData(this);
     }
-    
+
     public TeammateAgent(TeammateAgent toCopy) {
-        super(toCopy.getRobotNumber(), 
-              toCopy.getName(), 
-              toCopy.getID(),
-              toCopy.getX(), 
-              toCopy.getY(), 
-              toCopy.getHeading(),
-              toCopy.getSenseRange(),
-              toCopy.getCommRange(), 
-              toCopy.getBatteryPower(), 
-              toCopy.getRole(),
-              toCopy.getParent(),
-              toCopy.getChild(),
-              toCopy.getSpeed(),
-              toCopy.getAbility(),
-              toCopy.getComStationLimit()
+        super(toCopy.getRobotNumber(),
+                toCopy.getName(),
+                toCopy.getID(),
+                toCopy.getX(),
+                toCopy.getY(),
+                toCopy.getHeading(),
+                toCopy.getSenseRange(),
+                toCopy.getCommRange(),
+                toCopy.getBatteryPower(),
+                toCopy.getRole(),
+                toCopy.getParent(),
+                toCopy.getChild(),
+                toCopy.getSpeed(),
+                toCopy.getAbility(),
+                toCopy.getComStationLimit()
         );
         this.childRendezvous = toCopy.childRendezvous;
         this.parentRendezvous = toCopy.parentRendezvous;
@@ -127,19 +130,19 @@ public class TeammateAgent extends BasicAgent implements Agent {
     public int getTimeLastCentralCommand() {
         return this.timeLastCentralCommand;
     }
-    
+
     public void setTimeLastCentralCommand(int t) {
         this.timeLastCentralCommand = t;
     }
-    
+
     public int getTimeSinceLastComm() {
         return this.timeSinceLastComm;
     }
-    
+
     public void setTimeSinceLastComm(int t) {
         this.timeSinceLastComm = t;
     }
-    
+
     public boolean isInDirectRange() {
         return inDirectRange;
     }
@@ -162,72 +165,72 @@ public class TeammateAgent extends BasicAgent implements Agent {
     public OccupancyGrid getOccupancyGrid() {
         return occGrid;
     }
-    
+
     public void setOccupancyGrid(OccupancyGrid og) {
         this.occGrid = og;
     }
-    
+
     public TeammateAgent copy() {
         return new TeammateAgent(this);
     }
-    
+
     public boolean isExplorer() {
         return role.equals(roletype.Explorer);
     }
-    
+
     public void setExplorer() {
         role = roletype.Explorer;
     }
-    
+
     public void setRelay() {
         role = roletype.Relay;
     }
-    
+
     public Point getFrontierCentre() {
         return frontierCentre;
     }
-    
+
     public void setFrontierCentre(Point frontierCentre) {
         this.frontierCentre = frontierCentre;
     }
-    
+
     public double getPathLength() {
         return pathLength;
     }
-    
+
     public void setPathLength(double lgth) {
         pathLength = lgth;
     }
-    
+
     public RendezvousAgentData getRendezvousAgentData() {
         return rendezvousAgentData;
     }
-    
+
     public void setLastContactAreaKnown(int lastContactArea) {
         lastContactAreaKnown = lastContactArea;
     }
-    
+
     public int getLastContactAreaKnown() {
         return lastContactAreaKnown;
     }
-    
+
     public void setRelayID(int relayID) {
         this.relayID = relayID;
     }
-    
+
     public void setNewInfo(int newInfo) {
         this.newInfo = newInfo;
     }
-    
+
     public int getNewInfo() {
         return this.newInfo;
     }
-    
+
     @Override
     public int getID() {
         return ID;
     }
-    
+
     @Override
     public String toString() {
         return "Name: " + getName() + ", Number: " + getRobotNumber() + ", ID: " + getID();

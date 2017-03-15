@@ -53,17 +53,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-
 /**
  * Describes the model of the simulator configuration.
+ *
  * @author julh
  */
-
 public class SimulatorConfig {
-    
+
 // <editor-fold defaultstate="collapsed" desc="Variables and Constructor">
-
-
     private boolean logAgents;
     private String logAgentsFilename;
     private boolean logData;
@@ -75,14 +72,20 @@ public class SimulatorConfig {
     private boolean useComStations;
     private double comStationDropChance;
 
-
-    
-    public static enum commtype {StaticCircle, DirectLine, PropModel1}
+    public static enum commtype {
+        StaticCircle, DirectLine, PropModel1
+    }
     private commtype commModel;
     private int simRate;
     private Environment env;
-    public static enum exptype {BatchRun, RunFromLog, LeaderFollower, FrontierExploration, RoleBasedExploration, Testing}
-    public static enum frontiertype {RangeConstrained, PeriodicReturn, ReturnWhenComplete, UtilReturn}
+
+    public static enum exptype {
+        BatchRun, RunFromLog, LeaderFollower, FrontierExploration, RoleBasedExploration, Testing
+    }
+
+    public static enum frontiertype {
+        RangeConstrained, PeriodicReturn, ReturnWhenComplete, UtilReturn
+    }
     public double TARGET_INFO_RATIO;
     private exptype expAlgorithm;
     private frontiertype frontierAlgorithm;
@@ -92,18 +95,18 @@ public class SimulatorConfig {
     private boolean useStrictRoleSwitch;
     private boolean RVThroughWallsEnabled;
     private boolean RVCommRangeEnabled;
-    
+
     private boolean timeStampTeammateData; //timestamp our teammate data; update with newest when communicating
-                                           //with other agents
+    //with other agents
     private boolean useTeammateNextFrontierAsLocationWhenOutOfRange; //when we are out of range with a teammate,
-                                            //instead of their location at the time of last communication, use the
-                                            //frontier they said they were heading towards as their assumed location
+    //instead of their location at the time of last communication, use the
+    //frontier they said they were heading towards as their assumed location
     private boolean keepAssigningRobotsToFrontiers; //if there are more robots than frontiers, some robots will not have
     //a frontier allocated to them. If this is false, they will get a frontier assigned to them without regard for other
     //agents, i.e. usually the nearest frontier to them (even if there is another unassigned robot that is closer to that
     //frontier. If it is set to True, then unassigned robots will still bid for all the frontiers and assign themselves
     //to frontiers more evenly.
-    
+
     private boolean baseRange; //if true, agents will try to navigate to base station range rather than to base station
     //itself. This can yield great benefits as the actual path to base can be very convoluted, but the base comm range
     //can actually be very near to agent's current position (but there may be obstacles between agent and base station.
@@ -116,7 +119,7 @@ public class SimulatorConfig {
 
     public SimulatorConfig() {
         boolean oldEnvVariableConfigFound = loadOldSimulatorConfig();
-        if(!oldEnvVariableConfigFound) {
+        if (!oldEnvVariableConfigFound) {
             //set defaults
             expAlgorithm = exptype.RoleBasedExploration;
             frontierAlgorithm = frontiertype.PeriodicReturn;
@@ -145,15 +148,15 @@ public class SimulatorConfig {
             comStationDropChance = 0;
             useComStations = false;
         }
-        
+
         boolean oldWallConfigFound = loadOldWallConfig();
-        if(!oldWallConfigFound)
+        if (!oldWallConfigFound) {
             env = new Environment(Constants.MAX_ROWS, Constants.MAX_COLS);
+        }
     }
 // </editor-fold>
-    
-// <editor-fold defaultstate="collapsed" desc="Get and Set">
 
+// <editor-fold defaultstate="collapsed" desc="Get and Set">
     public boolean useComStations() {
         return useComStations;
     }
@@ -161,6 +164,7 @@ public class SimulatorConfig {
     public double getComStationDropChance() {
         return comStationDropChance;
     }
+
     public void setUseComStations(boolean selected) {
         this.useComStations = selected;
     }
@@ -172,11 +176,11 @@ public class SimulatorConfig {
     public commtype getCommModel() {
         return commModel;
     }
-    
+
     public void setCommModel(int n) {
         commModel = commtype.values()[n];
     }
-    
+
     public exptype getExpAlgorithm() {
         return expAlgorithm;
     }
@@ -192,15 +196,15 @@ public class SimulatorConfig {
     public void setExpAlgorithm(exptype eType) {
         expAlgorithm = eType;
     }
-    
+
     public void setRunFromLogFilename(String f) {
         runFromLogFilename = f;
     }
-    
+
     public void setBatchFilename(String f) {
         batchFilename = f;
     }
-    
+
     public String getBatchFilename() {
         return batchFilename;
     }
@@ -220,27 +224,27 @@ public class SimulatorConfig {
     public int getSimRate() {
         return simRate;
     }
-    
+
     public void setSimRate(int s) {
         simRate = s;
     }
-    
+
     public Environment getEnv() {
         return env;
     }
-    
+
     public boolean logAgents() {
         return logAgents;
     }
-    
+
     public void setLogAgents(boolean log) {
         logAgents = log;
     }
-    
+
     public String getLogAgentFilename() {
         return logAgentsFilename;
     }
-    
+
     public void setLogAgentsFilename(String f) {
         logAgentsFilename = f;
     }
@@ -300,6 +304,7 @@ public class SimulatorConfig {
     public void setReplanningAllowed(boolean rs) {
         allowReplanning = rs;
     }
+
     public boolean useImprovedRendezvous() {
         return useImprovedRendezvous;
     }
@@ -307,117 +312,112 @@ public class SimulatorConfig {
     public void setUseImprovedRendezvous(boolean rv) {
         useImprovedRendezvous = rv;
     }
-    
+
     public boolean RVCommRangeEnabled() {
         return RVCommRangeEnabled;
     }
-    
-    public void setRVCommRangeEnabled(boolean rvCommRangeEnabled)
-    {
+
+    public void setRVCommRangeEnabled(boolean rvCommRangeEnabled) {
         this.RVCommRangeEnabled = rvCommRangeEnabled;
     }
-    
+
     public boolean RVThroughWallsEnabled() {
         return RVThroughWallsEnabled;
     }
-    
+
     public void setRVThroughWallsEnabled(boolean rvThroughWallsEnabled) {
         this.RVThroughWallsEnabled = rvThroughWallsEnabled;
     }
-    
+
     public boolean timeStampTeammateDataEnabled() {
         return timeStampTeammateData;
     }
-    
+
     public void setTimeStampTeammateDataEnabled(boolean setting) {
         timeStampTeammateData = setting;
     }
-    
+
     public boolean useTeammateNextFrontierAsLocationWhenOutOfRange() {
         return useTeammateNextFrontierAsLocationWhenOutOfRange;
     }
-    
+
     public void setUseTeammateNextFrontierAsLocationWhenOutOfRange(boolean setting) {
         useTeammateNextFrontierAsLocationWhenOutOfRange = setting;
     }
-    
+
     public boolean keepAssigningRobotsToFrontiers() {
         return keepAssigningRobotsToFrontiers;
     }
-    
+
     public void setKeepAssigningRobotsToFrontiers(boolean setting) {
         keepAssigningRobotsToFrontiers = setting;
     }
-    
+
     public void setBaseRange(boolean br) {
         baseRange = br;
     }
-    
+
     public boolean getBaseRange() {
         return baseRange;
     }
-    
+
     public void setSamplingDensity(double density) {
         samplingDensity = density;
     }
-    
+
     public double getSamplingDensity() {
         return samplingDensity;
     }
-    
+
     public void setRelayExplore(boolean s) {
         relayExplore = s;
     }
-    
+
     public boolean getRelayExplore() {
         return relayExplore;
     }
-    
+
     public void setTryToGetToExplorerRV(boolean s) {
         tryToGetToExplorerRV = s;
     }
-    
+
     public boolean getTryToGetToExplorerRV() {
         return tryToGetToExplorerRV;
     }
-    
+
     public void setUseSingleMeetingTime(boolean s) {
         useSingleMeetingTime = s;
     }
-    
+
     public boolean getUseSingleMeetingTime() {
         return useSingleMeetingTime;
     }
-    
+
     public void setExploreReplan(boolean s) {
         exploreReplan = s;
     }
-    
+
     public boolean getExploreReplan() {
         return exploreReplan;
     }
 // </editor-fold>
 
-
 // <editor-fold defaultstate="collapsed" desc="Load and Save">
-
-
-
     private boolean loadOldSimulatorConfig() {
         String oldConfigFilename = System.getProperty("user.dir") + "/config/lastSimulatorConfig.txt";
         File file = new File(oldConfigFilename);
-        if (file.exists())
+        if (file.exists()) {
             return loadSimulatorConfig(oldConfigFilename);
-        else
+        } else {
             return false;
+        }
     }
-    
-    public boolean loadSimulatorConfig(String fileName) {
-        File file = new File(fileName); 
 
-        if ( file.exists() )           
-        {                                         
-            try(BufferedReader inFile = new BufferedReader(new FileReader(file))) {
+    public boolean loadSimulatorConfig(String fileName) {
+        File file = new File(fileName);
+
+        if (file.exists()) {
+            try (BufferedReader inFile = new BufferedReader(new FileReader(file))) {
 
                 expAlgorithm = exptype.valueOf(inFile.readLine());
                 frontierAlgorithm = frontiertype.valueOf(inFile.readLine());
@@ -436,111 +436,83 @@ public class SimulatorConfig {
                 simRate = Integer.parseInt(inFile.readLine());
                 RVCommRangeEnabled = Boolean.parseBoolean(inFile.readLine());
                 RVThroughWallsEnabled = Boolean.parseBoolean(inFile.readLine());
-                try
-                {
+                try {
                     TARGET_INFO_RATIO = Double.parseDouble(inFile.readLine());
-                } catch (IOException | NumberFormatException e)
-                {
+                } catch (IOException | NumberFormatException e) {
                     TARGET_INFO_RATIO = 0.9;
                 }
-                try
-                {
+                try {
                     timeStampTeammateData = Boolean.parseBoolean(inFile.readLine());
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     timeStampTeammateData = true;
                 }
-                try
-                {
+                try {
                     useTeammateNextFrontierAsLocationWhenOutOfRange = Boolean.parseBoolean(inFile.readLine());
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     useTeammateNextFrontierAsLocationWhenOutOfRange = false;
                 }
-                
-                try
-                {
+
+                try {
                     keepAssigningRobotsToFrontiers = Boolean.parseBoolean(inFile.readLine());
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     keepAssigningRobotsToFrontiers = true;
                 }
-                
-                try
-                {
+
+                try {
                     batchFilename = String.valueOf(inFile.readLine());
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     batchFilename = "";
                 }
-                
-                try
-                {
+
+                try {
                     baseRange = Boolean.parseBoolean(inFile.readLine());
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     baseRange = false;
                 }
-                
-                try
-                {
+
+                try {
                     samplingDensity = Double.parseDouble(inFile.readLine());
-                } catch (IOException | NumberFormatException e)
-                {
+                } catch (IOException | NumberFormatException e) {
                     samplingDensity = 400;
                 }
-                
-                try
-                {
+
+                try {
                     relayExplore = Boolean.parseBoolean(inFile.readLine());
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     relayExplore = false;
                 }
-                
-                try
-                {
+
+                try {
                     exploreReplan = Boolean.parseBoolean(inFile.readLine());
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     exploreReplan = false;
                 }
-                
-                try
-                {
+
+                try {
                     tryToGetToExplorerRV = Boolean.parseBoolean(inFile.readLine());
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     tryToGetToExplorerRV = false;
                 }
-                
-                try
-                {
+
+                try {
                     useSingleMeetingTime = Boolean.parseBoolean(inFile.readLine());
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     useSingleMeetingTime = false;
                 }
-                try
-                {
+                try {
                     useComStations = Boolean.parseBoolean(inFile.readLine());
-                } catch (Exception e)
-                {
+                } catch (Exception e) {
                     useComStations = false;
                 }
-                try
-                {
+                try {
                     comStationDropChance = Double.parseDouble(inFile.readLine());
-                } catch (IOException | NumberFormatException e)
-                {
+                } catch (IOException | NumberFormatException e) {
                     comStationDropChance = 0.02;
                 }
 
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 System.err.println(this.toString() + "Error: could not read data from " + fileName);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 System.err.println(this.toString() + "Error: incorrect data format in file " + fileName);
             }
             return true;
@@ -548,29 +520,29 @@ public class SimulatorConfig {
         return false;
     }
 
-    
     private boolean loadOldWallConfig() {
         String oldConfigFilename = System.getProperty("user.dir") + "/config/lastEnvironment.png";
         File file = new File(oldConfigFilename);
-        if (file.exists())
+        if (file.exists()) {
             return loadWallConfig(oldConfigFilename);
-        else
+        } else {
             return false;
+        }
     }
-    
+
     public boolean loadWallConfig(String fileName) {
         env = EnvLoader.loadWallConfig(fileName);
 
         return env != null;
     }
-    
+
     public boolean saveSimulatorConfig() {
         return (this.saveSimulatorConfig(System.getProperty("user.dir") + "/config/lastSimulatorConfig.txt"));
     }
 
     public boolean saveSimulatorConfig(String fileName) {
-        try(PrintWriter outFile = new PrintWriter(new FileWriter(fileName))) {
-            
+        try (PrintWriter outFile = new PrintWriter(new FileWriter(fileName))) {
+
             outFile.println(expAlgorithm.toString());
             outFile.println(frontierAlgorithm.toString());
             outFile.println(runFromLogFilename);
@@ -601,9 +573,8 @@ public class SimulatorConfig {
             outFile.println(useSingleMeetingTime);
             outFile.println(useComStations);
             outFile.println(comStationDropChance);
-            
-        }
-        catch(IOException e){
+
+        } catch (IOException e) {
             System.err.println(this.toString() + "Error writing to file " + fileName);
             return false;
         }
@@ -614,39 +585,38 @@ public class SimulatorConfig {
     public boolean saveWallConfig() {
         return EnvLoader.saveWallConfig(env);
     }
-    
+
 // </editor-fold>
-    
 // <editor-fold defaultstate="collapsed" desc="Utility">
     @Override
     public String toString() {
-        return ("[SimulatorConfig] expAlgorithm: " + expAlgorithm.toString() + 
-                "\n frontierAlgorithm: " + frontierAlgorithm.toString() +
-                "\n runFromLogFilename: " + runFromLogFilename +
-                "\n commModel: " + commModel.toString() +
-                "\n logAgents: " + logAgents +
-                "\n logAgentsFilename: " + logAgentsFilename +
-                "\n logData: " + logData + 
-                "\n logDataFilename: " + logDataFilename +
-                "\n logScreenshots: " + logScreenshots +
-                "\n logScreenshotsDirname: "+ logScreenshotsDirname +
-                "\n useImprovedRendezvous: " + useImprovedRendezvous +
-                "\n allowReplanning: " + allowReplanning +
-                "\n allowRoleSwitch: " + allowRoleSwitch +
-                "\n useStrictRoleSwitch: " + useStrictRoleSwitch +
-                "\n simRate: " + simRate +
-                "\n RVCommRangeEnabled: " + RVCommRangeEnabled +
-                "\n RVThroughWallsEnabled: " + RVThroughWallsEnabled +
-                "\n TARGET_INFO_RATIO: " + TARGET_INFO_RATIO +
-                "\n timeStampTeammateData: " + timeStampTeammateData +
-                "\n useTeammateNextFrontierAsLocationWhenOutOfRange: " + useTeammateNextFrontierAsLocationWhenOutOfRange +
-                "\n keepAssigningRobotsToFrontiers: " + keepAssigningRobotsToFrontiers +
-                "\n batchFilename: " + batchFilename +
-                "\n baseRange: " + baseRange +
-                "\n samplingDensity: " + samplingDensity +
-                "\n relayExplore: " + relayExplore +
-                "\n exploreReplan: " + exploreReplan);
+        return ("[SimulatorConfig] expAlgorithm: " + expAlgorithm.toString()
+                + "\n frontierAlgorithm: " + frontierAlgorithm.toString()
+                + "\n runFromLogFilename: " + runFromLogFilename
+                + "\n commModel: " + commModel.toString()
+                + "\n logAgents: " + logAgents
+                + "\n logAgentsFilename: " + logAgentsFilename
+                + "\n logData: " + logData
+                + "\n logDataFilename: " + logDataFilename
+                + "\n logScreenshots: " + logScreenshots
+                + "\n logScreenshotsDirname: " + logScreenshotsDirname
+                + "\n useImprovedRendezvous: " + useImprovedRendezvous
+                + "\n allowReplanning: " + allowReplanning
+                + "\n allowRoleSwitch: " + allowRoleSwitch
+                + "\n useStrictRoleSwitch: " + useStrictRoleSwitch
+                + "\n simRate: " + simRate
+                + "\n RVCommRangeEnabled: " + RVCommRangeEnabled
+                + "\n RVThroughWallsEnabled: " + RVThroughWallsEnabled
+                + "\n TARGET_INFO_RATIO: " + TARGET_INFO_RATIO
+                + "\n timeStampTeammateData: " + timeStampTeammateData
+                + "\n useTeammateNextFrontierAsLocationWhenOutOfRange: " + useTeammateNextFrontierAsLocationWhenOutOfRange
+                + "\n keepAssigningRobotsToFrontiers: " + keepAssigningRobotsToFrontiers
+                + "\n batchFilename: " + batchFilename
+                + "\n baseRange: " + baseRange
+                + "\n samplingDensity: " + samplingDensity
+                + "\n relayExplore: " + relayExplore
+                + "\n exploreReplan: " + exploreReplan);
     }
 // </editor-fold>
-    
+
 }

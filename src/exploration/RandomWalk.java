@@ -53,88 +53,105 @@ import path.Path;
  *
  * @author julh
  */
-
 public class RandomWalk {
-    
+
     public static Random generator = new Random(Constants.RANDOM_SEED);
-    
+
     public static Point takeStep(RealAgent agent) {
         int maxcounter = 100;
         int ranVar;
         int newX = agent.getX();
         int newY = agent.getY();
         int counter = 0;
-        
+
         boolean found = false;
-        
+
         int acceptableDistanceToWall = Constants.WALL_DISTANCE;
         double speed = agent.getSpeed();
-        
+
         while (!found && counter < maxcounter) {
             // if after 50 iterations, we couldn't find new location, relax the condition about min distance to nearest wall
-            if (counter > (maxcounter / 2)) acceptableDistanceToWall = 1; 
+            if (counter > (maxcounter / 2)) {
+                acceptableDistanceToWall = 1;
+            }
             ranVar = generator.nextInt(26);
 
-            if(ranVar == 0)
+            if (ranVar == 0) {
                 agent.setHeading(agent.getHeading() - Math.PI / 4);
-            else if(ranVar < 3)
+            } else if (ranVar < 3) {
                 agent.setHeading(agent.getHeading() - Math.PI / 8);
-            else if(ranVar < 23)
+            } else if (ranVar < 23) {
                 agent.setHeading(agent.getHeading() + 0);
-            else if(ranVar < 25)
+            } else if (ranVar < 25) {
                 agent.setHeading(agent.getHeading() + Math.PI / 8);
-            else
+            } else {
                 agent.setHeading(agent.getHeading() + Math.PI / 4);
+            }
 
-            if(agent.getHeading() >= Math.PI) agent.setHeading(agent.getHeading() - 2*Math.PI);
-            if(agent.getHeading() < -1*Math.PI) agent.setHeading(agent.getHeading() + 2*Math.PI);
+            if (agent.getHeading() >= Math.PI) {
+                agent.setHeading(agent.getHeading() - 2 * Math.PI);
+            }
+            if (agent.getHeading() < -1 * Math.PI) {
+                agent.setHeading(agent.getHeading() + 2 * Math.PI);
+            }
 
-            newX = agent.getX() + Math.round((float)(speed * Math.cos(agent.getHeading())));
-            newY = agent.getY() + Math.round((float)(speed * Math.sin(agent.getHeading())));
+            newX = agent.getX() + Math.round((float) (speed * Math.cos(agent.getHeading())));
+            newY = agent.getY() + Math.round((float) (speed * Math.sin(agent.getHeading())));
 
-            if(agent.getOccupancyGrid().locationExists(newX, newY) &&
-               agent.getOccupancyGrid().directLinePossible(agent.getX(), agent.getY(), newX, newY) &&
-               !agent.getOccupancyGrid().obstacleWithinDistance(newX, newY, acceptableDistanceToWall)) 
-                    found = true;
-            
+            if (agent.getOccupancyGrid().locationExists(newX, newY)
+                    && agent.getOccupancyGrid().directLinePossible(agent.getX(), agent.getY(), newX, newY)
+                    && !agent.getOccupancyGrid().obstacleWithinDistance(newX, newY, acceptableDistanceToWall)) {
+                found = true;
+            }
+
             counter++;
-            if (speed > 3) speed = speed - 1;
+            if (speed > 3) {
+                speed = speed - 1;
+            }
         }
         // couldn't get a new location, try again but relax the condition about being next to a wall.
         while (!found && counter < 50) {
             ranVar = generator.nextInt(26);
 
-            if(ranVar == 0)
+            if (ranVar == 0) {
                 agent.setHeading(agent.getHeading() - Math.PI / 4);
-            else if(ranVar < 3)
+            } else if (ranVar < 3) {
                 agent.setHeading(agent.getHeading() - Math.PI / 8);
-            else if(ranVar < 23)
+            } else if (ranVar < 23) {
                 agent.setHeading(agent.getHeading() + 0);
-            else if(ranVar < 25)
+            } else if (ranVar < 25) {
                 agent.setHeading(agent.getHeading() + Math.PI / 8);
-            else
+            } else {
                 agent.setHeading(agent.getHeading() + Math.PI / 4);
+            }
 
-            if(agent.getHeading() >= Math.PI) agent.setHeading(agent.getHeading() - 2*Math.PI);
-            if(agent.getHeading() < -1*Math.PI) agent.setHeading(agent.getHeading() + 2*Math.PI);
+            if (agent.getHeading() >= Math.PI) {
+                agent.setHeading(agent.getHeading() - 2 * Math.PI);
+            }
+            if (agent.getHeading() < -1 * Math.PI) {
+                agent.setHeading(agent.getHeading() + 2 * Math.PI);
+            }
 
-            newX = agent.getX() + Math.round((float)(speed * Math.cos(agent.getHeading())));
-            newY = agent.getY() + Math.round((float)(speed * Math.sin(agent.getHeading())));
+            newX = agent.getX() + Math.round((float) (speed * Math.cos(agent.getHeading())));
+            newY = agent.getY() + Math.round((float) (speed * Math.sin(agent.getHeading())));
 
-            if(agent.getOccupancyGrid().locationExists(newX, newY) &&
-               agent.getOccupancyGrid().directLinePossible(agent.getX(), agent.getY(), newX, newY) &&
-               !agent.getOccupancyGrid().obstacleWithinDistance(newX, newY, 1)) 
-                    found = true;
-            
+            if (agent.getOccupancyGrid().locationExists(newX, newY)
+                    && agent.getOccupancyGrid().directLinePossible(agent.getX(), agent.getY(), newX, newY)
+                    && !agent.getOccupancyGrid().obstacleWithinDistance(newX, newY, 1)) {
+                found = true;
+            }
+
             counter++;
-            
-            if (speed > 3) speed = speed - 1;
+
+            if (speed > 3) {
+                speed = speed - 1;
+            }
         }
         Path path = new Path();
         path.setStartPoint(new Point(agent.getX(), agent.getY()));
         path.setGoalPoint(new Point(newX, newY));
         agent.setPath(path);
-        
-        return(new Point(newX, newY));
+
+        return (new Point(newX, newY));
     }
 }

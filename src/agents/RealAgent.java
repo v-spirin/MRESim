@@ -838,10 +838,8 @@ public class RealAgent extends BasicAgent implements Agent {
         if (iAmCloserToBase) {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(toString() + " relaying for " + ag.name + " (" + timeToBase() + " vs " + ag.timeToBase() + ")");
-            } else {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(ag.name + " relaying for " + toString() + " (" + ag.timeToBase() + " vs " + timeToBase() + ")");
-                }
+            } else if (Constants.DEBUG_OUTPUT) {
+                System.out.println(ag.name + " relaying for " + toString() + " (" + ag.timeToBase() + " vs " + timeToBase() + ")");
             }
         }
 

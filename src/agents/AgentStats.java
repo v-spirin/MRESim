@@ -49,13 +49,12 @@ import java.util.LinkedList;
  *
  * @author Victor
  */
-
-
 public class AgentStats {
     //stores the stats on agent's progress; this is mostly used
     //for logging / to observe agent's behaviour
-    
-    private int timeLastCentralCommand;   /* units of time elapsed since command 
+
+    private int timeLastCentralCommand;
+    /* units of time elapsed since command 
                                      received from ComStation */
     private double distanceTraveled;      // Distance traveled
     private int areaKnown;                // How much area this agent knows about
@@ -64,11 +63,11 @@ public class AgentStats {
     private int newInfo;                  // How much area that we know we think is not known at base station
     private int timeLastDirectContactCS; // time since last contact with base station
     private double maxRateOfInfoGatheringBelief;
-    private double currentTotalKnowledgeBelief;    
+    private double currentTotalKnowledgeBelief;
     private double currentBaseKnowledgeBelief;
     private double percentageKnown;
     private int timeSinceLastPlan;        // time passed since last plan was made
-    
+
     private int timeSensing;
     private int lastIncrementedTimeSensing;
     private int timeReturning;
@@ -76,7 +75,7 @@ public class AgentStats {
     private int timeDoubleSensing;
     private int lastIncrementedTimeDoubleSensing;
     private final LinkedList<Integer> timeBaseMessageReceived;
-    
+
     public AgentStats() {
         timeLastCentralCommand = 0;
         distanceTraveled = 0;
@@ -88,85 +87,85 @@ public class AgentStats {
         currentTotalKnowledgeBelief = 0;
         currentBaseKnowledgeBelief = 0;
         timeSinceLastPlan = 0;
-        
+
         lastIncrementedTimeSensing = 0;
         lastIncrementedTimeReturning = 0;
         lastIncrementedTimeDoubleSensing = 0;
-        
+
         timeSensing = 0;
         timeReturning = 0;
         timeDoubleSensing = 0;
         timeBaseMessageReceived = new LinkedList<Integer>();
     }
-    
+
     public int getTimeLastCentralCommand() {
         return this.timeLastCentralCommand;
     }
-    
+
     public void incrementTimeLastCentralCommand() {
         timeLastCentralCommand++;
     }
-    
+
     public double getDistanceTraveled() {
         return this.distanceTraveled;
     }
-    
+
     public double getPercentageKnown() {
         return percentageKnown;
     }
-    
+
     public void setPercentageKnown(double pct) {
         percentageKnown = pct;
     }
-    
+
     public void setGoalArea(int goalArea) {
         areaGoal = goalArea;
     }
-    
+
     public int getGoalArea() {
         return areaGoal;
     }
-    
+
     public void addDistanceTraveled(double newDistance) {
         distanceTraveled += newDistance;
     }
-    
+
     public int getAreaKnown() {
         return this.areaKnown;
     }
-    
+
     public void setAreaKnown(int area) {
         areaKnown = area;
     }
-    
+
     public int getNewInfo() {
         return this.newInfo;
     }
-    
+
     public void setNewInfo(int info) {
         newInfo = info;
     }
-    
+
     public int getTimeLastDirectContactCS() {
         return timeLastDirectContactCS;
     }
-    
+
     public void setTimeLastDirectContactCS(int val) {
         timeLastDirectContactCS = val;
     }
-    
+
     public void incrementLastDirectContactCS() {
         timeLastDirectContactCS++;
     }
-    
+
     public int getLastContactAreaKnown() {
         return this.lastContactAreaKnown;
     }
-    
+
     public void setLastContactAreaKnown(int val) {
         this.lastContactAreaKnown = val;
     }
-    
+
     public int getTimeSinceLastPlan() {
         return timeSinceLastPlan;
     }
@@ -174,38 +173,38 @@ public class AgentStats {
     public void setTimeSinceLastPlan(int t) {
         timeSinceLastPlan = t;
     }
-    
+
     public void incrementTimeSinceLastPlan() {
         timeSinceLastPlan++;
     }
-    
+
     public double getMaxRateOfInfoGatheringBelief() {
         return maxRateOfInfoGatheringBelief;
     }
-    
+
     public void setMaxRateOfInfoGatheringBelief(double rate) {
         maxRateOfInfoGatheringBelief = rate;
     }
-    
+
     public double getCurrentTotalKnowledgeBelief() {
         return currentTotalKnowledgeBelief;
     }
-    
+
     public void setCurrentTotalKnowledgeBelief(double val) {
         currentTotalKnowledgeBelief = val;
     }
-    
+
     // used in utility exploration
     // returns: how much information/utility we assume the base station will already know
     // by the time we deliver out information.
     public double getCurrentBaseKnowledgeBelief() {
-        return currentBaseKnowledgeBelief;        
+        return currentBaseKnowledgeBelief;
     }
-    
+
     public void setCurrentBaseKnowledgeBelief(double val) {
         currentBaseKnowledgeBelief = val;
     }
-    
+
     // general logging/reporting stats
     public void incrementTimeSensing(int curTimestep) {
         if (curTimestep > lastIncrementedTimeSensing) {
@@ -213,7 +212,7 @@ public class AgentStats {
             lastIncrementedTimeSensing = curTimestep;
         }
     }
-    
+
     //If we have sensed new in this timestep, we cannot also doublesense in the same timestep.
     public void incrementTimeDoubleSensing(int curTimestep) {
         if ((curTimestep > lastIncrementedTimeDoubleSensing) && (curTimestep > lastIncrementedTimeSensing)) {
@@ -221,59 +220,63 @@ public class AgentStats {
             lastIncrementedTimeDoubleSensing = curTimestep;
         }
     }
-    
+
     public void incrementTimeReturning(int curTimestep) {
         if (curTimestep > lastIncrementedTimeReturning) {
             timeReturning++;
             lastIncrementedTimeReturning = curTimestep;
         }
     }
-    
+
     // NEW sensing (this does not count double-sensing
     public int getTimeSensing() {
         return timeSensing;
     }
-    
+
     public int getTimeDoubleSensing() {
         return timeDoubleSensing;
     }
-    
+
     public int getTimeReturning() {
         return timeReturning;
     }
-    
+
     public void commWithBaseStation(int curTimestep) {
-        for (int i = timeBaseMessageReceived.size(); i < curTimestep; i++)
+        for (int i = timeBaseMessageReceived.size(); i < curTimestep; i++) {
             timeBaseMessageReceived.add(curTimestep);
+        }
     }
-    
+
     public void commWithTeammate(int curTimestep, int teammateBaseMessageListSize) {
-        for (int i = timeBaseMessageReceived.size(); i < teammateBaseMessageListSize; i++)
+        for (int i = timeBaseMessageReceived.size(); i < teammateBaseMessageListSize; i++) {
             timeBaseMessageReceived.add(curTimestep);
+        }
     }
-    
+
     public int getTimeBaseMessageListSize() {
         return timeBaseMessageReceived.size();
     }
-    
+
     public int getMaxLatency() {
         int maxLatency = 0;
         int curTime = 0;
-        for (Integer item: timeBaseMessageReceived) {
+        for (Integer item : timeBaseMessageReceived) {
             curTime++;
             int latency = item - curTime;
-            if (latency > maxLatency) maxLatency = latency;
+            if (latency > maxLatency) {
+                maxLatency = latency;
+            }
         }
         return maxLatency;
     }
-    
+
     public double getAvgLatency() {
         int totalLatency = 0;
         int curTime = 0;
-        for (Integer item: timeBaseMessageReceived) {
+        for (Integer item : timeBaseMessageReceived) {
             curTime++;
             totalLatency += item - curTime;
         }
-        return (double)totalLatency / (double)curTime;
+        return (double) totalLatency / (double) curTime;
     }
 }

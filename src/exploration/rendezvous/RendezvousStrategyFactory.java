@@ -51,6 +51,7 @@ import config.SimulatorConfig;
  * @author Victor
  */
 public class RendezvousStrategyFactory {
+
     public static IRendezvousStrategy createRendezvousStrategy(SimulatorConfig simConfig, RealAgent agent) {
         if (!simConfig.RVThroughWallsEnabled()) {
             return createSinglePointRendezvousStrategy(simConfig, agent);
@@ -66,7 +67,7 @@ public class RendezvousStrategyFactory {
             return rendezvousStrategy;
         }
     }
-    
+
     public static IRendezvousStrategy createSinglePointRendezvousStrategy(SimulatorConfig simConfig, RealAgent agent) {
         SinglePointRendezvousStrategySettings rvSettings = new SinglePointRendezvousStrategySettings();
         rvSettings.allowReplanning = simConfig.replanningAllowed();
@@ -77,7 +78,7 @@ public class RendezvousStrategyFactory {
         IRendezvousStrategy rendezvousStrategy = new SinglePointRendezvousStrategy(agent, rvSettings);
         return rendezvousStrategy;
     }
-    
+
     public static SinglePointRendezvousStrategy createSinglePointImprovedRendezvousStrategy(RealAgent agent) {
         SinglePointRendezvousStrategySettings rvSettings = new SinglePointRendezvousStrategySettings();
         rvSettings.allowReplanning = false;

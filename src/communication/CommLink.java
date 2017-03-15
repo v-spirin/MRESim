@@ -48,80 +48,82 @@ import java.awt.Point;
 
 /**
  *
- * @author Victor
- * This class represents a communication link between two topological regions of the map.
+ * @author Victor This class represents a communication link between two
+ * topological regions of the map.
  */
-public class CommLink implements Comparable<CommLink>{
+public class CommLink implements Comparable<CommLink> {
+
     private NearRVPoint localPoint = new NearRVPoint(0, 0);
     private NearRVPoint remotePoint = new NearRVPoint(0, 0);
     //private TopologicalNode localNode;
     //private TopologicalNode remoteNode;
     public double utility;
     public int numObstacles;
-    
+
     public CommLink() {
-        
+
     }
-    
+
     public CommLink(Point localPoint, Point remotePoint) {
         this.localPoint = new NearRVPoint(localPoint.x, localPoint.y);
         this.remotePoint = new NearRVPoint(remotePoint.x, remotePoint.y);
         //this.localNode = localNode;
         //this.remoteNode = remoteNode;
     }
-    
+
     public CommLink(NearRVPoint localPoint, NearRVPoint remotePoint) {
         this.localPoint = localPoint;
         this.remotePoint = remotePoint;
         //this.localNode = localNode;
         //this.remoteNode = remoteNode;
     }
-    
+
     @Override
     public int compareTo(CommLink other) {
-        if (other.utility > this.utility)
+        if (other.utility > this.utility) {
             return 1;
-        else
+        } else {
             return -1;
+        }
     }
-    
+
     public CommLink createReverseLink() {
         CommLink reverseLink = new CommLink(remotePoint, localPoint);
         return reverseLink;
     }
-    
+
     public void setLocalPoint(Point localPoint) {
         this.localPoint = new NearRVPoint(localPoint.x, localPoint.y);
     }
-    
+
     public NearRVPoint getLocalPoint() {
         return localPoint;
     }
-    
+
     public void setRemotePoint(Point remotePoint) {
         this.remotePoint = new NearRVPoint(remotePoint.x, remotePoint.y);
     }
-    
+
     public NearRVPoint getRemotePoint() {
         return remotePoint;
     }
-    
+
     public double getDistanceLocalToFrontier() {
         return localPoint.distanceToFrontier;
     }
-    
+
     public double getDistanceLocalToParent() {
         return localPoint.distanceToParent;
     }
-    
+
     public double getDistanceRemoteToFrontier() {
         return remotePoint.distanceToFrontier;
     }
-    
+
     public double getDistanceRemoteToParent() {
         return remotePoint.distanceToParent;
     }
-    
+
     /*public void setLocalNode(TopologicalNode localNode) {
         this.localNode = localNode;
     }

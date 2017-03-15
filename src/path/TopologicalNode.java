@@ -51,64 +51,57 @@ import java.util.LinkedList;
  * @author Victor
  */
 public class TopologicalNode {
+
     private int ID;
     private Point position;
     private LinkedList<TopologicalNode> neighbours;
     private LinkedList<Path> neighbour_paths;
     private LinkedList<Point> cells; //occupancy grid cells allocated to this node
-    
-    public TopologicalNode(int ID, Point position)
-    {
+
+    public TopologicalNode(int ID, Point position) {
         this.ID = ID;
-        this.position = (Point)position.clone();
+        this.position = (Point) position.clone();
         neighbours = new LinkedList<TopologicalNode>();
         neighbour_paths = new LinkedList<Path>();
         cells = new LinkedList<Point>();
     }
-    
-    public int getID()
-    {
+
+    public int getID() {
         return ID;
     }
-    
-    public void setID(int ID)
-    {
+
+    public void setID(int ID) {
         this.ID = ID;
     }
-    
-    public Point getPosition()
-    {
+
+    public Point getPosition() {
         return position;
     }
-    
-    public void addNeighbour(TopologicalNode neighbour, Path path)
-    {
-        if (!neighbours.contains(neighbour))
-        {
+
+    public void addNeighbour(TopologicalNode neighbour, Path path) {
+        if (!neighbours.contains(neighbour)) {
             neighbours.add(neighbour);
             neighbour_paths.add(path);
         }
     }
-    
-    public LinkedList<TopologicalNode> getListOfNeighbours()
-    {
+
+    public LinkedList<TopologicalNode> getListOfNeighbours() {
         return neighbours;
     }
-    public Path getPathToNeighbour(TopologicalNode neighbour)
-    {
+
+    public Path getPathToNeighbour(TopologicalNode neighbour) {
         try {
             int index = neighbours.indexOf(neighbour);
             return neighbour_paths.get(index);
-        } catch (IndexOutOfBoundsException ex)
-        {
+        } catch (IndexOutOfBoundsException ex) {
             return null;
         }
     }
-    
+
     public void addCell(Point p) {
         cells.add(p);
     }
-    
+
     public LinkedList<Point> getCellList() {
         return cells;
     }

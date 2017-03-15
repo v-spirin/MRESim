@@ -79,52 +79,54 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 /**
  *
- * @author  Julian de Hoog
+ * @author Julian de Hoog
  */
 public class MainGUI extends javax.swing.JFrame {
-    
+
     private RobotTeamConfig robotTeamConfig;
     private SimulatorConfig simConfig;
-    public static enum runMode {running, paused, stopped}
+
+    public static enum runMode {
+        running, paused, stopped
+    }
     private runMode RUNMODE;
     private ExplorationImage explorationImage;
     private SimulationFramework simulation;
-    
+
     private ShowSettings showSettings;
     private ShowSettingsAgent[] showSettingsAgents;
 
     private boolean showConnex;
-    
+
     private JFrame graphFrame;
     private JPanel graphPanel;
     public Map<Integer, Double> jointKnowledge = new HashMap();
-    
-    /** Creates new form MainGUI */
+
+    /**
+     * Creates new form MainGUI
+     */
     public MainGUI() {
         RUNMODE = runMode.stopped;
         initComponents();
         this.addWindowListener(windowListener);
         // center on screen
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        int x = (dim.width-getSize().width)/2;
-        int y = (dim.height-getSize().height)/2;
+        int x = (dim.width - getSize().width) / 2;
+        int y = (dim.height - getSize().height) / 2;
         setLocation(x, y);
 
         robotTeamConfig = new RobotTeamConfig();
         simConfig = new SimulatorConfig();
         updateFromRobotTeamConfig();
-        updateFromEnvConfig();   
+        updateFromEnvConfig();
         //simulation = new SimulationFramework(this, robotTeamConfig, simConfig, explorationImage);
-        
-        
 
         showConnex = true;
-        
+
         initGraphFrame();
     }
-    
-    private void initGraphFrame()
-    {
+
+    private void initGraphFrame() {
         graphFrame = new JFrame("Agent knowledge graph");
         graphPanel = new JPanel();
         graphPanel.setBackground(Color.white);
@@ -133,27 +135,26 @@ public class MainGUI extends javax.swing.JFrame {
         graphFrame.getContentPane().setLayout(new GridLayout(1, 1));
         graphFrame.getContentPane().add(graphPanel);
         graphPanel.setSize(graphFrame.getSize());
-        graphFrame.setVisible(false);        
+        graphFrame.setVisible(false);
     }
-    
-// <editor-fold defaultstate="collapsed" desc="Get and Set">
 
+// <editor-fold defaultstate="collapsed" desc="Get and Set">
     public javax.swing.JPanel getPanelConfiguration() {
         return null;
     }
-    
+
     public javax.swing.JPanel getPanelRobotInfo() {
         return panelRobotInfo;
     }
-    
+
     public javax.swing.JPanel getPanelExploration() {
         return panelExploration;
     }
-    
+
     public javax.swing.JScrollPane getScrollpaneImage() {
         return scrollPaneImage;
     }
-    
+
     public javax.swing.JLabel getLabelImageHolder() {
         return labelImageHolder;
     }
@@ -161,11 +162,11 @@ public class MainGUI extends javax.swing.JFrame {
     public SimulationFramework getExploration() {
         return simulation;
     }
-    
+
     public String getExplorationType() {
         return (null);
     }
-    
+
     public boolean showEnv() {
         return toggleEnv.isSelected();
     }
@@ -173,7 +174,7 @@ public class MainGUI extends javax.swing.JFrame {
     public void setShowHierarchy(boolean show) {
         toggleHierarchy.setSelected(show);
     }
-    
+
     public boolean showHierarchy() {
         return toggleHierarchy.isSelected();
     }
@@ -182,39 +183,35 @@ public class MainGUI extends javax.swing.JFrame {
         showConnex = show;
 
     }
-    
+
     public boolean showConnections() {
         return showConnex;
     }
-    
+
     public RobotPanel getRobotPanel(int i) {
         //System.out.println(i);
-        return (RobotPanel)panelRobotInfo.getComponent(i);
+        return (RobotPanel) panelRobotInfo.getComponent(i);
     }
 
-    public ShowSettings getShowSettings()
-    {
+    public ShowSettings getShowSettings() {
         return showSettings;
     }
-    
-    public ShowSettingsAgent[] getShowSettingsAgents()
-    {
+
+    public ShowSettingsAgent[] getShowSettingsAgents() {
         return showSettingsAgents;
     }
     // </editor-fold>
-    
+
 // <editor-fold defaultstate="collapsed" desc="GUI changes">
-
-
     public void updateFromRobotTeamConfig() {
-        try {        
+        try {
             RobotConfig currRobot;
             RobotPanel currRobotPanel;
 
             panelRobotInfo.removeAll();
             panelRobotInfo.setLayout(new BoxLayout(panelRobotInfo, BoxLayout.Y_AXIS));
-            for(int i=0; i<robotTeamConfig.getNumRobots(); i++) {
-                currRobot = (RobotConfig)(robotTeamConfig.getRobotTeam().get(i+1));
+            for (int i = 0; i < robotTeamConfig.getNumRobots(); i++) {
+                currRobot = (RobotConfig) (robotTeamConfig.getRobotTeam().get(i + 1));
                 currRobotPanel = new RobotPanel(this, currRobot);
                 currRobotPanel.getLabelRole().setText(currRobot.getRole().toString());
                 panelRobotInfo.add(currRobotPanel);
@@ -222,7 +219,7 @@ public class MainGUI extends javax.swing.JFrame {
             panelRobotInfo.add(Box.createVerticalGlue());
 
             panelRobotInfo.repaint();
-            
+
             panelRobotInfo.revalidate();
             //panelRobotInfo.getTopLevelAncestor().validate();
             explorationImage = new ExplorationImage(simConfig.getEnv());
@@ -231,12 +228,8 @@ public class MainGUI extends javax.swing.JFrame {
             validate();
             updateShowSettings();
             updateShowSettingsAgents();
-            
 
-
-            
-       }
-       catch (NullPointerException e) {
+        } catch (NullPointerException e) {
             System.err.println("Updating from robotTeamConfig: null pointer exception.");
         }
     }
@@ -253,48 +246,43 @@ public class MainGUI extends javax.swing.JFrame {
             explorationImage.redrawEnvAndAgents(this, robotTeamConfig, simConfig);
             labelImageHolder.setIcon(new ImageIcon(explorationImage.getImage()));
             validate();
-       }
-       catch (NullPointerException e) {
-           System.err.println("Updating from envConfig: null pointer exception.");
-       }
-   }
-   
-   public void updateFromData(RealAgent agent[], int timeElapsed, double pctAreaKnown, int avgCycleTime) {
-       
-       RobotPanel currRobotPanel;
-       DecimalFormat oneDigit = new DecimalFormat("#,###,##0.00");
-       
-       for(int i=0; i<agent.length; i++) {
-           currRobotPanel = (RobotPanel)panelRobotInfo.getComponent(i);
-           currRobotPanel.getLabelRole().setText(agent[i].getRole().toString());
-           currRobotPanel.getLabelState().setText(agent[i].getState().toString());
-           currRobotPanel.getLabelPower().setText(Integer.toString(agent[i].getBatteryPower()));
-       }
-       
-       labelCycleUpdate.setText(Integer.toString(timeElapsed));
-       //labelExploredUpdate.setText(Integer.toString(pctAreaKnown));
-       labelExploredUpdate.setText(oneDigit.format(pctAreaKnown));
-       labelAvgCycleUpdate.setText(avgCycleTime + "");
-       //if (timeElapsed % Constants.UPDATE_GRAPH_INTERVAL == 0) updateKnowledgeGraph(agent);
-   }
-   
-   public void updateShowSettings()
-   {
-       showSettings = new ShowSettings();
-       showSettings.showEnv = showEnv();
-       showSettings.showConnections = showConnections();
-       showSettings.showHierarchy = showHierarchy();
-   }
-   
-   public void updateShowSettingsAgents()
-   {
-       int numRobots = robotTeamConfig.getNumRobots();
-       showSettingsAgents = new ShowSettingsAgent[numRobots];
-       for (int i = 0; i < numRobots; i++)
-       {
-           showSettingsAgents[i] = new ShowSettingsAgent();
-           if (getRobotPanel(i) != null)
-           {
+        } catch (NullPointerException e) {
+            System.err.println("Updating from envConfig: null pointer exception.");
+        }
+    }
+
+    public void updateFromData(RealAgent agent[], int timeElapsed, double pctAreaKnown, int avgCycleTime) {
+
+        RobotPanel currRobotPanel;
+        DecimalFormat oneDigit = new DecimalFormat("#,###,##0.00");
+
+        for (int i = 0; i < agent.length; i++) {
+            currRobotPanel = (RobotPanel) panelRobotInfo.getComponent(i);
+            currRobotPanel.getLabelRole().setText(agent[i].getRole().toString());
+            currRobotPanel.getLabelState().setText(agent[i].getState().toString());
+            currRobotPanel.getLabelPower().setText(Integer.toString(agent[i].getBatteryPower()));
+        }
+
+        labelCycleUpdate.setText(Integer.toString(timeElapsed));
+        //labelExploredUpdate.setText(Integer.toString(pctAreaKnown));
+        labelExploredUpdate.setText(oneDigit.format(pctAreaKnown));
+        labelAvgCycleUpdate.setText(avgCycleTime + "");
+        //if (timeElapsed % Constants.UPDATE_GRAPH_INTERVAL == 0) updateKnowledgeGraph(agent);
+    }
+
+    public void updateShowSettings() {
+        showSettings = new ShowSettings();
+        showSettings.showEnv = showEnv();
+        showSettings.showConnections = showConnections();
+        showSettings.showHierarchy = showHierarchy();
+    }
+
+    public void updateShowSettingsAgents() {
+        int numRobots = robotTeamConfig.getNumRobots();
+        showSettingsAgents = new ShowSettingsAgent[numRobots];
+        for (int i = 0; i < numRobots; i++) {
+            showSettingsAgents[i] = new ShowSettingsAgent();
+            if (getRobotPanel(i) != null) {
                 showSettingsAgents[i].showAgent = getRobotPanel(i).showAgent();
                 showSettingsAgents[i].showCommRange = getRobotPanel(i).showCommRange();
                 showSettingsAgents[i].showFreeSpace = getRobotPanel(i).showFreeSpace();
@@ -305,24 +293,23 @@ public class MainGUI extends javax.swing.JFrame {
                 showSettingsAgents[i].showRVCandidatePointInfo = getRobotPanel(i).showSkeleton();
                 showSettingsAgents[i].showBorderSkel = getRobotPanel(i).showBorderSkel();
                 showSettingsAgents[i].showRVWalls = getRobotPanel(i).showRVWalls();
-           }
-       }
-   }
-   
-    private JFreeChart createKnowledgeChart(RealAgent agent[])
-    {
+            }
+        }
+    }
+
+    private JFreeChart createKnowledgeChart(RealAgent agent[]) {
         XYSeriesCollection xyDataset = new XYSeriesCollection();
         JFreeChart chart = ChartFactory.createXYLineChart(
-                     "Agent knowledge",  // Title
-                      "Time",           // X-Axis label
-                      "% map known",           // Y-Axis label
-                      xyDataset,          // Dataset
-                      PlotOrientation.VERTICAL,
-                      true,                // Show legend
-                      true,                // Tooltips
-                      false
-                     );
-        for( int i = 0; i < agent.length; i++ ) {
+                "Agent knowledge", // Title
+                "Time", // X-Axis label
+                "% map known", // Y-Axis label
+                xyDataset, // Dataset
+                PlotOrientation.VERTICAL,
+                true, // Show legend
+                true, // Tooltips
+                false
+        );
+        for (int i = 0; i < agent.length; i++) {
             //update agent data
             //agent[i].updateTrueAreaKnown(simConfig.getEnv());
             agent[i].knowledgeData.put(simulation.getTimeElapsed(), (double) agent[i].getStats().getAreaKnown() / (double) simulation.getTotalArea());
@@ -331,11 +318,11 @@ public class MainGUI extends javax.swing.JFrame {
             Iterator it = agent[i].knowledgeData.entrySet().iterator();
             while (it.hasNext()) {
                 Map.Entry<Integer, Double> pairs = (Map.Entry) it.next();
-                
+
                 series.add(pairs.getKey(), pairs.getValue());
             }
-            xyDataset.addSeries(series); 
-        }        
+            xyDataset.addSeries(series);
+        }
         jointKnowledge.put(simulation.getTimeElapsed(), (double) simulation.getTrueJointAreaKnown() / (double) simulation.getTotalArea());
         XYSeries series = new XYSeries("Joint agent knowledge");
         Iterator it = jointKnowledge.entrySet().iterator();
@@ -345,7 +332,7 @@ public class MainGUI extends javax.swing.JFrame {
             series.add(pairs.getKey(), pairs.getValue());
         }
         xyDataset.addSeries(series);
-        chart.setBackgroundPaint( Color.white );
+        chart.setBackgroundPaint(Color.white);
         chart.getPlot().setBackgroundPaint(Color.black);
         chart.getPlot().setForegroundAlpha(1f);
         chart.getXYPlot().getRenderer().setSeriesPaint(0, Color.RED);
@@ -358,56 +345,53 @@ public class MainGUI extends javax.swing.JFrame {
         chart.getXYPlot().getRenderer().setSeriesStroke(agent.length, new BasicStroke(3));
         return chart;
     }
-   
-   public void updateKnowledgeGraph(RealAgent agent[])
-   {
-       graphPanel.removeAll();
-       JFreeChart chart = createKnowledgeChart(agent);
-       JPanel chartPanel = new ChartPanel(chart);
-       graphPanel.setLayout(new GridLayout(1, 1));
-       graphPanel.add(chartPanel);
-       graphPanel.getParent().validate();
-       chartPanel.updateUI();
-   }
-   
-   public void runComplete() {
+
+    public void updateKnowledgeGraph(RealAgent agent[]) {
+        graphPanel.removeAll();
+        JFreeChart chart = createKnowledgeChart(agent);
+        JPanel chartPanel = new ChartPanel(chart);
+        graphPanel.setLayout(new GridLayout(1, 1));
+        graphPanel.add(chartPanel);
+        graphPanel.getParent().validate();
+        chartPanel.updateUI();
+    }
+
+    public void runComplete() {
         buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPlay.png")));
         RUNMODE = runMode.stopped;
         simulation.kill();
         simulation = null;
-        JOptionPane.showMessageDialog(new JFrame(), 
-                         "The run has finished.  There are no new position for the robots to move to.", 
-                         "Run complete", 
-                         JOptionPane.PLAIN_MESSAGE);
-   }
+        JOptionPane.showMessageDialog(new JFrame(),
+                "The run has finished.  There are no new position for the robots to move to.",
+                "Run complete",
+                JOptionPane.PLAIN_MESSAGE);
+    }
 
-   private boolean robotStartsOK() {
+    private boolean robotStartsOK() {
         RobotConfig currRobot;
-        for(int i=1; i<=robotTeamConfig.getNumRobots(); i++) {
-            currRobot = (RobotConfig)robotTeamConfig.getRobotTeam().get(i);
-            if(currRobot.getStartX() < 0 ||
-               currRobot.getStartX() > simConfig.getEnv().getColumns() ||
-               currRobot.getStartY() < 0 ||
-               currRobot.getStartY() > simConfig.getEnv().getRows())
-                     return false;
+        for (int i = 1; i <= robotTeamConfig.getNumRobots(); i++) {
+            currRobot = (RobotConfig) robotTeamConfig.getRobotTeam().get(i);
+            if (currRobot.getStartX() < 0
+                    || currRobot.getStartX() > simConfig.getEnv().getColumns()
+                    || currRobot.getStartY() < 0
+                    || currRobot.getStartY() > simConfig.getEnv().getRows()) {
+                return false;
+            }
         }
         return true;
     }
 
-
 // </editor-fold>
-
-   WindowListener windowListener = new WindowAdapter() {
+    WindowListener windowListener = new WindowAdapter() {
         @Override
-        public void windowClosing ( WindowEvent w ) {
+        public void windowClosing(WindowEvent w) {
             // save last used configs
             robotTeamConfig.saveConfig();
             simConfig.saveSimulatorConfig();
             simConfig.saveWallConfig();
             System.exit(0);
-        } 
+        }
     };
-
 
     /**
      * @param args the command line arguments
@@ -419,8 +403,7 @@ public class MainGUI extends javax.swing.JFrame {
                 new MainGUI().setVisible(true);
             }
         });
-    }   
-        
+    }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -822,83 +805,88 @@ public class MainGUI extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     // <editor-fold defaultstate="collapsed" desc="GUI actions">                          
-    
-    
     private void buttonStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonStartActionPerformed
         // Quick error check to make sure starting positions are within env bounds
-         if(!robotStartsOK()) {
+        if (!robotStartsOK()) {
             JOptionPane.showMessageDialog(new JFrame(), "Error: robot starting positions are not within environment bounds!", "Startup error", JOptionPane.ERROR_MESSAGE);
             return;
-         }
+        }
 
-         switch(RUNMODE) {
-            case stopped:   RUNMODE = runMode.running;
-                            buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPause.png")));
-                            simulation = new SimulationFramework(this, robotTeamConfig, simConfig, explorationImage);
-                            simulation.start();
-                            break;
-            case running:   RUNMODE = runMode.paused;
-                            buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPlay.png")));
-                            simulation.pause();
-                            break;
-            case paused:    RUNMODE = runMode.running;
-                            buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPause.png")));
-                            simulation.start();
-                            break;
-            default:        break;
+        switch (RUNMODE) {
+            case stopped:
+                RUNMODE = runMode.running;
+                buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPause.png")));
+                simulation = new SimulationFramework(this, robotTeamConfig, simConfig, explorationImage);
+                simulation.start();
+                break;
+            case running:
+                RUNMODE = runMode.paused;
+                buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPlay.png")));
+                simulation.pause();
+                break;
+            case paused:
+                RUNMODE = runMode.running;
+                buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPause.png")));
+                simulation.start();
+                break;
+            default:
+                break;
         }
 }//GEN-LAST:event_buttonStartActionPerformed
 
     private void buttonStepActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonStepActionPerformed
-         switch(RUNMODE) {
-            case stopped:   RUNMODE = runMode.paused;
-                            buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPlay.png")));
-                            simulation = new SimulationFramework(this, robotTeamConfig, simConfig, explorationImage);
-                            simulation.start();
-                            simulation.takeOneStep();
-                            break;
-            case running:   RUNMODE = runMode.paused;
-                            buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPlay.png")));
-                            simulation.takeOneStep();
-                            break;
-            case paused:    simulation.start();
-                            simulation.takeOneStep();
-                            break;
-            default:        break;
-         }
+        switch (RUNMODE) {
+            case stopped:
+                RUNMODE = runMode.paused;
+                buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPlay.png")));
+                simulation = new SimulationFramework(this, robotTeamConfig, simConfig, explorationImage);
+                simulation.start();
+                simulation.takeOneStep();
+                break;
+            case running:
+                RUNMODE = runMode.paused;
+                buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPlay.png")));
+                simulation.takeOneStep();
+                break;
+            case paused:
+                simulation.start();
+                simulation.takeOneStep();
+                break;
+            default:
+                break;
+        }
 }//GEN-LAST:event_buttonStepActionPerformed
 
     private void buttonStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonStopActionPerformed
         RUNMODE = runMode.paused;
         buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPlay.png")));
         simulation.pause();
-        
-        int answer = JOptionPane.showConfirmDialog(new JFrame(), 
-                         "Are you sure you want to reset?  This will completely stop the run.", 
-                         "Confirm Reset", 
-                         JOptionPane.YES_NO_OPTION);
-        
-        if(answer == 0) {
+
+        int answer = JOptionPane.showConfirmDialog(new JFrame(),
+                "Are you sure you want to reset?  This will completely stop the run.",
+                "Confirm Reset",
+                JOptionPane.YES_NO_OPTION);
+
+        if (answer == 0) {
             try {
                 RUNMODE = runMode.stopped;
                 simulation.kill();
                 simulation = null;
                 this.updateFromEnvConfig();
-            }
-            catch (NullPointerException e) {
+            } catch (NullPointerException e) {
                 System.err.println("Error: No exploration that can be stopped.");
             }
         }
 }//GEN-LAST:event_buttonStopActionPerformed
 
     private void sliderSpeedStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_sliderSpeedStateChanged
-        try {        
+        try {
             int newSimRate = sliderSpeed.getValue();
             simConfig.setSimRate(newSimRate);
-            if(simulation != null)
+            if (simulation != null) {
                 simulation.simRateChanged(newSimRate, RUNMODE);
-        }
-        catch (NullPointerException e) {
+            }
+        } catch (NullPointerException e) {
         }
     }//GEN-LAST:event_sliderSpeedStateChanged
 
@@ -918,13 +906,13 @@ public class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_menuEnvironmentMouseClicked
 
     private void toggleEnvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleEnvActionPerformed
-        try{
-            if(simulation != null)
+        try {
+            if (simulation != null) {
                 simulation.updateImage(true);
-            else
+            } else {
                 updateFromEnvConfig();
-        }
-        catch (NullPointerException e) {
+            }
+        } catch (NullPointerException e) {
             System.err.println("Error: toggle button pressed, no image to update.");
         }
         updateShowSettings();
@@ -943,11 +931,11 @@ public class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_menuRobotsMouseClicked
 
     private void menuExplorationMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuExplorationMouseReleased
-        
+
     }//GEN-LAST:event_menuExplorationMouseReleased
 
     private void menuCommunicationMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuCommunicationMouseReleased
-        
+
     }//GEN-LAST:event_menuCommunicationMouseReleased
 
     private void menuEnvironmentMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuEnvironmentMouseReleased
@@ -955,11 +943,11 @@ public class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_menuEnvironmentMouseReleased
 
     private void menuRobotsMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuRobotsMouseReleased
-        
+
     }//GEN-LAST:event_menuRobotsMouseReleased
 
     private void menuLogsMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuLogsMouseReleased
-        
+
     }//GEN-LAST:event_menuLogsMouseReleased
 
     private void menuLogsMenuDragMouseReleased(javax.swing.event.MenuDragMouseEvent evt) {//GEN-FIRST:event_menuLogsMenuDragMouseReleased
@@ -991,30 +979,31 @@ public class MainGUI extends javax.swing.JFrame {
 
     private void toggleHierarchyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleHierarchyActionPerformed
         try {
-            if(simulation != null)
+            if (simulation != null) {
                 simulation.updateImage(true);
-            else
-                updateFromEnvConfig();        
-        }
-        catch (NullPointerException e) {
+            } else {
+                updateFromEnvConfig();
+            }
+        } catch (NullPointerException e) {
             System.err.println("Error: toggle button pressed, no image to update.");
         }
         updateShowSettings();
     }//GEN-LAST:event_toggleHierarchyActionPerformed
 
     private void buttonDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonDataActionPerformed
-        try{
-            if(simulation != null)
+        try {
+            if (simulation != null) {
                 simulation.updateImage(true);
-            else
-                updateFromEnvConfig();        }
-        catch (NullPointerException e) {
+            } else {
+                updateFromEnvConfig();
+            }
+        } catch (NullPointerException e) {
             System.err.println("Error: toggle button pressed, no image to update.");
         }
         updateShowSettings();
     }//GEN-LAST:event_buttonDataActionPerformed
 // </editor-fold>
-    
+
     // <editor-fold defaultstate="collapsed" desc="Variables Declaration">  
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuBar MainMenu1;
@@ -1047,6 +1036,6 @@ public class MainGUI extends javax.swing.JFrame {
 
     @Override
     public String toString() {
-        return("[MainGUI] ");
+        return ("[MainGUI] ");
     }
 }

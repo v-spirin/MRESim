@@ -48,21 +48,24 @@ package exploration.rendezvous;
  * @author Victor
  */
 public class MultiPointRendezvousStrategySettings {
+
     //if enabled, agents will try to move to area that they estimate will have better signal strength with the
     //other agent rendezvous position, while they are waiting for that agent
-    public static enum strategy{RelayCloseToBase, RelayMostRange, RelayMostRangeExplorerThreshold, Utility}
+    public static enum strategy {
+        RelayCloseToBase, RelayMostRange, RelayMostRangeExplorerThreshold, Utility
+    }
     /*
     RelayCloseToBase: Explorer's point fixed as AAMAS paper, Relay's point sampled to be closest to base;
     RelayMostRange: Explorer's point fixed as AAMAS paper. Relay's point sampled to have the most sampled points in comm range, including explorer's point.
     RelayMostRangeExplorerThreshold: Same as above, except try all explorer points within N meters threshold, pick the one that has the most points in range of relay.
     Utility: Neither point fixed, using utility function described above.
-    */
+     */
     public strategy MPRVStrategy;
     public boolean moveToBetterCommsWhileWaiting;
     public double SamplePointDensity;
     public boolean replanOurMeetingPoint;
     public boolean attemptExplorationByRelay; //should relay try to explore some frontiers if otherwise it will arrive at RV too early
     public boolean tryToGetToExplorerRV; //if the relay has time, should it try to go to explorer's RV location instead of its own?
-                                         //this improves the chances that explorer will enter relay's range sooner when it heads back to RV
+    //this improves the chances that explorer will enter relay's range sooner when it heads back to RV
     public boolean useSingleMeetingTime; //should we plan to arrive at RV at the same time as if we were using a single RV point?
 }

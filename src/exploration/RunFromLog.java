@@ -56,126 +56,139 @@ import java.io.IOException;
  * @author julh
  */
 public class RunFromLog {
+
     public static Point takeStep(int time, String fileName, int agentNo) {
         Point nextStep = new Point(0, 0);
-        
-        File file = new File(fileName); 
 
-        if ( file.exists() )           
-        {                                         
-            try(BufferedReader inFile = new BufferedReader(new FileReader(file))) {
-                for(int i=0; i<time; i++)
+        File file = new File(fileName);
+
+        if (file.exists()) {
+            try (BufferedReader inFile = new BufferedReader(new FileReader(file))) {
+                for (int i = 0; i < time; i++) {
                     inFile.readLine();
-                
+                }
+
                 String tokens[] = inFile.readLine().split("\\s");
-                nextStep.x = Integer.parseInt(tokens[(agentNo-1)*6 + 1]);
-                nextStep.y = Integer.parseInt(tokens[(agentNo-1)*6 + 2]);                
-            }
-            catch (NullPointerException e) {
+                nextStep.x = Integer.parseInt(tokens[(agentNo - 1) * 6 + 1]);
+                nextStep.y = Integer.parseInt(tokens[(agentNo - 1) * 6 + 2]);
+            } catch (NullPointerException e) {
                 // No more data, run finished.
                 return null;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 System.out.println("RunFromLog: Error -- could not read data from " + fileName);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 System.out.println("RunFromLog: Error -- incorrect data format in file " + fileName);
             }
         }
         return nextStep;
     }
-    
+
     public static Point getGoal(int time, String fileName, int agentNo) {
         Point nextStep = new Point(0, 0);
-        
-        File file = new File(fileName); 
 
-        if ( file.exists() )           
-        {                                         
-            try(BufferedReader inFile = new BufferedReader(new FileReader(file))) {
-                for(int i=0; i<time; i++)
+        File file = new File(fileName);
+
+        if (file.exists()) {
+            try (BufferedReader inFile = new BufferedReader(new FileReader(file))) {
+                for (int i = 0; i < time; i++) {
                     inFile.readLine();
-                
+                }
+
                 String tokens[] = inFile.readLine().split("\\s");
-                nextStep.x = (int)Double.parseDouble(tokens[(agentNo-1)*6 + 3]);
-                nextStep.y = (int)Double.parseDouble(tokens[(agentNo-1)*6 + 4]);                
-            }
-            catch (NullPointerException e) {
+                nextStep.x = (int) Double.parseDouble(tokens[(agentNo - 1) * 6 + 3]);
+                nextStep.y = (int) Double.parseDouble(tokens[(agentNo - 1) * 6 + 4]);
+            } catch (NullPointerException e) {
                 // No more data, run finished.
                 return null;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 System.out.println("RunFromLog: Error -- could not read data from " + fileName);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 System.out.println("RunFromLog: Error -- incorrect data format in file " + fileName);
             }
         }
         return nextStep;
     }
-    
+
     public static ExploreState getState(int time, String fileName, int agentNo) {
         Point nextStep = new Point(0, 0);
-        
-        File file = new File(fileName); 
 
-        if ( file.exists() )           
-        {                                         
-            try(BufferedReader inFile = new BufferedReader(new FileReader(file))) {
-                for(int i=0; i<time; i++)
+        File file = new File(fileName);
+
+        if (file.exists()) {
+            try (BufferedReader inFile = new BufferedReader(new FileReader(file))) {
+                for (int i = 0; i < time; i++) {
                     inFile.readLine();
-                
+                }
+
                 String tokens[] = inFile.readLine().split("\\s");
-                String state = tokens[(agentNo-1)*6 + 6];
-                if (state.equals("GetInfoFromChild")) return ExploreState.GetInfoFromChild;
-                if (state.equals("Explore")) return ExploreState.Explore;
-                if (state.equals("GiveParentInfo")) return ExploreState.GiveParentInfo;
-                if (state.equals("GoToChild")) return ExploreState.GoToChild;
-                if (state.equals("Initial")) return ExploreState.Initial;
-                if (state.equals("OutOfService")) return ExploreState.OutOfService;
-                if (state.equals("ReturnToParent")) return ExploreState.ReturnToParent;
-                if (state.equals("WaitForChild")) return ExploreState.WaitForChild;
-                if (state.equals("WaitForParent")) return ExploreState.WaitForParent;
-            }
-            catch (NullPointerException e) {
+                String state = tokens[(agentNo - 1) * 6 + 6];
+                if (state.equals("GetInfoFromChild")) {
+                    return ExploreState.GetInfoFromChild;
+                }
+                if (state.equals("Explore")) {
+                    return ExploreState.Explore;
+                }
+                if (state.equals("GiveParentInfo")) {
+                    return ExploreState.GiveParentInfo;
+                }
+                if (state.equals("GoToChild")) {
+                    return ExploreState.GoToChild;
+                }
+                if (state.equals("Initial")) {
+                    return ExploreState.Initial;
+                }
+                if (state.equals("OutOfService")) {
+                    return ExploreState.OutOfService;
+                }
+                if (state.equals("ReturnToParent")) {
+                    return ExploreState.ReturnToParent;
+                }
+                if (state.equals("WaitForChild")) {
+                    return ExploreState.WaitForChild;
+                }
+                if (state.equals("WaitForParent")) {
+                    return ExploreState.WaitForParent;
+                }
+            } catch (NullPointerException e) {
                 // No more data, run finished.
                 return null;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 System.out.println("RunFromLog: Error -- could not read data from " + fileName);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 System.out.println("RunFromLog: Error -- incorrect data format in file " + fileName);
             }
         }
         return ExploreState.Initial;
     }
-    
+
     public static RobotConfig.roletype getRole(int time, String fileName, int agentNo) {
         Point nextStep = new Point(0, 0);
-        
-        File file = new File(fileName); 
 
-        if ( file.exists() )           
-        {                                         
-            try(BufferedReader inFile = new BufferedReader(new FileReader(file))) {
-                for(int i=0; i<time; i++)
+        File file = new File(fileName);
+
+        if (file.exists()) {
+            try (BufferedReader inFile = new BufferedReader(new FileReader(file))) {
+                for (int i = 0; i < time; i++) {
                     inFile.readLine();
-                
+                }
+
                 String tokens[] = inFile.readLine().split("\\s");
-                String role = tokens[(agentNo-1)*6 + 5];
-                if (role.equals("BaseStation")) return RobotConfig.roletype.BaseStation;
-                if (role.equals("Explorer")) return RobotConfig.roletype.Explorer;
-                if (role.equals("Relay")) return RobotConfig.roletype.Relay;            
-            }
-            catch (NullPointerException e) {
+                String role = tokens[(agentNo - 1) * 6 + 5];
+                if (role.equals("BaseStation")) {
+                    return RobotConfig.roletype.BaseStation;
+                }
+                if (role.equals("Explorer")) {
+                    return RobotConfig.roletype.Explorer;
+                }
+                if (role.equals("Relay")) {
+                    return RobotConfig.roletype.Relay;
+                }
+            } catch (NullPointerException e) {
                 // No more data, run finished.
                 return null;
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 System.out.println("RunFromLog: Error -- could not read data from " + fileName);
-            }
-            catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 System.out.println("RunFromLog: Error -- incorrect data format in file " + fileName);
             }
         }

@@ -51,111 +51,136 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
+
 /**
  *
  * @author julh
  */
 public class ContourTracer {
-    
+
     // Order is important!
-    private static enum direction {NE, E, SE, S, SW, W, NW, N}
+    private static enum direction {
+        NE, E, SE, S, SW, W, NW, N
+    }
 
     private static Point dir2Point(Point pt, direction dir) {
-        switch(dir) {
-            case NE:    return new Point(pt.x+1,pt.y-1);
-            case E:     return new Point(pt.x+1,pt.y);
-            case SE:    return new Point(pt.x+1,pt.y+1);
-            case S:     return new Point(pt.x,pt.y+1);
-            case SW:    return new Point(pt.x-1,pt.y+1);
-            case W:     return new Point(pt.x-1,pt.y);
-            case NW:    return new Point(pt.x-1,pt.y-1);
-            case N:     return new Point(pt.x,pt.y-1);
+        switch (dir) {
+            case NE:
+                return new Point(pt.x + 1, pt.y - 1);
+            case E:
+                return new Point(pt.x + 1, pt.y);
+            case SE:
+                return new Point(pt.x + 1, pt.y + 1);
+            case S:
+                return new Point(pt.x, pt.y + 1);
+            case SW:
+                return new Point(pt.x - 1, pt.y + 1);
+            case W:
+                return new Point(pt.x - 1, pt.y);
+            case NW:
+                return new Point(pt.x - 1, pt.y - 1);
+            case N:
+                return new Point(pt.x, pt.y - 1);
         }
-        
+
         // this point should never be reached
         return null;
     }
-    
+
     private static direction points2dir(Point from, Point to) {
-        if(from.x - to.x == 1) {
-            if(from.y - to.y == 1) return direction.SE;
-            else if(from.y - to.y == 0) return direction.E;
-            else if(from.y - to.y == -1) return direction.NE; }
-        else if(from.x - to.x == 0) {
-            if(from.y - to.y == 1) return direction.S;
-            else if(from.y - to.y == -1) return direction.N; }
-        else if(from.x - to.x == -1) {
-            if(from.y - to.y == 1) return direction.SW;
-            else if(from.y - to.y == 0) return direction.W;
-            else if(from.y - to.y == -1) return direction.NW; }
-        
+        if (from.x - to.x == 1) {
+            if (from.y - to.y == 1) {
+                return direction.SE;
+            } else if (from.y - to.y == 0) {
+                return direction.E;
+            } else if (from.y - to.y == -1) {
+                return direction.NE;
+            }
+        } else if (from.x - to.x == 0) {
+            if (from.y - to.y == 1) {
+                return direction.S;
+            } else if (from.y - to.y == -1) {
+                return direction.N;
+            }
+        } else if (from.x - to.x == -1) {
+            if (from.y - to.y == 1) {
+                return direction.SW;
+            } else if (from.y - to.y == 0) {
+                return direction.W;
+            } else if (from.y - to.y == -1) {
+                return direction.NW;
+            }
+        }
+
         // this point should never be reached
         return null;
     }
-    
+
     private static direction searchDir(Point from, Point to) {
-        direction dir = points2dir(from,to);
+        direction dir = points2dir(from, to);
         int searchIndex = (dir.ordinal() + 6) % 8;
         return direction.values()[searchIndex];
     }
-    
+
     private static Point findNextPixelOnContour(OccupancyGrid occGrid, Point pt, direction dir) {
         direction currDir;
         Point currPoint;
-        
-        for(int i=0; i<8; i++) {
-            currDir = direction.values()[(dir.ordinal() + i)%8];
+
+        for (int i = 0; i < 8; i++) {
+            currDir = direction.values()[(dir.ordinal() + i) % 8];
             currPoint = dir2Point(pt, currDir);
-            
-            if(occGrid.locationExists(currPoint.x, currPoint.y) && 
-               occGrid.frontierCellAt(currPoint.x, currPoint.y)) {
+
+            if (occGrid.locationExists(currPoint.x, currPoint.y)
+                    && occGrid.frontierCellAt(currPoint.x, currPoint.y)) {
                 int dx = currPoint.x - pt.x;
                 int dy = currPoint.y - pt.y;
                 boolean diagonal = (dx != 0) && (dy != 0);
                 //  --only add diagonal cells if there is space on both sides. Otherwise path has to go 'manhattan' way
                 if (diagonal && !(occGrid.freeSpaceAt(pt.x + dx, pt.y) && occGrid.freeSpaceAt(pt.x, pt.y + dy))) {
                     //continue;
-                } else
+                } else {
                     return currPoint;
+                }
             }
-                  
+
         }
-        
+
         // couldn't find any further points
         return null;
     }
-    
-    private static LinkedList <Point> traceContour(OccupancyGrid occGrid, int[][] label, int startX, int startY, direction startDir, int componentIndex) {
+
+    private static LinkedList<Point> traceContour(OccupancyGrid occGrid, int[][] label, int startX, int startY, direction startDir, int componentIndex) {
         if (!occGrid.frontierCellAt(startX, startY)) {
             System.err.println("This cannot happen!");
         }
-            
+
         Point currPixel, nextPixel;
         direction searchStart;
         LinkedList<Point> pts = new LinkedList<Point>();
-        
+
         label[startX][startY] = componentIndex;
         Point firstPixel = new Point(startX, startY);
         pts.add(firstPixel);
         Point secondPixel = findNextPixelOnContour(occGrid, firstPixel, startDir);
-        
+
         //if there is no further pixel, this is a one-pixel component and we're done
-        if(secondPixel == null) return pts;
-        
+        if (secondPixel == null) {
+            return pts;
+        }
+
         //System.out.println("Firstpixel: " + firstPixel.x + " " + firstPixel.y);
         //System.out.println("Secondpixel: " + secondPixel.x + " " + secondPixel.y);
-        
-        searchStart = searchDir(secondPixel,firstPixel);
+        searchStart = searchDir(secondPixel, firstPixel);
         //System.out.println("SS: " + searchStart.toString());
 
         currPixel = new Point(secondPixel.x, secondPixel.y);
         //System.out.println("CP: " + currPixel.x + " " + currPixel.y);
-        
+
         nextPixel = findNextPixelOnContour(occGrid, currPixel, searchStart);
         //System.out.println("NP: " + nextPixel.x + " " + nextPixel.y);
-        
+
         // In loop until all pixels on contour have been found
-        while(!(currPixel.equals(firstPixel) && nextPixel.equals(secondPixel))) {
+        while (!(currPixel.equals(firstPixel) && nextPixel.equals(secondPixel))) {
             pts.add(currPixel);
             label[currPixel.x][currPixel.y] = componentIndex;
             searchStart = searchDir(nextPixel, currPixel);
@@ -165,19 +190,18 @@ public class ContourTracer {
             nextPixel = findNextPixelOnContour(occGrid, currPixel, searchStart);
             //System.out.println("NP: " + nextPixel.x + " " + nextPixel.y);
         }
-        
+
         return pts;
     }
-    
-    
+
     private static int[][] updateLabels(int[][] labels, LinkedList<Point> contour) {
         contour.stream().forEach((p) -> {
             labels[p.x][p.y] = 1;
         });
-        
+
         return labels;
     }
-    
+
     public static void saveLabelsToPNG(String filename, int[][] labels) {
         try {
             // retrieve image
@@ -185,49 +209,52 @@ public class ContourTracer {
             //Graphics g = bi.getGraphics();
             for (int i = 0; i < 800; i++) {
                 for (int j = 0; j < 600; j++) {
-                    if (labels[i][j] == 1) bi.setRGB(i, j, Color.WHITE.getRGB());
-                    else bi.setRGB(i, j, Color.BLACK.getRGB());
+                    if (labels[i][j] == 1) {
+                        bi.setRGB(i, j, Color.WHITE.getRGB());
+                    } else {
+                        bi.setRGB(i, j, Color.BLACK.getRGB());
+                    }
                 }
             }
             File outputfile = new File(filename);
             ImageIO.write(bi, "png", outputfile);
         } catch (IOException e) {
-            
+
         }
     }
-    
-    public static LinkedList <LinkedList> findAllContours(OccupancyGrid occGrid) {
-        LinkedList <LinkedList> contourList = new LinkedList<LinkedList>();
-        LinkedList <Point> currContour;
+
+    public static LinkedList<LinkedList> findAllContours(OccupancyGrid occGrid) {
+        LinkedList<LinkedList> contourList = new LinkedList<LinkedList>();
+        LinkedList<Point> currContour;
         boolean hasFrontierCell;
         int maxGap, currGap;
-        
+
         long realtimeStart = System.currentTimeMillis();
-        
+
         int[][] labels = new int[occGrid.width][occGrid.height];
         int componentIndex = 1;
-        
+
         for (int[] label : labels) {
-            for (int j = 0; j<labels[0].length; j++) {
+            for (int j = 0; j < labels[0].length; j++) {
                 label[j] = 0;
             }
         }
         if (Constants.DEBUG_OUTPUT) {
-            System.out.println("[findAllContours] labels init took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+            System.out.println("[findAllContours] labels init took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
         }
         realtimeStart = System.currentTimeMillis();
-        
+
         int contourCounter = 0;
         // Assume that topline of occGrid is empty, i.e. no frontier cells.
-        for(int j=0; j<occGrid.height; j++) 
-            for(int i=0; i<occGrid.width; i++){
-                if(occGrid.frontierCellAt(i, j) && 
-                   (!occGrid.locationExists(i, j-1) || !occGrid.frontierCellAt(i,j-1)) && 
-                   labels[i][j]==0) {
+        for (int j = 0; j < occGrid.height; j++) {
+            for (int i = 0; i < occGrid.width; i++) {
+                if (occGrid.frontierCellAt(i, j)
+                        && (!occGrid.locationExists(i, j - 1) || !occGrid.frontierCellAt(i, j - 1))
+                        && labels[i][j] == 0) {
                     contourCounter++;
                     // We must have found external contour of new component
                     currContour = traceContour(occGrid, labels, i, j, direction.NE, componentIndex);
-                    
+
                     // Check to make sure that current contour
                     //  (i)  borders on open space somewhere (ignore frontiers in e.g. corners of rooms)
                     //  (ii) has a gap somewhere big enough to plan a path into it
@@ -246,21 +273,23 @@ public class ContourTracer {
                         }
                     }
                     System.out.println("****** Max gap: " + maxGap);*/
-                    for(Point p: currContour) {
-                        if(occGrid.frontierBorderCellAt(p.x, p.y)) {
-                    //if(hasFrontierCell) { // && maxGap >= Constants.STEP_SIZE) {
-                        // this contour should be added
-                        labels = updateLabels(labels, currContour);
-                        contourList.add(currContour);
-                        componentIndex++;
-                        break;}
+                    for (Point p : currContour) {
+                        if (occGrid.frontierBorderCellAt(p.x, p.y)) {
+                            //if(hasFrontierCell) { // && maxGap >= Constants.STEP_SIZE) {
+                            // this contour should be added
+                            labels = updateLabels(labels, currContour);
+                            contourList.add(currContour);
+                            componentIndex++;
+                            break;
+                        }
                     }
                 }
-                
+
             }
+        }
         if (Constants.DEBUG_OUTPUT) {
             System.out.println("[findAllContours] contours processed: " + contourCounter);
-            System.out.println("[findAllContours] main loop took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+            System.out.println("[findAllContours] main loop took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
         }
         //saveLabelsToPNG(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "contours", labels);
         return contourList;

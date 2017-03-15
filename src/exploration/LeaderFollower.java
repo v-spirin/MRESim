@@ -70,23 +70,27 @@ public class LeaderFollower {
         // simulator isn't allowing him to go through.  Taking a random step might
         // help.
         // Update:  this state is never really reached but leave in just in case
-        if(agent.getEnvError()) {
+        if (agent.getEnvError()) {
             System.out.println(agent.toString() + "LeaderFollower: Env reports error, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
             agent.setEnvError(false);
             return nextStep;
         }
 
-        switch(agent.getRole()) {
-            case Explorer :         nextStep = takeStep_Explorer(agent, timeElapsed);
-                                    break;
-            case Relay :            nextStep = takeStep_Relay(agent, timeElapsed);
-                                    break;
-            default :               break;
+        switch (agent.getRole()) {
+            case Explorer:
+                nextStep = takeStep_Explorer(agent, timeElapsed);
+                break;
+            case Relay:
+                nextStep = takeStep_Relay(agent, timeElapsed);
+                break;
+            default:
+                break;
         }
 
-        if(nextStep == null)
+        if (nextStep == null) {
             nextStep = RandomWalk.takeStep(agent);
+        }
 
         return nextStep;
     }
@@ -97,47 +101,35 @@ public class LeaderFollower {
 
         // CHECK 0
         // Wait for a few time steps at start (to let Explorer get some moves in).
-        if(timeElapsed < 3) {
+        if (timeElapsed < 3) {
             System.out.println(agent.toString() + "LeaderFollower: Starting up, staying stationary for now.");
             nextStep = new Point(agent.getX(), agent.getY());
             agent.getStats().setTimeSinceLastPlan(0);
-        }
-
-
-        // CHECK 1
+        } // CHECK 1
         // if agent hasn't moved, then he may be stuck in front of a wall and the
         // simulator isn't allowing him to go through.  Taking a random step might
         // help.
-        else if(agent.getEnvError()) {
+        else if (agent.getEnvError()) {
             System.out.println(agent.toString() + "LeaderFollower: No step taken since last timeStep, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
-        }
-
-        // Check 1.5, make sure parent is in range
-        else if(!agent.getParentTeammate().isInRange()) {
+        } // Check 1.5, make sure parent is in range
+        else if (!agent.getParentTeammate().isInRange()) {
             agent.getStats().setTimeSinceLastPlan(0);
             return (new Point(agent.getPrevX(), agent.getPrevY()));
-        }
-
-
-        // CHECK 2
+        } // CHECK 2
         // Agent isn't stuck.
         // Is it time to replan?
-        else if(agent.getStats().getTimeSinceLastPlan() > TIME_BETWEEN_PLANS) {
+        else if (agent.getStats().getTimeSinceLastPlan() > TIME_BETWEEN_PLANS) {
             nextStep = replanRelay(agent);
             agent.getStats().setTimeSinceLastPlan(0);
-        }
-
-        // CHECK 3
+        } // CHECK 3
         // Agent isn't stuck, not yet time to replan.
         // Do we have points left in the previously planned path?
-        else if(agent.getPath().found && agent.getPath().getPoints().size() >= 2)
-               nextStep = agent.getNextPathPoint();
-
-
-        // CHECK 4
+        else if (agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
+            nextStep = agent.getNextPathPoint();
+        } // CHECK 4
         // Agent isn't stuck, not yet time to replan, but we have no points left
         else {
             nextStep = replanRelay(agent);
@@ -145,26 +137,26 @@ public class LeaderFollower {
         }
 
         // UPDATE
-        if(agent.getTeammate(1).isInRange())
+        if (agent.getTeammate(1).isInRange()) {
             agent.getStats().setTimeLastDirectContactCS(1);
-        else
+        } else {
             agent.getStats().incrementLastDirectContactCS();
+        }
         agent.getStats().incrementTimeSinceLastPlan();
-
 
         return nextStep;
     }
 
     public static Point replanRelay(RealAgent agent) {
         Path P2C = agent.calculatePath(agent.getLocation(), agent.getChildTeammate().getLocation());
-        
-        if (agent.getLocation().distance(agent.getParentTeammate().getLocation()) < 
-                agent.getCommRange() - 1* agent.getSpeed())
-        {
+
+        if (agent.getLocation().distance(agent.getParentTeammate().getLocation())
+                < agent.getCommRange() - 1 * agent.getSpeed()) {
             agent.setPath(P2C);
             return agent.getNextPathPoint();
-        } else
+        } else {
             return (new Point(agent.getPrevX(), agent.getPrevY()));
+        }
 
         // total hack:  for leader-follower, use "parent" value as number of robots between this relay and comstation, including self
         /*if(agent.getChildTeammate().getLocation().distance(agent.getTeammate(1).getLocation()) <=
@@ -205,41 +197,31 @@ public class LeaderFollower {
 
         // CHECK 0
         // Take a couple of random steps to start (just to gather some sensor data).
-        if(timeElapsed < 3) {
+        if (timeElapsed < 3) {
             System.out.println(agent.toString() + "LeaderFollower: Starting up, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
-        }
-
-
-        // CHECK 1
+        } // CHECK 1
         // if agent hasn't moved, then he may be stuck in front of a wall and the
         // simulator isn't allowing him to go through.  Taking a random step might
         // help.
-        else if(agent.getEnvError()) {
+        else if (agent.getEnvError()) {
             System.out.println(agent.toString() + "LeaderFollower: No step taken since last timeStep, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
-        }
-
-
-        // CHECK 2
+        } // CHECK 2
         // Agent isn't stuck.
         // Is it time to replan?
-        else if(agent.getStats().getTimeSinceLastPlan() % TIME_BETWEEN_PLANS == 0) {
+        else if (agent.getStats().getTimeSinceLastPlan() % TIME_BETWEEN_PLANS == 0) {
             nextStep = replanExplorer(agent);
             agent.getStats().setTimeSinceLastPlan(0);
-        }
-
-        // CHECK 3
+        } // CHECK 3
         // Agent isn't stuck, not yet time to replan.
         // Do we have points left in the previously planned path?
-        else if(agent.getPath().found && agent.getPath().getPoints().size() >= 2)
-               nextStep = agent.getNextPathPoint();
-
-
-        // CHECK 4
+        else if (agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
+            nextStep = agent.getNextPathPoint();
+        } // CHECK 4
         // Agent isn't stuck, not yet time to replan, but we have no points left
         else {
             nextStep = replanExplorer(agent);
@@ -247,23 +229,20 @@ public class LeaderFollower {
         }
 
         // UPDATE
-        if(agent.getTeammate(1).isInRange())
+        if (agent.getTeammate(1).isInRange()) {
             agent.getStats().setTimeLastDirectContactCS(1);
-        else
+        } else {
             agent.getStats().incrementLastDirectContactCS();
+        }
         agent.getStats().incrementTimeSinceLastPlan();
-
 
         return nextStep;
     }
 
-
     // </editor-fold>
-
 // <editor-fold defaultstate="collapsed" desc="Replan">
-
     public static Point replanExplorer(RealAgent agent) {
-        if(!agent.getParentTeammate().isInRange()) {
+        if (!agent.getParentTeammate().isInRange()) {
             agent.getStats().setTimeSinceLastPlan(0);
             return (new Point(agent.getPrevX(), agent.getPrevY()));
         }
@@ -273,7 +252,7 @@ public class LeaderFollower {
         calculateFrontiers(agent);
 
         // If no frontiers found, return to ComStation
-        if(agent.getFrontiers().isEmpty()) {
+        if (agent.getFrontiers().isEmpty()) {
             System.out.println(agent.toString() + "No frontiers found, returning home.");
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
@@ -291,7 +270,7 @@ public class LeaderFollower {
 
         // If no best frontier could be assigned (can happen e.g. when more robots than frontiers),
         // then take random step.
-        if(!foundFrontier){
+        if (!foundFrontier) {
             System.out.println(agent.toString() + "No frontier chosen, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
@@ -301,9 +280,8 @@ public class LeaderFollower {
 
         // Note: Path to best frontier has already been set when calculating
         // utility, no need to recalculate
-
         // If no path could be found, take random step.
-        if(agent.getPath() == null || agent.getPath().getPoints() == null || agent.getPath().getPoints().isEmpty()){
+        if (agent.getPath() == null || agent.getPath().getPoints() == null || agent.getPath().getPoints().isEmpty()) {
             System.out.println(agent.toString() + "No path found, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
@@ -314,17 +292,15 @@ public class LeaderFollower {
         // If we reach this point, we have a path.  Remove the first point
         // since this is the robot itself.
         agent.getPath().getPoints().remove(0);
-            agent.getStats().setTimeSinceLastPlan(0);
+        agent.getStats().setTimeSinceLastPlan(0);
         System.out.print(Constants.INDENT + "Chose frontier at " + agent.getLastFrontier().getCentre().x + "," + agent.getLastFrontier().getCentre().y + ". ");
-        System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        System.out.println("Took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
         return agent.getNextPathPoint();
     }
 
 // </editor-fold>
-
 // <editor-fold defaultstate="collapsed" desc="Choose best frontier">
-
-    private static LinkedList<Frontier> frontiersOfInterest (Frontier lastFrontier, PriorityQueue<Frontier> frontiers, OccupancyGrid grid) {
+    private static LinkedList<Frontier> frontiersOfInterest(Frontier lastFrontier, PriorityQueue<Frontier> frontiers, OccupancyGrid grid) {
         PriorityQueue<Frontier> copy = new PriorityQueue();
         LinkedList<Frontier> list = new LinkedList();
 
@@ -334,7 +310,7 @@ public class LeaderFollower {
 
         Frontier currFrontier;
         int counter = 0;
-        for(int i=copy.size(); i>0; i--) {
+        for (int i = copy.size(); i > 0; i--) {
             currFrontier = copy.poll();
 
             // To avoid oscillation, add last frontier to list (just in case it
@@ -342,12 +318,12 @@ public class LeaderFollower {
             if (currFrontier == lastFrontier) {
                 list.add(currFrontier);
                 counter++;
-                if(counter > Constants.MAX_NUM_FRONTIERS)
+                if (counter > Constants.MAX_NUM_FRONTIERS) {
                     break;
-            }
-            else if(currFrontier.getArea() >= Constants.MIN_FRONTIER_SIZE &&
-               currFrontier.hasUnknownBoundary(grid) &&
-               counter < Constants.MAX_NUM_FRONTIERS) {
+                }
+            } else if (currFrontier.getArea() >= Constants.MIN_FRONTIER_SIZE
+                    && currFrontier.hasUnknownBoundary(grid)
+                    && counter < Constants.MAX_NUM_FRONTIERS) {
                 list.add(currFrontier);
                 counter++;
                 // no need to break here, as we still want to add last frontier
@@ -365,25 +341,26 @@ public class LeaderFollower {
 
     private static void calculateUtilityExact(RealAgent agent, Utility ute) {
         Point start;
-        if(ute.ID == agent.getID())
+        if (ute.ID == agent.getID()) {
             start = agent.getLocation();
-        else
+        } else {
             start = agent.getTeammate(ute.ID).getLocation();
+        }
 
         Path p = agent.calculatePath(start, ute.frontier.getClosestPointInRange(agent));
 
-        if(p.found) {
+        if (p.found) {
             ute.path = p;
             ute.utility = ute.frontier.getArea() / Math.pow(p.getLength(), 4) * 100000000;
-        }
-        else
+        } else {
             ute.utility = -1000;
+        }
 
-        System.out.println(Constants.INDENT + "New utility with ID " +
-                                            ute.ID + " for frontier at " +
-                                            ute.frontier.getCentre().x + "," +
-                                            ute.frontier.getCentre().y + " is " +
-                                            (int)ute.utility);
+        System.out.println(Constants.INDENT + "New utility with ID "
+                + ute.ID + " for frontier at "
+                + ute.frontier.getCentre().x + ","
+                + ute.frontier.getCentre().y + " is "
+                + (int) ute.utility);
     }
 
     // Calculates Euclidean distance from all known teammates and self to frontiers of interest
@@ -391,38 +368,39 @@ public class LeaderFollower {
         PriorityQueue<Utility> utilities = new PriorityQueue<Utility>();
 
         // For each frontier of interest
-        for(Frontier frontier : frontiers) {
+        for (Frontier frontier : frontiers) {
             // Add own utilities
             utilities.add(new Utility(agent.getID(),
-                                      agent.getLocation(),
-                                      frontier,
-                                      utilityEstimate(agent.getLocation(), frontier),
-                                      null));
-            System.out.println(Constants.INDENT + "Own utility with ID " +
-                                                agent.getID() + " for frontier at " +
-                                                frontier.getCentre().x + "," +
-                                                frontier.getCentre().y + " is " +
-                                                (int)utilityEstimate(agent.getLocation(), frontier));
+                    agent.getLocation(),
+                    frontier,
+                    utilityEstimate(agent.getLocation(), frontier),
+                    null));
+            System.out.println(Constants.INDENT + "Own utility with ID "
+                    + agent.getID() + " for frontier at "
+                    + frontier.getCentre().x + ","
+                    + frontier.getCentre().y + " is "
+                    + (int) utilityEstimate(agent.getLocation(), frontier));
 
             // Add teammates' utilities
-            for(TeammateAgent teammate : agent.getAllTeammates().values()) {
-                if(teammate.getID() != 1 &&
-                   teammate.getID() != agent.getID() &&
-                   teammate.isExplorer() &&   // THIS LINE ONLY IF non-explorer agents are to be ignored
-                   teammate.getTimeSinceLastComm() < 30) {
+            for (TeammateAgent teammate : agent.getAllTeammates().values()) {
+                if (teammate.getID() != 1
+                        && teammate.getID() != agent.getID()
+                        && teammate.isExplorer()
+                        && // THIS LINE ONLY IF non-explorer agents are to be ignored
+                        teammate.getTimeSinceLastComm() < 30) {
                     utilities.add(new Utility(teammate.getID(),
-                                              teammate.getLocation(),
-                                              frontier,
-                                              utilityEstimate(teammate.getLocation(), frontier),
-                                              null));
-                    System.out.println(Constants.INDENT + "Utility of robot with ID " +
-                                        teammate.getID() + " for frontier at " +
-                                        frontier.getCentre().x + "," +
-                                        frontier.getCentre().y + " is " +
-                                        (int)utilityEstimate(teammate.getLocation(), frontier));
+                            teammate.getLocation(),
+                            frontier,
+                            utilityEstimate(teammate.getLocation(), frontier),
+                            null));
+                    System.out.println(Constants.INDENT + "Utility of robot with ID "
+                            + teammate.getID() + " for frontier at "
+                            + frontier.getCentre().x + ","
+                            + frontier.getCentre().y + " is "
+                            + (int) utilityEstimate(teammate.getLocation(), frontier));
                 }
             }
-         }
+        }
 
         return utilities;
     }
@@ -444,7 +422,7 @@ public class LeaderFollower {
         return utilities;
     }
 
-    private static class Utility implements Comparable<Utility>  {
+    private static class Utility implements Comparable<Utility> {
 
         public int ID;
         public Point agentLocation;
@@ -462,10 +440,11 @@ public class LeaderFollower {
 
         @Override
         public int compareTo(Utility other) {
-            if(other.utility > this.utility)
+            if (other.utility > this.utility) {
                 return 1;
-            else
+            } else {
                 return -1;
+            }
         }
     }
 
@@ -488,88 +467,95 @@ public class LeaderFollower {
                                "Agent " + p.ID + "; " +
                                "Frontier at " + p.frontier.getCentre().x + ", " + p.frontier.getCentre().y + "; " +
                                "Utility " + p.utility + "." );*/
-
         // Step 3
         Utility best;
         LinkedList<Utility> removal;
         int counter = 0;
         boolean isLastFrontier;
 
-        while(!utilities.isEmpty()) {    // && counter < 5) {
+        while (!utilities.isEmpty()) {    // && counter < 5) {
             best = utilities.poll();
 
             // Check if this is the only remaining frontier
             isLastFrontier = true;
-            if(!utilities.isEmpty())
-                for(Utility u: utilities)
-                    if(u.frontier != best.frontier){
+            if (!utilities.isEmpty()) {
+                for (Utility u : utilities) {
+                    if (u.frontier != best.frontier) {
                         isLastFrontier = false;
                         break;
                     }
+                }
+            }
 
             // If this is the only remaining frontier
-            if(isLastFrontier) {
+            if (isLastFrontier) {
                 //if(best.ID == agent.getID()) {
-                    // just in case path hasn't been computed yet
-                    if(best.path == null)
-                        best.path = agent.calculatePath(agent.getLocation(), best.frontier.getClosestPointInRange(agent));
+                // just in case path hasn't been computed yet
+                if (best.path == null) {
+                    best.path = agent.calculatePath(agent.getLocation(), best.frontier.getClosestPointInRange(agent));
+                }
 
-                    agent.setLastFrontier(best.frontier);
-                    agent.setCurrentGoal(best.frontier.getCentre());
-                    agent.addDirtyCells(agent.getPath().getAllPathPixels());
-                    agent.setPath(best.path);
-                    return true;
+                agent.setLastFrontier(best.frontier);
+                agent.setCurrentGoal(best.frontier.getCentre());
+                agent.addDirtyCells(agent.getPath().getAllPathPixels());
+                agent.setPath(best.path);
+                return true;
                 //}
                 //else
                 //    return false;  // no frontier found for this agent
             }
 
             // If this is an estimate, calculate true utility
-            if(best.path == null)
+            if (best.path == null) {
                 calculateUtilityExact(agent, best);
+            }
 
             //System.out.println("UtilityExact: " + best.utility);
-            if(best.utility >= utilities.peek().utility){
+            if (best.utility >= utilities.peek().utility) {
                 //System.out.println(best.agentLocation + " " + agent.getLocation());
 
-                if(best.ID == agent.getID()){
+                if (best.ID == agent.getID()) {
                     agent.setLastFrontier(best.frontier);
                     agent.setCurrentGoal(best.frontier.getCentre());
-                    if(agent.getPath() != null)
+                    if (agent.getPath() != null) {
                         agent.addDirtyCells(agent.getPath().getAllPathPixels());
+                    }
                     agent.setPath(best.path);
                     return true;
-                }
-                else {
+                } else {
                     // This robot assigned, so remove all remaining associated utilities
                     removal = new LinkedList<Utility>();
-                    for(Utility u : utilities)
-                        if(u.ID == best.ID  ||
-                           u.frontier == best.frontier)
+                    for (Utility u : utilities) {
+                        if (u.ID == best.ID
+                                || u.frontier == best.frontier) {
                             removal.add(u);
-                    for(Utility r : removal)
+                        }
+                    }
+                    for (Utility r : removal) {
                         utilities.remove(r);
+                    }
                 }
-            }
-            else if(best.path == null) {
+            } else if (best.path == null) {
                 // it's not possible to plan a path to this frontier, so eliminate it entirely
                 removal = new LinkedList<Utility>();
-                for(Utility u : utilities)
-                    if(u.frontier == best.frontier)
+                for (Utility u : utilities) {
+                    if (u.frontier == best.frontier) {
                         removal.add(u);
-                for(Utility r : removal)
+                    }
+                }
+                for (Utility r : removal) {
                     utilities.remove(r);
-            }
-            else
+                }
+            } else {
                 utilities.add(best);
+            }
 
             /*    for(Utility p : utilities)
             System.out.println(agent.toString() +
                                "RealAgent at " + p.agentLocation.x + ", " + p.agentLocation.y + "; " +
                                "Frontier at " + p.frontier.getCentre().x + ", " + p.frontier.getCentre().y + "; " +
                                "Utility " + p.utility + "." );*/
-           // System.out.println(utilities.peek().utility);
-
+            // System.out.println(utilities.peek().utility);
             counter++;
         }
 
@@ -577,13 +563,13 @@ public class LeaderFollower {
     }
 
 // </editor-fold>
-
 // <editor-fold defaultstate="collapsed" desc="Calculate Frontiers">
-
-    private static boolean inRangeOfTeammate(Frontier f, RealAgent agent){
-        for(TeammateAgent t : agent.getAllTeammates().values())
-            if(f.getCentre().distance(t.getLocation()) < agent.getCommRange())
+    private static boolean inRangeOfTeammate(Frontier f, RealAgent agent) {
+        for (TeammateAgent t : agent.getAllTeammates().values()) {
+            if (f.getCentre().distance(t.getLocation()) < agent.getCommRange()) {
                 return true;
+            }
+        }
         return false;
     }
 
@@ -596,35 +582,33 @@ public class LeaderFollower {
             agent.addDirtyCells(f.getPolygonOutline());
         });
 
-        LinkedList <LinkedList> contours = ContourTracer.findAllContours(agent.getOccupancyGrid());
+        LinkedList<LinkedList> contours = ContourTracer.findAllContours(agent.getOccupancyGrid());
         System.out.println("Found " + contours.size() + " contours, ");
         PriorityQueue<Frontier> frontiers = new PriorityQueue();
         Frontier currFrontier;
 
         int contourCounter = 0;
-        for(LinkedList<Point> currContour : contours) {
+        for (LinkedList<Point> currContour : contours) {
             currFrontier = new Frontier(agent.getX(), agent.getY(), currContour);
             // only consider frontiers that are big enough and reachable
-            if(currFrontier.getArea() >= Constants.MIN_FRONTIER_SIZE &&
-              // !agent.getOccupancyGrid().obstacleWithinDistance(currFrontier.getCentre().x, currFrontier.getCentre().y, 2*Constants.WALL_DISTANCE)) {
-                //The line below is the key to choosing only frontiers within range
-                /*Point cp = currFrontier.getClosestPointInRange(agent);
+            if (currFrontier.getArea() >= Constants.MIN_FRONTIER_SIZE
+                    && // !agent.getOccupancyGrid().obstacleWithinDistance(currFrontier.getCentre().x, currFrontier.getCentre().y, 2*Constants.WALL_DISTANCE)) {
+                    //The line below is the key to choosing only frontiers within range
+                    /*Point cp = currFrontier.getClosestPointInRange(agent);
                 if(cp.x == 0 && cp.y == 0)
                     continue;
                 Path tp = new Path(agent, agent.getParentTeammate().getLocation(), cp);
                 if(tp.getLength() <= (1.5 * agent.getCommRange() - 2*Constants.STEP_SIZE) ||
-                   inRangeOfTeammate(currFrontier, agent))*/
-                   currFrontier.getCentre().distance(agent.getTeammate(1).getLocation()) < agent.getCommRange() * agent.getParent() - 5) {
-                    frontiers.add(currFrontier);
+                   inRangeOfTeammate(currFrontier, agent))*/ currFrontier.getCentre().distance(agent.getTeammate(1).getLocation()) < agent.getCommRange() * agent.getParent() - 5) {
+                frontiers.add(currFrontier);
                 contourCounter++;
             }
         }
         agent.setFrontiers(frontiers);
 
         System.out.println("retained " + contourCounter + " of them. ");
-        System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        System.out.println("Took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
     }
 
 // </editor-fold>
-
 }

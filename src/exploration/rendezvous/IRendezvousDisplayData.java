@@ -53,7 +53,10 @@ import java.util.List;
  * @author Victor
  */
 public interface IRendezvousDisplayData {
+
     List<Point> getDirtyCells(ExplorationImage image, RealAgent agent);
+
     void drawCandidatePointInfo(ExplorationImage image);
+
     void drawRendezvousLocation(ExplorationImage image, RealAgent agent);
 }

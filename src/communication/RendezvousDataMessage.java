@@ -53,44 +53,49 @@ import exploration.rendezvous.RendezvousAgentData;
  *
  * @author Victor
  */
-public class RendezvousDataMessage implements IDataMessage{
+public class RendezvousDataMessage implements IDataMessage {
+
     public final Rendezvous parentRendezvous;
     public final Rendezvous childRendezvous;
     public final Rendezvous parentBackupRendezvous;
     public final Rendezvous childBackupRendezvous;
-    
+
     public RendezvousDataMessage(RendezvousAgentData data) {
-        if (data.getParentRendezvous() != null)
+        if (data.getParentRendezvous() != null) {
             parentRendezvous = data.getParentRendezvous().copy();
-        else
+        } else {
             parentRendezvous = null;
-        if (data.getChildRendezvous() != null)
+        }
+        if (data.getChildRendezvous() != null) {
             childRendezvous = data.getChildRendezvous().copy();
-        else
+        } else {
             childRendezvous = null;
-        if (data.getParentBackupRendezvous() != null)
+        }
+        if (data.getParentBackupRendezvous() != null) {
             parentBackupRendezvous = data.getParentBackupRendezvous().copy();
-        else
+        } else {
             parentBackupRendezvous = null;
-        if (data.getChildBackupRendezvous() != null)
+        }
+        if (data.getChildBackupRendezvous() != null) {
             childBackupRendezvous = data.getChildBackupRendezvous().copy();
-        else
+        } else {
             childBackupRendezvous = null;
+        }
     }
 
     @Override
     public void receiveMessage(RealAgent agent, TeammateAgent teammate) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
-        
+
         teammate.getRendezvousAgentData().setChildRendezvous(childRendezvous);
         teammate.getRendezvousAgentData().setParentRendezvous(parentRendezvous);
-        
+
         if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent + " comms setting teammate " + teammate.getName() + 
-                " childRV to " + childRendezvous + ", parentRV to " + parentRendezvous);
+            System.out.println(agent + " comms setting teammate " + teammate.getName()
+                    + " childRV to " + childRendezvous + ", parentRV to " + parentRendezvous);
         }
         //if the message is from our child
-        if(teammate.getID() == agent.getChild() && teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
+        if (teammate.getID() == agent.getChild() && teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
             rvd.setChildRendezvous(parentRendezvous);
             rvd.setChildBackupRendezvous(parentBackupRendezvous);
             if (Constants.DEBUG_OUTPUT) {

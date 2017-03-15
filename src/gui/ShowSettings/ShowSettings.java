@@ -48,12 +48,12 @@ package gui.ShowSettings;
  * @author Victor
  */
 public class ShowSettings {
+
     public boolean showEnv;
     public boolean showHierarchy;
     public boolean showConnections;
-    
-    public ShowSettings()
-    {
+
+    public ShowSettings() {
         showEnv = false;
         showHierarchy = false;
         showConnections = false;

@@ -55,26 +55,27 @@ import java.util.List;
  * @author Victor
  */
 public class SinglePointRendezvousStrategyDisplayData implements IRendezvousDisplayData {
+
     private LinkedList<Point> skeleton;
     private LinkedList<Point> rvPoints;
-    
+
     public SinglePointRendezvousStrategyDisplayData() {
         skeleton = new LinkedList<Point>();
         rvPoints = new LinkedList<Point>();
     }
-    
+
     public LinkedList<Point> getSkeleton() {
         return skeleton;
     }
-    
+
     public void setSkeleton(LinkedList<Point> list) {
         skeleton = list;
     }
- 
+
     public LinkedList<Point> getRVPoints() {
         return rvPoints;
     }
-    
+
     public void setRVPoints(LinkedList<Point> list) {
         rvPoints = list;
     }
@@ -86,69 +87,76 @@ public class SinglePointRendezvousStrategyDisplayData implements IRendezvousDisp
         getSkeleton().stream().forEach((p) -> {
             dirtyCells.add(p);
         });
-        
+
         // Erase old RV points
-        for(Point rv: getRVPoints()) 
-            for(int i=Math.max(rv.x-4,0); i<=Math.min(rv.x+4,image.getWidth()-1); i++)
-                for(int j=Math.max(rv.y-4,0); j<=Math.min(rv.y+4,image.getHeight()-1); j++)
-                   dirtyCells.add(new Point(i,j));
-        
+        for (Point rv : getRVPoints()) {
+            for (int i = Math.max(rv.x - 4, 0); i <= Math.min(rv.x + 4, image.getWidth() - 1); i++) {
+                for (int j = Math.max(rv.y - 4, 0); j <= Math.min(rv.y + 4, image.getHeight() - 1); j++) {
+                    dirtyCells.add(new Point(i, j));
+                }
+            }
+        }
+
         //Erase text over agents
-        for(int i=agent.getX(); i<=agent.getX() + 100; i++)
-            for(int j=agent.getY() - Constants.AGENT_RADIUS - 25; j<=agent.getY() - Constants.AGENT_RADIUS; j++)
-                if(agent.getOccupancyGrid().locationExists(i,j))
-                    agent.getDirtyCells().add(new Point(i,j));
-        
+        for (int i = agent.getX(); i <= agent.getX() + 100; i++) {
+            for (int j = agent.getY() - Constants.AGENT_RADIUS - 25; j <= agent.getY() - Constants.AGENT_RADIUS; j++) {
+                if (agent.getOccupancyGrid().locationExists(i, j)) {
+                    agent.getDirtyCells().add(new Point(i, j));
+                }
+            }
+        }
+
         return dirtyCells;
     }
 
     @Override
     public void drawCandidatePointInfo(ExplorationImage image) {
-        try{
+        try {
             getSkeleton().stream().forEach((p) -> {
                 image.setPixel(p.x, p.y, Constants.MapColor.skeleton());
             });
-            
+
             getRVPoints().stream().forEach((p) -> {
                 image.drawPoint(p.x, p.y, Constants.MapColor.rvPoints());
             });
-        }
-        catch(java.lang.NullPointerException e) {
+        } catch (java.lang.NullPointerException e) {
         }
     }
 
     @Override
     public void drawRendezvousLocation(ExplorationImage image, RealAgent agent) {
-        int x,y;
+        int x, y;
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         // Draw Child RV
-        try{
-            x = (int)rvd.getChildRendezvous().getParentLocation().getX();
-            y = (int)rvd.getChildRendezvous().getParentLocation().getY();
+        try {
+            x = (int) rvd.getChildRendezvous().getParentLocation().getX();
+            y = (int) rvd.getChildRendezvous().getParentLocation().getY();
             image.drawPoint(x, y, Constants.MapColor.childRV());
-            for(int i=Math.max(0,x-4); i<=Math.min(x+4,image.getWidth()-1); i++)
-                for(int j=Math.max(0,y-4); j<=Math.min(y+4,image.getHeight()-1); j++)
-                    agent.getDirtyCells().add(new Point(i,j));
-            image.drawText("c:" + rvd.getChildRendezvous().getTimeMeeting() + ":" + rvd.getChildRendezvous().getTimeWait(), 
+            for (int i = Math.max(0, x - 4); i <= Math.min(x + 4, image.getWidth() - 1); i++) {
+                for (int j = Math.max(0, y - 4); j <= Math.min(y + 4, image.getHeight() - 1); j++) {
+                    agent.getDirtyCells().add(new Point(i, j));
+                }
+            }
+            image.drawText("c:" + rvd.getChildRendezvous().getTimeMeeting() + ":" + rvd.getChildRendezvous().getTimeWait(),
                     agent.getLocation().x, agent.getLocation().y - 10, Constants.MapColor.text());
-            
+
+        } catch (java.lang.NullPointerException e) {
         }
-        catch(java.lang.NullPointerException e) {
-        }
-        
+
         // Draw Parent RV
-        try{
-            x = (int)rvd.getParentRendezvous().getChildLocation().getX();
-            y = (int)rvd.getParentRendezvous().getChildLocation().getY();
+        try {
+            x = (int) rvd.getParentRendezvous().getChildLocation().getX();
+            y = (int) rvd.getParentRendezvous().getChildLocation().getY();
             image.drawPoint(x, y, Constants.MapColor.parentRV());
-            for(int i=Math.max(0,x-4); i<=Math.min(x+4,image.getWidth()-1); i++)
-                for(int j=Math.max(0,y-4); j<=Math.min(y+4,image.getHeight()-1); j++)
-                    agent.getDirtyCells().add(new Point(i,j));
-            image.drawText("p:" + rvd.getParentRendezvous().getTimeMeeting() + ":" + rvd.getParentRendezvous().getTimeWait(), 
+            for (int i = Math.max(0, x - 4); i <= Math.min(x + 4, image.getWidth() - 1); i++) {
+                for (int j = Math.max(0, y - 4); j <= Math.min(y + 4, image.getHeight() - 1); j++) {
+                    agent.getDirtyCells().add(new Point(i, j));
+                }
+            }
+            image.drawText("p:" + rvd.getParentRendezvous().getTimeMeeting() + ":" + rvd.getParentRendezvous().getTimeWait(),
                     agent.getLocation().x, agent.getLocation().y - 20, Constants.MapColor.text());
+        } catch (java.lang.NullPointerException e) {
         }
-        catch(java.lang.NullPointerException e) {
-        }
-        
+
     }
 }

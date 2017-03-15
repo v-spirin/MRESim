@@ -63,98 +63,105 @@ import path.Path;
  *
  * @author Victor
  */
-public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
+public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
+
     private RealAgent agent;
     private SinglePointRendezvousStrategyDisplayData displayData;
-    
+
     private final int MAX_DISTANCE_TO_FRONTIER_CENTER = 600;
     private final int POINTS_NEAR_FRONTIER_TO_CONSIDER = 4;
-    
+
     private int[][] skeletonGrid;
     private Point frontierCentre;
-    
+
     private SinglePointRendezvousStrategySettings settings;
-    
+
     public SinglePointRendezvousStrategy(RealAgent agent, SinglePointRendezvousStrategySettings settings) {
         this.agent = agent;
         displayData = new SinglePointRendezvousStrategyDisplayData();
         this.settings = settings;
     }
-    
+
     private static LinkedList<Point> findRendezvousPoints(int[][] skeleton, OccupancyGrid occGrid) {
         LinkedList<Point> rvPts = new LinkedList<Point>();
-        
-        // Pass 1:  find key points (junctions)
-        for(int i=2; i<skeleton.length-2; i++)
-            for(int j=2; j<skeleton[0].length-2; j++)
-                if(numNonzeroNeighbors(skeleton, i, j) >= 3 && neighborTraversal(skeleton, i, j) >= 3)
-                    rvPts.add(new Point(i,j));
 
-        
+        // Pass 1:  find key points (junctions)
+        for (int i = 2; i < skeleton.length - 2; i++) {
+            for (int j = 2; j < skeleton[0].length - 2; j++) {
+                if (numNonzeroNeighbors(skeleton, i, j) >= 3 && neighborTraversal(skeleton, i, j) >= 3) {
+                    rvPts.add(new Point(i, j));
+                }
+            }
+        }
+
         // Pass 2:  fill in gaps
         LinkedList<Point> pts = gridToList(skeleton);
         boolean addToRVlist;
-        for(Point p: pts) {
+        for (Point p : pts) {
             // First check if it's an endpoint
-            if(numNonzeroNeighbors(skeleton, p.x, p.y) < 2) {
+            if (numNonzeroNeighbors(skeleton, p.x, p.y) < 2) {
                 rvPts.add(p);
                 continue;
             }
-                    
+
             // Second check if it's far away from all other rv points
             addToRVlist = true;
-            for(Point q: rvPts)
-                if(p.distance(q) < 50) {
+            for (Point q : rvPts) {
+                if (p.distance(q) < 50) {
                     addToRVlist = false;
                     break;
                 }
-            if(addToRVlist)
+            }
+            if (addToRVlist) {
                 rvPts.add(p);
+            }
         }
 
         Point p;
         // Pass 3:  prune points too close to another rv point or too close to an obstacle
-        for(int i=rvPts.size()-1; i>=0; i--) {
+        for (int i = rvPts.size() - 1; i >= 0; i--) {
             p = rvPts.get(i);
-            if(occGrid.obstacleWithinDistance(p.x, p.y, Constants.WALL_DISTANCE)) {
+            if (occGrid.obstacleWithinDistance(p.x, p.y, Constants.WALL_DISTANCE)) {
                 rvPts.remove(i);
                 continue;
             }
-            for(int j=rvPts.size()-1; j>=0; j--)
-                if(p.distance(rvPts.get(j)) < 20 && i!=j) {
+            for (int j = rvPts.size() - 1; j >= 0; j--) {
+                if (p.distance(rvPts.get(j)) < 20 && i != j) {
                     rvPts.remove(i);
                     break;
                 }
+            }
         }
 
         //System.out.println("---  Removed " + counter + "rvPts that were too close");
-
         return rvPts;
     }
-    
+
     // Get a subset of occupancy grid free space points to consider
     private List<Point> SampleEnvironmentPoints() {
         skeletonGrid = Skeleton.findSkeleton(agent.getOccupancyGrid());
         LinkedList<Point> allSkeletonPoints = Skeleton.gridToList(skeletonGrid);
         LinkedList<Point> pts = findRendezvousPoints(skeletonGrid, agent.getOccupancyGrid());
-        
+
         displayData.setSkeleton(allSkeletonPoints);
         displayData.setRVPoints(pts);
-        
+
         return pts;
     }
-    
+
     //calculate simple utility by distance
     private double UtilityDist(double dist) {
-        if (dist == 0) return Integer.MAX_VALUE;
+        if (dist == 0) {
+            return Integer.MAX_VALUE;
+        }
         return 10000 / dist;
     }
-    
+
     //calculate utility by skeleton vertex degree (1 for endpoint, 2 for corridor, 3+ for junction)
     private double UtilityDegree(double dist, double degree) {
         return Math.pow(degree, 2) * UtilityDist(dist);
     }
-    
+
     private PriorityQueue<NearRVPoint> PruneByFrontierProximity(List<Point> pts) {
         LinkedList<Point> rvPtsCopy = new LinkedList();
         pts.stream().forEach((p) -> {
@@ -162,10 +169,9 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         });
 
         PriorityQueue<NearRVPoint> nearRVPoints = new PriorityQueue<NearRVPoint>();
-        if(agent.getLastFrontier() != null)
+        if (agent.getLastFrontier() != null) {
             frontierCentre = agent.getLastFrontier().getCentre();//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
-        else
-        {
+        } else {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent + " !!!! getLastFrontier returned null, setting frontierCentre to " + agent.getLocation());
             }
@@ -175,23 +181,24 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
             System.out.println(agent + " frontierCentre is " + frontierCentre);
         }
         // create priority queue of all potential rvpoints within given straight line distance
-        for(Point p: rvPtsCopy) {
-            if(p.distance(frontierCentre) > MAX_DISTANCE_TO_FRONTIER_CENTER)
+        for (Point p : rvPtsCopy) {
+            if (p.distance(frontierCentre) > MAX_DISTANCE_TO_FRONTIER_CENTER) {
                 continue;
+            }
 
             nearRVPoints.add(new NearRVPoint(p.x, p.y, UtilityDist(p.distance(frontierCentre))));
         }
         return nearRVPoints;
     }
-    
+
     private PriorityQueue<NearRVPoint> PruneByUtility(PriorityQueue<NearRVPoint> pts) {
         // reduce to up to 4 points closest to next frontier, calculate exact path cost
         NearRVPoint tempPoint;
         double pathCost;
         int degree;
         PriorityQueue<NearRVPoint> prunedNearRvPts = new PriorityQueue();
-        for(int i=0; i<POINTS_NEAR_FRONTIER_TO_CONSIDER; i++)
-            if(pts.size() > 0) {
+        for (int i = 0; i < POINTS_NEAR_FRONTIER_TO_CONSIDER; i++) {
+            if (pts.size() > 0) {
                 tempPoint = pts.remove();
                 Path p = agent.calculatePath(tempPoint, frontierCentre);
                 if (p.found) {
@@ -200,12 +207,12 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
                     prunedNearRvPts.add(new NearRVPoint(tempPoint.x, tempPoint.y, UtilityDegree(pathCost, degree)));
                 }
             }
+        }
         return prunedNearRvPts;
     }
-    
+
     //Calculate time to next RV with parent, taking parent communication range into account (using simple circle model)
-    private void calculateParentTimeToRV()
-    {
+    private void calculateParentTimeToRV() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         Point baseLoc = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
         Point relayLoc = agent.getParentTeammate().getLocation();
@@ -215,10 +222,9 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         Path pathParentToCS = agent.calculatePath(relayLoc, baseLoc);
         Path pathCSToRendezvous = agent.calculatePath(baseLoc, rvd.getParentRendezvous().getParentLocation());
         //<editor-fold defaultstate="collapsed" desc="Couldn't find pathCSToRV - approximate">
-        if ((pathCSToRendezvous.getLength() == 0) &&
-                (!rvd.getParentRendezvous().getParentLocation().equals(
-                        agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation())))
-        {
+        if ((pathCSToRendezvous.getLength() == 0)
+                && (!rvd.getParentRendezvous().getParentLocation().equals(
+                        agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation()))) {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println("Could not calculate pathCSToRendezvous!!!!");
             }
@@ -226,83 +232,78 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
             pathCSToRendezvous = pathParentToCS;
         }
         //</editor-fold>
-        double totalPathLength = pathParentToCS.getLength()+pathCSToRendezvous.getLength();
-        if (settings.useSimpleCircleCommModelForBaseRange)
-            totalPathLength = totalPathLength - 2*Math.min(agent.getParentTeammate().getCommRange(), 
+        double totalPathLength = pathParentToCS.getLength() + pathCSToRendezvous.getLength();
+        if (settings.useSimpleCircleCommModelForBaseRange) {
+            totalPathLength = totalPathLength - 2 * Math.min(agent.getParentTeammate().getCommRange(),
                     agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getCommRange());
-        rvd.setTimeUntilRendezvous(Math.max((int)((totalPathLength)/Constants.DEFAULT_SPEED), 60));
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println("\nP2CS " + pathParentToCS.getLength() + "; " +
-                            " CS2R " + pathCSToRendezvous.getLength() + "; " +
-                            totalPathLength + "; " +
-                            Constants.DEFAULT_SPEED);
         }
-        
+        rvd.setTimeUntilRendezvous(Math.max((int) ((totalPathLength) / Constants.DEFAULT_SPEED), 60));
+        if (Constants.DEBUG_OUTPUT) {
+            System.out.println("\nP2CS " + pathParentToCS.getLength() + "; "
+                    + " CS2R " + pathCSToRendezvous.getLength() + "; "
+                    + totalPathLength + "; "
+                    + Constants.DEFAULT_SPEED);
+        }
+
         if (settings.giveExplorerMinTimeNearFrontier) {
             //<editor-fold defaultstate="collapsed" desc="Check time for explorer to reach frontier, to make sure he has time to explore before returning">
             Point frontierLoc;
-            if(agent.getLastFrontier() != null)
+            if (agent.getLastFrontier() != null) {
                 frontierLoc = agent.getLastFrontier().getCentre();
-            else
-            {
+            } else {
                 if (Constants.DEBUG_OUTPUT) {
                     System.out.println(agent + " Setting frontierCentre to agent location");
                 }
                 frontierLoc = agent.getLocation();
             }
-            if (frontierLoc != null)
-            {                
+            if (frontierLoc != null) {
                 Path here2Frontier = agent.calculatePath(agent.getLocation(), frontierLoc);
                 Path front2rv = agent.calculatePath(frontierLoc, rvd.getParentRendezvous().getChildLocation());
-                int expTime = (int)(here2Frontier.getLength() + front2rv.getLength())/Constants.DEFAULT_SPEED;
+                int expTime = (int) (here2Frontier.getLength() + front2rv.getLength()) / Constants.DEFAULT_SPEED;
                 expTime += Constants.FRONTIER_MIN_EXPLORE_TIME;
                 rvd.setTimeUntilRendezvous(Math.max(rvd.getTimeUntilRendezvous(), expTime));
                 if (Constants.DEBUG_OUTPUT) {
                     System.out.println(agent + " here2Frontier: " + here2Frontier.getLength() + " front2rv " + front2rv.getLength() + " minExplore " + Constants.FRONTIER_MIN_EXPLORE_TIME);
                 }
-            } else
-            {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(agent + " frontier is null");
-                }
+            } else if (Constants.DEBUG_OUTPUT) {
+                System.out.println(agent + " frontier is null");
             }
             //</editor-fold>
         }
-        
+
         rvd.getParentRendezvous().setTimeMeeting(timeElapsed + rvd.getTimeUntilRendezvous());
         rvd.getParentRendezvous().setTimeWait(Constants.WAIT_AT_RV_BEFORE_REPLAN);
-        
+
         if (Constants.DEBUG_OUTPUT) {
-            System.out.println(Constants.INDENT + "Assume that parent will take " + rvd.getTimeUntilRendezvous() + 
-                " time steps until rendezvous.");
+            System.out.println(Constants.INDENT + "Assume that parent will take " + rvd.getTimeUntilRendezvous()
+                    + " time steps until rendezvous.");
         }
     }
-    
-    private void calculateParentTimeToBackupRV()
-    {
+
+    private void calculateParentTimeToBackupRV() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
-        if (rvd.getParentBackupRendezvous() == null) return;
+        if (rvd.getParentBackupRendezvous() == null) {
+            return;
+        }
         //System.out.println(agent.toString() + "Calculating time to next rendezvous...");
         int timeAtStart = rvd.getParentRendezvous().getTimeMeeting() + rvd.getParentRendezvous().getTimeWait();
-        
+
         Path pathMeToRV2 = agent.calculatePath(rvd.getParentRendezvous().getChildLocation(),
                 rvd.getParentBackupRendezvous().getChildLocation());
-        
+
         Path pathParentToRV2 = agent.calculatePath(rvd.getParentRendezvous().getParentLocation(),
                 rvd.getParentBackupRendezvous().getParentLocation());
-        
-        if (pathMeToRV2.found && pathParentToRV2.found)
-        {
+
+        if (pathMeToRV2.found && pathParentToRV2.found) {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent + "Calculating parent backup RV meeting time...");
             }
-            rvd.getParentBackupRendezvous().setTimeMeeting(timeAtStart + 
-                    Math.max((int)pathMeToRV2.getLength(), (int)pathParentToRV2.getLength())/Constants.DEFAULT_SPEED);
+            rvd.getParentBackupRendezvous().setTimeMeeting(timeAtStart
+                    + Math.max((int) pathMeToRV2.getLength(), (int) pathParentToRV2.getLength()) / Constants.DEFAULT_SPEED);
             /*rvd.getParentBackupRendezvous().setMinTimeMeeting(timeAtStart + 
                     Math.max((int)pathMeToRV2.getLength(), (int)pathParentToRV2.getLength())/Constants.DEFAULT_SPEED);*/
             rvd.getParentBackupRendezvous().setTimeWait(Constants.WAIT_AT_RV_BEFORE_REPLAN);
-        } else
-        {
+        } else {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent + "  !!!FAILED to calculate backup RV times!");
             }
@@ -310,22 +311,20 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
             rvd.getParentBackupRendezvous().setTimeWait(Constants.MAX_TIME);
         }
     }
-    
+
     public Point calculateRVPoint(RealAgent explorer) {
         List<Point> pts = SampleEnvironmentPoints();
-        
-        if(pts == null) {
+
+        if (pts == null) {
             return explorer.getLocation();
-        }
-        else {
+        } else {
             PriorityQueue<NearRVPoint> nearFrontier = PruneByFrontierProximity(pts);
             PriorityQueue<NearRVPoint> utilityPts = PruneByUtility(nearFrontier);
 
             Point bestPoint;
-            if(utilityPts.size() > 0)
+            if (utilityPts.size() > 0) {
                 bestPoint = utilityPts.remove();
-            else
-            {
+            } else {
                 if (Constants.DEBUG_OUTPUT) {
                     System.out.println(agent + " !!!!! error pruning - bestpoint is set to " + agent.getLocation());
                 }
@@ -335,39 +334,40 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
             return bestPoint;
         }
     }
-    
+
     @Override
     public void calculateRendezvousExplorerWithRelay() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         // Only calculate rv every several time steps at most
-        if(rvd.getTimeSinceLastRVCalc() < Constants.RV_REPLAN_INTERVAL)
+        if (rvd.getTimeSinceLastRVCalc() < Constants.RV_REPLAN_INTERVAL) {
             return;
-        else
+        } else {
             rvd.setTimeSinceLastRVCalc(0);
+        }
 
         long realtimeStart = System.currentTimeMillis();
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(agent.toString() + "Calculating next rendezvous ... ");
         }
 
-        rvd.setParentRendezvous(new Rendezvous(calculateRVPoint(agent)));        
-        
+        rvd.setParentRendezvous(new Rendezvous(calculateRVPoint(agent)));
+
         //required by the interface contract - where our relay will meet its parent
         Rendezvous parentsRVLocation = new Rendezvous(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
         rvd.getParentRendezvous().parentsRVLocation = parentsRVLocation;
-        
-        System.out.print(Constants.INDENT + agent + "Choosing complete, chose " + 
-                rvd.getParentRendezvous().getChildLocation().x + "," + 
-                rvd.getParentRendezvous().getChildLocation().y + ". ");
-        
+
+        System.out.print(Constants.INDENT + agent + "Choosing complete, chose "
+                + rvd.getParentRendezvous().getChildLocation().x + ","
+                + rvd.getParentRendezvous().getChildLocation().y + ". ");
+
         calculateParentTimeToRV();
         calculateParentTimeToBackupRV();
-        
+
         if (Constants.DEBUG_OUTPUT) {
             System.out.println("Took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
         }
     }
-    
+
     //For the case of Relay having an RV with another relay
     @Override
     public void calculateRendezvousRelayWithRelay() {
@@ -416,7 +416,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
                 agent.getParentRendezvous().getChildLocation().y + ". ");
         System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");*/
     }
-    
+
     @Override
     public void processExplorerStartsHeadingToRV() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
@@ -426,22 +426,22 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
             rvd.setChildRendezvous(new Rendezvous(agent.getLocation()));
         }
     }
-    
+
     @Override
     public void processExplorerCheckDueReturnToRV() {
-        
+
     }
-    
+
     @Override
     public void processReturnToParentReplan() {
-        
+
     }
-    
+
     @Override
     public Path processGoToChildReplan() {
         return null;
     }
-    
+
     @Override
     public Point processWaitForParent() {
         /*if (agent.getParentTeammate().getID() == Constants.BASE_STATION_AGENT_ID) {
@@ -453,15 +453,15 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
         }*/
         return new Point(agent.getX(), agent.getY());
     }
-    
+
     @Override
     public void processJustGotIntoParentRange() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="Case 1: Explorer">
-        if(agent.isExplorer()) {
+        if (agent.isExplorer()) {
             // Second, calculate rendezvous, but stick around for one time step to communicate
-            if(settings.useImprovedRendezvous) {
-                calculateRendezvousExplorerWithRelay();                    
+            if (settings.useImprovedRendezvous) {
+                calculateRendezvousExplorerWithRelay();
                 /*if (rvThroughWalls) {
                     if (rvd.getTimeSinceLastRVCalc() == 0)
                         rvd.setTimeSinceLastRVCalc(100);
@@ -469,44 +469,40 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
                     //calculateRVThroughWalls(agent);
                     calculateRendezvousRandomSampling(agent);
                 }*/
-            }
-            else {
+            } else {
                 //calculateRendezvous();
                 //set RV to next destination
                 //if we have a current goal that is not right next to where we are
-                if (agent.getCurrentGoal().distance(agent.getLocation()) > 25)
+                if (agent.getCurrentGoal().distance(agent.getLocation()) > 25) {
                     rvd.setChildRendezvous(new Rendezvous(agent.getCurrentGoal()));
+                }
                 rvd.setParentRendezvous(rvd.getChildRendezvous());
                 /*if (rvThroughWalls && timeElapsed > 100) {
                     if (rvd.getTimeSinceLastRVCalc() == 0)
                         rvd.setTimeSinceLastRVCalc(100);
                     rvd.setParentBackupRendezvous(rvd.getParentRendezvous());
                     calculateRVThroughWalls(agent);
-                }*/                   
-            } 
-        }
-        //</editor-fold>
-            
+                }*/
+            }
+        } //</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="Case 2: Relay with another relay as parent">
-        else if(agent.getParent() != Constants.BASE_STATION_TEAMMATE_ID) {
+        else if (agent.getParent() != Constants.BASE_STATION_TEAMMATE_ID) {
             calculateRendezvousRelayWithRelay();
-        }
-        //</editor-fold>
-            
+        } //</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="Case 3: Relay with base station as parent, no need to recalculate rv">
-        else {            
-            
+        else {
+
         }
         //</editor-fold>
-        
+
     }
-    
+
     @Override
     public void processAfterGiveParentInfoExplorer() {
         calculateParentTimeToRV();
         calculateParentTimeToBackupRV();
     }
-    
+
     @Override
     public void processAfterGiveParentInfoRelay() {
         //if exploration by relay enabled
@@ -523,10 +519,10 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
             }
         }
     }
-    
+
     @Override
     public void processAfterGetInfoFromChild() {
-        
+
     }
 
     @Override
@@ -543,12 +539,12 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy{
     public IRendezvousDisplayData getRendezvousDisplayData() {
         return displayData;
     }
-    
+
     @Override
     public RealAgent getAgent() {
         return agent;
     }
-    
+
     @Override
     public void setAgent(RealAgent ag) {
         agent = ag;

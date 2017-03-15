@@ -48,6 +48,7 @@ package gui.ShowSettings;
  * @author Victor
  */
 public class ShowSettingsAgent {
+
     public boolean showAgent;
     public boolean showCommRange;
     public boolean showFrontiers;
@@ -61,9 +62,8 @@ public class ShowSettingsAgent {
     public boolean showTestSpace;
     public boolean showBorderSkel;
     public boolean showRVWalls;
-    
-    public ShowSettingsAgent()
-    {
+
+    public ShowSettingsAgent() {
         showAgent = false;
         showCommRange = false;
         showFrontiers = false;

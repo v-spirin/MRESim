@@ -54,18 +54,16 @@ import java.util.Random;
  *
  * @author julh
  */
-public class Frontier implements Comparable<Frontier>  {
+public class Frontier implements Comparable<Frontier> {
 
 // <editor-fold defaultstate="collapsed" desc="Variables and Constructor">
-
     private Point centre;
     private double distanceToCentre;
     private Polygon areaPolygon;
     private LinkedList<Point> polygonOutline;
     private double area;
-    
-    
-   // This constructor used by new calculatefrontier function
+
+    // This constructor used by new calculatefrontier function
     public Frontier(int agentX, int agentY, LinkedList<Point> po) {
         this.polygonOutline = po;
         this.areaPolygon = createAreaPolygonFromList(po);
@@ -73,7 +71,7 @@ public class Frontier implements Comparable<Frontier>  {
         this.centre = calculateCentre();
         this.distanceToCentre = centre.distance(agentX, agentY);
     }
-    
+
     // This constructor used by copy() function
     public Frontier(LinkedList<Point> po, Polygon ap, double a, Point c, double d2c) {
         this.polygonOutline = po;
@@ -82,24 +80,22 @@ public class Frontier implements Comparable<Frontier>  {
         this.centre = c;
         this.distanceToCentre = d2c;
     }
-    
 
 // </editor-fold>     
-
 // <editor-fold defaultstate="collapsed" desc="Key functions copy, compareto">
-
     public Frontier copy() {
         return new Frontier(polygonOutline, areaPolygon, area, centre, distanceToCentre);
     }
 
     @Override
     public int compareTo(Frontier other) {
-        if((other.area / other.getDistanceToCentre()) > (this.area / this.distanceToCentre))
+        if ((other.area / other.getDistanceToCentre()) > (this.area / this.distanceToCentre)) {
             return 1;
-        else
+        } else {
             return -1;
+        }
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -109,9 +105,9 @@ public class Frontier implements Comparable<Frontier>  {
             return false;
         }
         final Frontier other = (Frontier) obj;
-        
-        return this.centre.equals(other.centre) &&
-                this.area == other.area;
+
+        return this.centre.equals(other.centre)
+                && this.area == other.area;
     }
 
     @Override
@@ -121,60 +117,54 @@ public class Frontier implements Comparable<Frontier>  {
         hash = 41 * hash + (int) (Double.doubleToLongBits(this.area) ^ (Double.doubleToLongBits(this.area) >>> 32));
         return hash;
     }
-    
+
 // </editor-fold>     
-
 // <editor-fold defaultstate="collapsed" desc="Get and set">
-
     public Polygon getAreaPolygon() {
         return areaPolygon;
     }
-    
+
     public Point getCentre() {
         return centre;
     }
-    
+
     public double getDistanceToCentre() {
         return distanceToCentre;
     }
-    
+
     public double getArea() {
         return area;
     }
-    
-    public LinkedList<Point> getPolygonOutline () {
+
+    public LinkedList<Point> getPolygonOutline() {
         return polygonOutline;
     }
 
 // </editor-fold>     
-
 // <editor-fold defaultstate="collapsed" desc="Utility functions">
-
     public Point getClosestPoint(Point ref, OccupancyGrid grid) {
         //return getCentre();
-        
+
         double closestDist = 1000000;
-        Point closestPoint = new Point(0,0);
-        Point closePointNearWall = new Point(0,0);
-        for(int i=0; i<polygonOutline.size(); i++) {
-            if(polygonOutline.get(i).distance(ref) < closestDist)
-            {
+        Point closestPoint = new Point(0, 0);
+        Point closePointNearWall = new Point(0, 0);
+        for (int i = 0; i < polygonOutline.size(); i++) {
+            if (polygonOutline.get(i).distance(ref) < closestDist) {
                 if (!grid.obstacleWithinDistance(polygonOutline.get(i).x, polygonOutline.get(i).y, Constants.WALL_DISTANCE)) {
                     closestPoint = polygonOutline.get(i);
                     closestDist = polygonOutline.get(i).distance(ref);
-                } else
-                {
+                } else {
                     closePointNearWall = polygonOutline.get(i);
                 }
             }
         }
         //return this.getCentre();
-        
+
         //if can't find closest point as it's too close to wall, maybe we can return center
-        if ((closestPoint.x == 0) && (closestPoint.y == 0))
-        {
-            if (!grid.obstacleWithinDistance(this.getCentre().x, this.getCentre().y, Constants.WALL_DISTANCE))
+        if ((closestPoint.x == 0) && (closestPoint.y == 0)) {
+            if (!grid.obstacleWithinDistance(this.getCentre().x, this.getCentre().y, Constants.WALL_DISTANCE)) {
                 return this.getCentre();
+            }
         }
         //    closestPoint = closePointNearWall; // at least it's something, the frontier is probably bad anyway...
         return closestPoint;
@@ -182,11 +172,11 @@ public class Frontier implements Comparable<Frontier>  {
 
     public Point getClosestPointInRange(RealAgent agent) {
         double closestDist = 1000000;
-        Point closestPoint = new Point(0,0);
-        for(int i=0; i<polygonOutline.size(); i++) {
-            if(polygonOutline.get(i).distance(agent.getLocation()) < closestDist &&
-               !agent.getOccupancyGrid().obstacleWithinDistance(polygonOutline.get(i).x, polygonOutline.get(i).y, Constants.WALL_DISTANCE) &&
-               polygonOutline.get(i).distance(agent.getTeammate(1).getLocation()) < agent.getAllTeammates().size() * agent.getCommRange() - 5) {
+        Point closestPoint = new Point(0, 0);
+        for (int i = 0; i < polygonOutline.size(); i++) {
+            if (polygonOutline.get(i).distance(agent.getLocation()) < closestDist
+                    && !agent.getOccupancyGrid().obstacleWithinDistance(polygonOutline.get(i).x, polygonOutline.get(i).y, Constants.WALL_DISTANCE)
+                    && polygonOutline.get(i).distance(agent.getTeammate(1).getLocation()) < agent.getAllTeammates().size() * agent.getCommRange() - 5) {
                 closestPoint = polygonOutline.get(i);
                 closestDist = polygonOutline.get(i).distance(agent.getLocation());
             }
@@ -204,88 +194,98 @@ public class Frontier implements Comparable<Frontier>  {
         list.stream().forEach((p) -> {
             newP.addPoint(p.x, p.y);
         });
-        
+
         return newP;
     }
-    
+
     private double calculatePerimeterApprox() {
         double runningTotal = 0;
         int dx;
         int dy;
-        
-        for(int i=0; i<areaPolygon.npoints-1; i++)
-        {
+
+        for (int i = 0; i < areaPolygon.npoints - 1; i++) {
             //runningTotal += Math.pow(Math.pow(areaPolygon.xpoints[i] - areaPolygon.xpoints[i+1], 2) +
             //                 Math.pow(areaPolygon.ypoints[i] - areaPolygon.ypoints[i+1], 2), 1);
-            dx = Math.abs(areaPolygon.xpoints[i] - areaPolygon.xpoints[i+1]);
-            dy = Math.abs(areaPolygon.ypoints[i] - areaPolygon.ypoints[i+1]);
+            dx = Math.abs(areaPolygon.xpoints[i] - areaPolygon.xpoints[i + 1]);
+            dy = Math.abs(areaPolygon.ypoints[i] - areaPolygon.ypoints[i + 1]);
             runningTotal += Math.max(dx, dy);
         }
         //runningTotal += Math.pow(Math.pow(areaPolygon.xpoints[areaPolygon.npoints-1] - areaPolygon.xpoints[0], 2) +
         //                     Math.pow(areaPolygon.ypoints[areaPolygon.npoints-1] - areaPolygon.ypoints[0], 2), 1);
-        dx = Math.abs(areaPolygon.xpoints[areaPolygon.npoints-1] - areaPolygon.xpoints[0]);
-        dy = Math.abs(areaPolygon.ypoints[areaPolygon.npoints-1] - areaPolygon.ypoints[0]);
+        dx = Math.abs(areaPolygon.xpoints[areaPolygon.npoints - 1] - areaPolygon.xpoints[0]);
+        dy = Math.abs(areaPolygon.ypoints[areaPolygon.npoints - 1] - areaPolygon.ypoints[0]);
         runningTotal += Math.max(dx, dy);
-        if(runningTotal < 0) runningTotal*=-1;
-        
+        if (runningTotal < 0) {
+            runningTotal *= -1;
+        }
+
         return runningTotal;
     }
-    
+
     // Simple polygon area calculation, see for example
     // http://local.wasp.uwa.edu.au/~pbourke/geometry/polyarea/
     private double calculateArea() {
         double runningTotal = 0;
-        
-        for(int i=0; i<areaPolygon.npoints-1; i++)
-            runningTotal += (areaPolygon.xpoints[i]*areaPolygon.ypoints[i+1] -
-                             areaPolygon.xpoints[i+1]*areaPolygon.ypoints[i]);
-        runningTotal += (areaPolygon.xpoints[areaPolygon.npoints-1]*areaPolygon.ypoints[0] -
-                             areaPolygon.xpoints[0]*areaPolygon.ypoints[areaPolygon.npoints-1]);
-        if(runningTotal < 0) runningTotal*=-1;
-        
+
+        for (int i = 0; i < areaPolygon.npoints - 1; i++) {
+            runningTotal += (areaPolygon.xpoints[i] * areaPolygon.ypoints[i + 1]
+                    - areaPolygon.xpoints[i + 1] * areaPolygon.ypoints[i]);
+        }
+        runningTotal += (areaPolygon.xpoints[areaPolygon.npoints - 1] * areaPolygon.ypoints[0]
+                - areaPolygon.xpoints[0] * areaPolygon.ypoints[areaPolygon.npoints - 1]);
+        if (runningTotal < 0) {
+            runningTotal *= -1;
+        }
+
         runningTotal /= 2;
-        
-        
+
         return runningTotal + calculatePerimeterApprox();
     }
-    
+
     private Point calculateCentre() {
         double cx, cy;
         Point temp;
         double runningTotal = 0;
-        
+
         //determine centre X
-        for(int i=0; i<areaPolygon.npoints-1; i++)
-            runningTotal += ((areaPolygon.xpoints[i] + areaPolygon.xpoints[i+1]) *
-                             (areaPolygon.xpoints[i]*areaPolygon.ypoints[i+1] -
-                              areaPolygon.xpoints[i+1]*areaPolygon.ypoints[i]));
-        runningTotal += ((areaPolygon.xpoints[areaPolygon.npoints-1] + areaPolygon.xpoints[0]) *
-                         (areaPolygon.xpoints[areaPolygon.npoints-1]*areaPolygon.ypoints[0] -
-                          areaPolygon.xpoints[0]*areaPolygon.ypoints[areaPolygon.npoints-1]));
- 
-        cx = runningTotal / (6*area);
-        if(cx < 0) cx*=-1;
-        
+        for (int i = 0; i < areaPolygon.npoints - 1; i++) {
+            runningTotal += ((areaPolygon.xpoints[i] + areaPolygon.xpoints[i + 1])
+                    * (areaPolygon.xpoints[i] * areaPolygon.ypoints[i + 1]
+                    - areaPolygon.xpoints[i + 1] * areaPolygon.ypoints[i]));
+        }
+        runningTotal += ((areaPolygon.xpoints[areaPolygon.npoints - 1] + areaPolygon.xpoints[0])
+                * (areaPolygon.xpoints[areaPolygon.npoints - 1] * areaPolygon.ypoints[0]
+                - areaPolygon.xpoints[0] * areaPolygon.ypoints[areaPolygon.npoints - 1]));
+
+        cx = runningTotal / (6 * area);
+        if (cx < 0) {
+            cx *= -1;
+        }
+
         runningTotal = 0;
 
         //determine centre Y
-        for(int i=0; i<areaPolygon.npoints-1; i++)
-            runningTotal += ((areaPolygon.ypoints[i] + areaPolygon.ypoints[i+1]) *
-                             (areaPolygon.xpoints[i]*areaPolygon.ypoints[i+1] -
-                              areaPolygon.xpoints[i+1]*areaPolygon.ypoints[i]));
-        runningTotal += ((areaPolygon.ypoints[areaPolygon.npoints-1] + areaPolygon.ypoints[0]) *
-                         (areaPolygon.xpoints[areaPolygon.npoints-1]*areaPolygon.ypoints[0] -
-                          areaPolygon.xpoints[0]*areaPolygon.ypoints[areaPolygon.npoints-1]));
-        
-        cy = runningTotal / (6*area);
-        if(cy < 0)cy*=-1;
-        
-        temp = new Point((int)cx, (int)cy);
+        for (int i = 0; i < areaPolygon.npoints - 1; i++) {
+            runningTotal += ((areaPolygon.ypoints[i] + areaPolygon.ypoints[i + 1])
+                    * (areaPolygon.xpoints[i] * areaPolygon.ypoints[i + 1]
+                    - areaPolygon.xpoints[i + 1] * areaPolygon.ypoints[i]));
+        }
+        runningTotal += ((areaPolygon.ypoints[areaPolygon.npoints - 1] + areaPolygon.ypoints[0])
+                * (areaPolygon.xpoints[areaPolygon.npoints - 1] * areaPolygon.ypoints[0]
+                - areaPolygon.xpoints[0] * areaPolygon.ypoints[areaPolygon.npoints - 1]));
+
+        cy = runningTotal / (6 * area);
+        if (cy < 0) {
+            cy *= -1;
+        }
+
+        temp = new Point((int) cx, (int) cy);
 
         // If the centre is inside the frontier, perfect, we're done.
-        if(areaPolygon.contains(temp))
+        if (areaPolygon.contains(temp)) {
             return temp;
-        
+        }
+
         // However, if the centre is not inside the frontier (e.g. if it's crescent shaped)
         // then this is useless to us, since robot won't navigate into frontier.
         // TO DO (MAYBE):  find point somewhere in centre of mass.
@@ -299,13 +299,12 @@ public class Frontier implements Comparable<Frontier>  {
         int index = rnd.nextInt(areaPolygon.npoints);
         return new Point(areaPolygon.xpoints[index], areaPolygon.ypoints[index]);
     }
-    
+
     @Override
     public String toString() {
-        return "Frontier found with area " + area +
-                ", and centre (" + centre.x + "," + centre.y + ").";
+        return "Frontier found with area " + area
+                + ", and centre (" + centre.x + "," + centre.y + ").";
     }
-    
-// </editor-fold>     
 
+// </editor-fold>     
 }

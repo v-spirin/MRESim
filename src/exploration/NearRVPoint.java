@@ -51,62 +51,61 @@ import java.util.LinkedList;
  *
  * @author julh
  */
-    public class NearRVPoint extends Point implements Comparable<NearRVPoint> {
-        public double distanceToFrontier;
-        public double distanceToParent = java.lang.Double.MAX_VALUE;
-        public double utility;
-        public NearRVPoint parentPoint; //Point to which we need to head to enter comm range of our parent
-        public CommLink commLinkClosestToBase; //Communication link from here to a point that is closest to the comm range of base
-        
-        public LinkedList<CommLink> commLinks = new LinkedList<CommLink>(); //connected points
-        
-        public NearRVPoint (int newX, int newY) {
-            this.x = newX;
-            this.y = newY;
-            this.distanceToFrontier = 0;
-            this.utility = 0;
+public class NearRVPoint extends Point implements Comparable<NearRVPoint> {
+
+    public double distanceToFrontier;
+    public double distanceToParent = java.lang.Double.MAX_VALUE;
+    public double utility;
+    public NearRVPoint parentPoint; //Point to which we need to head to enter comm range of our parent
+    public CommLink commLinkClosestToBase; //Communication link from here to a point that is closest to the comm range of base
+
+    public LinkedList<CommLink> commLinks = new LinkedList<CommLink>(); //connected points
+
+    public NearRVPoint(int newX, int newY) {
+        this.x = newX;
+        this.y = newY;
+        this.distanceToFrontier = 0;
+        this.utility = 0;
+    }
+
+    public NearRVPoint(int newX, int newY, double utility) {
+        this.x = newX;
+        this.y = newY;
+        this.utility = utility;
+    }
+
+    private double calcUtility() {
+        return 10000 / this.distanceToFrontier;
+    }
+
+    public static double getFullRVUtility(double distToFrontier, double distToBase, int numObstacles) {
+        double weight1 = 2.0;
+        double weight2 = 1.0;
+        double nonLineOfSightRiskFactor = 0.9;
+
+        if (numObstacles == 0) {
+            nonLineOfSightRiskFactor = 1.0;
         }
-        
-        public NearRVPoint (int newX, int newY, double utility) {
-            this.x = newX;
-            this.y = newY;
-            this.utility = utility;
-        }
-        
-        private double calcUtility() {
-            return 10000 / this.distanceToFrontier;
-        }
-        
-        public static double getFullRVUtility(double distToFrontier, double distToBase, int numObstacles) {
-            double weight1 = 2.0;
-            double weight2 = 1.0;
-            double nonLineOfSightRiskFactor = 0.9;
-            
-            if (numObstacles == 0) nonLineOfSightRiskFactor = 1.0;
-            
-            return 10000 / (weight1 * distToFrontier + weight2 * distToBase) * nonLineOfSightRiskFactor;
-        }
-        
-        public void setDistanceToFrontier(double d) {
-            this.distanceToFrontier = d;
-            this.utility = calcUtility();
-        }
-        
-        @Override
-        public int compareTo(NearRVPoint other) {
-            if(other.utility > this.utility)
-                return 1;
-            else
-                return -1;
-        }
-        
-        public boolean equals(Point that)
-        {
-            return
-                    this.x == that.x &&
-                    this.y == that.y;
+
+        return 10000 / (weight1 * distToFrontier + weight2 * distToBase) * nonLineOfSightRiskFactor;
+    }
+
+    public void setDistanceToFrontier(double d) {
+        this.distanceToFrontier = d;
+        this.utility = calcUtility();
+    }
+
+    @Override
+    public int compareTo(NearRVPoint other) {
+        if (other.utility > this.utility) {
+            return 1;
+        } else {
+            return -1;
         }
     }
 
-
-
+    public boolean equals(Point that) {
+        return this.x == that.x
+                && this.y == that.y;
+    }
+}

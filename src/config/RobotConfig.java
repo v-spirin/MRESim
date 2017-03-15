@@ -48,10 +48,10 @@ package config;
  * @author Julian de Hoog
  */
 public class RobotConfig {
-    
+
     // start x, y and heading count as a single field, comma delimited.
     public static int NUMROBOTCONFIGFIELDS = 12;
-    
+
     private int robotNumber;
     private String name;
     private int startX;
@@ -64,13 +64,14 @@ public class RobotConfig {
     private int ability;
     private int comStationLimit;
     private int speed;
-        
-    public static enum roletype {BaseStation, Relay, Explorer, RelayStation}
+
+    public static enum roletype {
+        BaseStation, Relay, Explorer, RelayStation
+    }
     private roletype role;
 
     private int parent;
     private int child;
-
 
     public RobotConfig() {
         robotNumber = 1;
@@ -106,14 +107,14 @@ public class RobotConfig {
         comStationLimit = newComStationLimit;
         speed = newSpeed;
     }
-    
+
     public RobotConfig(String newRobotNumber, String newName, String start, String newSensingRange, String newCommRange, String newBatteryLife, String newRole, String newParent, String newChild, String newAbility, String newComStationLimit, String newSpeed) {
         robotNumber = Integer.parseInt(newRobotNumber);
         name = newName;
-        
+
         String tokens[] = start.split(",");
 
-        if(tokens.length != 3) {
+        if (tokens.length != 3) {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println("Error: incorrect number of data for start location of robot " + newName);
             }
@@ -149,7 +150,7 @@ public class RobotConfig {
     public void setComStationLimit(int comStationLimit) {
         this.comStationLimit = comStationLimit;
     }
-    
+
     public int getAbility() {
         return ability;
     }
@@ -157,30 +158,31 @@ public class RobotConfig {
     public void setAbility(int ability) {
         this.ability = ability;
     }
-    
+
     public void setLoggingState(boolean loggingState) {
         this.loggingState = loggingState;
     }
-    
+
     public boolean getLoggingState() {
         return this.loggingState;
     }
+
     public int getRobotNumber() {
         return this.robotNumber;
     }
-    
+
     public String getName() {
         return this.name;
     }
-    
+
     public int getStartX() {
         return this.startX;
     }
-    
+
     public int getStartY() {
         return this.startY;
     }
-    
+
     public double getStartHeading() {
         return this.startHeading;
     }
@@ -188,7 +190,7 @@ public class RobotConfig {
     public int getSensingRange() {
         return this.sensingRange;
     }
-    
+
     public int getCommRange() {
         return this.commRange;
     }
@@ -196,38 +198,35 @@ public class RobotConfig {
     public int getBatteryLife() {
         return this.batteryLife;
     }
-    
+
     public roletype getRole() {
         return role;
     }
-    
+
     public int getParent() {
         return parent;
     }
-    
+
     public int getChild() {
         return child;
     }
-    
-  
-        
+
     @Override
     public String toString() {
-        return (String.valueOf(robotNumber) + " " +
-                name + " " +
-                String.valueOf(startX) + " " +
-                String.valueOf(startY) + " " +
-                String.valueOf(startHeading) + " " +
-                String.valueOf(sensingRange) + " " +
-                String.valueOf(commRange) + " " +
-                String.valueOf(batteryLife) + " " +
-                role + " " +
-                String.valueOf(parent) + " " +
-                String.valueOf(child) + " " +
-                String.valueOf(ability) + " " +
-                String.valueOf(comStationLimit) + " " +
-                String.valueOf(speed)
-                );
+        return (String.valueOf(robotNumber) + " "
+                + name + " "
+                + String.valueOf(startX) + " "
+                + String.valueOf(startY) + " "
+                + String.valueOf(startHeading) + " "
+                + String.valueOf(sensingRange) + " "
+                + String.valueOf(commRange) + " "
+                + String.valueOf(batteryLife) + " "
+                + role + " "
+                + String.valueOf(parent) + " "
+                + String.valueOf(child) + " "
+                + String.valueOf(ability) + " "
+                + String.valueOf(comStationLimit) + " "
+                + String.valueOf(speed));
 
     }
 }

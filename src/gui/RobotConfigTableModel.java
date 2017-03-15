@@ -49,16 +49,12 @@ package gui;
  */
 import javax.swing.table.DefaultTableModel;
 
+public class RobotConfigTableModel extends DefaultTableModel {
 
-
-public class RobotConfigTableModel extends DefaultTableModel{
-    
     @Override
-    public boolean isCellEditable(int row, int column)
-    {
+    public boolean isCellEditable(int row, int column) {
         // Set Rank column to be uneditable
         return column != 0;
     }
-    
-    
+
 }

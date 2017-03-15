@@ -63,47 +63,51 @@ import javax.swing.JOptionPane;
  */
 public class EnvLoader {
 
-
 // <editor-fold defaultstate="collapsed" desc="Save Environment">
-
     public static boolean saveWallConfig_ImageBased(Environment env, String fileName) {
-        try{
+        try {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(className() + "Trying to save image based environment ... ");
             }
             BufferedImage image = new BufferedImage(Constants.MAX_COLS, Constants.MAX_ROWS, BufferedImage.TYPE_INT_RGB);
 
-            for(int i=0; i<Constants.MAX_COLS; i++)
-                for(int j=0; j<Constants.MAX_ROWS; j++)
-                    switch (env.statusAt(i, j)){
-                        case unexplored: image.setRGB(i, j, Color.blue.getRGB());
-                        break;
-                        case explored: image.setRGB(i, j, Color.white.getRGB());
-                        break;
-                        case slope: image.setRGB(i, j, Color.yellow.getRGB());
-                        break;
-                        case hill: image.setRGB(i, j, new Color(255,69,0).getRGB());
-                        break;
-                        case obstacle: image.setRGB(i, j, Color.red.getRGB());
-                        break;
-                        case barrier: image.setRGB(i, j, Color.black.getRGB());
-                        break;
-                        
+            for (int i = 0; i < Constants.MAX_COLS; i++) {
+                for (int j = 0; j < Constants.MAX_ROWS; j++) {
+                    switch (env.statusAt(i, j)) {
+                        case unexplored:
+                            image.setRGB(i, j, Color.blue.getRGB());
+                            break;
+                        case explored:
+                            image.setRGB(i, j, Color.white.getRGB());
+                            break;
+                        case slope:
+                            image.setRGB(i, j, Color.yellow.getRGB());
+                            break;
+                        case hill:
+                            image.setRGB(i, j, new Color(255, 69, 0).getRGB());
+                            break;
+                        case obstacle:
+                            image.setRGB(i, j, Color.red.getRGB());
+                            break;
+                        case barrier:
+                            image.setRGB(i, j, Color.black.getRGB());
+                            break;
+
                     }
-                    /*if(env.obstacleAt(i, j))
+                }
+            }
+            /*if(env.obstacleAt(i, j))
                         image.setRGB(i, j, 0);
                     else
                         image.setRGB(i,j,16777215); // int rgb value for white*/
 
             ImageIO.write(image, "png", new File(fileName));
 
-
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(className() + "Environment saved successfully.");
             }
             return true;
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.err.println(className() + "Error: could not write data to " + fileName);
         }
 
@@ -111,22 +115,22 @@ public class EnvLoader {
     }
 
     public static boolean saveWallConfig_TextBased(Environment env, String fileName) {
-        try(PrintWriter outFile = new PrintWriter(new FileWriter(fileName))) {
+        try (PrintWriter outFile = new PrintWriter(new FileWriter(fileName))) {
 
             outFile.println(env.getRows());
             outFile.println(env.getColumns());
-            for(int i=0; i<env.getRows(); i++){
-                for(int j=0; j<env.getColumns(); j++)
+            for (int i = 0; i < env.getRows(); i++) {
+                for (int j = 0; j < env.getColumns(); j++) {
                     outFile.print(env.statusAt(i, j).ordinal());
-                   /* if(env.statusAt(j, i) == Environment.Status.obstacle)
+                }
+                /* if(env.statusAt(j, i) == Environment.Status.obstacle)
                         outFile.print("1");
                     else
                         outFile.print("0");*/
                 outFile.println();
             }
 
-        }
-        catch(IOException e){
+        } catch (IOException e) {
             System.err.println(className() + "Error writing to file " + fileName);
             return false;
         }
@@ -134,12 +138,13 @@ public class EnvLoader {
     }
 
     public static boolean saveWallConfig(Environment env, String fileName) {
-        String extension = fileName.substring(fileName.lastIndexOf('.')+1, fileName.length());
+        String extension = fileName.substring(fileName.lastIndexOf('.') + 1, fileName.length());
 
-        if(extension.equals("txt"))
+        if (extension.equals("txt")) {
             return saveWallConfig_TextBased(env, fileName);
-        else
+        } else {
             return saveWallConfig_ImageBased(env, fileName);
+        }
     }
 
     public static boolean saveWallConfig(Environment env) {
@@ -147,17 +152,16 @@ public class EnvLoader {
     }
 
 // </editor-fold>
-    
 // <editor-fold defaultstate="collapsed" desc="Load Environment">
-
     public static Environment loadWallConfig_TextBased(String fileName) {
         File file = new File(fileName);
 
-        if (!file.exists())
+        if (!file.exists()) {
             return null;
+        }
 
         Environment env;
-        try(BufferedReader inFile = new BufferedReader(new FileReader(file))) {
+        try (BufferedReader inFile = new BufferedReader(new FileReader(file))) {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(className() + "Trying to load text based environment from " + fileName + "... ");
             }
@@ -168,8 +172,9 @@ public class EnvLoader {
                 System.out.println(columns + " columns, " + rows + " rows.");
             }
 
-            if(!checkDimensions(rows, columns))
+            if (!checkDimensions(rows, columns)) {
                 return null;
+            }
 
             int offsetX = (Constants.MAX_COLS - columns) / 2;
             int offsetY = (Constants.MAX_ROWS - rows) / 2;
@@ -177,16 +182,28 @@ public class EnvLoader {
             env = new Environment(rows, columns);
             int currValue;
 
-            for(int i=0; i<rows; i++){
-                for(int j=0; j<columns; j++){
-                    currValue = (char)inFile.read() - '0';
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < columns; j++) {
+                    currValue = (char) inFile.read() - '0';
                     switch (currValue) {
-                        case 0: env.setStatus(offsetX+j, offsetY+i, Environment.Status.unexplored); break;
-                        case 1: env.setStatus(offsetX+j, offsetY+i, Environment.Status.explored); break;
-                        case 2: env.setStatus(offsetX+j, offsetY+i, Environment.Status.slope); break;
-                        case 3: env.setStatus(offsetX+j, offsetY+i, Environment.Status.hill); break;
-                        case 4: env.setStatus(offsetX+j, offsetY+i, Environment.Status.obstacle); break;
-                        case 5: env.setStatus(offsetX+j, offsetY+i, Environment.Status.barrier); break;
+                        case 0:
+                            env.setStatus(offsetX + j, offsetY + i, Environment.Status.unexplored);
+                            break;
+                        case 1:
+                            env.setStatus(offsetX + j, offsetY + i, Environment.Status.explored);
+                            break;
+                        case 2:
+                            env.setStatus(offsetX + j, offsetY + i, Environment.Status.slope);
+                            break;
+                        case 3:
+                            env.setStatus(offsetX + j, offsetY + i, Environment.Status.hill);
+                            break;
+                        case 4:
+                            env.setStatus(offsetX + j, offsetY + i, Environment.Status.obstacle);
+                            break;
+                        case 5:
+                            env.setStatus(offsetX + j, offsetY + i, Environment.Status.barrier);
+                            break;
                     }
                     /*if(currValue == 1)
                         env.setStatus(offsetX+j, offsetY+i, Environment.Status.obstacle);
@@ -196,16 +213,15 @@ public class EnvLoader {
 
                 // If file has been saved in unix/mac, only LF at end of line
                 // else file has been saved in windows, additional CR exists
-                if(inFile.read() != 10)
+                if (inFile.read() != 10) {
                     inFile.read();
+                }
             }
 
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             System.err.println(className() + "Error: could not read data from " + fileName);
             return null;
-        }
-        catch (NumberFormatException e) {
+        } catch (NumberFormatException e) {
             System.err.println(className() + "Error: incorrect data format in file " + fileName);
             return null;
         }
@@ -216,7 +232,6 @@ public class EnvLoader {
         }
         return env;
 
-        
     }
 
     public static Environment loadWallConfig_ImageBased(String fileName) {
@@ -262,19 +277,19 @@ public class EnvLoader {
                 for (int i = 0; i < columns; i++) {
                     for (int j = 0; j < rows; j++) {
                         Color c = new Color(image.getRGB(i, j));
-                        if(c.equals(Color.BLACK)){
-                                env.setStatus(offsetX + i, offsetY + j, Environment.Status.barrier);
-                                //System.out.println("BLACK");
-                        } else if(c.equals(Color.WHITE))
-                                env.setStatus(offsetX + i, offsetY + j, Environment.Status.unexplored);
-                        else if(c.equals(new Color(255,69,0)))
-                                env.setStatus(offsetX + i, offsetY + j, Environment.Status.hill);
-                        else if(c.equals(Color.YELLOW))
-                                env.setStatus(offsetX + i, offsetY + j, Environment.Status.slope);
-                        else if(c.equals(Color.RED))
-                                env.setStatus(offsetX + i, offsetY + j, Environment.Status.obstacle);
-                        else {
-                                env.setStatus(offsetX + i, offsetY + j, Environment.Status.unexplored);
+                        if (c.equals(Color.BLACK)) {
+                            env.setStatus(offsetX + i, offsetY + j, Environment.Status.barrier);
+                            //System.out.println("BLACK");
+                        } else if (c.equals(Color.WHITE)) {
+                            env.setStatus(offsetX + i, offsetY + j, Environment.Status.unexplored);
+                        } else if (c.equals(new Color(255, 69, 0))) {
+                            env.setStatus(offsetX + i, offsetY + j, Environment.Status.hill);
+                        } else if (c.equals(Color.YELLOW)) {
+                            env.setStatus(offsetX + i, offsetY + j, Environment.Status.slope);
+                        } else if (c.equals(Color.RED)) {
+                            env.setStatus(offsetX + i, offsetY + j, Environment.Status.obstacle);
+                        } else {
+                            env.setStatus(offsetX + i, offsetY + j, Environment.Status.unexplored);
                         }
                     }
                 }
@@ -297,36 +312,34 @@ public class EnvLoader {
     }
 
     public static Environment loadWallConfig(String fileName) {
-        String extension = fileName.substring(fileName.lastIndexOf('.')+1, fileName.length());
+        String extension = fileName.substring(fileName.lastIndexOf('.') + 1, fileName.length());
 
-        if(extension.equals("txt"))
+        if (extension.equals("txt")) {
             return loadWallConfig_TextBased(fileName);
-        else
+        } else {
             return loadWallConfig_ImageBased(fileName);
+        }
     }
-    
+
 // </editor-fold>
-    
 // <editor-fold defaultstate="collapsed" desc="Utility">
-
-
     private static boolean checkDimensions(int rows, int cols) {
-       if(rows > Constants.MAX_ROWS) {
+        if (rows > Constants.MAX_ROWS) {
             JOptionPane.showMessageDialog(new JFrame(), "Input image height is too large!  Maximum height is " + Constants.MAX_ROWS + ".", "Input Image Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
-        if(cols > Constants.MAX_COLS) {
+        if (cols > Constants.MAX_COLS) {
             JOptionPane.showMessageDialog(new JFrame(), "Input image width is too large!  Maximum width is " + Constants.MAX_COLS + ".", "Input Image Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
         return true;
     }
-    
+
     private static String className() {
         return ("[EnvLoader] ");
     }
 // </editor-fold>
-    
+
 }

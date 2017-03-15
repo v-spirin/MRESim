@@ -51,15 +51,13 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-
-
 public class BasicAgent implements Agent {
 
 // <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">
-
     int robotNumber;        // Robot's number.  CONSTANT.  Does not change throughout run.
     String name;            // Name
-    int ID;                 /* Different from Robot Number, ID can change if robots swap roles,
+    int ID;
+    /* Different from Robot Number, ID can change if robots swap roles,
                                and is used by robots to identify parent / child  */
 
     int x, y;               // Current position
@@ -77,7 +75,9 @@ public class BasicAgent implements Agent {
 
     RobotConfig.roletype role;
 
-    public static enum ExploreState {Initial, Explore, ReturnToParent, WaitForParent, GiveParentInfo, GoToChild, WaitForChild, GetInfoFromChild, OutOfService, RELAY, INACTIVE}
+    public static enum ExploreState {
+        Initial, Explore, ReturnToParent, WaitForParent, GiveParentInfo, GoToChild, WaitForChild, GetInfoFromChild, OutOfService, RELAY, INACTIVE
+    }
     private ExploreState state;
     private ExploreState prevExploreState;
 
@@ -88,7 +88,6 @@ public class BasicAgent implements Agent {
     private int timeSinceGetChildInfo; //how long since we got child info
 
     public Map<Integer, Double> knowledgeData = new HashMap(); // Keeps historical data about agent knowledge
-
 
     public BasicAgent(int no, String n, int id, int newX, int newY, double h, int sr, int cr, int bp, RobotConfig.roletype r, int p, int c, double sp, int ab, int comStationLimit) {
         robotNumber = no;
@@ -112,10 +111,7 @@ public class BasicAgent implements Agent {
     }
 
 // </editor-fold>
-
-
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
-
     public int getAbility() {
         return ability;
     }
@@ -185,8 +181,7 @@ public class BasicAgent implements Agent {
     }
 
     public void setState(ExploreState s) {
-        if (this.state != s)
-        {
+        if (this.state != s) {
             prevExploreState = this.state;
             this.setStateTimer(0);
             this.state = s;
@@ -198,8 +193,9 @@ public class BasicAgent implements Agent {
     }
 
     public void setStateTimer(int t) {
-        if (t != 0)
+        if (t != 0) {
             timeSinceGetChildInfo++;
+        }
         stateTimer = t;
     }
 
@@ -262,19 +258,20 @@ public class BasicAgent implements Agent {
     public void setTimeSinceGetChildInfo(int val) {
         timeSinceGetChildInfo = val;
     }
-    public void addComStation(ComStation com){
+
+    public void addComStation(ComStation com) {
         if (comStationLimit > comStations.size()) {
             this.comStations.add(com);
         }
     }
 // </editor-fold>
 
-
 // <editor-fold defaultstate="collapsed" desc="Utility Functions">
-
     //Adds all points in list2 to list1 (no duplicates), returns merged list.
     public LinkedList<Point> mergeLists(LinkedList<Point> list1, LinkedList<Point> list2) {
-        if (list2 == null) return list1; // needs to be fixed, not sure why it is null
+        if (list2 == null) {
+            return list1; // needs to be fixed, not sure why it is null
+        }
         list2.stream().filter((p) -> (!list1.contains(p))).forEach((p) -> {
             list1.add(p);
         });
@@ -282,7 +279,7 @@ public class BasicAgent implements Agent {
     }
 
     public double distanceTo(BasicAgent otherAgent) {
-        return(this.getLocation().distance(otherAgent.getLocation()));
+        return (this.getLocation().distance(otherAgent.getLocation()));
     }
 
     public double distanceToBase() {
@@ -290,8 +287,9 @@ public class BasicAgent implements Agent {
     }
 
     public double timeToBase() {
-        if (speed == 0)
+        if (speed == 0) {
             return Constants.MAX_TIME;
+        }
         return (distanceToBase / speed);
     }
 
@@ -300,7 +298,7 @@ public class BasicAgent implements Agent {
     }
 
     public double distanceTo(Point somePoint) {
-        return(this.getLocation().distance(somePoint));
+        return (this.getLocation().distance(somePoint));
     }
 
     @Override
@@ -309,7 +307,4 @@ public class BasicAgent implements Agent {
     }
 
 // </editor-fold>
-
-
-
 }

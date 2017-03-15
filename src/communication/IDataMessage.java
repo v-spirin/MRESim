@@ -51,6 +51,7 @@ import agents.TeammateAgent;
  * @author Victor
  */
 public interface IDataMessage {
+
     //Message received from teammate to agent
     void receiveMessage(RealAgent agent, TeammateAgent teammate);
 }

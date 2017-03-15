@@ -48,6 +48,7 @@ package exploration.rendezvous;
  * @author Victor
  */
 public class SinglePointRendezvousStrategySettings {
+
     //If false, new RV point is simply the point where explorer turns back to head to RV.
     //Otherwise, we try to pick a better spot (near junctions, in corridors, etc.
     public boolean useImprovedRendezvous;
