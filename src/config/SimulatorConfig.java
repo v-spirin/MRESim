@@ -145,7 +145,7 @@ public class SimulatorConfig {
     
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
 
-    public boolean isUseComStations() {
+    public boolean useComStations() {
         return useComStations;
     }
 

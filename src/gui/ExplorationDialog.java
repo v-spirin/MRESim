@@ -105,6 +105,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
         checkboxRoleswitchCriterion.setSelected(simConfig.strictRoleSwitch());
         //checkboxRVCommRange.setSelected(simConfig.RVCommRangeEnabled());
         checkboxRVThroughWalls.setSelected(simConfig.RVThroughWallsEnabled());
+        checkBoxUseComStations.setSelected(simConfig.useComStations());
         jTextRatio.setText(String.valueOf(simConfig.TARGET_INFO_RATIO));
         radioRoleActionPerformed(null);
         

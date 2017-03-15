@@ -521,7 +521,7 @@ public class RealAgent extends BasicAgent implements Agent {
                     if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn)) {
                         nextStep = UtilityExploration.takeStep(this, timeElapsed, simConfig);
                     }
-                    if (simConfig.isUseComStations() && Math.random() < simConfig.getComStationDropChance()) {
+                    if (simConfig.useComStations() && (Math.random() < simConfig.getComStationDropChance())) {
                         this.dropComStation();
                     }
                     break;
@@ -530,7 +530,7 @@ public class RealAgent extends BasicAgent implements Agent {
                     break;
                 case Testing:
                     nextStep = FrontierExploration.takeStep(this, timeElapsed, simConfig.getFrontierAlgorithm());
-                    if (simConfig.isUseComStations() && Math.random() < simConfig.getComStationDropChance()) {
+                    if (simConfig.useComStations() && (Math.random() < simConfig.getComStationDropChance())) {
                         this.dropComStation();
                     }
                     break;
