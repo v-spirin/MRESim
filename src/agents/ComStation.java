@@ -55,7 +55,7 @@ public class ComStation extends RealAgent implements Agent {
 
 // <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">
     public ComStation(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig) {
-        super(envWidth, envHeight, robot, simConfig);
+        super(envWidth, envHeight, robot, simConfig, null);
         this.setChild(1);
         this.setState(RealAgent.ExploreState.GetInfoFromChild);
         this.speed = 0;

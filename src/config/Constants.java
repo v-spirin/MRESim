@@ -188,6 +188,7 @@ public class Constants {
     public static final String DEFAULT_LOG_DIRECTORY = Paths.get(System.getProperty("user.dir"), "logs").toString() + File.separator;
     public static final String DEFAULT_IMAGE_LOG_DIRECTORY = Paths.get(System.getProperty("user.dir"), "logs", "images").toString() + File.separator;
     public static int MAXIMUM_TIME = 3000;
+    public static double HANDOVER_RANGE = 8;
 
     // Colors to be used on map
     public static class MapColor {

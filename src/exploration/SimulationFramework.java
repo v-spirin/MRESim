@@ -190,7 +190,7 @@ public class SimulationFramework implements ActionListener {
 
         for (int i = 1; i < numRobots; i++) {
             if (!robotTeamConfig.getRobotTeam().get(i + 1).getRole().equals(RobotConfig.roletype.RelayStation)) {
-                agent[i] = new RealAgent(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(i + 1), simConfig);
+                agent[i] = new RealAgent(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(i + 1), simConfig, agent[0]);
             } else {
                 agent[i] = new ComStation(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(i + 1), simConfig);
                 RealAgent realAgent = agent[agent[i].getParent() - 1];
@@ -263,6 +263,7 @@ public class SimulationFramework implements ActionListener {
                 }
             }
         }
+        
         agentSteps();               // move agents, simulate sensor data     
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "agentSteps took " + (System.currentTimeMillis() - realtimeStartCycle) + "ms.\n");

@@ -55,6 +55,7 @@ import environment.TopologicalMap;
 import exploration.FrontierExploration;
 import exploration.LeaderFollower;
 import exploration.NearRVPoint;
+import exploration.RelayFrontierExploration;
 import exploration.RoleBasedExploration;
 import exploration.RunFromLog;
 import exploration.SimulationFramework;
@@ -142,8 +143,9 @@ public class RealAgent extends BasicAgent implements Agent {
     private Point currentGoal;  // needed for calculating dynamic role switch
 
     private SimulatorConfig simConfig;
+    private BasicAgent baseStation;
 
-    public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig) {
+    public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, BasicAgent baseStation) {
         super(robot.getRobotNumber(),
                 robot.getName(),
                 robot.getRobotNumber(),
@@ -200,6 +202,7 @@ public class RealAgent extends BasicAgent implements Agent {
         nearestBasePoint = null;
 
         saveOccupancyGrid = true;
+        this.baseStation = baseStation;
     }
 
 // </editor-fold>     
@@ -542,10 +545,10 @@ public class RealAgent extends BasicAgent implements Agent {
                     nextStep = RoleBasedExploration.takeStep(this, timeElapsed, rendezvousStrategy);
                     break;
                 case Testing:
-                    nextStep = FrontierExploration.takeStep(this, timeElapsed, simConfig.getFrontierAlgorithm());
-                    if (simConfig.useComStations() && (Math.random() < simConfig.getComStationDropChance())) {
-                        this.dropComStation();
-                    }
+                    nextStep = RelayFrontierExploration.takeStep(this, timeElapsed, simConfig.getFrontierAlgorithm(), baseStation, simConfig.useComStations(), simConfig.getComStationDropChance());
+//                    if (simConfig.useComStations() && (Math.random() < simConfig.getComStationDropChance())) {
+//                        this.dropComStation();
+//                    }
                     break;
                 default:
                     break;
@@ -1243,7 +1246,7 @@ public class RealAgent extends BasicAgent implements Agent {
     }
 // </editor-fold>     
 
-    private void dropComStation() {
+    public void dropComStation() {
         if (comStations.size() > 0) {
             ComStation comStation = this.comStations.remove(0);
             comStation.setState(ExploreState.RELAY);
@@ -1251,5 +1254,4 @@ public class RealAgent extends BasicAgent implements Agent {
             comStation.setY(this.y);
         }
     }
-
 }

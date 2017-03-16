@@ -281,6 +281,11 @@ public class BasicAgent implements Agent {
             return false;
         }
     }
+
+    public ArrayList<ComStation> getComStations() {
+        return comStations;
+    }
+    
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Utility Functions">

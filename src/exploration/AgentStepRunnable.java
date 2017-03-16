@@ -81,13 +81,13 @@ public class AgentStepRunnable implements Runnable {
         long realtimeStartAgentCycle = System.currentTimeMillis();
 
         //<editor-fold defaultstate="collapsed" desc="Continue along the path, until we have exhausted agent 'speed' per cycle or run out of path">
-        if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
-            nextStep = agent.takeStep(timeElapsed);
-            agent.flush();
-            sensorData = simFramework.findSensorData(agent, nextStep);
-            agent.writeStep(nextStep, sensorData, true);
-            distance_left = 0;
-        }
+//        if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
+//            nextStep = agent.takeStep(timeElapsed);
+//            agent.flush();
+//            sensorData = simFramework.findSensorData(agent, nextStep);
+//            agent.writeStep(nextStep, sensorData, true);
+//            distance_left = 0;
+//        }
         while (distance_left > 0) {
             //<editor-fold defaultstate="collapsed" desc="Get next step">
             nextStep = agent.takeStep(timeElapsed);

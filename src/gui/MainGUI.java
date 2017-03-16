@@ -43,6 +43,7 @@
  */
 package gui;
 
+import agents.ComStation;
 import agents.RealAgent;
 import config.RobotConfig;
 import config.RobotTeamConfig;
@@ -60,6 +61,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -261,6 +263,14 @@ public class MainGUI extends javax.swing.JFrame {
             currRobotPanel.getLabelRole().setText(agent[i].getRole().toString());
             currRobotPanel.getLabelState().setText(agent[i].getState().toString());
             currRobotPanel.getLabelPower().setText(Integer.toString(agent[i].getBatteryPower()));
+            
+            ArrayList<ComStation> comStations = agent[i].getComStations();
+            String[] coms = new String[comStations.size()];
+            for (int u = 0; u < comStations.size(); u++){
+                coms[u] = comStations.get(u).getName();
+            }
+            currRobotPanel.getRelayList().setListData(coms);
+            
         }
 
         labelCycleUpdate.setText(Integer.toString(timeElapsed));
@@ -578,18 +588,17 @@ public class MainGUI extends javax.swing.JFrame {
         scrollPaneRobots.setMinimumSize(new java.awt.Dimension(21, 22));
         scrollPaneRobots.setPreferredSize(new java.awt.Dimension(273, 600));
 
-        panelRobotInfo.setPreferredSize(new java.awt.Dimension(275, 900));
         panelRobotInfo.setRequestFocusEnabled(false);
 
         javax.swing.GroupLayout panelRobotInfoLayout = new javax.swing.GroupLayout(panelRobotInfo);
         panelRobotInfo.setLayout(panelRobotInfoLayout);
         panelRobotInfoLayout.setHorizontalGroup(
             panelRobotInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 275, Short.MAX_VALUE)
+            .addGap(0, 396, Short.MAX_VALUE)
         );
         panelRobotInfoLayout.setVerticalGroup(
             panelRobotInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 900, Short.MAX_VALUE)
+            .addGap(0, 2000, Short.MAX_VALUE)
         );
 
         scrollPaneRobots.setViewportView(panelRobotInfo);
@@ -731,7 +740,7 @@ public class MainGUI extends javax.swing.JFrame {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(panelExploration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(scrollPaneRobots, javax.swing.GroupLayout.DEFAULT_SIZE, 282, Short.MAX_VALUE))
+                        .addComponent(scrollPaneRobots, javax.swing.GroupLayout.DEFAULT_SIZE, 411, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(labelSpeed, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)

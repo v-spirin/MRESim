@@ -158,6 +158,10 @@ public class TeammateAgent extends BasicAgent implements Agent {
         return inRange;
     }
 
+    public boolean isInHandoverRange(BasicAgent agent) {
+        return (distanceTo(agent) < Constants.HANDOVER_RANGE);
+    }
+
     public void setInRange(boolean r) {
         inRange = r;
     }
@@ -235,4 +239,5 @@ public class TeammateAgent extends BasicAgent implements Agent {
     public String toString() {
         return "Name: " + getName() + ", Number: " + getRobotNumber() + ", ID: " + getID();
     }
+
 }
