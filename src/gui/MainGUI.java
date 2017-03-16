@@ -401,11 +401,8 @@ public class MainGUI extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new MainGUI().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            new MainGUI().setVisible(true);
         });
     }
 

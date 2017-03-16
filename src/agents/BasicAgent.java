@@ -264,6 +264,23 @@ public class BasicAgent implements Agent {
             this.comStations.add(com);
         }
     }
+    
+    public ComStation giveComStation(){
+        if (this.comStations.size() > 0){
+            return this.comStations.remove(0);
+        } else {
+            return null;
+        }
+    }
+    
+    public boolean takeComStation(ComStation comstation){
+        if (comstation != null){
+            this.addComStation(comstation);
+            return true;
+        } else {
+            return false;
+        }
+    }
 // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Utility Functions">
