@@ -193,8 +193,8 @@ public class PropModel1 {
         int numWalls = Math.min(MAX_WALLS, occGrid.numPossibleObstaclesOnLine(p1.x, p1.y, p2.x, p2.y));
         double distance = p1.distance(p2);
 
-        return (REF_SIGNAL - 10 * PATHLOSS_FACTOR * Math.log10(distance / /*REF_DISTANCE*/ (agentRange
-                * (1 / AGENT_ESTIMATION_FACTOR))) - numWalls * WALL_ATTENUATION_AGENT);
+        return (REF_SIGNAL - (10 * PATHLOSS_FACTOR * Math.log10(distance / /*REF_DISTANCE*/ (agentRange
+                * (1 / AGENT_ESTIMATION_FACTOR)))) - numWalls * WALL_ATTENUATION_AGENT);
     }
     //</editor-fold>
 

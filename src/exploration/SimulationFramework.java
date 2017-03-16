@@ -369,7 +369,7 @@ public class SimulationFramework implements ActionListener {
 
         try {
             while (scanner.hasNextLine()) {
-                fileContents.append(scanner.nextLine() + lineSeparator);
+                fileContents.append(scanner.nextLine()).append(lineSeparator);
             }
             return fileContents.toString();
         } finally {
@@ -581,11 +581,13 @@ public class SimulationFramework implements ActionListener {
             }
         }
 
-        if (timeElapsed >= 3000 || allAgentsDone() || allAgentsAtBase) {
+        if (timeElapsed >= Constants.MAXIMUM_TIME || allAgentsDone() || allAgentsAtBase) {
             timer.stop();
             runNumber++;
             if (isBatch && (runNumber < runNumMax)) {
                 restart();
+            } else {
+                mainGUI.runComplete();
             }
         }
     }
@@ -915,15 +917,27 @@ public class SimulationFramework implements ActionListener {
         switch (simConfig.getCommModel()) {
             case StaticCircle:
                 directCommTable = StaticCircle.detectCommunication(env, agent);
+                for (int i = 0; i < numRobots; i++) {
+                    if (mainGUI.getRobotPanel(i).showCommRange()) {
+                        agentRange[i] = null;
+                    }
+                }
                 break;
             case DirectLine:
                 directCommTable = DirectLine.detectCommunication(env, agent);
+                for (int i = 0; i < numRobots; i++) {
+                    if (mainGUI.getRobotPanel(i).showCommRange()) {
+                        agentRange[i] = null;
+                    }
+                }
                 break;
             case PropModel1:
                 directCommTable = PropModel1.detectCommunication(env, agent);
                 for (int i = 0; i < numRobots; i++) {
                     if (mainGUI.getRobotPanel(i).showCommRange()) {
                         agentRange[i] = PropModel1.getRange(env, agent[i]);
+                    } else {
+                        agentRange[i] = null;
                     }
                 }
                 break;

@@ -298,6 +298,7 @@ public class MainGUI extends javax.swing.JFrame {
     }
 
     private JFreeChart createKnowledgeChart(RealAgent agent[]) {
+        
         XYSeriesCollection xyDataset = new XYSeriesCollection();
         JFreeChart chart = ChartFactory.createXYLineChart(
                 "Agent knowledge", // Title
@@ -309,6 +310,9 @@ public class MainGUI extends javax.swing.JFrame {
                 true, // Tooltips
                 false
         );
+        if (agent == null || simulation == null){
+            return chart;
+        }
         for (int i = 0; i < agent.length; i++) {
             //update agent data
             //agent[i].updateTrueAreaKnown(simConfig.getEnv());
@@ -476,7 +480,6 @@ public class MainGUI extends javax.swing.JFrame {
         });
 
         toggleHierarchy.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonHierarchy.png"))); // NOI18N
-        toggleHierarchy.setSelected(true);
         toggleHierarchy.setToolTipText("Toggle hierarchy");
         toggleHierarchy.setBorderPainted(false);
         toggleHierarchy.setContentAreaFilled(false);
@@ -834,6 +837,10 @@ public class MainGUI extends javax.swing.JFrame {
         }
 }//GEN-LAST:event_buttonStartActionPerformed
 
+    public void startSimulation(){
+        simulation = new SimulationFramework(this, robotTeamConfig, simConfig, explorationImage);
+        simulation.start();
+    }
     private void buttonStepActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonStepActionPerformed
         switch (RUNMODE) {
             case stopped:

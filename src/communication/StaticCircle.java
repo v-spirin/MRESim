@@ -63,7 +63,9 @@ public class StaticCircle {
 
         for (int i = 0; i < agent.length - 1; i++) {
             for (int j = i + 1; j < agent.length; j++) {
-                if (agent[i].distanceTo(agent[j]) < (agent[i].getCommRange() + agent[j].getCommRange())) {
+                //if (agent[i].distanceTo(agent[j]) < (agent[i].getCommRange() + agent[j].getCommRange())) {
+                double distance = agent[i].distanceTo(agent[j]);
+                if (distance < agent[i].getCommRange() && distance <  agent[j].getCommRange()) {
                     commTable[i][j] = 1;
                     commTable[j][i] = 1;
                 }
