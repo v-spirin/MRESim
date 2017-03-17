@@ -77,8 +77,9 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 import javax.swing.ImageIcon;
-import javax.swing.Timer;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -88,7 +89,7 @@ import path.Path;
  *
  * @author Julian de Hoog
  */
-public class SimulationFramework implements ActionListener {
+public class SimulationFramework extends TimerTask implements ActionListener {
 
 // <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">
     boolean pauseSimulation;                   // For stepping through simulation one step at a time
@@ -165,10 +166,11 @@ public class SimulationFramework implements ActionListener {
         createAgents(robotTeamConfig);
 
         // Initialize Timer
-        timer = new Timer((Constants.TIME_INCREMENT * 10 + 1) - simConfig.getSimRate() * Constants.TIME_INCREMENT, this);
-        timer.setInitialDelay(Constants.INIT_DELAY);
-        timer.setCoalesce(true);
-
+//        timer = new Timer((Constants.TIME_INCREMENT * 10 + 1) - simConfig.getSimRate() * Constants.TIME_INCREMENT, this);
+//        timer.setInitialDelay(Constants.INIT_DELAY);
+//        timer.setCoalesce(true);
+        timer = new Timer();
+        //timer.scheduleAtFixedRate(this, 0, 1);
         // Initialize Debris timing
         debrisTimer = new int[6];
         for (int i = 0; i < 6; i++) {
@@ -235,7 +237,7 @@ public class SimulationFramework implements ActionListener {
     }
 
 // <editor-fold defaultstate="collapsed" desc="Simulation Cycle">
-    private void simulationCycle() {
+    public boolean simulationCycle() {
         long realtimeStartCycle;
         realtimeStartCycle = System.currentTimeMillis();
         if (timeElapsed == 1) {
@@ -327,6 +329,7 @@ public class SimulationFramework implements ActionListener {
         //System.out.println(this.toString() + "updateAgentKnowledgeData took " + (System.currentTimeMillis()-timer) + "ms.\n");
         localTimer = System.currentTimeMillis();
         updateGUI();                // update GUI
+        
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "updateGUI took " + (System.currentTimeMillis() - localTimer) + "ms.\n");
         }
@@ -340,8 +343,8 @@ public class SimulationFramework implements ActionListener {
             a.getOccupancyGrid().saveToPNG(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "occuGrid " + a.toString() + timeElapsed + ".png");
             logging_agent = true; //There is a logging-wish
         });
-        if (logging_agent) {  //do non-agent-based logging if there is a wish to log for any robot
-            EnvLoader.saveWallConfig(env, Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "environment " + timeElapsed + ".png");
+        if (logging_agent || true) {  //do non-agent-based logging if there is a wish to log for any robot
+            //EnvLoader.saveWallConfig(env, Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "environment " + timeElapsed + ".png");
             image.saveScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY, timeElapsed);
         }
         logging_agent = false; //reset logging-wish for next cycle
@@ -355,10 +358,10 @@ public class SimulationFramework implements ActionListener {
         //avgCycleTime = (((timeElapsed - 1) * avgCycleTime) + currentCycleTime) / timeElapsed;
         checkPause();               // check whether user wanted to pause
         avgCycleTime = (int) (System.currentTimeMillis() - simStartTime) / timeElapsed;
-        checkRunFinish();           // for scripting multiple runs, to max number of cycles
         if (Constants.DEBUG_OUTPUT) {
             System.out.println("Time1 = " + time1 + ", time2 = " + time2 + ", time3 = " + time3 + ", time4 = " + time4);
         }
+        return checkRunFinish();           // for scripting multiple runs, to max number of cycles
     }
 
 // </editor-fold>     
@@ -534,7 +537,8 @@ public class SimulationFramework implements ActionListener {
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Starting exploration!");
         }
-        timer.start();
+        //timer.start();
+        timer.scheduleAtFixedRate(this, 0, 1);
         simStartTime = System.currentTimeMillis();
     }
 
@@ -547,7 +551,8 @@ public class SimulationFramework implements ActionListener {
             System.out.println(this.toString() + "Restarting exploration!");
         }
         simStartTime = System.currentTimeMillis();
-        timer.start();
+        //timer.start();
+        timer.scheduleAtFixedRate(this, 0, 1);
     }
 
     public void takeOneStep() {
@@ -574,7 +579,7 @@ public class SimulationFramework implements ActionListener {
         return (((double) agent[0].getStats().getAreaKnown() / (double) totalArea) >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL);
     }
 
-    private void checkRunFinish() {
+    private boolean checkRunFinish() {
         boolean allAgentsAtBase = true;
 
         for (int i = 1; i < agent.length; i++) {
@@ -584,7 +589,8 @@ public class SimulationFramework implements ActionListener {
         }
 
         if (timeElapsed >= Constants.MAXIMUM_TIME || allAgentsDone() || allAgentsAtBase) {
-            timer.stop();
+            //timer.stop();
+        timer.cancel();
             runNumber++;
             if (isBatch && (runNumber < runNumMax)) {
                 restart();
@@ -592,17 +598,20 @@ public class SimulationFramework implements ActionListener {
                 mainGUI.runComplete();
             }
         }
+        return false;
     }
 
     public void pause() {
-        timer.stop();
+        //timer.stop();
+        timer.cancel();
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Pausing exploration!");
         }
     }
 
     public void kill() {
-        timer.stop();
+        //timer.stop();
+        timer.cancel();
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Resetting exploration!");
         }
@@ -610,6 +619,10 @@ public class SimulationFramework implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        simulationCycle();
+    }
+    @Override
+    public void run(){
         simulationCycle();
     }
 // </editor-fold>     
@@ -1268,22 +1281,23 @@ public class SimulationFramework implements ActionListener {
 // <editor-fold defaultstate="collapsed" desc="GUI Interaction">
     public void simRateChanged(int newSimRate, MainGUI.runMode RUNMODE) {
         if (newSimRate == 0) {
-            timer.stop();
+            //timer.stop();
+            timer.cancel();
         } else {
-            if (!timer.isRunning() && !RUNMODE.equals(MainGUI.runMode.paused)) {
+            /*if (!timer.isRunning() && !RUNMODE.equals(MainGUI.runMode.paused)) {
                 timer.start();
             }
             timer.setDelay((Constants.TIME_INCREMENT * 10 + 1) - newSimRate * Constants.TIME_INCREMENT);
             //System.out.println(this.toString() + "Timer set to " + ((Constants.TIME_INCREMENT*10+1) - newSimRate*Constants.TIME_INCREMENT));
+            */
+            timer.scheduleAtFixedRate(this, 0, newSimRate * Constants.TIME_INCREMENT);
         }
     }
 
     private void updateGUI() {
         //long realtimeStart = System.currentTimeMillis();
         //System.out.print(this.toString() + "Updating GUI ... ");
-
         mainGUI.updateFromData(agent, timeElapsed, pctAreaKnownTeam, avgCycleTime);
-
         //if (timeElapsed % 10 == 1)
         updateImage(false); //was false
 

@@ -85,23 +85,23 @@ import org.jfree.data.xy.XYSeriesCollection;
  */
 public class MainGUI extends javax.swing.JFrame {
 
-    private RobotTeamConfig robotTeamConfig;
-    private SimulatorConfig simConfig;
+    protected RobotTeamConfig robotTeamConfig;
+    protected SimulatorConfig simConfig;
 
     public static enum runMode {
         running, paused, stopped
     }
-    private runMode RUNMODE;
-    private ExplorationImage explorationImage;
-    private SimulationFramework simulation;
+    protected runMode RUNMODE;
+    protected ExplorationImage explorationImage;
+    protected SimulationFramework simulation;
 
-    private ShowSettings showSettings;
-    private ShowSettingsAgent[] showSettingsAgents;
+    protected ShowSettings showSettings;
+    protected ShowSettingsAgent[] showSettingsAgents;
 
-    private boolean showConnex;
+    protected boolean showConnex;
 
-    private JFrame graphFrame;
-    private JPanel graphPanel;
+    protected JFrame graphFrame;
+    protected JPanel graphPanel;
     public Map<Integer, Double> jointKnowledge = new HashMap();
 
     /**

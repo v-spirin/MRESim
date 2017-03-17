@@ -530,6 +530,7 @@ public class ExplorationImage {
         } catch (NullPointerException npe) {
             System.err.println("Error: could not draw agents");
         }
+        
     }
 
     public void updateBackground() {
