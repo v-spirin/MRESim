@@ -67,6 +67,9 @@ public class FrontierExploration {
     // Returns new X, Y of RealAgent
     public static Point takeStep(RealAgent agent, int timeElapsed,
             SimulatorConfig.frontiertype frontierExpType) {
+        if (frontierExpType == SimulatorConfig.frontiertype.UtilReturn){
+            throw new IllegalArgumentException("Frontier-UtilReturn is implemented in UtilExploration.java");
+        }
         long realtimeStartAgentCycle = System.currentTimeMillis();
 
         Point nextStep;

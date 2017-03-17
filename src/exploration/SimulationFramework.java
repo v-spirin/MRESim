@@ -41,6 +41,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
+
 package exploration;
 
 import agents.BasicAgent;
@@ -90,7 +91,7 @@ import path.Path;
 public class SimulationFramework implements ActionListener {
 
 // <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">
-    boolean pauseSimulation;                    // For stepping through simulation one step at a time
+    boolean pauseSimulation;                   // For stepping through simulation one step at a time
 
     boolean isBatch;                            // Are we running a batch file
     int runNumber;
@@ -99,12 +100,12 @@ public class SimulationFramework implements ActionListener {
     MainGUI mainGUI;                            // Allows simulator to change image, data
     ExplorationImage image;                     // Image of environment
     Environment env;                            // The environment (walls, obstacles)
-    RealAgent agent[];                           // The agents
+    RealAgent[] agent;                           // The agents
     int numRobots;
 
     SimulatorConfig simConfig;
 
-    Polygon agentRange[];                       // For visualization of agents' comm ranges
+    Polygon[] agentRange;                       // For visualization of agents' comm ranges
 
     Timer timer;                                // Drives simulation steps
     Random random;                              // For generating random debris

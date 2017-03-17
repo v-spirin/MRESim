@@ -531,14 +531,10 @@ public class RealAgent extends BasicAgent implements Agent {
                     nextStep = LeaderFollower.takeStep(this, timeElapsed);
                     break;
                 case FrontierExploration:
-                    if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.ReturnWhenComplete)) {
-                        nextStep = FrontierExploration.takeStep(this, timeElapsed, simConfig.getFrontierAlgorithm());
-                    }
                     if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn)) {
                         nextStep = UtilityExploration.takeStep(this, timeElapsed, simConfig);
-                    }
-                    if (simConfig.useComStations() && (Math.random() < simConfig.getComStationDropChance())) {
-                        this.dropComStation();
+                    } else {
+                        nextStep = FrontierExploration.takeStep(this, timeElapsed, simConfig.getFrontierAlgorithm());
                     }
                     break;
                 case RoleBasedExploration:
