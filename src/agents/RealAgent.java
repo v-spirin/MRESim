@@ -512,7 +512,8 @@ public class RealAgent extends BasicAgent implements Agent {
             oldTimeElapsed = -1; //hack for initial time step
         }
         if (oldTimeElapsed != timeElapsed) {
-            setDistanceToBase(getPathToBaseStation().getLength());
+            //TODO Only needed for Util and RoleBased, but needs to be done on request!!!
+            //setDistanceToBase(getPathToBaseStation().getLength());
             switch (simConfig.getExpAlgorithm()) {
                 case RunFromLog:
                     nextStep = RunFromLog.takeStep(timeElapsed, simConfig.getRunFromLogFilename(), this.robotNumber);

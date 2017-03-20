@@ -48,8 +48,6 @@ import agents.RealAgent;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
 import exploration.SimulationFramework;
-import gui.ExplorationImage;
-import gui.MainGUI;
 
 /**
  *

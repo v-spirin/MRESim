@@ -53,7 +53,7 @@ import java.nio.file.Paths;
  */
 public class Constants {
 
-    public static final boolean DEBUG_OUTPUT = false;
+    public static final boolean DEBUG_OUTPUT = true;
 
     // Max number of rows in environment
     public static final int MAX_ROWS = 600;
@@ -62,7 +62,7 @@ public class Constants {
     public static final int MAX_COLS = 800;
 
     // Random seed for random walk (set to a constant for testing, otherwise to System.currentTimeMillis())
-    public static final int RANDOM_SEED = (int) System.currentTimeMillis();
+    public static final int RANDOM_SEED = 12345;//(int) System.currentTimeMillis();
 
     // Max time to search for a path, in ms
     public static final int MAX_PATH_SEARCH_TIME = 500;
@@ -71,7 +71,7 @@ public class Constants {
     public static final int AGENT_RADIUS = 4; // default 4;
 
     // Distance that the grid is partitioned into for A* path planning
-    public static final int STEP_SIZE = 1; // default 3;
+    public static final int STEP_SIZE = 2; // default 3;
 
     // Target ratio of info known at base to total info known at agents
     //public static final double TARGET_INFO_RATIO = 1; 
@@ -113,7 +113,7 @@ public class Constants {
     public static final int MAX_NUM_FRONTIERS = 6;  //was 6
 
     // Minimum size a frontier must have to be considered as part of exploration
-    public static final int MIN_FRONTIER_SIZE = 3; // default 20; was 3
+    public static final int MIN_FRONTIER_SIZE = 5; // default 20; was 3
 
     // How long should we assume that the teammate is exploring the frontier that he last told us he was to explore?
     public static final int REMEMBER_TEAMMATE_FRONTIER_PERIOD = 500;
@@ -163,7 +163,7 @@ public class Constants {
     public static final int FRONTIER_MIN_EXPLORE_TIME = 75;
 
     //In role-based exploration try not to go to frontiers if we will have to turn back to RV before we can even reach the frontier.
-    public static final boolean AVOID_FRONTIERS_WE_CANNOT_REACH_IN_TIME = true;
+    public static final boolean AVOID_FRONTIERS_WE_CANNOT_REACH_IN_TIME = false;
 
     // How often should we check if we need to rebuild topological path?
     public static final int REBUILD_TOPOLOGICAL_MAP_INTERVAL = REPLAN_INTERVAL;

@@ -53,7 +53,6 @@ import communication.DirectLine;
 import communication.PropModel1;
 import communication.StaticCircle;
 import config.Constants;
-import config.EnvLoader;
 import config.RobotConfig;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
@@ -77,8 +76,7 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.Timer;
-import java.util.TimerTask;
+import javax.swing.Timer;
 import javax.swing.ImageIcon;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -89,7 +87,7 @@ import path.Path;
  *
  * @author Julian de Hoog
  */
-public class SimulationFramework extends TimerTask implements ActionListener {
+public class SimulationFramework implements ActionListener {
 
 // <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">
     boolean pauseSimulation;                   // For stepping through simulation one step at a time
@@ -166,11 +164,10 @@ public class SimulationFramework extends TimerTask implements ActionListener {
         createAgents(robotTeamConfig);
 
         // Initialize Timer
-//        timer = new Timer((Constants.TIME_INCREMENT * 10 + 1) - simConfig.getSimRate() * Constants.TIME_INCREMENT, this);
-//        timer.setInitialDelay(Constants.INIT_DELAY);
-//        timer.setCoalesce(true);
-        timer = new Timer();
-        //timer.scheduleAtFixedRate(this, 0, 1);
+        timer = new Timer(0,this);
+        timer.setInitialDelay(Constants.INIT_DELAY);
+        timer.setCoalesce(true);
+
         // Initialize Debris timing
         debrisTimer = new int[6];
         for (int i = 0; i < 6; i++) {
@@ -537,8 +534,7 @@ public class SimulationFramework extends TimerTask implements ActionListener {
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Starting exploration!");
         }
-        //timer.start();
-        timer.scheduleAtFixedRate(this, 0, 1);
+        timer.start();
         simStartTime = System.currentTimeMillis();
     }
 
@@ -551,8 +547,7 @@ public class SimulationFramework extends TimerTask implements ActionListener {
             System.out.println(this.toString() + "Restarting exploration!");
         }
         simStartTime = System.currentTimeMillis();
-        //timer.start();
-        timer.scheduleAtFixedRate(this, 0, 1);
+        timer.start();
     }
 
     public void takeOneStep() {
@@ -589,8 +584,7 @@ public class SimulationFramework extends TimerTask implements ActionListener {
         }
 
         if (timeElapsed >= Constants.MAXIMUM_TIME || allAgentsDone() || allAgentsAtBase) {
-            //timer.stop();
-        timer.cancel();
+            timer.stop();
             runNumber++;
             if (isBatch && (runNumber < runNumMax)) {
                 restart();
@@ -602,16 +596,14 @@ public class SimulationFramework extends TimerTask implements ActionListener {
     }
 
     public void pause() {
-        //timer.stop();
-        timer.cancel();
+        timer.stop();
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Pausing exploration!");
         }
     }
 
     public void kill() {
-        //timer.stop();
-        timer.cancel();
+        timer.stop();
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Resetting exploration!");
         }
@@ -619,10 +611,6 @@ public class SimulationFramework extends TimerTask implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        simulationCycle();
-    }
-    @Override
-    public void run(){
         simulationCycle();
     }
 // </editor-fold>     
@@ -1281,16 +1269,14 @@ public class SimulationFramework extends TimerTask implements ActionListener {
 // <editor-fold defaultstate="collapsed" desc="GUI Interaction">
     public void simRateChanged(int newSimRate, MainGUI.runMode RUNMODE) {
         if (newSimRate == 0) {
-            //timer.stop();
-            timer.cancel();
+            timer.stop();
         } else {
-            /*if (!timer.isRunning() && !RUNMODE.equals(MainGUI.runMode.paused)) {
+            if (!timer.isRunning() && !RUNMODE.equals(MainGUI.runMode.paused)) {
                 timer.start();
             }
-            timer.setDelay((Constants.TIME_INCREMENT * 10 + 1) - newSimRate * Constants.TIME_INCREMENT);
-            //System.out.println(this.toString() + "Timer set to " + ((Constants.TIME_INCREMENT*10+1) - newSimRate*Constants.TIME_INCREMENT));
-            */
-            timer.scheduleAtFixedRate(this, 0, newSimRate * Constants.TIME_INCREMENT);
+            //newSimRate 1-10, 10 is no delay
+            timer.setDelay(10 * Constants.TIME_INCREMENT - newSimRate * Constants.TIME_INCREMENT);
+            
         }
     }
 
