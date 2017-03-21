@@ -43,7 +43,7 @@
  */
 package exploration;
 
-import agents.BasicAgent.ExploreState;
+import agents.Agent.ExploreState;
 import config.RobotConfig;
 import java.awt.Point;
 import java.io.BufferedReader;

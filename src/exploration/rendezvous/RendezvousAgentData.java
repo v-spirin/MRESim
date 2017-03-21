@@ -43,7 +43,7 @@
  */
 package exploration.rendezvous;
 
-import agents.BasicAgent;
+import agents.Agent;
 import config.Constants;
 
 /**
@@ -60,7 +60,7 @@ public class RendezvousAgentData {
     private int timeUntilRendezvous; // estimated time left until due to rendezvous
     private int timeSinceLastRoleSwitch;  // keeps track of time since last switch
 
-    public RendezvousAgentData(BasicAgent agent) {
+    public RendezvousAgentData(Agent agent) {
         childRendezvous = new Rendezvous(agent.getLocation());
         childBackupRendezvous = new Rendezvous(agent.getLocation());
         parentRendezvous = new Rendezvous(agent.getLocation());

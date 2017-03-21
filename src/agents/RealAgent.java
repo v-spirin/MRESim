@@ -78,7 +78,7 @@ import path.Path;
  *
  * @author Julian de Hoog
  */
-public class RealAgent extends BasicAgent implements Agent {
+public class RealAgent extends Agent {
     
     AgentStats stats;
     private boolean missionComplete; // true only when mission complete (env fully explored)
@@ -112,7 +112,7 @@ public class RealAgent extends BasicAgent implements Agent {
     
     // Teammates
     HashMap<Integer, TeammateAgent> teammates;
-    private BasicAgent baseStation;
+    private Agent baseStation;
 
     // Role-based Exploration
     private RendezvousAgentData rendezvousAgentData;
@@ -127,7 +127,7 @@ public class RealAgent extends BasicAgent implements Agent {
     private SimulationFramework simFramework;
     private int oldTimeElapsed;
 
-    public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, BasicAgent baseStation) {
+    public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, Agent baseStation) {
         super(robot.getRobotNumber(),
                 robot.getName(),
                 robot.getRobotNumber(),
@@ -463,6 +463,7 @@ public class RealAgent extends BasicAgent implements Agent {
     }
 
     // Overwrite any useless data from previous step
+    @Override
     public void flush() {
         prevX = x;
         prevY = y;
@@ -480,6 +481,7 @@ public class RealAgent extends BasicAgent implements Agent {
      * @param timeElapsed in which cycle are we? Needed for several Exploration-algos
      * @return Point (step) to go
      */
+    @Override
     public Point takeStep(int timeElapsed) {
         long realtimeStartAgentStep = System.currentTimeMillis();
         Point nextStep = null;
@@ -582,6 +584,7 @@ public class RealAgent extends BasicAgent implements Agent {
      * @param sensorData sensordata to update the agents map with
      * @param updateSensorData should the sensordata be updated?
      */
+    @Override
     public void writeStep(Point nextLoc, double[] sensorData, boolean updateSensorData) {
         long realtimeStart = System.currentTimeMillis();
 

@@ -43,7 +43,7 @@
  */
 package exploration;
 
-import agents.BasicAgent;
+import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.Constants;
@@ -184,7 +184,7 @@ public class FrontierExploration {
             }
         }
 
-        if ((agent.getRole() == RobotConfig.roletype.Relay) && (agent.getState() == BasicAgent.ExploreState.GoToChild)) {
+        if ((agent.getRole() == RobotConfig.roletype.Relay) && (agent.getState() == Agent.ExploreState.GoToChild)) {
             return RoleBasedExploration.takeStep_GoToChild(agent);
         }
 
@@ -620,7 +620,7 @@ public class FrontierExploration {
             if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
                 if (best.ID == agent.getID()) {
                     if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
-                        agent.setState(BasicAgent.ExploreState.GoToChild);
+                        agent.setState(Agent.ExploreState.GoToChild);
                         return null;
                     }
                     agent.setLastFrontier(best.frontier);

@@ -43,7 +43,7 @@
  */
 package communication;
 
-import agents.BasicAgent;
+import agents.Agent;
 import environment.Environment;
 import agents.RealAgent;
 import environment.OccupancyGrid;
@@ -68,7 +68,7 @@ public class PropModel1 {
     private static final int MAX_WALLS = 125; //maximum combined wall "thickness" after which attenuation stops making a difference
     private static final double CUTOFF = -93;
 
-    public static Polygon getRange(Environment env, BasicAgent agent) {
+    public static Polygon getRange(Environment env, Agent agent) {
         double INCREMENT = Math.PI / 64;
         Polygon range = new Polygon();
         double angle;
@@ -102,25 +102,25 @@ public class PropModel1 {
         }
     }
 
-    public static Polygon getRangeForRV(OccupancyGrid occGrid, BasicAgent agent) {
+    public static Polygon getRangeForRV(OccupancyGrid occGrid, int x, int y, double heading, int comRange) {
         double INCREMENT = Math.PI / 8;
         Polygon range = new Polygon();
         double angle;
         int ssuperOldX, ssuperOldY, superOldX, superOldY, oldX, oldY, currX, currY;
 
         for (int i = 0; i <= 2 * Math.PI / INCREMENT; i++) {
-            angle = agent.getHeading() + INCREMENT * i;
-            oldX = agent.getX();
-            oldY = agent.getY();
+            angle = heading + INCREMENT * i;
+            oldX = x;
+            oldY = y;
             superOldX = oldX;
             superOldY = oldY;
             ssuperOldX = oldX;
             ssuperOldY = oldY;
             for (int j = 2;; j += 2) {
-                currX = agent.getX() + (int) (Math.cos(angle) * j);
-                currY = agent.getY() + (int) (Math.sin(angle) * j);
+                currX = x + (int) (Math.cos(angle) * j);
+                currY = y + (int) (Math.sin(angle) * j);
                 if (!occGrid.locationExists(currX, currY)
-                        || signalStrength((int) (agent.getCommRange() * 0.5), occGrid, agent.getLocation(), new Point(currX, currY)) < (CUTOFF)) {
+                        || signalStrength((int) (comRange * 0.5), occGrid, new Point(x,y), new Point(currX, currY)) < (CUTOFF)) {
                     range.addPoint(ssuperOldX, ssuperOldY);
                     break;
 
@@ -141,7 +141,7 @@ public class PropModel1 {
         return range;
     }
 
-    public static Polygon getRangeForRV(Environment env, BasicAgent agent) {
+    public static Polygon getRangeForRV(Environment env, Agent agent) {
         double INCREMENT = Math.PI / (32 / 5);
         Polygon range = new Polygon();
         double angle;

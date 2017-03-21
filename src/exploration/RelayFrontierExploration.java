@@ -41,9 +41,10 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
+
 package exploration;
 
-import agents.BasicAgent;
+import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.Constants;
@@ -54,13 +55,13 @@ import java.util.LinkedList;
 
 /**
  *
- * @author julh
+ * @author Christian Clausen
  */
 public class RelayFrontierExploration {
 
     // Returns new X, Y of RealAgent
     public static Point takeStep(RealAgent agent, int timeElapsed,
-            SimulatorConfig.frontiertype frontierExpType, BasicAgent baseStation, 
+            SimulatorConfig.frontiertype frontierExpType, Agent baseStation, 
             boolean useRelayStations, double dropChance) {
         long realtimeStartAgentCycle = System.currentTimeMillis();
 
@@ -192,7 +193,7 @@ public class RelayFrontierExploration {
         }
 
         if ((agent.getRole() == RobotConfig.roletype.Relay) && 
-                (agent.getState() == BasicAgent.ExploreState.GoToChild)) {
+                (agent.getState() == Agent.ExploreState.GoToChild)) {
             return RoleBasedExploration.takeStep_GoToChild(agent);
         }
 

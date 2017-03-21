@@ -43,7 +43,7 @@
  */
 package exploration.rendezvous;
 
-import agents.BasicAgent;
+import agents.Agent;
 import agents.RealAgent;
 import config.Constants;
 import environment.OccupancyGrid;
@@ -515,7 +515,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
                 //If we do, calc frontiers and check if we can reach the center of any of them, and get to RV in time
                 //if we can, go to that frontier.
                 //Adapt explore state / frontier exploration to only go to frontiers that we have time to explore. Then we can simply go to explore state above, and once it's time to go back go back into GoToParent state.
-                agent.setState(BasicAgent.ExploreState.Explore);
+                agent.setState(Agent.ExploreState.Explore);
             }
         }
     }

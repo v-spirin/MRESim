@@ -44,7 +44,7 @@
 
 package exploration;
 
-import agents.BasicAgent;
+import agents.Agent;
 import agents.ComStation;
 import agents.RealAgent;
 import agents.TeammateAgent;
@@ -133,7 +133,8 @@ public class SimulationFramework implements ActionListener {
 
     boolean logging_agent;
 
-    public SimulationFramework(MainGUI maingui, RobotTeamConfig newRobotTeamConfig, SimulatorConfig newSimConfig, ExplorationImage img) {
+    public SimulationFramework(MainGUI maingui, RobotTeamConfig newRobotTeamConfig, 
+            SimulatorConfig newSimConfig, ExplorationImage img) {
         random = new Random();
         mainGUI = maingui;
         image = img;
@@ -184,7 +185,7 @@ public class SimulationFramework implements ActionListener {
         TeammateAgent teammate[] = new TeammateAgent[numRobots];
         agentRange = new Polygon[numRobots];
 
-        // Create ComStation
+        // Create BaseStation
         agent[0] = new ComStation(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(1), simConfig);
         teammate[0] = new TeammateAgent(robotTeamConfig.getRobotTeam().get(1));
 
@@ -286,21 +287,24 @@ public class SimulationFramework implements ActionListener {
             // second role switch check (to avoid duplicate relays)
             for (int i = 1; i < numRobots; i++) {
                 for (int j = 1; j < numRobots; j++) {
-                    if (i != j) {
-                        if (agent[i].getState() == BasicAgent.ExploreState.ReturnToParent && !agent[i].isExplorer()
-                                && agent[j].getState() == BasicAgent.ExploreState.ReturnToParent && !agent[j].isExplorer()
-                                && agent[i].getTeammate(agent[j].getID()).isInRange()
-                                && agent[i].getPath().getLength() < agent[j].getPath().getLength()) {
-                            agent[i].setState(BasicAgent.ExploreState.GoToChild);
-                            agent[i].setStateTimer(0);
-                            agent[i].addDirtyCells(agent[i].getPath().getAllPathPixels());
-                            if (Constants.DEBUG_OUTPUT) {
-                                System.out.println("\nSecondary switch: " + agent[i].getName() + " and " + agent[j].getName() + "\n");
-                            }
-                            Path path = agent[i].calculatePath(agent[i].getLocation(), agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
-                            agent[i].setPath(path);
-                            agent[i].setCurrentGoal(agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
+                    if (i != j && agent[i].getState() == Agent.ExploreState.ReturnToParent 
+                            && !agent[i].isExplorer()
+                            && agent[j].getState() == Agent.ExploreState.ReturnToParent 
+                            && !agent[j].isExplorer()
+                            && agent[i].getTeammate(agent[j].getID()).isInRange()
+                            && agent[i].getPath().getLength() < agent[j].getPath().getLength()) {
+                        agent[i].setState(Agent.ExploreState.GoToChild);
+                        agent[i].setStateTimer(0);
+                        agent[i].addDirtyCells(agent[i].getPath().getAllPathPixels());
+                        if (Constants.DEBUG_OUTPUT) {
+                            System.out.println("\nSecondary switch: " + agent[i].getName() 
+                                    + " and " + agent[j].getName() + "\n");
                         }
+                        Path path = agent[i].calculatePath(agent[i].getLocation(), 
+                                agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
+                        agent[i].setPath(path);
+                        agent[i].setCurrentGoal(
+                                agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
                     }
                 }
             }
@@ -381,7 +385,6 @@ public class SimulationFramework implements ActionListener {
 
     private void updateRunConfig() {
         // This method can be used to set up batch simulations
-        // TODO: replace with XML batch run configuration
 
         //open JSON file
         try {
@@ -1003,7 +1006,7 @@ public class SimulationFramework implements ActionListener {
         agent2.setRendezvousAgentData(tempData);
 
         // exchange exploreState
-        BasicAgent.ExploreState tempExploreState = agent1.getState();
+        Agent.ExploreState tempExploreState = agent1.getState();
         agent1.setState(agent2.getState());
         agent2.setState(tempExploreState);
 
@@ -1084,14 +1087,14 @@ public class SimulationFramework implements ActionListener {
         RealAgent agent1 = agent[first];
         RealAgent agent2 = agent[second];
 
-        if ((agent1.getState() == BasicAgent.ExploreState.GetInfoFromChild)
-                || (agent1.getState() == BasicAgent.ExploreState.GiveParentInfo)
-                || (agent1.getState() == BasicAgent.ExploreState.WaitForChild)
-                || (agent1.getState() == BasicAgent.ExploreState.WaitForParent)
-                || (agent2.getState() == BasicAgent.ExploreState.GetInfoFromChild)
-                || (agent2.getState() == BasicAgent.ExploreState.GiveParentInfo)
-                || (agent2.getState() == BasicAgent.ExploreState.WaitForChild)
-                || (agent2.getState() == BasicAgent.ExploreState.WaitForParent)) {
+        if ((agent1.getState() == Agent.ExploreState.GetInfoFromChild)
+                || (agent1.getState() == Agent.ExploreState.GiveParentInfo)
+                || (agent1.getState() == Agent.ExploreState.WaitForChild)
+                || (agent1.getState() == Agent.ExploreState.WaitForParent)
+                || (agent2.getState() == Agent.ExploreState.GetInfoFromChild)
+                || (agent2.getState() == Agent.ExploreState.GiveParentInfo)
+                || (agent2.getState() == Agent.ExploreState.WaitForChild)
+                || (agent2.getState() == Agent.ExploreState.WaitForParent)) {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println("Not swapping roles, " + agent1 + " is in state " + agent1.getState() + ", " + agent2
                         + "is in state " + agent2.getState());
@@ -1143,8 +1146,8 @@ public class SimulationFramework implements ActionListener {
             if (simConfig.strictRoleSwitch()) {
 
                 // Case 1:  Two explorers both in state explore
-                if (agent1.isExplorer() && agent1.getState() == BasicAgent.ExploreState.Explore
-                        && agent2.isExplorer() && agent2.getState() == BasicAgent.ExploreState.Explore) {
+                if (agent1.isExplorer() && agent1.getState() == Agent.ExploreState.Explore
+                        && agent2.isExplorer() && agent2.getState() == Agent.ExploreState.Explore) {
 
                     Path rv1ToCS = agent1.calculatePath(agent1.getRendezvousAgentData().getParentRendezvous().getParentLocation(),
                             agent1.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
@@ -1205,14 +1208,12 @@ public class SimulationFramework implements ActionListener {
         if (timeElapsed > 5 && timeElapsed % 10 == 0) {
             for (int i = 1; i < numRobots - 1; i++) {
                 for (int j = i + 1; j < numRobots; j++) {
-                    if (agent[i].getTeammate(agent[j].getID()).isInRange()) {
+                    if (agent[i].getTeammate(agent[j].getID()).isInRange() && checkRoleSwitch(i, j)) {
                         // Only one role switch per time step allowed at the moment
-                        if (checkRoleSwitch(i, j)) {
-                            // exit loops
-                            numSwaps++;
-                            j = numRobots;
-                            i = numRobots;
-                        }
+                        // exit loops
+                        numSwaps++;
+                        j = numRobots;
+                        i = numRobots;
                     }
                 }
             }
@@ -1271,11 +1272,11 @@ public class SimulationFramework implements ActionListener {
 
 // </editor-fold>     
 // <editor-fold defaultstate="collapsed" desc="GUI Interaction">
-    public void simRateChanged(int newSimRate, MainGUI.runMode RUNMODE) {
+    public void simRateChanged(int newSimRate, MainGUI.runMode runmode) {
         if (newSimRate == 0) {
             timer.stop();
         } else {
-            if (!timer.isRunning() && !RUNMODE.equals(MainGUI.runMode.paused)) {
+            if (!timer.isRunning() && !runmode.equals(MainGUI.runMode.paused)) {
                 timer.start();
             }
             //newSimRate 1-10, 10 is no delay

@@ -41,6 +41,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
+
 package agents;
 
 import config.RobotConfig;
@@ -51,7 +52,7 @@ import java.awt.Point;
  *
  * @author julh
  */
-public class ComStation extends RealAgent implements Agent {
+public class ComStation extends RealAgent {
 
 // <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">
     public ComStation(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig) {

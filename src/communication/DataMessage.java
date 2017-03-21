@@ -43,7 +43,7 @@
  */
 package communication;
 
-import agents.BasicAgent.ExploreState;
+import agents.Agent.ExploreState;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.Constants;

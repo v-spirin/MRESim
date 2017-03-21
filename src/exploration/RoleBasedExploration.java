@@ -44,7 +44,7 @@
 package exploration;
 
 import exploration.rendezvous.Rendezvous;
-import agents.BasicAgent;
+import agents.Agent;
 import agents.RealAgent;
 import config.Constants;
 import config.RobotConfig;
@@ -78,10 +78,10 @@ public class RoleBasedExploration {
         // simulator isn't allowing him to go through.  Taking a random step might
         // help.
         // Update:  this state is never really reached but leave in just in case
-        if (agent.getEnvError() && (agent.getState() != BasicAgent.ExploreState.GetInfoFromChild)
-                && (agent.getState() != BasicAgent.ExploreState.GiveParentInfo)
-                && (agent.getState() != BasicAgent.ExploreState.WaitForChild)
-                && (agent.getState() != BasicAgent.ExploreState.WaitForParent)) {
+        if (agent.getEnvError() && (agent.getState() != Agent.ExploreState.GetInfoFromChild)
+                && (agent.getState() != Agent.ExploreState.GiveParentInfo)
+                && (agent.getState() != Agent.ExploreState.WaitForChild)
+                && (agent.getState() != Agent.ExploreState.WaitForParent)) {
             System.out.println(agent.toString() + "!!!RoleBasedExploration: Env reports error, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
             agent.setEnvError(false);
@@ -194,7 +194,7 @@ public class RoleBasedExploration {
             if ((agent.getStateTimer() % Constants.CHECK_INTERVAL_TIME_TO_RV) == (Constants.CHECK_INTERVAL_TIME_TO_RV - 1)) {
                 Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
                 if ((path.getLength() / Constants.DEFAULT_SPEED) + agent.getTimeElapsed() >= rvd.getChildRendezvous().getTimeMeeting()) {
-                    agent.setState(BasicAgent.ExploreState.GoToChild);
+                    agent.setState(Agent.ExploreState.GoToChild);
                     return takeStep_GoToChild(agent);
                 }
             }
@@ -224,7 +224,7 @@ public class RoleBasedExploration {
                         if ((pathToParentRendezvous == null) || (!pathToParentRendezvous.found)
                                 || (pathToParentRendezvous.getPoints().isEmpty())) {
                             //take random step and try again
-                            agent.setState(BasicAgent.ExploreState.Explore);
+                            agent.setState(Agent.ExploreState.Explore);
                             agent.setStateTimer(Constants.CHECK_INTERVAL_TIME_TO_RV - 2);
                             return RandomWalk.takeStep(agent);
                         } else {
@@ -608,7 +608,7 @@ public class RoleBasedExploration {
         if (agent.getStateTimer() == 0) {
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
             Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
-            /*if (agent.getChildTeammate().getState() == BasicAgent.ExploreState.GiveParentInfo) {
+            /*if (agent.getChildTeammate().getState() == Agent.ExploreState.GiveParentInfo) {
                 agent.setTimeSinceGetChildInfo(0);
             }*/
             agent.setPath(path);
@@ -616,7 +616,7 @@ public class RoleBasedExploration {
             agent.setCurrentGoal(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
             return agent.getLocation();
         } else {
-            if (agent.getChildTeammate().getState() == BasicAgent.ExploreState.GiveParentInfo) {
+            if (agent.getChildTeammate().getState() == Agent.ExploreState.GiveParentInfo) {
                 agent.setTimeSinceGetChildInfo(0);
             }
             agent.setState(RealAgent.ExploreState.ReturnToParent);
@@ -662,7 +662,7 @@ public class RoleBasedExploration {
             OccupancyGrid occGrid = agent.getOccupancyGrid();
             
             Polygon commPoly = PropModel1.getRangeForRV(occGrid,
-                    new BasicAgent(0, "", 0, baseLoc.x, baseLoc.y, 0, 0, 400, 0,
+                    new Agent(0, "", 0, baseLoc.x, baseLoc.y, 0, 0, 400, 0,
                             RobotConfig.roletype.Relay, 0, 0, 0)
             );
             

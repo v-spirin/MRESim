@@ -44,7 +44,7 @@
 
 package exploration;
 
-import agents.BasicAgent;
+import agents.Agent;
 import agents.RealAgent;
 import communication.CommLink;
 import config.Constants;
@@ -156,7 +156,7 @@ public class UtilityExploration {
         {
             System.out.println(agent.toString() + " Decided to return. infoRatio = "
                     + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO);
-            agent.setState(BasicAgent.ExploreState.ReturnToParent);
+            agent.setState(Agent.ExploreState.ReturnToParent);
             //agent.setRole(RobotConfig.roletype.Relay);
             agent.computePathToBaseStation(true);
             agent.setPathToBaseStation();

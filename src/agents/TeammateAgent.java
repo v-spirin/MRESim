@@ -41,6 +41,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
+
 package agents;
 
 import config.Constants;
@@ -58,7 +59,7 @@ import java.awt.Point;
  *
  * @author julh
  */
-public class TeammateAgent extends BasicAgent implements Agent {
+public class TeammateAgent extends Agent {
 
     int timeLastCentralCommand;
     /* units of time elapsed since command 
@@ -158,7 +159,7 @@ public class TeammateAgent extends BasicAgent implements Agent {
         return inRange;
     }
 
-    public boolean isInHandoverRange(BasicAgent agent) {
+    public boolean isInHandoverRange(Agent agent) {
         return (distanceTo(agent) < Constants.HANDOVER_RANGE);
     }
 
@@ -238,6 +239,21 @@ public class TeammateAgent extends BasicAgent implements Agent {
     @Override
     public String toString() {
         return "Name: " + getName() + ", Number: " + getRobotNumber() + ", ID: " + getID();
+    }
+
+    @Override
+    public Point takeStep(int timeElapsed) {
+        throw new UnsupportedOperationException("TeamMates should not be moved!");
+    }
+
+    @Override
+    public void writeStep(Point nextLoc, double[] sensorData, boolean updateSensorData) {
+        throw new UnsupportedOperationException("TeamMates should not be moved!");
+    }
+
+    @Override
+    public void flush() {
+        
     }
 
 }

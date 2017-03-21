@@ -43,15 +43,14 @@
  */
 package exploration.rendezvous;
 
-import agents.BasicAgent;
 import agents.RealAgent;
 import communication.PropModel1;
 import config.Constants;
-import config.RobotConfig;
 import environment.OccupancyGrid;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.util.LinkedList;
+import java.util.Objects;
 
 /**
  * Rendezvous describes a rendezvous location, and includes information about
@@ -113,27 +112,48 @@ public class Rendezvous {
 
     }
 
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 89 * hash + Objects.hashCode(this.childLocation);
+        hash = 89 * hash + Objects.hashCode(this.parentLocation);
+        hash = 89 * hash + this.timeMeeting;
+        hash = 89 * hash + this.timeWait;
+        hash = 89 * hash + Objects.hashCode(this.parentsRVLocation);
+        return hash;
+    }
+
     // find the second RV point in a pair (one agent goes to the first point, other goes to the second)
     // The second point is found through wall, within comm range, that gives an advantage heading to the goal
+
+    /**  find the second RV point in a pair. 
+     * (one agent goes to the first point, other goes to the second)
+     * The second point is found through wall, within comm range, 
+     * that gives an advantage heading to the goal
+     *
+     * @param agent
+     * @param firstRV
+     * @param goal
+     * @param minAcceptableRatio
+     * @return
+     */
     public static Point findSecondRVPoint(RealAgent agent, Point firstRV, Point goal, double minAcceptableRatio) {
         long realtimeStart = System.currentTimeMillis();
         LinkedList<Point> candidatePoints = new LinkedList<Point>();
-        LinkedList<Point> directPoints = new LinkedList<Point>(); //connection is not through a wall
+//        LinkedList<Point> directPoints = new LinkedList<Point>(); //connection is not through a wall
 
         OccupancyGrid occGrid = agent.getOccupancyGrid();
 
         int pointSkip = 1;
 
         /*Polygon commPoly = PropModel1.getRangeForRV(occGrid, 
-                new BasicAgent(0, "", 0, firstRV.x, firstRV.y, 0, 0, 
+                new Agent(0, "", 0, firstRV.x, firstRV.y, 0, 0, 
                         Math.min(agent.getCommRange(), 
                                 agent.getParentTeammate().getCommRange()), 0, 
                         RobotConfig.roletype.Relay, 0, 0, 0)
                 );*/
         Polygon commPoly = PropModel1.getRangeForRV(occGrid,
-                new BasicAgent(0, "", 0, firstRV.x, firstRV.y, 0, 0, 200, 0,
-                        RobotConfig.roletype.Relay, 0, 0, 0, 2, 1)
-        );
+                firstRV.x, firstRV.y, 0, 200);
 
         int counter = 0;
         //for(Point p : ExplorationImage.polygonPoints(commPoly))
@@ -144,7 +164,7 @@ public class Rendezvous {
                     if (!occGrid.directLinePossible(firstRV.x, firstRV.y, p.x, p.y)) {
                         candidatePoints.add(p);
                     } else {
-                        directPoints.add(p);
+//                        directPoints.add(p);
                     }
                 }
                 counter++;
