@@ -41,6 +41,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
+
 package exploration;
 
 import agents.BasicAgent;
@@ -157,7 +158,7 @@ public class UtilityExploration {
                     + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO);
             agent.setState(BasicAgent.ExploreState.ReturnToParent);
             //agent.setRole(RobotConfig.roletype.Relay);
-            agent.computePathToBaseStation();
+            agent.computePathToBaseStation(true);
             agent.setPathToBaseStation();
 
             if (agent.getPath() == null || agent.getPath().getPoints() == null || agent.getPath().getPoints().size() <= 1) {
@@ -274,7 +275,7 @@ public class UtilityExploration {
                 }
             }
 
-            agent.forceUpdateTopologicalMap(false);
+            agent.updateTopologicalMap(false);
             Path path = agent.calculatePath(agent.getLocation(), baseLocation);
             //<editor-fold defaultstate="collapsed" desc="If path not found, try A*">
             if (!path.found) {

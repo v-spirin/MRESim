@@ -180,7 +180,7 @@ public class BasicAgent implements Agent {
         return prevExploreState;
     }
 
-    public void setState(ExploreState s) {
+    public final void setState(ExploreState s) {
         if (this.state != s) {
             prevExploreState = this.state;
             this.setStateTimer(0);

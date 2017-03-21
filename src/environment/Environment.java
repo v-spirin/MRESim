@@ -183,9 +183,9 @@ public class Environment {
         }
 
         if (dx != 0 && dy != 0) {
-            //diagonal move   
-            return locationExists(sourceX + dx, sourceY) && !obstacleAt(sourceX + dx, sourceY, ability)
-                    && locationExists(sourceX, sourceY + dy) && !obstacleAt(sourceX, sourceY + dy, ability)
+            //diagonal move (one diagonal pixel must be free)
+            return ((locationExists(sourceX + dx, sourceY) && !obstacleAt(sourceX + dx, sourceY, ability))
+                    || (locationExists(sourceX, sourceY + dy) && !obstacleAt(sourceX, sourceY + dy, ability)))
                     && locationExists(destX, destY) && !obstacleAt(destX, destY, ability);
         } else {
             //horizontal or vertical move

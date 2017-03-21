@@ -63,7 +63,7 @@ public class ComStation extends RealAgent implements Agent {
 // </editor-fold>   
 
     @Override
-    public void writeStep(Point nextLoc, double[] sensorData) {
+    public void writeStep(Point nextLoc, double[] sensorData, boolean updateSensorData) {
         batteryPower--;
     }
 }

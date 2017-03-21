@@ -54,7 +54,7 @@ import java.nio.file.Paths;
  */
 public class Constants {
 
-    public static final boolean DEBUG_OUTPUT = true;
+    public static final boolean DEBUG_OUTPUT = false;
 
     // Max number of rows in environment
     public static final int MAX_ROWS = 600;
@@ -127,7 +127,7 @@ public class Constants {
     public static final int MIN_COMM_WITH_CS_PERIOD = 10;
 
     // Probability of going out of service at any given time
-    public static final double PROB_OUT_OF_SERVICE = 0.002;
+    public static final double PROB_OUT_OF_SERVICE = 0.0;//0.002;
 
     // Maximum possible time (for divisions by zero speed)
     public static final int MAX_TIME = 10000;
@@ -200,6 +200,7 @@ public class Constants {
     public static int MAXIMUM_TIME = 3000;
     public static double HANDOVER_RANGE = 8;
     public static double FRONTIER_PERIODIC_RETURN = 50;
+    public static boolean PROFILING = false;
 
     // Colors to be used on map
     public static class MapColor {

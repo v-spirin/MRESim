@@ -41,6 +41,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
+
 package agents;
 
 import communication.CommLink;
@@ -68,6 +69,7 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 import path.Path;
@@ -77,73 +79,53 @@ import path.Path;
  * @author Julian de Hoog
  */
 public class RealAgent extends BasicAgent implements Agent {
-
-// <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">    
-    // Data
+    
     AgentStats stats;
+    private boolean missionComplete; // true only when mission complete (env fully explored)
 
     int prevX, prevY;             // Previous position in environment
     public int periodicReturnInterval;   // how long to wait until going back to BS
-    public int frontierPeriodicState;   // bit of a hack: state of periodic return frontier exp robots (0=exploring; 1=returning)
+    // bit of a hack: state of periodic return frontier exp robots (0=exploring; 1=returning)
+    public int frontierPeriodicState;   
     int timeElapsed;
-
-    int relayID; //id of the agent acting as relay for this agent
-
     boolean envError;             // set to true by env when RealAgent's step is not legal
-
-    boolean needUpdatingAreaKnown;
-
-    // Occupancy Grid
     OccupancyGrid occGrid;
+    // List of cells changed since last step (For faster update of image)
     LinkedList<Point> dirtyCells;
-    /* List of cells changed since last step
-                                       (For faster update of image) */
-
     public LinkedList<Point> pathTaken;    // For display where robot has gone
 
     // Frontiers
     PriorityQueue<Frontier> frontiers;
     Frontier lastFrontier;          // Keep track of last frontier of interest
-
     //Frontiers that are impossible to reach, so should be discarded
     HashMap<Frontier, Boolean> badFrontiers;
-
-    int relayMarks;
-
-    public int totalSpareTime; //total time this mission that this relay might have used for exploration
+    public int totalSpareTime; //total time this agent was not used for exploration
 
     // Path
     Path path;
     Path pathToBase;
+    //location in range of base station that is nearest to us
+    private Point nearestBaseCommunicationPoint;
 
+    private final TopologicalMap topologicalMap;
+    int timeTopologicalMapUpdated;
+    
     // Teammates
     HashMap<Integer, TeammateAgent> teammates;
-
-    //This is used only for logging - direct reference to other agents. DO NOT use this for anything else
-    private SimulationFramework simFramework;
-    private boolean saveOccupancyGrid;
-    private int oldTimeElapsed;
-
-    public void setSimFramework(SimulationFramework simFramework) {
-        this.simFramework = simFramework;
-    }
+    private BasicAgent baseStation;
 
     // Role-based Exploration
     private RendezvousAgentData rendezvousAgentData;
     private IRendezvousStrategy rendezvousStrategy;
 
-    private boolean missionComplete; // true only when mission complete (env fully explored)
-
-    private Point nearestBasePoint; //location in range of base station that is nearest to us
-
-    private final TopologicalMap topologicalMap;
-    int timeTopologicalMapUpdated;
-
     // dynamic behavior
     private Point currentGoal;  // needed for calculating dynamic role switch
 
     private SimulatorConfig simConfig;
-    private BasicAgent baseStation;
+    
+    // Used only for logging - direct reference to other agents. DO NOT use this for anything else
+    private SimulationFramework simFramework;
+    private int oldTimeElapsed;
 
     public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, BasicAgent baseStation) {
         super(robot.getRobotNumber(),
@@ -173,7 +155,6 @@ public class RealAgent extends BasicAgent implements Agent {
         envError = false;
         timeTopologicalMapUpdated = -1;
         timeElapsed = 0;
-        relayID = -1;
 
         totalSpareTime = 0;
 
@@ -195,17 +176,14 @@ public class RealAgent extends BasicAgent implements Agent {
 
         this.simConfig = simConfig;
         rendezvousAgentData = new RendezvousAgentData(this);
-        rendezvousStrategy = RendezvousStrategyFactory.createRendezvousStrategy(simConfig, this);
-
+        rendezvousStrategy = null;
         currentGoal = new Point(x, y);
 
-        nearestBasePoint = null;
+        nearestBaseCommunicationPoint = null;
 
-        saveOccupancyGrid = true;
         this.baseStation = baseStation;
     }
-
-// </editor-fold>     
+  
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
     public AgentStats getStats() {
         return stats;
@@ -286,14 +264,6 @@ public class RealAgent extends BasicAgent implements Agent {
         this.lastFrontier = f;
     }
 
-    public void updatePathDirt(Path p) {
-        java.util.List pts = p.getPoints();
-        if (pts != null) {
-            for (int i = 0; i < pts.size() - 1; i++) {
-                addDirtyCells(pointsAlongSegment(((Point) pts.get(i)).x, ((Point) pts.get(i)).y, ((Point) pts.get(i + 1)).x, ((Point) pts.get(i + 1)).y));
-            }
-        }
-    }
 
     public Path getPath() {
         return path;
@@ -306,6 +276,10 @@ public class RealAgent extends BasicAgent implements Agent {
         path = newPath;
     }
 
+    public void setSimFramework(SimulationFramework simFramework) {
+        this.simFramework = simFramework;
+    }
+    
     public Point getNextPathPoint() {
         if (path != null) {
             if (path.getPoints() != null) {
@@ -326,37 +300,13 @@ public class RealAgent extends BasicAgent implements Agent {
         pathToBase = null;
     }
 
-    public void computePathToBaseStation() {
-        long realtimeStartAgentCycle = System.currentTimeMillis();
-        Point baseLocation = getTeammate(1).getLocation();
-        if (nearestBasePoint == null) {
-            nearestBasePoint = baseLocation;
-        } else {
-            baseLocation = nearestBasePoint;
-        }
-        if (simConfig.getBaseRange() && (this.getTimeElapsed() % 10 == 1)) {
-            java.util.List<NearRVPoint> generatedPoints
-                    = MultiPointRendezvousStrategy.SampleEnvironmentPoints(this, simConfig.getSamplingDensity());
-            NearRVPoint agentPoint = new NearRVPoint(this.getLocation().x, this.getLocation().y);
-            java.util.List<CommLink> connectionsToBase = MultiPointRendezvousStrategy.FindCommLinks(generatedPoints, this);
-            MultiPointRendezvousStrategy.findNearestPointInBaseCommRange(agentPoint, connectionsToBase, this);
-            if (agentPoint.parentPoint != null) {
-                baseLocation = agentPoint.parentPoint.getLocation();
-                nearestBasePoint = baseLocation;
-            }
-        }
-        pathToBase = calculatePath(getLocation(), nearestBasePoint);
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(this.toString() + "Path to base computation took " + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
-        }
-    }
 
     public Path getPathToBaseStation() {
         if ((pathToBase != null) && ((pathToBase.getPoints() == null) || pathToBase.getPoints().isEmpty())) {
             pathToBase = null;
         }
         if ((pathToBase == null) || (pathToBase.getStartPoint().distance(this.getLocation()) > (Constants.DEFAULT_SPEED * 2))) {
-            computePathToBaseStation();
+            computePathToBaseStation(true);
         }
         return pathToBase;
     }
@@ -381,28 +331,6 @@ public class RealAgent extends BasicAgent implements Agent {
         return topologicalMap;
     }
 
-    //This method checks if occupancy grid has changed since last update of topological map,
-    //and rebuilds the map if necessary
-    public void forceUpdateTopologicalMap(boolean mustUpdate) {
-        if (occGrid.hasMapChanged() || mustUpdate) {
-            //System.out.println(this + " Updating topological map");
-            long timeStart = System.currentTimeMillis();
-            topologicalMap.setGrid(occGrid);
-            //System.out.println(toString() + "setGrid, " + (System.currentTimeMillis()-timeStart) + "ms.");
-            topologicalMap.generateSkeleton();
-            //System.out.println(toString() + "generateSkeleton, " + (System.currentTimeMillis()-timeStart) + "ms.");
-            topologicalMap.findKeyPoints();
-            //System.out.println(toString() + "findKeyPoints, " + (System.currentTimeMillis()-timeStart) + "ms.");
-            topologicalMap.generateKeyAreas();
-            timeTopologicalMapUpdated = timeElapsed;
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(toString() + "generated topological map, " + (System.currentTimeMillis() - timeStart) + "ms.");
-            }
-            occGrid.setMapHasChangedToFalse();
-        } else if (Constants.DEBUG_OUTPUT) {
-            System.out.println(this + " Occupancy Grid not changed since last update, skipping topological map update");
-        }
-    }
 
     public RendezvousAgentData getRendezvousAgentData() {
         return rendezvousAgentData;
@@ -413,15 +341,15 @@ public class RealAgent extends BasicAgent implements Agent {
     }
 
     public IRendezvousStrategy getRendezvousStrategy() {
+        if (rendezvousStrategy == null) {
+            rendezvousStrategy = RendezvousStrategyFactory.createRendezvousStrategy(simConfig, this);
+        }
         return rendezvousStrategy;
     }
 
     public void setRendezvousStrategy(IRendezvousStrategy strategy) {
         rendezvousStrategy = strategy;
     }
-// </editor-fold>    
-
-// <editor-fold defaultstate="collapsed" desc="Parent and Child">
     public TeammateAgent getParentTeammate() {
         return getTeammate(parent);
     }
@@ -440,10 +368,8 @@ public class RealAgent extends BasicAgent implements Agent {
 
     public boolean isExplorer() {
         return (role == roletype.Explorer);
-    }
-// </editor-fold>     
+    }   
 
-// <editor-fold defaultstate="collapsed" desc="Teammates">
     public void addTeammate(TeammateAgent teammate) {
         teammates.put(teammate.getID(), teammate);
     }
@@ -460,7 +386,6 @@ public class RealAgent extends BasicAgent implements Agent {
         }
         return null;
     }
-
     // necessary when swapping roles with another agent
     public TeammateAgent removeTeammate(int n) {
         return teammates.remove(n);
@@ -469,8 +394,67 @@ public class RealAgent extends BasicAgent implements Agent {
     public HashMap<Integer, TeammateAgent> getAllTeammates() {
         return teammates;
     }
+   
+// </editor-fold>    
 
-// </editor-fold>     
+    public void updatePathDirt(Path p) {
+        java.util.List pts = p.getPoints();
+        if (pts != null) {
+            for (int i = 0; i < pts.size() - 1; i++) {
+                addDirtyCells(pointsAlongSegment(((Point) pts.get(i)).x, ((Point) pts.get(i)).y, ((Point) pts.get(i + 1)).x, ((Point) pts.get(i + 1)).y));
+            }
+        }
+    }
+
+    public void computePathToBaseStation(boolean comRangeSufficient) {
+        long realtimeStartAgentCycle = System.currentTimeMillis();
+        Point baseLocation = baseStation.getLocation();
+        if (nearestBaseCommunicationPoint == null) {
+            nearestBaseCommunicationPoint = baseLocation;
+        }
+        if (simConfig.getBaseRange() && (this.getTimeElapsed() % 10 == 1)) {
+            List<NearRVPoint> generatedPoints
+                    = MultiPointRendezvousStrategy.SampleEnvironmentPoints(this, simConfig.getSamplingDensity());
+            NearRVPoint agentPoint = new NearRVPoint(this.getLocation().x, this.getLocation().y);
+            List<CommLink> connectionsToBase = MultiPointRendezvousStrategy.FindCommLinks(generatedPoints, this);
+            MultiPointRendezvousStrategy.findNearestPointInBaseCommRange(agentPoint, connectionsToBase, this);
+            if (agentPoint.parentPoint != null) {
+                baseLocation = agentPoint.parentPoint.getLocation();
+                nearestBaseCommunicationPoint = baseLocation;
+            }
+        }
+        pathToBase = calculatePath(getLocation(), nearestBaseCommunicationPoint);
+        if (Constants.DEBUG_OUTPUT || Constants.PROFILING) {
+            System.out.println(this.toString() + "Path to base computation took " + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
+        }
+    }
+    
+    /**
+     * This method checks if occupancy grid has changed since last update of topological map,
+     * and rebuilds the map if necessary.
+     * @param force update even if 'occGrid.hasMapChanged()' is false
+     */
+    public void updateTopologicalMap(boolean force) {
+        if (occGrid.hasMapChanged() || force) {
+            //System.out.println(this + " Updating topological map");
+            long timeStart = System.currentTimeMillis();
+            topologicalMap.setGrid(occGrid);
+            //System.out.println(toString() + "setGrid, " + (System.currentTimeMillis()-timeStart) + "ms.");
+            topologicalMap.generateSkeleton();
+            //System.out.println(toString() + "generateSkeleton, " + (System.currentTimeMillis()-timeStart) + "ms.");
+            topologicalMap.findKeyPoints();
+            //System.out.println(toString() + "findKeyPoints, " + (System.currentTimeMillis()-timeStart) + "ms.");
+            topologicalMap.generateKeyAreas();
+            timeTopologicalMapUpdated = timeElapsed;
+            if (Constants.DEBUG_OUTPUT || Constants.PROFILING) {
+                System.out.println(toString() + "generated topological map, " + (System.currentTimeMillis() - timeStart) + "ms.");
+            }
+            occGrid.setMapHasChangedToFalse();
+        } else if (Constants.DEBUG_OUTPUT) {
+            System.out.println(this + " Occupancy Grid not changed since last update, skipping topological map update");
+        }
+    }
+
 // <editor-fold defaultstate="collapsed" desc="Flush, take step, write step">
     public void flushComms() {
         teammates.values().stream().forEach((teammate) -> {
@@ -488,30 +472,40 @@ public class RealAgent extends BasicAgent implements Agent {
         //occGrid.initializeTestBits();
     }
 
+    /**
+     * Calculates and returns the next step to go, need to be called several times 
+     * until distance (based on agents speed) is reached. 
+     * Only the last step neds to be written, but a high speed can cause sensor-flaws, 
+     * as if the agent only scans after traveling
+     * @param timeElapsed in which cycle are we? Needed for several Exploration-algos
+     * @return Point (step) to go
+     */
     public Point takeStep(int timeElapsed) {
-        //this.simConfig = simConfig;
         long realtimeStartAgentStep = System.currentTimeMillis();
         Point nextStep = null;
 
-        //previous time elapsed, used to check if we advanced to a new time cycle or are still in the old one
+        //previous time elapsed, used to check if we advanced to a new time cycle
         this.oldTimeElapsed = this.timeElapsed;
         this.timeElapsed = timeElapsed;
 
         //shall we go out of service?
-        //if (Math.random() < Constants.PROB_OUT_OF_SERVICE)
-        //if ((timeElapsed > (robotNumber * 150)) && (robotNumber > 0))
-        //    setState(ExploreState.OutOfService);
+        if (Math.random() < Constants.PROB_OUT_OF_SERVICE) {
+            if ((timeElapsed > (robotNumber * 150)) && (robotNumber > 0)) {
+                setState(ExploreState.OutOfService);
+            }
+        }
+        
         //if we are out of service, don't move, act as relay
         if (getState() == ExploreState.OutOfService) {
             setSpeed(0);
             return getLocation();
         }
-        //System.out.println(this.toString() + "I am at location " + this.x + "," + this.y + ". Taking step ... ");
 
         if (timeElapsed == 0) {
             oldTimeElapsed = -1; //hack for initial time step
         }
         if (oldTimeElapsed != timeElapsed) {
+            // First call in cycle
             //TODO Only needed for Util and RoleBased, but needs to be done on request!!!
             //setDistanceToBase(getPathToBaseStation().getLength());
             switch (simConfig.getExpAlgorithm()) {
@@ -539,18 +533,16 @@ public class RealAgent extends BasicAgent implements Agent {
                     }
                     break;
                 case RoleBasedExploration:
-                    nextStep = RoleBasedExploration.takeStep(this, timeElapsed, rendezvousStrategy);
+                    nextStep = RoleBasedExploration.takeStep(this, timeElapsed, this.getRendezvousStrategy());
                     break;
                 case Testing:
                     nextStep = RelayFrontierExploration.takeStep(this, timeElapsed, simConfig.getFrontierAlgorithm(), baseStation, simConfig.useComStations(), simConfig.getComStationDropChance());
-//                    if (simConfig.useComStations() && (Math.random() < simConfig.getComStationDropChance())) {
-//                        this.dropComStation();
-//                    }
                     break;
                 default:
                     break;
             }
         } else {
+            // further call in cycle, just give next points of path
             switch (simConfig.getExpAlgorithm()) {
                 case RunFromLog:
                     break;
@@ -562,7 +554,8 @@ public class RealAgent extends BasicAgent implements Agent {
                     break;
                 case RoleBasedExploration:
                     if ((this.getState() != ExploreState.GiveParentInfo)
-                            && (this.getState() != ExploreState.GetInfoFromChild) && (this.getState() != ExploreState.WaitForChild)
+                            && (this.getState() != ExploreState.GetInfoFromChild) 
+                            && (this.getState() != ExploreState.WaitForChild)
                             && (this.getState() != ExploreState.WaitForParent)) {
                         nextStep = this.getNextPathPoint();
                     }
@@ -575,8 +568,7 @@ public class RealAgent extends BasicAgent implements Agent {
             }
         }
 
-        //pruneUnexploredSpace();
-        if (Constants.DEBUG_OUTPUT) {
+        if (Constants.DEBUG_OUTPUT || Constants.PROFILING) {
             String nxt = nextStep == null ? "NOTHING" : ((int) nextStep.getX() + "," + (int) nextStep.getY());
             System.out.println(this.toString() + "Taking step complete, moving from (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") to (" + nxt + "), took " + (System.currentTimeMillis() - realtimeStartAgentStep) + "ms.");
         }
@@ -584,22 +576,23 @@ public class RealAgent extends BasicAgent implements Agent {
         return nextStep;
     }
 
-    public void writeStep(Point nextLoc, double[] sensorData) {
-        writeStep(nextLoc, sensorData, true);
-    }
-
+    /**
+     * Go the step and update Agents data (including sensordata).
+     * @param nextLoc Step to go
+     * @param sensorData sensordata to update the agents map with
+     * @param updateSensorData should the sensordata be updated?
+     */
     public void writeStep(Point nextLoc, double[] sensorData, boolean updateSensorData) {
         long realtimeStart = System.currentTimeMillis();
-        //System.out.print(this.toString() + "Writing step ... ");
 
-        int safeRange = (int) (sensRange * Constants.SAFE_RANGE / 100);
-        Polygon newFreeSpace, newSafeSpace;
+        //int safeRange = (int) (sensRange * Constants.SAFE_RANGE / 100);
+        Polygon newFreeSpace;//, newSafeSpace;
 
         //Points between our old location and new location are definitely safe, as we are moving through them now!
         LinkedList<Point> safePoints = getOccupancyGrid().pointsAlongSegment(x, y, nextLoc.x, nextLoc.y);
         for (Point p : safePoints) {
             getOccupancyGrid().setFreeSpaceAt(p.x, p.y);
-            getOccupancyGrid().setSafeSpaceAt(p.x, p.y);
+            //getOccupancyGrid().setSafeSpaceAt(p.x, p.y);
             getOccupancyGrid().setNoObstacleAt(p.x, p.y);
         }
 
@@ -612,31 +605,25 @@ public class RealAgent extends BasicAgent implements Agent {
             heading = Math.atan2(y - prevY, x - prevX);
         }
         stats.addDistanceTraveled(Math.sqrt(Math.pow(y - prevY, 2) + Math.pow(x - prevX, 2)));
-        //System.out.println("Agent " + this.ID + " distance travelled: " + distanceTraveled);
 
         // OLD METHOD RAY TRACING
         // Safe space slightly narrower than free space to make sure frontiers
         // are created along farthest edges of sensor radial polygon
         if (updateSensorData) {
-            realtimeStart = System.currentTimeMillis();
             newFreeSpace = findRadialPolygon(sensorData, sensRange, 0, 180);
-            newSafeSpace = findRadialPolygon(sensorData, safeRange, 0, 180);
-            //System.out.println(this.toString() + "findRadialPolygon(x2) took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-            realtimeStart = System.currentTimeMillis();
+            //newSafeSpace = findRadialPolygon(sensorData, safeRange, 0, 180);
             updateObstacles(newFreeSpace);
-            //System.out.println(this.toString() + "updateObstacles took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-            realtimeStart = System.currentTimeMillis();
-            updateFreeAndSafeSpace(newFreeSpace, newSafeSpace);
-            //System.out.println(this.toString() + "updateFreeAndSafeSpace took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+            updateFreeAndSafeSpace(newFreeSpace, null);
         }
 
         // NEW METHOD FLOOD FILL
         //updateGrid(sensorData);
-        //batteryPower--;
-        batteryPower = stats.getNewInfo(); //hack to display new info in the GUI
-        //timeLastCentralCommand++;
+        batteryPower--;
 
-        //System.out.println(this.toString() + "WriteStep complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        if (Constants.PROFILING){
+            System.out.println(this.toString() + "WriteStep complete, took " + 
+                    (System.currentTimeMillis()-realtimeStart) + "ms.");
+        }
     }
 
 // </editor-fold>     
@@ -647,27 +634,25 @@ public class RealAgent extends BasicAgent implements Agent {
 
     public Path calculatePath(Point startPoint, Point goalPoint, boolean pureAStar) {
 
-        //topologicalMap = new TopologicalMap(occGrid);
-        int rebuild_topological_map_interval = Constants.REBUILD_TOPOLOGICAL_MAP_INTERVAL;
         if (timeTopologicalMapUpdated < 0) {
             timeTopologicalMapUpdated
                     = timeElapsed - Constants.MUST_REBUILD_TOPOLOGICAL_MAP_INTERVAL;
         }
-        if (timeElapsed - timeTopologicalMapUpdated >= rebuild_topological_map_interval) {
-            forceUpdateTopologicalMap(false);
+        if (timeElapsed - timeTopologicalMapUpdated >= Constants.REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
+            updateTopologicalMap(false);
         }
         if (timeElapsed - timeTopologicalMapUpdated >= Constants.MUST_REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
-            forceUpdateTopologicalMap(true);
+            updateTopologicalMap(true);
         }
         boolean topologicalMapUpdated = (timeTopologicalMapUpdated == timeElapsed);
         topologicalMap.setPathStart(startPoint);
         topologicalMap.setPathGoal(goalPoint);
         if (!pureAStar) {
-            //System.out.println(this + "calculating topological path from " + startPoint + " to " + goalPoint);
-            topologicalMap.getTopologicalPath();
+            topologicalMap.calculateTopologicalPath();
             if (!topologicalMap.getPath().found && !topologicalMapUpdated) {
                 if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(this + "Trying to rebuild topological map and replan path " + startPoint + " to " + goalPoint);
+                    System.out.println(this + "Trying to rebuild topological map and replan path " 
+                            + startPoint + " to " + goalPoint);
                 }
                 timeTopologicalMapUpdated = -1;
                 return calculatePath(startPoint, goalPoint);
@@ -680,15 +665,15 @@ public class RealAgent extends BasicAgent implements Agent {
             }
         } else {
             if (Constants.DEBUG_OUTPUT) {
-                System.out.println(this + "calculating jump path from " + startPoint + " to " + goalPoint);
+                System.out.println(this + "calculating jump path from " 
+                        + startPoint + " to " + goalPoint);
             }
-            topologicalMap.getJumpPath();
+            topologicalMap.calculateJumpPath();
             if (topologicalMap.getPath() == null) {
                 System.err.println("!!!! CATASTROPHIC FAILURE !!!!!");
             }
         }
         return topologicalMap.getPath();
-        //return new Path(occGrid, startPoint, goalPoint, false);
     }
 
     private LinkedList<Point> pointsAlongSegment(int x1, int y1, int x2, int y2) {
@@ -706,54 +691,16 @@ public class RealAgent extends BasicAgent implements Agent {
     }
 // </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Updating">
-    // <editor-fold defaultstate="collapsed" desc="DELETE">
-    /*public boolean isNeedUpdatePaths()
-    {
-        return ((areaKnown != prevAreaKnown) || (newInfo != prevNewInfo) || 
-                ((getState() == ExploreState.ReturnToParent) && (newInfo == 0)));
-    }
-    
-    public boolean isNeedUpdateAreaKnown()
-    {
-        return needUpdatingAreaKnown;
-    }
-    
-    public double getLastTotalKnowledgeBelief()
-    {
-        return lastTotalKnowledgeBelief;
-    }
-    
-    public void setLastTotalKnowledgeBelief(double val)
-    {
-        lastTotalKnowledgeBelief = val;
-    }
-    
-    public double getLastBaseKnowledgeBelief()
-    {
-        return lastBaseKnowledgeBelief;        
-    }
-    
-    public void setLastBaseKnowledgeBelief(double val)
-    {
-        lastBaseKnowledgeBelief = val;        
-    }
-    
-    public int getLastNewInfo()
-    {
-        return lastNewInfo;        
-    }
-    
-    public void setLastNewInfo(int val)
-    {
-        lastNewInfo = val;        
-    }
+    // 
+
+    /**
+     * update stats of what we know about the environment.
+     * TODO: we shouldn't call this every time step, this is a performance bottleneck and 
+     * can be made more efficient.
      */
-    // </editor-fold>
-    // update stats of what we know about the environment
-    // TODO: we shouldn't call this every time step, this is a performance bottleneck and can be made more efficient.
     public void updateAreaKnown() {
-        //<editor-fold defaultstate="collapsed" desc="Commented out - "brute force" way of calculating map stats">
+        //<editor-fold defaultstate="collapsed" desc="Commented out - brute force">
+        // brute force" way of calculating map stats">
         /*int counter = 0;
         int new_counter = 0;
         int gotRelayed = 0;
@@ -941,7 +888,7 @@ public class RealAgent extends BasicAgent implements Agent {
             }
         }
 
-        /**
+        /*
          * ******************************************
          */
         //   I   Make outline of polygon
@@ -958,7 +905,7 @@ public class RealAgent extends BasicAgent implements Agent {
             }
         }
 
-        /**
+        /*
          * ******************************************
          */
         //   II  Fill free space from inside
@@ -997,7 +944,7 @@ public class RealAgent extends BasicAgent implements Agent {
             }
         }
 
-        /**
+        /*
          * ******************************************
          */
         //   III Fill in obstacles
@@ -1018,7 +965,7 @@ public class RealAgent extends BasicAgent implements Agent {
             }
         }
 
-        /**
+        /*
          * ******************************************
          */
         //   IV  Update real grid
@@ -1071,7 +1018,7 @@ public class RealAgent extends BasicAgent implements Agent {
                             dirtyCells.add(new Point(i, j));
                         }
                     }
-                    if (newSafeSpace.contains(i, j)) {
+                    if (newSafeSpace != null && newSafeSpace.contains(i, j)) {
                         // double for loop to prevent empty-safe boundary (which
                         // would not qualify as a frontier)
                         for (int m = i - 1; m <= i + 1; m++) {
@@ -1114,9 +1061,11 @@ public class RealAgent extends BasicAgent implements Agent {
     protected void updateObstacles(Polygon newFreeSpace) {
         // Update obstacles -- all those bits for which radial polygon < sensRange
         // Ignore first point in radial polygon as this is the robot itself.
-        Point first, second = new Point(0, 0);
+        Point first;
+        Point second;
         double angle;
-        int currX, currY;
+        int currX;
+        int currY;
 
         for (int i = 1; i < newFreeSpace.npoints - 1; i++) {
             first = new Point(newFreeSpace.xpoints[i], newFreeSpace.ypoints[i]);
@@ -1139,7 +1088,8 @@ public class RealAgent extends BasicAgent implements Agent {
                         //to all sorts of tricky problems.
                         if (!occGrid.safeSpaceAt(newX, newY)) {
                             occGrid.setObstacleAt(newX, newY);
-                            //if (k == 0) occGrid.setSafeSpaceAt(newX, newY); //mark obstacles that we know for sure are there
+                            //mark obstacles that we know for sure are there
+                            //if (k == 0) occGrid.setSafeSpaceAt(newX, newY); 
                             dirtyCells.add(new Point(currX, currY));
                         }
                     }
@@ -1173,8 +1123,6 @@ public class RealAgent extends BasicAgent implements Agent {
             return radialPolygon;
         }
 
-        Point prevPoint = new Point(x, y);
-        Point curPoint;
         //For every degree
         for (int i = startAngle; i <= finishAngle; i += 1) {
             currRayAngle = heading - Math.PI / 2 + Math.PI / 180 * i;
@@ -1187,12 +1135,8 @@ public class RealAgent extends BasicAgent implements Agent {
                 currRayX = x + (int) Math.round(sensorData[i] * (Math.cos(currRayAngle)));
                 currRayY = y + (int) Math.round(sensorData[i] * (Math.sin(currRayAngle)));
             }
-            curPoint = new Point(currRayX, currRayY);
-            //if (curPoint.distance(prevPoint) >= 5)
-            //    radialPolygon.addPoint(x, y);
 
             radialPolygon.addPoint(currRayX, currRayY);
-            prevPoint = curPoint;
         }
 
         return radialPolygon;
@@ -1223,8 +1167,6 @@ public class RealAgent extends BasicAgent implements Agent {
             updateAreaRelayed(teammate);
         }
 
-        needUpdatingAreaKnown = true;
-
         //replan?
         //stats.setTimeSinceLastPlan(Integer.MAX_VALUE);
     }
@@ -1234,12 +1176,9 @@ public class RealAgent extends BasicAgent implements Agent {
     }
 
     public void updateAfterCommunication() {
-        //long realtimeStart = System.currentTimeMillis();
-        //System.out.print(this.toString() + "Updating post-communication ... ");
         teammates.values().stream().filter((teammate) -> (!teammate.isInRange())).forEach((teammate) -> {
             teammate.setTimeSinceLastComm(teammate.getTimeSinceLastComm() + 1);
         }); //processRelayMarks();
-        //System.out.println("Complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 // </editor-fold>     
 

@@ -198,7 +198,7 @@ public class TopologicalMap {
                                         if (Constants.DEBUG_OUTPUT) {
                                             System.out.println("Generating path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + ")");
                                         }
-                                        //pathToNode.getAStarPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
+                                        //pathToNode.calculateAStarPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
                                         pathToNode.getJumpPath(occGrid, (Point) node.getPosition().clone(), (Point) neighbourNode.getPosition().clone(), false);
                                         if (!pathToNode.getStartPoint().equals(node.getPosition())
                                                 || !pathToNode.getGoalPoint().equals(neighbourNode.getPosition())) {
@@ -210,7 +210,7 @@ public class TopologicalMap {
                                                 node.getPosition().x, node.getPosition().y);
                                         pathCache.put(reversePathCoords, reversePath);
                                     }
-                                    //pathToNode.getJumpPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
+                                    //pathToNode.calculateJumpPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
                                     timeSpentOnPaths += (System.currentTimeMillis() - realtimeStart);
                                     node.addNeighbour(neighbourNode, pathToNode);
                                     neighbourNode.addNeighbour(node, pathToNode.generateReversePath());
@@ -260,15 +260,15 @@ public class TopologicalMap {
         return path.getGoalPoint();
     }
 
-    public void getAStarPath() {
+    public void calculateAStarPath() {
         path = new Path(occGrid, path.getStartPoint(), path.getGoalPoint(), false, false);
     }
 
-    public void getJumpPath() {
+    public void calculateJumpPath() {
         path = new Path(occGrid, path.getStartPoint(), path.getGoalPoint(), false, true);
     }
 
-    public void getTopologicalPath() {
+    public void calculateTopologicalPath() {
         path = new Path(occGrid, this, path.getStartPoint(), path.getGoalPoint(), false);
     }
 

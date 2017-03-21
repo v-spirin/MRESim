@@ -80,37 +80,32 @@ public class AgentStepRunnable implements Runnable {
         //profiling
         long realtimeStartAgentCycle = System.currentTimeMillis();
 
-        //<editor-fold defaultstate="collapsed" desc="Continue along the path, until we have exhausted agent 'speed' per cycle or run out of path">
-//        if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
-//            nextStep = agent.takeStep(timeElapsed);
-//            agent.flush();
-//            sensorData = simFramework.findSensorData(agent, nextStep);
-//            agent.writeStep(nextStep, sensorData, true);
-//            distance_left = 0;
-//        }
+        //<editor-fold defaultstate="collapsed" desc="Continue along the path,">
+        //until we have exhausted agent 'speed' per cycle or run out of path
         while (distance_left > 0) {
             //<editor-fold defaultstate="collapsed" desc="Get next step">
             nextStep = agent.takeStep(timeElapsed);
             if (nextStep == null) {
                 nextStep = agent.getLocation();
-                //if (Constants.DEBUG_OUTPUT) {
-                System.err.println(agent + " !!! setting envError because nextStep is null, distance_left is " + distance_left);
-                //}
                 agent.setEnvError(true);
                 distance_left = 0;
+                System.err.println(agent + " !!! setting envError because nextStep is null, "
+                        + "distance_left is " + distance_left);
             }
             agent.flush();
-            //</editor-fold>
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent.toString() + "Get next step (" + nextStep.x + "," + nextStep.y + ") took " + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
+            if (Constants.PROFILING) {
+                System.out.println(agent.toString() + "Get next step (" + nextStep.x + "," 
+                        + nextStep.y + ") took " 
+                        + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
             }
+            //</editor-fold>
 
             //<editor-fold defaultstate="collapsed" desc="Check to make sure step is legal">
             if (env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y, agent.ability)) {
                 //check here we don't 'teleport'
                 double dist = agent.getLocation().distance(nextStep);
-                //System.out.println(agent.toString() + "1 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
-                //<editor-fold defaultstate="collapsed" desc="If we don't have enough 'speed' left to reach nextPoint, go as far as we can and keep nextPoint in the path">
+                //<editor-fold defaultstate="collapsed" desc="If we don't have enough 'speed'">
+                // left to reach nextPoint, go as far as we can and keep nextPoint in the path
                 if (dist > distance_left) {
                     //System.out.println(agent.toString() + " exceeded speed. Distance left: " + distance_left + ", dist to next path point: " + dist);
                     //Add nextStep back to path, as we will not reach it yet
@@ -185,10 +180,7 @@ public class AgentStepRunnable implements Runnable {
             //</editor-fold>
         }
         //</editor-fold>
-        /*if (nextStep != null) {
-            sensorData = simFramework.findSensorData(agent, nextStep);
-            agent.writeStep(nextStep, sensorData, true);
-        }*/
+
  /*if (simConfig.getExpAlgorithm() != SimulatorConfig.exptype.RunFromLog)
             agent.updateTrueAreaKnown(env);*/
         //benchmark

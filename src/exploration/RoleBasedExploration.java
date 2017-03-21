@@ -70,13 +70,10 @@ public class RoleBasedExploration {
     // Returns new X, Y of ExploreAgent
     public static Point takeStep(RealAgent agent, int curTime, IRendezvousStrategy rendezvousStrategy) {
         long realtimeStart = System.currentTimeMillis();
-        //<editor-fold defaultstate="collapsed" desc="Assign local variables">
         timeElapsed = curTime;
 
         Point nextStep = null;
-        //</editor-fold>
 
-        // <editor-fold defaultstate="collapsed" desc="Handle environment error - agent stuck next to a wall">
         // if env reports error, agent may be stuck in front of a wall and the
         // simulator isn't allowing him to go through.  Taking a random step might
         // help.
@@ -90,7 +87,6 @@ public class RoleBasedExploration {
             agent.setEnvError(false);
             return nextStep;
         }
-        // </editor-fold>
 
         // <editor-fold defaultstate="collapsed" desc="Run correct takeStep function depending on agent state, set nextStep to output">
         switch (agent.getState()) {
@@ -444,68 +440,69 @@ public class RoleBasedExploration {
         } //</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="else, we've recalculated rv, time to move on">
         else //<editor-fold defaultstate="collapsed" desc="Explorer - process & go into Explore state">
-        if (agent.isExplorer()) {
-            agent.getRendezvousStrategy().processAfterGiveParentInfoExplorer();
+        {
+            if (agent.isExplorer()) {
+                agent.getRendezvousStrategy().processAfterGiveParentInfoExplorer();
 
-            agent.setState(RealAgent.ExploreState.Explore);
-            agent.setStateTimer(0);
-
-            return takeStep_Explore(agent);
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="Relay - process & go to child">
-        else {
-            //--the below section is for logging only
-            //---------------------------------------
-            Path pathToMeeting = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
-            //Check if we have at least T=15 timesteps to spare.
-            int timeMeeting = agent.getRendezvousAgentData().getChildRendezvous().getTimeMeeting();
-            int spareTime = (int) Math.round((pathToMeeting.getLength() / Constants.DEFAULT_SPEED) + agent.getTimeElapsed() - timeMeeting);
-            agent.totalSpareTime += spareTime;
-            //---------------------------------------
-            //--end of section-----------------------
-
-            agent.getRendezvousStrategy().processAfterGiveParentInfoRelay();
-            if (agent.getState() == RealAgent.ExploreState.Explore) {
+                agent.setState(RealAgent.ExploreState.Explore);
                 agent.setStateTimer(0);
-                return takeStep_Explore(agent);
-            }
-            agent.setState(RealAgent.ExploreState.GoToChild);
-            agent.setStateTimer(0);
-            agent.addDirtyCells(agent.getPath().getAllPathPixels());
-            Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
-            agent.setPath(path);
-            agent.setCurrentGoal(agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
 
-            if (path.found) {
-                // stay in comm range with base, till it's time to go meet child
-                /*double estTimeToRV = (path.getLength() / Constants.DEFAULT_SPEED) + timeElapsed;
+                return takeStep_Explore(agent);
+            //</editor-fold>
+            } else {
+            //<editor-fold defaultstate="collapsed" desc="Relay - process & go to child">
+                //--the below section is for logging only
+                //---------------------------------------
+                Path pathToMeeting = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
+                //Check if we have at least T=15 timesteps to spare.
+                int timeMeeting = agent.getRendezvousAgentData().getChildRendezvous().getTimeMeeting();
+                int spareTime = (int) Math.round((pathToMeeting.getLength() / Constants.DEFAULT_SPEED) + agent.getTimeElapsed() - timeMeeting);
+                agent.totalSpareTime += spareTime;
+                //---------------------------------------
+                //--end of section-----------------------
+
+                agent.getRendezvousStrategy().processAfterGiveParentInfoRelay();
+                if (agent.getState() == RealAgent.ExploreState.Explore) {
+                    agent.setStateTimer(0);
+                    return takeStep_Explore(agent);
+                }
+                agent.setState(RealAgent.ExploreState.GoToChild);
+                agent.setStateTimer(0);
+                agent.addDirtyCells(agent.getPath().getAllPathPixels());
+                Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
+                agent.setPath(path);
+                agent.setCurrentGoal(agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
+
+                if (path.found) {
+                    // stay in comm range with base, till it's time to go meet child
+                    /*double estTimeToRV = (path.getLength() / Constants.DEFAULT_SPEED) + timeElapsed;
                     if (estTimeToRV < agent.getChildRendezvous().getTimeMeeting())
                     {
                         agent.setState(RealAgent.ExploreState.GiveParentInfo);
                         agent.setStateTimer(0);
                         return agent.getLocation();
                     } else*/
-                return ((Point) agent.getPath().getPoints().remove(0));
-            } else {
-                //<editor-fold defaultstate="collapsed" desc="If path not found, try A*">
-                System.out.println(agent.toString() + "ERROR!  Could not find full path! Trying pure A*");
-                path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), true);
-                //</editor-fold>
-                //<editor-fold defaultstate="collapsed" desc="If path still not found, take random step">
-                if (!path.found) {
-                    System.out.println(agent.toString() + "!!!ERROR!  Could not find full path! Taking random step");
-                    agent.setCurrentGoal(agent.getLocation());
-                    return RandomWalk.takeStep(agent);
-                } else {
-                    System.out.println(agent.toString() + "Pure A* worked");
-                    agent.setPath(path);
-                    agent.setCurrentGoal(agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
                     return ((Point) agent.getPath().getPoints().remove(0));
+                } else {
+                    //<editor-fold defaultstate="collapsed" desc="If path not found, try A*">
+                    System.out.println(agent.toString() + "ERROR!  Could not find full path! Trying pure A*");
+                    path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), true);
+                    //</editor-fold>
+                    //<editor-fold defaultstate="collapsed" desc="If path still not found, take random step">
+                    if (!path.found) {
+                        System.out.println(agent.toString() + "!!!ERROR!  Could not find full path! Taking random step");
+                        agent.setCurrentGoal(agent.getLocation());
+                        return RandomWalk.takeStep(agent);
+                    } else {
+                        System.out.println(agent.toString() + "Pure A* worked");
+                        agent.setPath(path);
+                        agent.setCurrentGoal(agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
+                        return ((Point) agent.getPath().getPoints().remove(0));
+                    }
+                    //</editor-fold>
                 }
-                //</editor-fold>
-            }
-        } //</editor-fold>
-        //</editor-fold>
+            } //</editor-fold>
+        }        //</editor-fold>
     }
 
     public static Point takeStep_GoToChild(RealAgent agent) {
@@ -592,14 +589,16 @@ public class RoleBasedExploration {
         if (canStillWait) {
             return agent.getRendezvousStrategy().processWaitForChild();
         } else //Go to backup RV if available. Otherwise do what the strategy requires us to do, e.g. become an explorer.
-        if (rvd.getChildBackupRendezvous() != null) {
-            rvd.setChildRendezvous(rvd.getChildBackupRendezvous());
-            rvd.setChildBackupRendezvous(null);
-            agent.setState(RealAgent.ExploreState.GoToChild);
-            agent.setStateTimer(0);
-            return takeStep_GoToChild(agent);
-        } else {
-            return agent.getRendezvousStrategy().processWaitForChildTimeoutNoBackup();
+        {
+            if (rvd.getChildBackupRendezvous() != null) {
+                rvd.setChildRendezvous(rvd.getChildBackupRendezvous());
+                rvd.setChildBackupRendezvous(null);
+                agent.setState(RealAgent.ExploreState.GoToChild);
+                agent.setStateTimer(0);
+                return takeStep_GoToChild(agent);
+            } else {
+                return agent.getRendezvousStrategy().processWaitForChildTimeoutNoBackup();
+            }
         }
     }
 
@@ -779,7 +778,7 @@ public class RoleBasedExploration {
         long realtimeStart = System.currentTimeMillis();
         System.out.println(agent.toString() + "Calculating RV Through Walls");
         
-        agent.forceUpdateTopologicalMap(true);
+        agent.updateTopologicalMap(true);
         
         agent.getTopologicalMap().generateSkeletonNearBorders();
         
