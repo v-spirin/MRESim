@@ -299,10 +299,19 @@ public class FrontierExploration {
     }
 
     private static double utilityEstimate(Point agentLoc, Frontier frontier) {
+        if (agentLoc.getX() == frontier.getCentre().x &&
+                agentLoc.getY() == frontier.getCentre().y){
+            return -1001;
+        }
         return ((frontier.getArea() * 100000000) / Math.pow(agentLoc.distance(frontier.getCentre()), 4));
     }
 
     private static void calculateUtilityExact(RealAgent agent, Utility ute) {
+        if (agent.getLocation().getX() == ute.frontier.getCentre().x &&
+                agent.getLocation().getY() == ute.frontier.getCentre().y){
+            ute.utility = -1001;
+            return;
+        }
         Point start;
         boolean isMe = (ute.ID == agent.getID());
         if (isMe) {
@@ -429,8 +438,10 @@ public class FrontierExploration {
                             null));
                     if (Constants.DEBUG_OUTPUT) {
                         System.out.println(Constants.INDENT + "Utility of robot with ID "
-                                + teammate.getID() + " at location " + teammate.getLocation()
-                                + " for frontier at "
+                                + teammate.getID() + " at location "
+                                + "(" + (int)teammate.getLocation().getX() + ","
+                                + (int)teammate.getLocation().getY()
+                                + ") for frontier at "
                                 + frontier.getCentre().x + ","
                                 + frontier.getCentre().y + " is "
                                 + (int) utilityEstimate(teammate.getLocation(), frontier));
@@ -486,7 +497,7 @@ public class FrontierExploration {
 
         @Override
         public String toString() {
-            return "Utility ID: " + ID + ", agentLocation: (" + (int) agentLocation.getX() + "," + (int) agentLocation.getX() + "), frontier: " + frontier
+            return "Utility ID: " + ID + ", agentLocation: (" + (int) agentLocation.getX() + "," + (int) agentLocation.getY() + "), frontier: " + frontier
                     + ", utility: " + utility;
         }
     }
