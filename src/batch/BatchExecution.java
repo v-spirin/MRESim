@@ -44,8 +44,10 @@
 
 package batch;
 
+import config.Constants;
 import config.SimulatorConfig;
 import gui.MainConsole;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -80,12 +82,15 @@ public class BatchExecution {
         List<Thread> threads = new ArrayList<Thread>();
         int counter = 0;
         for (SimulatorConfig conf : configs) {
+            String name = "Batch " + counter;
+            new File(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + name).mkdir();
+            
             counter++;
-            console = new MainConsole(this, true);
+            console = new MainConsole(this, true, name);
             console.load();
             console.loadConfig(conf);
-            Thread worker = new Thread(console);
-            worker.setName("Batch " + counter);
+            Thread worker = new Thread(console, name);
+            worker.setName(name);
             worker.start();
             threads.add(worker);
             

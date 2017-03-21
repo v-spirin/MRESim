@@ -180,6 +180,9 @@ public class SimulatorConfig {
     public void setCommModel(int n) {
         commModel = commtype.values()[n];
     }
+    public void setCommModel(commtype com) {
+        commModel = com;
+    }
 
     public exptype getExpAlgorithm() {
         return expAlgorithm;

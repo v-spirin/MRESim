@@ -340,7 +340,7 @@ public class SimulationFramework implements ActionListener {
             a.getOccupancyGrid().saveToPNG(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "occuGrid " + a.toString() + timeElapsed + ".png");
             logging_agent = true; //There is a logging-wish
         });
-        if (logging_agent || true) {  //do non-agent-based logging if there is a wish to log for any robot
+        if (logging_agent) {  //do non-agent-based logging if there is a wish to log for any robot
             //EnvLoader.saveWallConfig(env, Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "environment " + timeElapsed + ".png");
             image.saveScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY, timeElapsed);
         }
@@ -358,7 +358,7 @@ public class SimulationFramework implements ActionListener {
         if (Constants.DEBUG_OUTPUT) {
             System.out.println("Time1 = " + time1 + ", time2 = " + time2 + ", time3 = " + time3 + ", time4 = " + time4);
         }
-        return checkRunFinish();           // for scripting multiple runs, to max number of cycles
+        return checkRunFinish(agent, timeElapsed, pctAreaKnownTeam, avgCycleTime);           // for scripting multiple runs, to max number of cycles
     }
 
 // </editor-fold>     
@@ -574,7 +574,7 @@ public class SimulationFramework implements ActionListener {
         return (((double) agent[0].getStats().getAreaKnown() / (double) totalArea) >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL);
     }
 
-    private boolean checkRunFinish() {
+    private boolean checkRunFinish(RealAgent[] agent, int timeElapsed, double pctAreaKnownTeam, int avgCycleTime) {
         boolean allAgentsAtBase = true;
 
         for (int i = 1; i < agent.length; i++) {
@@ -589,7 +589,7 @@ public class SimulationFramework implements ActionListener {
             if (isBatch && (runNumber < runNumMax)) {
                 restart();
             } else {
-                mainGUI.runComplete();
+                mainGUI.runComplete(agent, timeElapsed, pctAreaKnownTeam, avgCycleTime);
             }
         }
         return false;
@@ -1263,6 +1263,10 @@ public class SimulationFramework implements ActionListener {
     private void logScreenshot() {
         image.fullUpdate(mainGUI.getShowSettings(), mainGUI.getShowSettingsAgents(), env, agent, agentRange);
         image.saveScreenshot(simConfig.getLogScreenshotsDirname(), timeElapsed);
+    }
+    public void logScreenshot(String dirname) {
+        image.fullUpdate(mainGUI.getShowSettings(), mainGUI.getShowSettingsAgents(), env, agent, agentRange);
+        image.saveScreenshot(dirname, timeElapsed);
     }
 
 // </editor-fold>     

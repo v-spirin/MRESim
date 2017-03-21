@@ -336,6 +336,9 @@ public class LeaderFollower {
     }
 
     private static double utilityEstimate(Point agentLoc, Frontier frontier) {
+        if (agentLoc == frontier.getCentre()) {
+            return 0;
+        }
         return (frontier.getArea() / Math.pow(agentLoc.distance(frontier.getCentre()), 4) * 100000000);
     }
 

@@ -45,39 +45,71 @@
 package gui;
 
 import agents.RealAgent;
+import batch.BatchExecution;
+import config.Constants;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
 import exploration.SimulationFramework;
+import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author christian
  */
-public class MainConsole extends MainGUI {
-//    private boolean loop;
+public class MainConsole extends MainGUI implements Runnable {
+    private static final Logger LOGGER = Logger.getLogger(MainConsole.class.getName());
+    private boolean batch;
+    private BatchExecution batchExecution;
+    private String threadName = "unnamed";
     
     public static void main(String args[]){
-        MainConsole mainConsole = new MainConsole();
+        MainConsole mainConsole = new MainConsole(null, false, "SingleThread");
+        mainConsole.load();
+        try {
+            mainConsole.start();
+        } catch (InterruptedException ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+        }
     }
     
-    public MainConsole(){
+    public MainConsole(BatchExecution batchExecution, boolean batch, String name){
+        this.batchExecution = batchExecution;
+        this.batch = batch;
+        this.threadName = name;
         robotTeamConfig = new RobotTeamConfig();
         simConfig = new SimulatorConfig();
         explorationImage = new ExplorationImage(simConfig.getEnv());
+    }
+    public void load(){
         explorationImage.redrawEnvAndAgents(this, robotTeamConfig, simConfig);
         simulation = new SimulationFramework(this, robotTeamConfig, simConfig, explorationImage);
+    }
+    
+    public void start() throws InterruptedException{
         simulation.start();
-//        loop = true;
-//        while(loop){
-//            loop = !simulation.simulationCycle();
-//            //explorationImage.redrawEnvAndAgents(this, robotTeamConfig, simConfig);
-//        }
+    }
+    
+    public void loadConfig(SimulatorConfig simConf){
+        this.simConfig = simConf;
     }
     
     @Override
-    public void runComplete() {
-        System.out.println("Finished");
-        System.exit(0);
+    public void runComplete(RealAgent[] agent, int timeElapsed, double pctAreaKnownTeam, int avgCycleTime) {
+        simulation.logScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
+        System.out.format("{0}\nCycle: {1}\n"
+                + "AreaKnown: {2}%%\n"
+                + "AvgTime/Cycle: {3}",
+                new Object[]{Thread.currentThread().getName(), timeElapsed, Math.round(pctAreaKnownTeam), avgCycleTime});
+        LOGGER.log(Level.FINE, "{0} finished", this.threadName);
+        if (!batch) {
+            System.exit(0);
+        } else {
+            synchronized (this) {
+                this.notify();
+            }
+        }
 //        loop = false;
     }
     
@@ -85,9 +117,42 @@ public class MainConsole extends MainGUI {
     public void updateRobotConfig(){}
     
     @Override
-    public void updateFromData(RealAgent agent[], int timeElapsed, double pctAreaKnown, int avgCycleTime){
-         System.out.println("Cycle: " + timeElapsed + "\nAreaKnown: " + Math.round(pctAreaKnown) + "\nAvgTime/Cycle: " + avgCycleTime);
+    public void updateFromData(RealAgent agent[], 
+            int timeElapsed, 
+            double pctAreaKnown, 
+            int avgCycleTime){
+        LOGGER.log(Level.FINE, "Name: {0}\n"
+                + "Cycle: {1}\n"
+                + "AreaKnown: {2}%\n"
+                + "AvgTime/Cycle: {3}", 
+                new Object[]{this.threadName, timeElapsed, Math.round(pctAreaKnown), (int)avgCycleTime});
+        //simulation.logScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
+        if ((timeElapsed % 50) == 0){
+            simulation.logScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
+            System.out.format("Name: %s"
+                    + "\nCycle: %d\n"
+                + "AreaKnown: %d%%\n"
+                + "AvgTime/Cycle: %d\n", 
+                new Object[]{this.threadName, timeElapsed, Math.round(pctAreaKnown), avgCycleTime});
+        }
 
+    }
+
+    @Override
+    public void run() {
+        LOGGER.log(Level.FINE, "{0} started", this.threadName);
+        try {
+            this.start();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainConsole.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        synchronized(this){
+            try {
+                this.wait();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MainConsole.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
     }
     
 }

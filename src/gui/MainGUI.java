@@ -370,7 +370,7 @@ public class MainGUI extends javax.swing.JFrame {
         chartPanel.updateUI();
     }
 
-    public void runComplete() {
+    public void runComplete(RealAgent[] agent, int timeElapsed, double pctAreaKnownTeam, int avgCycleTime) {
         buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPlay.png")));
         RUNMODE = runMode.stopped;
         simulation.kill();

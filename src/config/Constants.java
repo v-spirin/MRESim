@@ -41,6 +41,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
+
 package config;
 
 import java.awt.Color;
@@ -61,7 +62,8 @@ public class Constants {
     // Max number of columns in enviroment
     public static final int MAX_COLS = 800;
 
-    // Random seed for random walk (set to a constant for testing, otherwise to System.currentTimeMillis())
+    // Random seed for random walk 
+    //(set to a constant for testing, otherwise to System.currentTimeMillis())
     public static final int RANDOM_SEED = 12345;//(int) System.currentTimeMillis();
 
     // Max time to search for a path, in ms
@@ -115,10 +117,12 @@ public class Constants {
     // Minimum size a frontier must have to be considered as part of exploration
     public static final int MIN_FRONTIER_SIZE = 5; // default 20; was 3
 
-    // How long should we assume that the teammate is exploring the frontier that he last told us he was to explore?
+    // How long should we assume that the teammate is exploring the 
+    // frontier that he last told us he was to explore?
     public static final int REMEMBER_TEAMMATE_FRONTIER_PERIOD = 500;
 
-    // Minimum wait time until attempting to communicate with the Base Station again. This is to ensure when in range
+    // Minimum wait time until attempting to communicate with the Base Station again. 
+    // This is to ensure when in range
     // with the base station we do not try to transfer big maps every step, resulting in slowdown.
     public static final int MIN_COMM_WITH_CS_PERIOD = 10;
 
@@ -143,7 +147,8 @@ public class Constants {
     // Unexplored topological space ID
     public static final int UNEXPLORED_NODE_ID = Integer.MAX_VALUE;
 
-    // Time an agent needs to be in a state, before he starts communicating with the parent for RoleBasedExploration
+    // Time an agent needs to be in a state, 
+    // before he starts communicating with the parent for RoleBasedExploration
     public static final int MIN_TIME_IN_EXPLORE_STATE = 15;
 
     public static final int BASE_STATION_TEAMMATE_ID = 1;
@@ -162,7 +167,8 @@ public class Constants {
     // Minimal time an explorer should explore a frontier before delivering the information back
     public static final int FRONTIER_MIN_EXPLORE_TIME = 75;
 
-    //In role-based exploration try not to go to frontiers if we will have to turn back to RV before we can even reach the frontier.
+    //In role-based exploration try not to go to frontiers if we will have to 
+    // turn back to RV before we can even reach the frontier.
     public static final boolean AVOID_FRONTIERS_WE_CANNOT_REACH_IN_TIME = false;
 
     // How often should we check if we need to rebuild topological path?
@@ -177,16 +183,20 @@ public class Constants {
     // How many steps should we initialize for
     public static final int INIT_CYCLES = 3;
 
-    // How much better should RV through a Wall be, compared to RV from the same spot not through a wall, to be accepted
+    // How much better should RV through a Wall be, 
+    // compared to RV from the same spot not through a wall, to be accepted
     public static final double MIN_RV_THROUGH_WALL_ACCEPT_RATIO = 0.8;
 
     // Maximum time we're allowed to search for distance by skeleton, in ms
     public static final long MAX_TIME_DISTANCE_BY_SKELETON = 100;
 
     public static final boolean OUTPUT_PATH_ERROR = false;
-    public static final String DEFAULT_PATH_LOG_DIRECTORY = Paths.get(System.getProperty("user.dir"), "patherror").toString() + File.separator;
-    public static final String DEFAULT_LOG_DIRECTORY = Paths.get(System.getProperty("user.dir"), "logs").toString() + File.separator;
-    public static final String DEFAULT_IMAGE_LOG_DIRECTORY = Paths.get(System.getProperty("user.dir"), "logs", "images").toString() + File.separator;
+    public static final String DEFAULT_PATH_LOG_DIRECTORY = 
+            Paths.get(System.getProperty("user.dir"), "patherror").toString() + File.separator;
+    public static final String DEFAULT_LOG_DIRECTORY = 
+            Paths.get(System.getProperty("user.dir"), "logs").toString() + File.separator;
+    public static final String DEFAULT_IMAGE_LOG_DIRECTORY = 
+            Paths.get(System.getProperty("user.dir"), "logs", "images").toString() + File.separator;
     public static int MAXIMUM_TIME = 3000;
     public static double HANDOVER_RANGE = 8;
     public static double FRONTIER_PERIODIC_RETURN = 50;
