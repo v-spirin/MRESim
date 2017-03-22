@@ -73,7 +73,7 @@ public class DataMessage implements IDataMessage {
     public boolean directComm;
     public ExploreState state;
     public double distToBase;
-    public double speed;
+    public int speed;
     public int relayID;
     public double maxRateOfInfoGatheringBelief;
     public Point frontierCentre;

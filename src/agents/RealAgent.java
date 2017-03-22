@@ -128,7 +128,8 @@ public class RealAgent extends Agent {
     private int oldTimeElapsed;
 
     public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, Agent baseStation) {
-        super(robot.getRobotNumber(),
+        super(robot);
+        /*super(robot.getRobotNumber(),
                 robot.getName(),
                 robot.getRobotNumber(),
                 robot.getStartX(),
@@ -143,7 +144,7 @@ public class RealAgent extends Agent {
                 robot.getSpeed(),
                 robot.getAbility(),
                 robot.getComStationLimit()
-        );
+        );*/
 
         stats = new AgentStats();
 

@@ -62,7 +62,7 @@ abstract public class Agent {
 
     int x, y;               // Current position
     double heading;         // Current heading in radians
-    double speed;
+    int speed;
 
     int sensRange;          // Sensing range (radius)
     int commRange;          // Communication range (radius)
@@ -88,27 +88,28 @@ abstract public class Agent {
     private int stateTimer;  // keeps track of how much time spent in this state
     private int timeSinceGetChildInfo; //how long since we got child info
 
-    public Map<Integer, Double> knowledgeData = new HashMap(); // Keeps historical data about agent knowledge
+    // Keeps historical data about agent knowledge
+    public Map<Integer, Double> knowledgeData = new HashMap(); 
 
-    public Agent(int no, String n, int id, int newX, int newY, double h, int sr, int cr, int bp, RobotConfig.roletype r, int p, int c, double sp, int ab, int comStationLimit) {
-        robotNumber = no;
-        name = n;
-        ID = id;
-        x = newX;
-        y = newY;
-        heading = h;
-        sensRange = sr;
-        commRange = cr;
-        batteryPower = bp;
-        role = r;
+    public Agent(RobotConfig robot) {
+        robotNumber = robot.getRobotNumber();
+        name = robot.getName();
+        ID = robot.getRobotNumber();
+        x = robot.getStartX();
+        y = robot.getStartY();
+        heading = robot.getStartHeading();
+        sensRange = robot.getSensingRange();
+        commRange = robot.getCommRange();
+        batteryPower = robot.getBatteryLife();
+        role = robot.getRole();
         state = ExploreState.Initial;
-        parent = p;
-        child = c;
-        speed = sp;
-        ability = ab;
+        parent = robot.getParent();
+        child = robot.getChild();
+        speed = robot.getSpeed();
+        ability = robot.getAbility();
         timeSinceGetChildInfo = 0;
         comStations = new ArrayList<>();
-        this.comStationLimit = comStationLimit;
+        this.comStationLimit = robot.getComStationLimit();
     }
 
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
@@ -140,11 +141,11 @@ abstract public class Agent {
         this.comStationLimit = comStationLimit;
     }
 
-    public void setSpeed(double sp) {
+    public void setSpeed(int sp) {
         this.speed = sp;
     }
 
-    public double getSpeed() {
+    public int getSpeed() {
         return this.speed;
     }
 
@@ -328,6 +329,24 @@ abstract public class Agent {
         return ("[" + this.name + "] [" + this.ID + "] ");
     }
 
+    public RobotConfig extractConfig(){
+        RobotConfig robot = new RobotConfig(
+                this.robotNumber, 
+                this.name, 
+                this.x, 
+                this.y, 
+                this.heading, 
+                this.sensRange, 
+                this.commRange, 
+                this.batteryPower, 
+                this.role.toString(), 
+                this.parent, 
+                this.child, 
+                this.ability, 
+                this.comStationLimit, 
+                this.speed);
+        return robot;
+    }
 // </editor-fold>
     
 // <editor-fold defaultstate="collapsed" desc="Abstract Functions">

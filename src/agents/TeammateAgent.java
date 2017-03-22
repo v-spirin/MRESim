@@ -80,22 +80,7 @@ public class TeammateAgent extends Agent {
     private RendezvousAgentData rendezvousAgentData;
 
     public TeammateAgent(RobotConfig robot) {
-        super(robot.getRobotNumber(),
-                robot.getName(),
-                robot.getRobotNumber(),
-                robot.getStartX(),
-                robot.getStartY(),
-                robot.getStartHeading(),
-                robot.getSensingRange(),
-                robot.getCommRange(),
-                robot.getBatteryLife(),
-                robot.getRole(),
-                robot.getParent(),
-                robot.getChild(),
-                Constants.STEP_SIZE,
-                robot.getAbility(),
-                robot.getComStationLimit()
-        );
+        super(robot);
 
         inRange = false;
         timeSinceLastComm = 0;
@@ -104,22 +89,7 @@ public class TeammateAgent extends Agent {
     }
 
     public TeammateAgent(TeammateAgent toCopy) {
-        super(toCopy.getRobotNumber(),
-                toCopy.getName(),
-                toCopy.getID(),
-                toCopy.getX(),
-                toCopy.getY(),
-                toCopy.getHeading(),
-                toCopy.getSenseRange(),
-                toCopy.getCommRange(),
-                toCopy.getBatteryPower(),
-                toCopy.getRole(),
-                toCopy.getParent(),
-                toCopy.getChild(),
-                toCopy.getSpeed(),
-                toCopy.getAbility(),
-                toCopy.getComStationLimit()
-        );
+        super(toCopy.extractConfig());
         this.childRendezvous = toCopy.childRendezvous;
         this.parentRendezvous = toCopy.parentRendezvous;
         this.timeLastCentralCommand = toCopy.timeLastCentralCommand;
