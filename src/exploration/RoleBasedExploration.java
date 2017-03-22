@@ -41,6 +41,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
+
 package exploration;
 
 import exploration.rendezvous.Rendezvous;
@@ -150,7 +151,8 @@ public class RoleBasedExploration {
         else if (agent.isExplorer()) {
             agent.setState(RealAgent.ExploreState.Explore);
             agent.getStats().setTimeSinceLastPlan(0);
-            return FrontierExploration.replan(agent, SimulatorConfig.frontiertype.ReturnWhenComplete, 0);
+            Exploration frontierEx = new FrontierExploration(agent, SimulatorConfig.frontiertype.ReturnWhenComplete);
+            return frontierEx.replan(0);
         } else {
             agent.setState(RealAgent.ExploreState.GoToChild);
             agent.setStateTimer(0);
@@ -257,7 +259,8 @@ public class RoleBasedExploration {
         // </editor-fold>   
 
         //if we reach this point we continue exploring
-        Point nextStep = FrontierExploration.takeStep(agent, timeElapsed, SimulatorConfig.frontiertype.ReturnWhenComplete);
+        Exploration frontierEx = new FrontierExploration(agent, SimulatorConfig.frontiertype.ReturnWhenComplete);
+        Point nextStep = frontierEx.takeStep(timeElapsed);
 
         //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
         if (timeElapsed > 100) { //prevent setting mission complete at the very start of the exploration
@@ -430,7 +433,8 @@ public class RoleBasedExploration {
             //<editor-fold defaultstate="collapsed" desc="Case 1: Explorer">
             if (agent.isExplorer()) {
                 // First, plan next frontier, as we need this for rendezvous point calculation
-                FrontierExploration.replan(agent, SimulatorConfig.frontiertype.ReturnWhenComplete, 0);
+                Exploration frontierEx = new FrontierExploration(agent, SimulatorConfig.frontiertype.ReturnWhenComplete);
+                frontierEx.replan(0);
             }
 
             agent.getRendezvousStrategy().processJustGotIntoParentRange();

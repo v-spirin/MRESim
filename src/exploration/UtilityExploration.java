@@ -188,7 +188,8 @@ public class UtilityExploration {
         if (agent.getStateTimer() == 0) {
             agent.getStats().setTimeSinceLastPlan(Constants.REPLAN_INTERVAL + 1);
         }
-        nextStep = FrontierExploration.takeStep(agent, timeElapsed, SimulatorConfig.frontiertype.ReturnWhenComplete);
+        Exploration frontierEx = new FrontierExploration(agent, SimulatorConfig.frontiertype.ReturnWhenComplete);
+        nextStep = frontierEx.takeStep(timeElapsed);
 
         //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
         if ((agent.getFrontiers().isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {

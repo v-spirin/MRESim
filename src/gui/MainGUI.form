@@ -78,7 +78,7 @@
     </Menu>
   </NonVisualComponents>
   <Properties>
-    <Property name="title" type="java.lang.String" value="Multi-robot Exploration Simulator (MRESim) v2.0"/>
+    <Property name="title" type="java.lang.String" value="Multi-robot Exploration Simulator (MRESim) v2.5"/>
     <Property name="name" type="java.lang.String" value="OuterFrame" noResource="true"/>
     <Property name="resizable" type="boolean" value="false"/>
   </Properties>

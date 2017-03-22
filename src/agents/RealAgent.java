@@ -53,6 +53,7 @@ import config.SimulatorConfig;
 import environment.Frontier;
 import environment.OccupancyGrid;
 import environment.TopologicalMap;
+import exploration.Exploration;
 import exploration.FrontierExploration;
 import exploration.LeaderFollower;
 import exploration.NearRVPoint;
@@ -129,22 +130,6 @@ public class RealAgent extends Agent {
 
     public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, Agent baseStation) {
         super(robot);
-        /*super(robot.getRobotNumber(),
-                robot.getName(),
-                robot.getRobotNumber(),
-                robot.getStartX(),
-                robot.getStartY(),
-                robot.getStartHeading(),
-                robot.getSensingRange(),
-                robot.getCommRange(),
-                robot.getBatteryLife(),
-                robot.getRole(),
-                robot.getParent(),
-                robot.getChild(),
-                robot.getSpeed(),
-                robot.getAbility(),
-                robot.getComStationLimit()
-        );*/
 
         stats = new AgentStats();
 
@@ -532,14 +517,16 @@ public class RealAgent extends Agent {
                     if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn)) {
                         nextStep = UtilityExploration.takeStep(this, timeElapsed, simConfig);
                     } else {
-                        nextStep = FrontierExploration.takeStep(this, timeElapsed, simConfig.getFrontierAlgorithm());
+                        Exploration exploration = new FrontierExploration(this, simConfig.getFrontierAlgorithm());
+                        nextStep = exploration.takeStep(timeElapsed);
                     }
                     break;
                 case RoleBasedExploration:
                     nextStep = RoleBasedExploration.takeStep(this, timeElapsed, this.getRendezvousStrategy());
                     break;
                 case Testing:
-                    nextStep = RelayFrontierExploration.takeStep(this, timeElapsed, simConfig.getFrontierAlgorithm(), baseStation, simConfig.useComStations(), simConfig.getComStationDropChance());
+                    Exploration exploration = new RelayFrontierExploration(this, simConfig.getFrontierAlgorithm(), simConfig.useComStations(), simConfig.getComStationDropChance(), baseStation);
+                    nextStep = exploration.takeStep(timeElapsed);
                     break;
                 default:
                     break;

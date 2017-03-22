@@ -62,11 +62,19 @@ import path.Path;
  *
  * @author julh
  */
-public class FrontierExploration {
+public class FrontierExploration implements Exploration{
+
+    RealAgent agent;
+    SimulatorConfig.frontiertype frontierExpType;
+    
+    public FrontierExploration(RealAgent agent, SimulatorConfig.frontiertype frontierExpType) {
+        this.agent = agent;
+        this.frontierExpType = frontierExpType;
+    }
 
     // Returns new X, Y of RealAgent
-    public static Point takeStep(RealAgent agent, int timeElapsed,
-            SimulatorConfig.frontiertype frontierExpType) {
+    @Override
+    public Point takeStep(int timeElapsed) {
         if (frontierExpType == SimulatorConfig.frontiertype.UtilReturn){
             throw new IllegalArgumentException("Frontier-UtilReturn is implemented in UtilExploration.java");
         }
@@ -105,11 +113,11 @@ public class FrontierExploration {
         } //</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="CHECK 3: Agent isn't stuck. Is it time to replan? Have we moved on to next time cycle?">
         else if (agent.getStats().getTimeSinceLastPlan() >= Constants.REPLAN_INTERVAL) {
-            nextStep = replan(agent, frontierExpType, timeElapsed);
+            nextStep = replan(timeElapsed);
         } //</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="CHECK 4: Agent isn't stuck, not yet time to replan, but we have no points left">
         else {
-            nextStep = replan(agent, frontierExpType, timeElapsed);
+            nextStep = replan(timeElapsed);
         }
         //</editor-fold>
 
@@ -124,7 +132,8 @@ public class FrontierExploration {
         return nextStep;
     }
 
-    public static Point replan(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, int timeElapsed) {
+    @Override
+    public Point replan(int timeElapsed) {
         Point nextStep;
 
         agent.getStats().setTimeSinceLastPlan(0);
@@ -161,7 +170,7 @@ public class FrontierExploration {
         boolean foundFrontier = false;
 
         if (!agent.getSimConfig().keepAssigningRobotsToFrontiers()) {
-            foundFrontier = (chooseFrontier(agent, true, null) == null);
+            foundFrontier = (chooseFrontier(true, null) == null);
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent.toString() + "chooseFrontier took " + (System.currentTimeMillis() - realtimeStart2) + "ms.");
             }
@@ -171,13 +180,13 @@ public class FrontierExploration {
                 if (Constants.DEBUG_OUTPUT) {
                     System.out.println(agent.toString() + " could not find frontier, trying to ignore other agents...");
                 }
-                foundFrontier = (chooseFrontier(agent, false, null) == null);
+                foundFrontier = (chooseFrontier(false, null) == null);
             }
             //</editor-fold>
         } else {
             LinkedList<Integer> assignedTeammates = new LinkedList<Integer>();
             for (int i = 0; (i < agent.getAllTeammates().size()) && !foundFrontier; i++) {
-                assignedTeammates = chooseFrontier(agent, true, assignedTeammates);
+                assignedTeammates = chooseFrontier(true, assignedTeammates);
                 if (assignedTeammates == null) {
                     foundFrontier = true;
                 }
@@ -251,8 +260,7 @@ public class FrontierExploration {
     }
 
 // <editor-fold defaultstate="collapsed" desc="Choose best frontier">
-    private static LinkedList<Frontier> frontiersOfInterest(RealAgent agent,
-            Frontier lastFrontier, PriorityQueue<Frontier> frontiers, OccupancyGrid grid) {
+    private LinkedList<Frontier> frontiersOfInterest(Frontier lastFrontier, PriorityQueue<Frontier> frontiers, OccupancyGrid grid) {
         PriorityQueue<Frontier> copy = new PriorityQueue();
         LinkedList<Frontier> list = new LinkedList();
 
@@ -508,13 +516,13 @@ public class FrontierExploration {
         return utilities.peek().utility;
     }
 
-    public static LinkedList<Integer> chooseFrontier(RealAgent agent, boolean considerOtherAgents,
+    public LinkedList<Integer> chooseFrontier(boolean considerOtherAgents,
             LinkedList<Integer> teammatesAssignedIDs) {
         if (teammatesAssignedIDs == null) {
             teammatesAssignedIDs = new LinkedList<Integer>();
         }
         // Step 1:  Create list of frontiers of interest (closest ones)
-        LinkedList<Frontier> frontiers = frontiersOfInterest(agent, agent.getLastFrontier(), agent.getFrontiers(), agent.getOccupancyGrid());
+        LinkedList<Frontier> frontiers = frontiersOfInterest(agent.getLastFrontier(), agent.getFrontiers(), agent.getOccupancyGrid());
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(agent + " frontiers of interest: " + frontiers.size());
         }
@@ -651,7 +659,7 @@ public class FrontierExploration {
                 utilities.add(best);
             }
 
-            counter++;
+        counter++;
         }
 
         return teammatesAssignedIDs;  // couldn't assign frontier - could be there are more robots than frontiers?

@@ -445,7 +445,7 @@ public class MainGUI extends javax.swing.JFrame {
         menuRobots1 = new javax.swing.JMenu();
         menuLogs1 = new javax.swing.JMenu();
 
-        setTitle("Multi-robot Exploration Simulator (MRESim) v2.0");
+        setTitle("Multi-robot Exploration Simulator (MRESim) v2.5");
         setName("OuterFrame"); // NOI18N
         setResizable(false);
 

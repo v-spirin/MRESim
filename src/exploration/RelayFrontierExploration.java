@@ -57,13 +57,32 @@ import java.util.LinkedList;
  *
  * @author Christian Clausen
  */
-public class RelayFrontierExploration {
-
-    // Returns new X, Y of RealAgent
-    public static Point takeStep(RealAgent agent, int timeElapsed,
-            SimulatorConfig.frontiertype frontierExpType, Agent baseStation, 
-            boolean useRelayStations, double dropChance) {
-        long realtimeStartAgentCycle = System.currentTimeMillis();
+public class RelayFrontierExploration extends FrontierExploration{
+    
+    
+    boolean useRelayStations;
+    double dropChance;
+    Agent baseStation;
+    
+    public RelayFrontierExploration(RealAgent agent,
+            SimulatorConfig.frontiertype frontierExpType,
+            boolean useRelayStations, double dropChance,
+            Agent baseStation) {
+        super(agent, frontierExpType);
+        this.useRelayStations = useRelayStations;
+        this.dropChance = dropChance;
+        this.baseStation = baseStation;
+    }
+    
+    /**
+     * Returns new X, Y of RealAgent.
+     * 
+     * @param timeElapsed Cycle we are in
+     * @return
+     */
+    @Override
+    public Point takeStep(int timeElapsed){
+                long realtimeStartAgentCycle = System.currentTimeMillis();
 
         Point nextStep;
         if (useRelayStations && (Math.random() < dropChance)) {
@@ -86,35 +105,30 @@ public class RelayFrontierExploration {
         }
         //</editor-fold>
 
-        //<editor-fold defaultstate="collapsed" desc="CHECK 0: Take a couple of random steps to start (just to gather some sensor data).">
         if (timeElapsed < Constants.INIT_CYCLES) {
+            // CHECK 0: Take a couple of random steps to start (just to gather some sensor data)
             nextStep = RandomWalk.takeStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="CHECK 1: if agent hasn't moved, then he may be stuck in front of a wall.  Taking a random step might help.">
-        else if (agent.getEnvError()) {
+        } else if (agent.getEnvError()) {
+            // CHECK 1: if agent hasn't moved, then he may be stuck in front of a wall.  
+            // Taking a random step might help.
             agent.resetPathToBaseStation();
             nextStep = RandomWalk.takeStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="CHECK 2: Agent isn't stuck, not yet time to replan. Continue if we have points left in the previously planned path.">
-        else if ((agent.getStats().getTimeSinceLastPlan() < Constants.REPLAN_INTERVAL)
+        } else if ((agent.getStats().getTimeSinceLastPlan() < Constants.REPLAN_INTERVAL)
                 && agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
+            // CHECK 2: Agent isn't stuck, not yet time to replan. 
+            // Continue if we have points left in the previously planned path.
             nextStep = agent.getNextPathPoint();
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println("Agent " + agent + " continuing on path.");
-            }
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="CHECK 3: Agent isn't stuck. Is it time to replan? Have we moved on to next time cycle?">
-        else if (agent.getStats().getTimeSinceLastPlan() >= Constants.REPLAN_INTERVAL) {
-            nextStep = replan(agent, frontierExpType, timeElapsed);
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="CHECK 4: Agent isn't stuck, not yet time to replan, but we have no points left">
-        else {
-            nextStep = replan(agent, frontierExpType, timeElapsed);
+        } else if (agent.getStats().getTimeSinceLastPlan() >= Constants.REPLAN_INTERVAL) {
+            // CHECK 3: Agent isn't stuck. Is it time to replan? 
+            //Have we moved on to next time cycle?
+            nextStep = replan(timeElapsed);
+        } else {
+            // CHECK 4: Agent isn't stuck, not yet time to replan, but we have no points left
+            nextStep = replan(timeElapsed);
         }
-        //</editor-fold>
 
         agent.getStats().incrementTimeSinceLastPlan();
 
@@ -128,8 +142,8 @@ public class RelayFrontierExploration {
         return nextStep;
     }
 
-    public static Point replan(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, 
-            int timeElapsed) {
+    @Override
+    public Point replan(int timeElapsed) {
         Point nextStep;
 
         agent.getStats().setTimeSinceLastPlan(0);
@@ -165,9 +179,9 @@ public class RelayFrontierExploration {
 
         long realtimeStart2 = System.currentTimeMillis();
         boolean foundFrontier = false;
-
+        FrontierExploration frontierEx = new FrontierExploration(agent, frontierExpType);
         if (!agent.getSimConfig().keepAssigningRobotsToFrontiers()) {
-            foundFrontier = (FrontierExploration.chooseFrontier(agent, true, null) == null);
+            foundFrontier = (frontierEx.chooseFrontier(true, null) == null);
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent.toString() + "chooseFrontier took " + 
                         (System.currentTimeMillis() - realtimeStart2) + "ms.");
@@ -179,13 +193,13 @@ public class RelayFrontierExploration {
                     System.out.println(agent.toString() + 
                             " could not find frontier, trying to ignore other agents...");
                 }
-                foundFrontier = (FrontierExploration.chooseFrontier(agent, false, null) == null);
+                foundFrontier = (frontierEx.chooseFrontier(false, null) == null);
             }
             //</editor-fold>
         } else {
             LinkedList<Integer> assignedTeammates = new LinkedList<Integer>();
             for (int i = 0; (i < agent.getAllTeammates().size()) && !foundFrontier; i++) {
-                assignedTeammates = FrontierExploration.chooseFrontier(agent, true, assignedTeammates);
+                assignedTeammates = frontierEx.chooseFrontier(true, assignedTeammates);
                 if (assignedTeammates == null) {
                     foundFrontier = true;
                 }

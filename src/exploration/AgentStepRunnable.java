@@ -41,6 +41,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
+
 package exploration;
 
 import agents.Agent;
@@ -130,16 +131,11 @@ public class AgentStepRunnable implements Runnable {
                 }
                 // comment below out to process sensor data once at the end of each time step, to speed the simulation up
                 // if agents cover too much distance in each timestep, we may need to process it more frequently
-                //System.out.println(agent.toString() + "2 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
                 sensorData = simFramework.findSensorData(agent, nextStep);
-                //System.out.println(agent.toString() + "3 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
                 agent.writeStep(nextStep, sensorData, true);
-                //System.out.println(agent.toString() + "4 took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
             } else {
-                //if (Constants.DEBUG_OUTPUT) {
                 System.err.println(agent + " !!! setting envError because direct line not possible between ("
                         + (int) agent.getLocation().getX() + "," + (int) agent.getLocation().getY() + ") and (" + nextStep.x + "," + nextStep.y + ")");
-                //}
                 //Remove safe space status for the points along the line, so that obstacles can be sensed there
                 if (nextStep.distance(agent.getLocation()) == 1) {
                     //We are bordering next step, and because we cannot move there it must be an obstacle
