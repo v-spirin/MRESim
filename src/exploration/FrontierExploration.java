@@ -194,7 +194,7 @@ public class FrontierExploration implements Exploration{
         }
 
         if ((agent.getRole() == RobotConfig.roletype.Relay) && (agent.getState() == Agent.ExploreState.GoToChild)) {
-            return RoleBasedExploration.takeStep_GoToChild(agent);
+            return takeStep_GoToChild();
         }
 
         //<editor-fold defaultstate="collapsed" desc="If no frontier could be assigned, then go back to base.">
@@ -476,6 +476,98 @@ public class FrontierExploration implements Exploration{
         });
 
         return utilities;
+    }
+    
+    public Point takeStep_GoToChild() {
+        RendezvousAgentData rvd = agent.getRendezvousAgentData();
+        //<editor-fold defaultstate="collapsed" desc="Check if we are in range of child. If yes, GetInfoFromChild">
+        if ((agent.getChildTeammate().isInRange()) /*&& !agent.getParentTeammate().isInRange()*/) {
+            agent.setState(RealAgent.ExploreState.GetInfoFromChild);
+            agent.setStateTimer(0);
+
+            return takeStep_GetInfoFromChild();
+        }
+        //</editor-fold>
+
+        //<editor-fold defaultstate="collapsed" desc="Assume that a path back to child has been calculated in previous state, recalculate every PATH_RECALC_CHILD_INTERVAL steps">
+        Path existingPath = agent.getPath();
+        if (((agent.getStateTimer() % Constants.PATH_RECALC_CHILD_INTERVAL) == (Constants.PATH_RECALC_CHILD_INTERVAL - 1))) {
+            if (existingPath != null) {
+                agent.addDirtyCells(existingPath.getAllPathPixels());
+            }
+
+            Path path = agent.getRendezvousStrategy().processGoToChildReplan();
+
+            if (path == null) {
+                path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
+            }
+            //<editor-fold defaultstate="collapsed" desc="Could not find full path! Trying pure A*">
+            if (!path.found) {
+                System.out.println(agent.toString() + "!!!ERROR!  Could not find full path! Trying pure A*");
+                path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), true);
+            }
+            //</editor-fold>
+            //<editor-fold defaultstate="collapsed" desc="Still couldn't find path, trying existing path or if that fails, taking random step">
+            if (!path.found) {
+                System.out.println(agent.toString() + "!!!ERROR!  Could not find full path!");
+                if ((existingPath != null) && (existingPath.getPoints().size() > 2)) {
+                    agent.setPath(existingPath);
+                    agent.setCurrentGoal(existingPath.getGoalPoint());
+                } else {
+                    agent.setCurrentGoal(agent.getLocation());
+                    return RandomWalk.takeStep(agent);
+                }
+                //</editor-fold>
+            } else {
+                agent.setPath(path);
+                agent.setCurrentGoal(rvd.getChildRendezvous().getParentLocation());
+                // Must remove first point in path as this is robot's location.
+                agent.getPath().getPoints().remove(0);
+            }
+        }
+        //</editor-fold>
+
+        if (agent.getPath().found && !agent.getPath().getPoints().isEmpty()) {
+            return ((Point) agent.getPath().getPoints().remove(0));
+        }
+
+        // If we reach this point, we are not in range of the child and the
+        // path is empty, so we must have reached rendezvous point.
+        // Just check to make sure we are though and if not take random step.
+        if ((agent.getLocation().distance(rvd.getChildRendezvous().getParentLocation()) > 2 * Constants.STEP_SIZE)
+                && (agent.getLocation().distance(rvd.getChildRendezvous().getChildLocation()) > 2 * Constants.STEP_SIZE)) {
+            System.out.println(agent.toString()
+                    + "!!!ERROR! We should have reached child RV, but we are too far from it! Taking random step");
+            return RandomWalk.takeStep(agent);
+        }
+
+        // If we reach this point, we're at the rendezvous point and waiting.
+        agent.setState(RealAgent.ExploreState.WaitForChild);
+        agent.setStateTimer(0);
+
+        return agent.getLocation();
+    }
+    
+    public Point takeStep_GetInfoFromChild() {
+        //we've exchanged info, now return to parent (but wait for one timestep to learn new RV point)
+
+        if (agent.getStateTimer() == 0) {
+            agent.addDirtyCells(agent.getPath().getAllPathPixels());
+            Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+            /*if (agent.getChildTeammate().getState() == Agent.ExploreState.GiveParentInfo) {
+                agent.setTimeSinceGetChildInfo(0);
+            }*/
+            agent.setPath(path);
+            agent.setStateTimer(1);
+            agent.setCurrentGoal(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+            return agent.getLocation();
+        } else {
+            if (agent.getChildTeammate().getState() == Agent.ExploreState.GiveParentInfo) {
+                agent.setTimeSinceGetChildInfo(0);
+            }
+            agent.setState(RealAgent.ExploreState.ReturnToParent);
+            return agent.getLocation();
+        }
     }
 
     private static class Utility implements Comparable<Utility> {

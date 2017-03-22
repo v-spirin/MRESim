@@ -522,8 +522,11 @@ public class RealAgent extends Agent {
                     }
                     break;
                 case RoleBasedExploration:
-                    nextStep = RoleBasedExploration.takeStep(this, timeElapsed, this.getRendezvousStrategy());
+                {
+                    Exploration exploration = new RoleBasedExploration(timeElapsed, this, this.getRendezvousStrategy());
+                    nextStep = exploration.takeStep(timeElapsed);
                     break;
+                }
                 case Testing:
                     Exploration exploration = new RelayFrontierExploration(this, simConfig.getFrontierAlgorithm(), simConfig.useComStations(), simConfig.getComStationDropChance(), baseStation);
                     nextStep = exploration.takeStep(timeElapsed);

@@ -52,7 +52,6 @@ import config.Constants;
 import environment.Frontier;
 import environment.OccupancyGrid;
 import exploration.NearRVPoint;
-import static exploration.RoleBasedExploration.timeElapsed; //TODO REMOVE THIS!!!
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
@@ -80,13 +79,13 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     @Override
-    public void calculateRendezvousExplorerWithRelay() {
+    public void calculateRendezvousExplorerWithRelay(int timeElapsed) {
         //calculateRendezvousRandomSampling();
         //
         if (settings.attemptExplorationByRelay) {
-            calculateRendezvousFrontier();
+            calculateRendezvousFrontier(timeElapsed);
         } else {
-            calculateRendezvousAAMAS();
+            calculateRendezvousAAMAS(timeElapsed);
         }
     }
 
@@ -287,13 +286,13 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     @Override
-    public void processJustGotIntoParentRange() {
+    public void processJustGotIntoParentRange(int timeElapsed) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="Case 1: Explorer">
         if (agent.isExplorer()) {
             // Second, calculate rendezvous, but stick around for one time step to communicate
             //if(settings.useImprovedRendezvous) {
-            calculateRendezvousExplorerWithRelay();
+            calculateRendezvousExplorerWithRelay(timeElapsed);
             /*if (rvThroughWalls) {
                     if (rvd.getTimeSinceLastRVCalc() == 0)
                         rvd.setTimeSinceLastRVCalc(100);
@@ -325,8 +324,8 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     @Override
-    public void processAfterGiveParentInfoExplorer() {
-        calculateRVTimings();
+    public void processAfterGiveParentInfoExplorer(int timeElapsed) {
+        calculateRVTimings(timeElapsed);
     }
 
     @Override
@@ -393,12 +392,12 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         }
     }
 
-    private void calculateRVTimings() {
+    private void calculateRVTimings(int timeElapsed) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         Point parentPoint = rvd.getParentRendezvous().getParentLocation();
         Point childPoint = rvd.getParentRendezvous().getChildLocation();
         Point basePoint = rvd.getParentRendezvous().parentsRVLocation.getChildLocation();
-        int timeToMeeting = calculateRVTimings(parentPoint, childPoint, basePoint);
+        int timeToMeeting = calculateRVTimings(parentPoint, childPoint, basePoint, timeElapsed);
         if (timeToMeeting > 0) {
             rvd.getParentRendezvous().setTimeMeeting(timeToMeeting);
             //rvd.getParentRendezvous().setMinTimeMeeting(timeToMeeting);
@@ -408,7 +407,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     //returns meetingTime
-    private int calculateRVTimings(Point parentPoint, Point childPoint, Point basePoint) {
+    private int calculateRVTimings(Point parentPoint, Point childPoint, Point basePoint, int timeElapsed) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         TeammateAgent relay = agent.getParentTeammate();
         boolean useSingleMeetingTime = settings.useSingleMeetingTime; //assume that we are using single meeting point to time RV.
@@ -634,7 +633,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     //Explorer selects point as in DeHoog's AAMAS2010 paper, relay selects point such that it can explore nearby frontiers
-    private void calculateRendezvousFrontier() {
+    private void calculateRendezvousFrontier(int timeElapsed) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         // Only calculate rv every several time steps at most
         if (rvd.getTimeSinceLastRVCalc() < Constants.RV_REPLAN_INTERVAL) {
@@ -662,7 +661,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         int pathsCalculated = 0;
 
         int meetingTime
-                = calculateRVTimings(explorerPoint, explorerPoint, agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
+                = calculateRVTimings(explorerPoint, explorerPoint, agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), timeElapsed);
 
         PriorityQueue<Frontier> frontiers = agent.getFrontiers();
 
@@ -786,7 +785,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             rvd.setParentRendezvous(meetingLocation);
             Rendezvous backupRV = new Rendezvous(explorerPoint);
             rvd.setParentBackupRendezvous(backupRV);
-            calculateRVTimings();
+            calculateRVTimings(timeElapsed);
             return;
         }
         //End method. Now just set the found points as RV.
@@ -807,7 +806,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         Rendezvous backupRV = new Rendezvous(childPoint);
         rvd.setParentBackupRendezvous(backupRV);
 
-        calculateRVTimings();
+        calculateRVTimings(timeElapsed);
 
         displayData.setGeneratedPoints(generatedPoints);
 
@@ -817,7 +816,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     //Explorer selects point as in DeHoog's AAMAS2010 paper, relay selects point nearest to base in range of explorer's point
-    private void calculateRendezvousAAMAS() {
+    private void calculateRendezvousAAMAS(int timeElapsed) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         // Only calculate rv every several time steps at most
         if (rvd.getTimeSinceLastRVCalc() < Constants.RV_REPLAN_INTERVAL) {
@@ -872,7 +871,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             rvd.setParentRendezvous(meetingLocation);
             Rendezvous backupRV = new Rendezvous(explorerPoint);
             rvd.setParentBackupRendezvous(backupRV);
-            calculateRVTimings();
+            calculateRVTimings(timeElapsed);
             return;
         }
         //End method. Now just set the found points as RV.
@@ -896,7 +895,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         Rendezvous backupRV = new Rendezvous(childPoint);
         rvd.setParentBackupRendezvous(backupRV);
 
-        calculateRVTimings();
+        calculateRVTimings(timeElapsed);
 
         displayData.setGeneratedPoints(generatedPoints);
 
@@ -905,7 +904,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
                 + rvd.getParentRendezvous().getChildLocation().y + ". ");
     }
 
-    private void calculateRendezvousRandomSampling() {
+    private void calculateRendezvousRandomSampling(int timeElapsed) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         // Only calculate rv every several time steps at most
         if (rvd.getTimeSinceLastRVCalc() < Constants.RV_REPLAN_INTERVAL) {
@@ -976,7 +975,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
                 Point baseLocation = agent.getTeammate(agent.getParentTeammate().getParent()).getLocation();
                 meetingLocation.parentsRVLocation = new Rendezvous(baseLocation);
                 rvd.setParentRendezvous(meetingLocation);
-                calculateRVTimings();
+                calculateRVTimings(timeElapsed);
                 return;
             }
 
@@ -1016,7 +1015,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         Rendezvous backupRV = new Rendezvous(childPoint);
         rvd.setParentBackupRendezvous(backupRV);
 
-        calculateRVTimings();
+        calculateRVTimings(timeElapsed);
 
         displayData.setGeneratedPoints(generatedPoints);
         displayData.setPointsNearFrontier(pointsNearFrontier);

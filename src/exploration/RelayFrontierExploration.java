@@ -208,7 +208,7 @@ public class RelayFrontierExploration extends FrontierExploration{
 
         if ((agent.getRole() == RobotConfig.roletype.Relay) && 
                 (agent.getState() == Agent.ExploreState.GoToChild)) {
-            return RoleBasedExploration.takeStep_GoToChild(agent);
+            return takeStep_GoToChild();
         }
 
         //<editor-fold defaultstate="collapsed" desc="If no frontier could be assigned, then go back to base.">

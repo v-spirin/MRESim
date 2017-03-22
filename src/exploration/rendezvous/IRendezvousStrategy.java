@@ -64,7 +64,7 @@ public interface IRendezvousStrategy {
      * (parentRenedzvous.parentsRVLocation) i.e., where our relay will
      * communicate with base station
      */
-    void calculateRendezvousExplorerWithRelay();
+    void calculateRendezvousExplorerWithRelay(int timeElapsed);
 
     //This method not currently implemented anywhere, as tree depth greater than 2 seems to be unnecessary
     void calculateRendezvousRelayWithRelay();
@@ -96,9 +96,9 @@ public interface IRendezvousStrategy {
 
     //This method is called when we just got into parent range and are in GiveParentInfo state.
     //Usually we would calculate next RV location here and communicate it to parent in the following timestep.
-    void processJustGotIntoParentRange();
+    void processJustGotIntoParentRange(int timeElapsed);
 
-    void processAfterGiveParentInfoExplorer();
+    void processAfterGiveParentInfoExplorer(int timeElapsed);
 
     void processAfterGiveParentInfoRelay();
 

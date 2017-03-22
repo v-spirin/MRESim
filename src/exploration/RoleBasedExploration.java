@@ -60,18 +60,23 @@ import path.Path;
  *
  * @author julh, vspirin
  */
-public class RoleBasedExploration {
+public class RoleBasedExploration implements Exploration{
 
-// <editor-fold defaultstate="collapsed" desc="Take Step">
-    public static boolean rvCommRange;
-    public static boolean rvThroughWalls;
-    public static int timeElapsed;
-    public static int oldTimeElapsed;
+    int timeElapsed;
+    RealAgent agent;
+    IRendezvousStrategy rendezvousStrategy;
+
+    public RoleBasedExploration(int timeElapsed, RealAgent agent, IRendezvousStrategy rendezvousStrategy) {
+        this.timeElapsed = timeElapsed;
+        this.agent = agent;
+        this.rendezvousStrategy = rendezvousStrategy;
+    }
 
     // Returns new X, Y of ExploreAgent
-    public static Point takeStep(RealAgent agent, int curTime, IRendezvousStrategy rendezvousStrategy) {
+    @Override
+    public Point takeStep(int timeElapsed) {
+        this.timeElapsed = timeElapsed;
         long realtimeStart = System.currentTimeMillis();
-        timeElapsed = curTime;
 
         Point nextStep = null;
 
@@ -83,37 +88,38 @@ public class RoleBasedExploration {
                 && (agent.getState() != Agent.ExploreState.GiveParentInfo)
                 && (agent.getState() != Agent.ExploreState.WaitForChild)
                 && (agent.getState() != Agent.ExploreState.WaitForParent)) {
-            System.out.println(agent.toString() + "!!!RoleBasedExploration: Env reports error, taking random step.");
+            System.out.println(agent.toString() + 
+                    "!!!RoleBasedExploration: Env reports error, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
             agent.setEnvError(false);
             return nextStep;
         }
 
-        // <editor-fold defaultstate="collapsed" desc="Run correct takeStep function depending on agent state, set nextStep to output">
+        //Run correct takeStep function depending on agent state, set nextStep to output
         switch (agent.getState()) {
             case Initial:
-                nextStep = takeStep_Initial(agent);
+                nextStep = takeStep_Initial();
                 break;
             case Explore:
-                nextStep = takeStep_Explore(agent);
+                nextStep = takeStep_Explore();
                 break;
             case ReturnToParent:
-                nextStep = takeStep_ReturnToParent(agent);
+                nextStep = takeStep_ReturnToParent();
                 break;
             case WaitForParent:
-                nextStep = takeStep_WaitForParent(agent);
+                nextStep = takeStep_WaitForParent();
                 break;
             case GiveParentInfo:
-                nextStep = takeStep_GiveParentInfo(agent);
+                nextStep = takeStep_GiveParentInfo();
                 break;
             case GoToChild:
-                nextStep = takeStep_GoToChild(agent);
+                nextStep = takeStep_GoToChild();
                 break;
             case WaitForChild:
-                nextStep = takeStep_WaitForChild(agent);
+                nextStep = takeStep_WaitForChild();
                 break;
             case GetInfoFromChild:
-                nextStep = takeStep_GetInfoFromChild(agent);
+                nextStep = takeStep_GetInfoFromChild();
                 break;
             default:
                 break;
@@ -124,18 +130,15 @@ public class RoleBasedExploration {
             System.out.println(agent.toString() + "!!!RoleBasedExploration: nextStep is null, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
         }
-        // </editor-fold>
 
-        // <editor-fold defaultstate="collapsed" desc="Increment state timers">
         agent.setStateTimer(agent.getStateTimer() + 1);
         agent.getRendezvousAgentData().setTimeSinceLastRoleSwitch(agent.getRendezvousAgentData().getTimeSinceLastRoleSwitch() + 1);
         agent.getRendezvousAgentData().setTimeSinceLastRVCalc(agent.getRendezvousAgentData().getTimeSinceLastRVCalc() + 1);
-        //</editor-fold>
         System.out.println(agent.toString() + " takeStep " + agent.getState() + ", took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
         return nextStep;
     }
 
-    public static Point takeStep_Initial(RealAgent agent) {
+    public Point takeStep_Initial() {
         // Small number of random steps to get initial range data
         // <editor-fold defaultstate="collapsed" desc="First 3 steps? Explorers take 2 random steps while others wait, then everyone takes a random step">
         if (agent.getStateTimer() < 2) {
@@ -161,7 +164,7 @@ public class RoleBasedExploration {
         // </editor-fold>
     }
 
-    public static Point takeStep_Explore(RealAgent agent) {
+    public Point takeStep_Explore() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         RendezvousAgentData parentRvd = agent.getParentTeammate().getRendezvousAgentData();
         boolean haveNewRVDetailsForParent = !rvd.getParentRendezvous().equals(parentRvd.getChildRendezvous());
@@ -175,7 +178,7 @@ public class RoleBasedExploration {
                         + ", switching state to GiveParentInfo");
                 agent.setState(RealAgent.ExploreState.GiveParentInfo);
                 agent.setStateTimer(0);
-                return (takeStep_GiveParentInfo(agent));
+                return (takeStep_GiveParentInfo());
             }
         }
         //else
@@ -191,13 +194,13 @@ public class RoleBasedExploration {
                 agent.setState(RealAgent.ExploreState.GetInfoFromChild);
                 agent.setStateTimer(0);
 
-                return takeStep_GetInfoFromChild(agent);
+                return takeStep_GetInfoFromChild();
             }
             if ((agent.getStateTimer() % Constants.CHECK_INTERVAL_TIME_TO_RV) == (Constants.CHECK_INTERVAL_TIME_TO_RV - 1)) {
                 Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
                 if ((path.getLength() / Constants.DEFAULT_SPEED) + agent.getTimeElapsed() >= rvd.getChildRendezvous().getTimeMeeting()) {
                     agent.setState(Agent.ExploreState.GoToChild);
-                    return takeStep_GoToChild(agent);
+                    return takeStep_GoToChild();
                 }
             }
         }
@@ -208,11 +211,11 @@ public class RoleBasedExploration {
 
             Path pathToParentRendezvous; //output parameter
             AtomicReference<Path> outPathRef = new AtomicReference<Path>();
-            if (isDueToReturnToRV(agent, outPathRef)) {
+            if (isDueToReturnToRV(outPathRef)) {
                 //run below method here as it may be costly and we only want to run it when we are about to return to RV anyway
                 //so we want to check if perhaps there is a better RV we could go to that is closer, so we can explore some more
                 agent.getRendezvousStrategy().processExplorerCheckDueReturnToRV();
-                if (isDueToReturnToRV(agent, outPathRef)) {
+                if (isDueToReturnToRV(outPathRef)) {
                     pathToParentRendezvous = outPathRef.get();
                     agent.setState(RealAgent.ExploreState.ReturnToParent);
 
@@ -299,13 +302,13 @@ public class RoleBasedExploration {
         return nextStep;
     }
 
-    public static Point takeStep_ReturnToParent(RealAgent agent) {
+    public Point takeStep_ReturnToParent() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="If parent is in range, GiveParentInfo">
         if (agent.getParentTeammate().isInRange()) {
             agent.setState(RealAgent.ExploreState.GiveParentInfo);
             agent.setStateTimer(0);
-            return takeStep_GiveParentInfo(agent);
+            return takeStep_GiveParentInfo();
         }
         //</editor-fold>
 
@@ -371,17 +374,17 @@ public class RoleBasedExploration {
         return new Point(agent.getX(), agent.getY());
     }
 
-    public static Point takeStep_WaitForParent(RealAgent agent) {
+    public Point takeStep_WaitForParent() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="If parent is in range, GiveParentInfo">
         if (agent.getParentTeammate().isInRange()) {
             agent.setState(RealAgent.ExploreState.GiveParentInfo);
             agent.setStateTimer(0);
-            return takeStep_GiveParentInfo(agent);
+            return takeStep_GiveParentInfo();
         }
         //</editor-fold>
 
-        boolean canStillWait = (RoleBasedExploration.timeElapsed
+        boolean canStillWait = (timeElapsed
                 <= (rvd.getParentRendezvous().getTimeMeeting() + rvd.getParentRendezvous().getTimeWait()));
 
         if (canStillWait) {
@@ -399,11 +402,11 @@ public class RoleBasedExploration {
             System.out.println(agent + " has no backup RV, exploring.");
             agent.setState(RealAgent.ExploreState.Explore);
             agent.setStateTimer(0);
-            return takeStep_Explore(agent);
+            return takeStep_Explore();
         }
     }
 
-    public static Point takeStep_GiveParentInfo(RealAgent agent) {
+    public Point takeStep_GiveParentInfo() {
         // We've exchanged info, what's next
         //<editor-fold defaultstate="collapsed" desc="If mission complete, make ComStation parent, return to it">
         if (agent.isMissionComplete()) {
@@ -437,7 +440,7 @@ public class RoleBasedExploration {
                 frontierEx.replan(0);
             }
 
-            agent.getRendezvousStrategy().processJustGotIntoParentRange();
+            agent.getRendezvousStrategy().processJustGotIntoParentRange(timeElapsed);
 
             agent.setStateTimer(1);
             return agent.getLocation();
@@ -446,12 +449,12 @@ public class RoleBasedExploration {
         else //<editor-fold defaultstate="collapsed" desc="Explorer - process & go into Explore state">
         {
             if (agent.isExplorer()) {
-                agent.getRendezvousStrategy().processAfterGiveParentInfoExplorer();
+                agent.getRendezvousStrategy().processAfterGiveParentInfoExplorer(timeElapsed);
 
                 agent.setState(RealAgent.ExploreState.Explore);
                 agent.setStateTimer(0);
 
-                return takeStep_Explore(agent);
+                return takeStep_Explore();
             //</editor-fold>
             } else {
             //<editor-fold defaultstate="collapsed" desc="Relay - process & go to child">
@@ -468,7 +471,7 @@ public class RoleBasedExploration {
                 agent.getRendezvousStrategy().processAfterGiveParentInfoRelay();
                 if (agent.getState() == RealAgent.ExploreState.Explore) {
                     agent.setStateTimer(0);
-                    return takeStep_Explore(agent);
+                    return takeStep_Explore();
                 }
                 agent.setState(RealAgent.ExploreState.GoToChild);
                 agent.setStateTimer(0);
@@ -509,14 +512,14 @@ public class RoleBasedExploration {
         }        //</editor-fold>
     }
 
-    public static Point takeStep_GoToChild(RealAgent agent) {
+    public Point takeStep_GoToChild() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="Check if we are in range of child. If yes, GetInfoFromChild">
         if ((agent.getChildTeammate().isInRange()) /*&& !agent.getParentTeammate().isInRange()*/) {
             agent.setState(RealAgent.ExploreState.GetInfoFromChild);
             agent.setStateTimer(0);
 
-            return takeStep_GetInfoFromChild(agent);
+            return takeStep_GetInfoFromChild();
         }
         //</editor-fold>
 
@@ -579,12 +582,12 @@ public class RoleBasedExploration {
         return new Point(agent.getX(), agent.getY());
     }
 
-    public static Point takeStep_WaitForChild(RealAgent agent) {
+    public Point takeStep_WaitForChild() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         if (agent.getChildTeammate().isInRange()) {
             agent.setState(RealAgent.ExploreState.GetInfoFromChild);
             agent.setStateTimer(0);
-            return takeStep_GetInfoFromChild(agent);
+            return takeStep_GetInfoFromChild();
         }
 
         boolean canStillWait = (timeElapsed
@@ -599,14 +602,14 @@ public class RoleBasedExploration {
                 rvd.setChildBackupRendezvous(null);
                 agent.setState(RealAgent.ExploreState.GoToChild);
                 agent.setStateTimer(0);
-                return takeStep_GoToChild(agent);
+                return takeStep_GoToChild();
             } else {
                 return agent.getRendezvousStrategy().processWaitForChildTimeoutNoBackup();
             }
         }
     }
 
-    public static Point takeStep_GetInfoFromChild(RealAgent agent) {
+    public Point takeStep_GetInfoFromChild() {
         //we've exchanged info, now return to parent (but wait for one timestep to learn new RV point)
 
         if (agent.getStateTimer() == 0) {
@@ -624,12 +627,12 @@ public class RoleBasedExploration {
                 agent.setTimeSinceGetChildInfo(0);
             }
             agent.setState(RealAgent.ExploreState.ReturnToParent);
-            return takeStep_ReturnToParent(agent);
+            return takeStep_ReturnToParent();
         }
     }
 
 // </editor-fold>  
-    private static boolean isDueToReturnToRV(RealAgent agent, AtomicReference<Path> outPathToParentRendezvous) {
+    private boolean isDueToReturnToRV(AtomicReference<Path> outPathToParentRendezvous) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         System.out.println(agent.toString() + "Checking if it's time to rendezvous ... ");
         Path pathToParentRendezvous = agent.calculatePath(agent.getLocation(), rvd.getParentRendezvous().getChildLocation());
@@ -824,4 +827,9 @@ public class RoleBasedExploration {
                 agent.getChildRendezvous().getParentLocation().x, agent.getChildRendezvous().getParentLocation().y);
     }*/
 // </editor-fold>     
+
+    @Override
+    public Point replan(int timeElapsed) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

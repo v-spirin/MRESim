@@ -52,7 +52,6 @@ import static environment.Skeleton.gridToList;
 import static environment.Skeleton.neighborTraversal;
 import static environment.Skeleton.numNonzeroNeighbors;
 import exploration.NearRVPoint;
-import static exploration.RoleBasedExploration.timeElapsed;
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.List;
@@ -212,7 +211,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     //Calculate time to next RV with parent, taking parent communication range into account (using simple circle model)
-    private void calculateParentTimeToRV() {
+    private void calculateParentTimeToRV(int timeElapsed) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         Point baseLoc = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
         Point relayLoc = agent.getParentTeammate().getLocation();
@@ -336,7 +335,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     @Override
-    public void calculateRendezvousExplorerWithRelay() {
+    public void calculateRendezvousExplorerWithRelay(int timeElapsed) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         // Only calculate rv every several time steps at most
         if (rvd.getTimeSinceLastRVCalc() < Constants.RV_REPLAN_INTERVAL) {
@@ -360,7 +359,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
                 + rvd.getParentRendezvous().getChildLocation().x + ","
                 + rvd.getParentRendezvous().getChildLocation().y + ". ");
 
-        calculateParentTimeToRV();
+        calculateParentTimeToRV(timeElapsed);
         calculateParentTimeToBackupRV();
 
         if (Constants.DEBUG_OUTPUT) {
@@ -455,13 +454,13 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     @Override
-    public void processJustGotIntoParentRange() {
+    public void processJustGotIntoParentRange(int timeElapsed) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="Case 1: Explorer">
         if (agent.isExplorer()) {
             // Second, calculate rendezvous, but stick around for one time step to communicate
             if (settings.useImprovedRendezvous) {
-                calculateRendezvousExplorerWithRelay();
+                calculateRendezvousExplorerWithRelay(timeElapsed);
                 /*if (rvThroughWalls) {
                     if (rvd.getTimeSinceLastRVCalc() == 0)
                         rvd.setTimeSinceLastRVCalc(100);
@@ -498,8 +497,8 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     @Override
-    public void processAfterGiveParentInfoExplorer() {
-        calculateParentTimeToRV();
+    public void processAfterGiveParentInfoExplorer(int timeElapsed) {
+        calculateParentTimeToRV(timeElapsed);
         calculateParentTimeToBackupRV();
     }
 
