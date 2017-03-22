@@ -58,19 +58,25 @@ import java.util.List;
  *
  * @author Victor
  */
-public class UtilityExploration {
+public class UtilityExploration implements Exploration {
 
-    private static final int TIME_BETWEEN_PLANS = 1;
-    private static final int TIME_BETWEEN_RECOMPUTE_PATHS = 10;
-    public static int timeElapsed;
-    public static int oldTimeElapsed;
+    private final int TIME_BETWEEN_PLANS = 1;
+    private final int TIME_BETWEEN_RECOMPUTE_PATHS = 10;
+    RealAgent agent;
+    SimulatorConfig simConfig;
+
+    public UtilityExploration(RealAgent agent, SimulatorConfig simConfig) {
+        this.agent = agent;
+        this.simConfig = simConfig;
+    }
+    
 
 // <editor-fold defaultstate="collapsed" desc="Take Step">
     // Returns new X, Y of ExploreAgent
-    public static Point takeStep(RealAgent agent, int te, SimulatorConfig simConfig) {
+    @Override
+    public Point takeStep(int timeElapsed) {
         long realtimeStart = System.currentTimeMillis();
         //<editor-fold defaultstate="collapsed" desc="Assign local variables">
-        timeElapsed = te;
 
         Point nextStep = null;
         //</editor-fold>
@@ -92,13 +98,13 @@ public class UtilityExploration {
         // Explore is normal exploration, ReturnToParent is relaying information to base
         switch (agent.getState()) {
             case Initial:
-                nextStep = takeStep_Initial(agent, simConfig);
+                nextStep = takeStep_Initial(timeElapsed);
                 break;
             case Explore:
-                nextStep = takeStep_Explore(agent, simConfig);
+                nextStep = takeStep_Explore(timeElapsed);
                 break;
             case ReturnToParent:
-                nextStep = takeStep_ReturnToParent(agent, simConfig);
+                nextStep = takeStep_ReturnToParent(timeElapsed);
                 break;
             default:
                 break;
@@ -120,7 +126,7 @@ public class UtilityExploration {
         return nextStep;
     }
 
-    private static Point takeStep_Initial(RealAgent agent, SimulatorConfig simConfig) {
+    private Point takeStep_Initial(int timeElapsed) {
         System.out.println(agent + " takeStep_Initial timeInState: " + agent.getStateTimer());
         // Small number of random steps to get initial range data
         // <editor-fold defaultstate="collapsed" desc="First 3 steps? Take random step">
@@ -132,12 +138,12 @@ public class UtilityExploration {
         else {
             agent.setState(RealAgent.ExploreState.Explore);
             agent.getStats().setTimeSinceLastPlan(0);
-            return takeStep_Explore(agent, simConfig);
+            return takeStep_Explore(timeElapsed);
         }
         // </editor-fold>
     }
 
-    private static Point takeStep_Explore(RealAgent agent, SimulatorConfig simConfig) {
+    private Point takeStep_Explore(int timeElapsed) {
         System.out.println(agent + " takeStep_Explore timeInState: " + agent.getStateTimer());
         Point nextStep;
         // <editor-fold defaultstate="collapsed" desc="Every CHECK_INTERVAL_TIME_TO_RV steps, check if we're due to change state to return">
@@ -216,13 +222,13 @@ public class UtilityExploration {
         return nextStep;
     }
 
-    private static Point takeStep_ReturnToParent(RealAgent agent, SimulatorConfig simConfig) {
+    private Point takeStep_ReturnToParent(int timeElapsed) {
         System.out.println(agent + " takeStep_ReturnToParent timeInState: " + agent.getStateTimer());
         //<editor-fold defaultstate="collapsed" desc="If base is in range, go back to exploring">
         if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
             agent.setState(RealAgent.ExploreState.Explore);
             agent.setStateTimer(0);
-            return takeStep_Explore(agent, simConfig);
+            return takeStep_Explore(timeElapsed);
         }
         //</editor-fold>
 
@@ -246,7 +252,7 @@ public class UtilityExploration {
             agent.setStateTimer(0);
             System.out.println(agent + " switching to takeStep_Explore. infoRatio = "
                     + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO);
-            return takeStep_Explore(agent, simConfig);
+            return takeStep_Explore(timeElapsed);
         } else {
             System.out.println(agent + " remained in ReturnToParent. infoRatio = "
                     + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO);
@@ -327,16 +333,21 @@ public class UtilityExploration {
                 //still not in range of base. We should really reevaluate our comms model here, but for now, just revert to
                 // LOS comms
                 simConfig.setBaseRange(false);
-                return takeStep_ReturnToParent(agent, simConfig);
+                return takeStep_ReturnToParent(timeElapsed);
             }
         } else {
 
             // If we reach this point, we're at the base station; go back to exploring.
             agent.setState(RealAgent.ExploreState.Explore);
             agent.setStateTimer(0);
-            return takeStep_Explore(agent, simConfig);
+            return takeStep_Explore(timeElapsed);
         }
     }
     // </editor-fold>     
+
+    @Override
+    public Point replan(int timeElapsed) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 
 }

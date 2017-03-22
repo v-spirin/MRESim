@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -41,6 +41,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
+
 package exploration;
 
 import agents.Agent.ExploreState;
@@ -55,9 +56,18 @@ import java.io.IOException;
  *
  * @author julh
  */
-public class RunFromLog {
+public class RunFromLog implements Exploration {
 
-    public static Point takeStep(int time, String fileName, int agentNo) {
+    String fileName;
+    int agentNo;
+
+    public RunFromLog(String fileName, int agentNo) {
+        this.fileName = fileName;
+        this.agentNo = agentNo;
+    }
+
+    @Override
+    public Point takeStep(int time) {
         Point nextStep = new Point(0, 0);
 
         File file = new File(fileName);
@@ -83,7 +93,7 @@ public class RunFromLog {
         return nextStep;
     }
 
-    public static Point getGoal(int time, String fileName, int agentNo) {
+    public Point getGoal(int time) {
         Point nextStep = new Point(0, 0);
 
         File file = new File(fileName);
@@ -109,7 +119,7 @@ public class RunFromLog {
         return nextStep;
     }
 
-    public static ExploreState getState(int time, String fileName, int agentNo) {
+    public ExploreState getState(int time) {
         Point nextStep = new Point(0, 0);
 
         File file = new File(fileName);
@@ -161,7 +171,7 @@ public class RunFromLog {
         return ExploreState.Initial;
     }
 
-    public static RobotConfig.roletype getRole(int time, String fileName, int agentNo) {
+    public RobotConfig.roletype getRole(int time) {
         Point nextStep = new Point(0, 0);
 
         File file = new File(fileName);
@@ -193,5 +203,11 @@ public class RunFromLog {
             }
         }
         return RobotConfig.roletype.BaseStation;
+    }
+
+    @Override
+    public Point replan(int timeElapsed) {
+        //Not useful in RunFromLog!
+        return null;
     }
 }

@@ -54,11 +54,17 @@ import path.Path;
  *
  * @author julh
  */
-public class RandomWalk {
+public class RandomWalk implements Exploration{
 
     public static Random generator = new Random(Constants.RANDOM_SEED);
+    RealAgent agent;
 
-    public static Point takeStep(RealAgent agent) {
+    public RandomWalk(RealAgent agent) {
+        this.agent = agent;
+    }
+    
+    @Override
+    public Point takeStep(int timeElapsed) {
         int maxcounter = 100;
         int ranVar;
         int newX = agent.getX();
@@ -154,5 +160,14 @@ public class RandomWalk {
         agent.setPath(path);
 
         return (new Point(newX, newY));
+    }
+
+    @Override
+    public Point replan(int timeElapsed) {
+        return takeStep(timeElapsed);
+    }
+    
+    public static Point takeStep(RealAgent agent){
+        return new RandomWalk(agent).takeStep(0);
     }
 }

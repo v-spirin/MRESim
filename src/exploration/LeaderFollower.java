@@ -49,6 +49,7 @@ import config.Constants;
 import environment.ContourTracer;
 import environment.Frontier;
 import environment.OccupancyGrid;
+import exploration.Frontier.FrontierUtility;
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
@@ -58,12 +59,18 @@ import path.Path;
  *
  * @author juliandehoog
  */
-public class LeaderFollower {
+public class LeaderFollower implements Exploration {
 
-    private static int TIME_BETWEEN_PLANS = 10;
+    int TIME_BETWEEN_PLANS = 10;
+    RealAgent agent;
 
+    public LeaderFollower(RealAgent agent) {
+        this.agent = agent;
+    }
+    
 // <editor-fold defaultstate="collapsed" desc="Take Step">
-    public static Point takeStep(RealAgent agent, int timeElapsed) {
+    @Override
+    public Point takeStep(int timeElapsed) {
         Point nextStep = new Point(agent.getX(), agent.getY());
 
         // if env reports error, agent may be stuck in front of a wall and the
@@ -79,10 +86,10 @@ public class LeaderFollower {
 
         switch (agent.getRole()) {
             case Explorer:
-                nextStep = takeStep_Explorer(agent, timeElapsed);
+                nextStep = takeStep_Explorer(timeElapsed);
                 break;
             case Relay:
-                nextStep = takeStep_Relay(agent, timeElapsed);
+                nextStep = takeStep_Relay(timeElapsed);
                 break;
             default:
                 break;
@@ -95,7 +102,7 @@ public class LeaderFollower {
         return nextStep;
     }
 
-    public static Point takeStep_Relay(RealAgent agent, int timeElapsed) {
+    public Point takeStep_Relay(int timeElapsed) {
         agent.setMissionComplete(true); // to stop scripted runs when all agents complete mission
         Point nextStep;
 
@@ -122,7 +129,7 @@ public class LeaderFollower {
         // Agent isn't stuck.
         // Is it time to replan?
         else if (agent.getStats().getTimeSinceLastPlan() > TIME_BETWEEN_PLANS) {
-            nextStep = replanRelay(agent);
+            nextStep = replanRelay();
             agent.getStats().setTimeSinceLastPlan(0);
         } // CHECK 3
         // Agent isn't stuck, not yet time to replan.
@@ -132,7 +139,7 @@ public class LeaderFollower {
         } // CHECK 4
         // Agent isn't stuck, not yet time to replan, but we have no points left
         else {
-            nextStep = replanRelay(agent);
+            nextStep = replanRelay();
             agent.getStats().setTimeSinceLastPlan(0);
         }
 
@@ -147,7 +154,7 @@ public class LeaderFollower {
         return nextStep;
     }
 
-    public static Point replanRelay(RealAgent agent) {
+    public Point replanRelay() {
         Path P2C = agent.calculatePath(agent.getLocation(), agent.getChildTeammate().getLocation());
 
         if (agent.getLocation().distance(agent.getParentTeammate().getLocation())
@@ -192,7 +199,7 @@ public class LeaderFollower {
         return agent.getNextPathPoint();*/
     }
 
-    public static Point takeStep_Explorer(RealAgent agent, int timeElapsed) {
+    public Point takeStep_Explorer(int timeElapsed) {
         Point nextStep;
 
         // CHECK 0
@@ -214,7 +221,7 @@ public class LeaderFollower {
         // Agent isn't stuck.
         // Is it time to replan?
         else if (agent.getStats().getTimeSinceLastPlan() % TIME_BETWEEN_PLANS == 0) {
-            nextStep = replanExplorer(agent);
+            nextStep = replanExplorer();
             agent.getStats().setTimeSinceLastPlan(0);
         } // CHECK 3
         // Agent isn't stuck, not yet time to replan.
@@ -224,7 +231,7 @@ public class LeaderFollower {
         } // CHECK 4
         // Agent isn't stuck, not yet time to replan, but we have no points left
         else {
-            nextStep = replanExplorer(agent);
+            nextStep = replanExplorer();
             agent.getStats().setTimeSinceLastPlan(0);
         }
 
@@ -241,7 +248,7 @@ public class LeaderFollower {
 
     // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Replan">
-    public static Point replanExplorer(RealAgent agent) {
+    public Point replanExplorer() {
         if (!agent.getParentTeammate().isInRange()) {
             agent.getStats().setTimeSinceLastPlan(0);
             return (new Point(agent.getPrevX(), agent.getPrevY()));
@@ -342,7 +349,7 @@ public class LeaderFollower {
         return (frontier.getArea() / Math.pow(agentLoc.distance(frontier.getCentre()), 4) * 100000000);
     }
 
-    private static void calculateUtilityExact(RealAgent agent, Utility ute) {
+    private static void calculateUtilityExact(RealAgent agent, FrontierUtility ute) {
         Point start;
         if (ute.ID == agent.getID()) {
             start = agent.getLocation();
@@ -368,12 +375,12 @@ public class LeaderFollower {
 
     // Calculates Euclidean distance from all known teammates and self to frontiers of interest
     private static PriorityQueue initializeUtilities(RealAgent agent, LinkedList<Frontier> frontiers) {
-        PriorityQueue<Utility> utilities = new PriorityQueue<Utility>();
+        PriorityQueue<FrontierUtility> utilities = new PriorityQueue<FrontierUtility>();
 
         // For each frontier of interest
         for (Frontier frontier : frontiers) {
             // Add own utilities
-            utilities.add(new Utility(agent.getID(),
+            utilities.add(new FrontierUtility(agent.getID(),
                     agent.getLocation(),
                     frontier,
                     utilityEstimate(agent.getLocation(), frontier),
@@ -391,7 +398,7 @@ public class LeaderFollower {
                         && teammate.isExplorer()
                         && // THIS LINE ONLY IF non-explorer agents are to be ignored
                         teammate.getTimeSinceLastComm() < 30) {
-                    utilities.add(new Utility(teammate.getID(),
+                    utilities.add(new FrontierUtility(teammate.getID(),
                             teammate.getLocation(),
                             frontier,
                             utilityEstimate(teammate.getLocation(), frontier),
@@ -410,12 +417,12 @@ public class LeaderFollower {
 
     // Calculates Euclidean distance from all known teammates and self to frontiers of interest
     private static PriorityQueue initializeUtilities(Point p, PriorityQueue<Frontier> frontiers) {
-        PriorityQueue<Utility> utilities = new PriorityQueue<Utility>();
+        PriorityQueue<FrontierUtility> utilities = new PriorityQueue<FrontierUtility>();
 
         // For each frontier of interest
         frontiers.stream().forEach((frontier) -> {
             // Add own utilities
-            utilities.add(new Utility(99,
+            utilities.add(new FrontierUtility(99,
                     p,
                     frontier,
                     utilityEstimate(p, frontier),
@@ -425,34 +432,8 @@ public class LeaderFollower {
         return utilities;
     }
 
-    private static class Utility implements Comparable<Utility> {
-
-        public int ID;
-        public Point agentLocation;
-        public Frontier frontier;
-        public double utility;
-        public Path path;
-
-        public Utility(int id, Point al, Frontier f, double u, Path p) {
-            ID = id;
-            agentLocation = al;
-            frontier = f;
-            utility = u;
-            path = p;
-        }
-
-        @Override
-        public int compareTo(Utility other) {
-            if (other.utility > this.utility) {
-                return 1;
-            } else {
-                return -1;
-            }
-        }
-    }
-
     public static double maxFrontierUtility(PriorityQueue<Frontier> frontiers, OccupancyGrid grid, Point start) {
-        PriorityQueue<Utility> utilities = initializeUtilities(start, frontiers);
+        PriorityQueue<FrontierUtility> utilities = initializeUtilities(start, frontiers);
 
         return utilities.peek().utility;
     }
@@ -462,7 +443,7 @@ public class LeaderFollower {
         LinkedList<Frontier> frontiers = frontiersOfInterest(agent.getLastFrontier(), agent.getFrontiers(), agent.getOccupancyGrid());
 
         // Step 2:  Create priorityQueue of utility estimates (Euclidean distance)
-        PriorityQueue<Utility> utilities = initializeUtilities(agent, frontiers);
+        PriorityQueue<FrontierUtility> utilities = initializeUtilities(agent, frontiers);
 
         /*
         for(Utility p : utilities)
@@ -471,8 +452,8 @@ public class LeaderFollower {
                                "Frontier at " + p.frontier.getCentre().x + ", " + p.frontier.getCentre().y + "; " +
                                "Utility " + p.utility + "." );*/
         // Step 3
-        Utility best;
-        LinkedList<Utility> removal;
+        FrontierUtility best;
+        LinkedList<FrontierUtility> removal;
         int counter = 0;
         boolean isLastFrontier;
 
@@ -482,7 +463,7 @@ public class LeaderFollower {
             // Check if this is the only remaining frontier
             isLastFrontier = true;
             if (!utilities.isEmpty()) {
-                for (Utility u : utilities) {
+                for (FrontierUtility u : utilities) {
                     if (u.frontier != best.frontier) {
                         isLastFrontier = false;
                         break;
@@ -527,26 +508,26 @@ public class LeaderFollower {
                     return true;
                 } else {
                     // This robot assigned, so remove all remaining associated utilities
-                    removal = new LinkedList<Utility>();
-                    for (Utility u : utilities) {
+                    removal = new LinkedList<FrontierUtility>();
+                    for (FrontierUtility u : utilities) {
                         if (u.ID == best.ID
                                 || u.frontier == best.frontier) {
                             removal.add(u);
                         }
                     }
-                    for (Utility r : removal) {
+                    for (FrontierUtility r : removal) {
                         utilities.remove(r);
                     }
                 }
             } else if (best.path == null) {
                 // it's not possible to plan a path to this frontier, so eliminate it entirely
-                removal = new LinkedList<Utility>();
-                for (Utility u : utilities) {
+                removal = new LinkedList<FrontierUtility>();
+                for (FrontierUtility u : utilities) {
                     if (u.frontier == best.frontier) {
                         removal.add(u);
                     }
                 }
-                for (Utility r : removal) {
+                for (FrontierUtility r : removal) {
                     utilities.remove(r);
                 }
             } else {
@@ -614,4 +595,9 @@ public class LeaderFollower {
     }
 
 // </editor-fold>
+
+    @Override
+    public Point replan(int timeElapsed) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }
