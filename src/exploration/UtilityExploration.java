@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -51,25 +51,24 @@ import config.Constants;
 import config.SimulatorConfig;
 import exploration.rendezvous.MultiPointRendezvousStrategy;
 import java.awt.Point;
-import path.Path;
 import java.util.List;
+import path.Path;
 
 /**
  *
  * @author Victor
  */
-public class UtilityExploration implements Exploration {
+public class UtilityExploration extends FrontierExploration {
 
     private final int TIME_BETWEEN_PLANS = 1;
     private final int TIME_BETWEEN_RECOMPUTE_PATHS = 10;
-    RealAgent agent;
     SimulatorConfig simConfig;
 
-    public UtilityExploration(RealAgent agent, SimulatorConfig simConfig) {
+    public UtilityExploration(RealAgent agent, SimulatorConfig simConfig, RealAgent baseStation) {
+        super(agent, SimulatorConfig.frontiertype.ReturnWhenComplete, baseStation);
         this.agent = agent;
         this.simConfig = simConfig;
     }
-    
 
 // <editor-fold defaultstate="collapsed" desc="Take Step">
     // Returns new X, Y of ExploreAgent
@@ -148,7 +147,7 @@ public class UtilityExploration implements Exploration {
         Point nextStep;
         // <editor-fold defaultstate="collapsed" desc="Every CHECK_INTERVAL_TIME_TO_RV steps, check if we're due to change state to return">
         int totalNewInfo = agent.getStats().getNewInfo();
-        //double infoRatio = (double)agent.getLastContactAreaKnown() / 
+        //double infoRatio = (double)agent.getLastContactAreaKnown() /
         //        (double)(agent.getLastContactAreaKnown() + totalNewInfo);
         double infoRatio = (double) agent.getStats().getCurrentBaseKnowledgeBelief()
                 / (double) (agent.getStats().getCurrentBaseKnowledgeBelief() + totalNewInfo);
@@ -187,15 +186,14 @@ public class UtilityExploration implements Exploration {
             agent.setCurrentGoal(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
             return nextStep;
         }
-        // </editor-fold>   
+        // </editor-fold>
 
         //if we reach this point we continue exploring
         //make sure we replan, if we just entered Explore state
         if (agent.getStateTimer() == 0) {
             agent.getStats().setTimeSinceLastPlan(Constants.REPLAN_INTERVAL + 1);
         }
-        Exploration frontierEx = new FrontierExploration(agent, SimulatorConfig.frontiertype.ReturnWhenComplete);
-        nextStep = frontierEx.takeStep(timeElapsed);
+        nextStep = takeStep(timeElapsed);
 
         //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
         if ((agent.getFrontiers().isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
@@ -240,9 +238,9 @@ public class UtilityExploration implements Exploration {
 
         //<editor-fold defaultstate="collapsed" desc="If newInfo goes under ratio, go exploring (can happen if we meet a relay)">
         int totalNewInfo = agent.getStats().getNewInfo();
-        //double infoRatio = (double)agent.getLastContactAreaKnown() / 
+        //double infoRatio = (double)agent.getLastContactAreaKnown() /
         //        (double)(agent.getLastContactAreaKnown() + totalNewInfo);
-        //double infoRatio = (double)agent.getStats().getCurrentBaseKnowledgeBelief() / 
+        //double infoRatio = (double)agent.getStats().getCurrentBaseKnowledgeBelief() /
         //        (double)(agent.getStats().getCurrentBaseKnowledgeBelief() + totalNewInfo);
 
         double infoRatio = (double) totalNewInfo / (double) 57600;
@@ -269,7 +267,7 @@ public class UtilityExploration implements Exploration {
             if (existingPath != null) {
                 agent.addDirtyCells(existingPath.getAllPathPixels());
             }
-            //</editor-fold>  
+            //</editor-fold>
 
             if (simConfig.getBaseRange()) {
                 List<NearRVPoint> generatedPoints
@@ -343,7 +341,7 @@ public class UtilityExploration implements Exploration {
             return takeStep_Explore(timeElapsed);
         }
     }
-    // </editor-fold>     
+    // </editor-fold>
 
     @Override
     public Point replan(int timeElapsed) {

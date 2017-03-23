@@ -113,7 +113,7 @@ public class RealAgent extends Agent {
 
     // Teammates
     HashMap<Integer, TeammateAgent> teammates;
-    private Agent baseStation;
+    private RealAgent baseStation;
 
     // Role-based Exploration
     private RendezvousAgentData rendezvousAgentData;
@@ -128,7 +128,7 @@ public class RealAgent extends Agent {
     private SimulationFramework simFramework;
     private int oldTimeElapsed;
 
-    public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, Agent baseStation) {
+    public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, RealAgent baseStation) {
         super(robot);
 
         stats = new AgentStats();
@@ -508,20 +508,20 @@ public class RealAgent extends Agent {
                     break;
                 case FrontierExploration:
                     if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn)) {
-                        exploration = new UtilityExploration(this, simConfig);
+                        exploration = new UtilityExploration(this, simConfig, baseStation);
                     } else {
-                        exploration = new FrontierExploration(this, simConfig.getFrontierAlgorithm());
+                        exploration = new FrontierExploration(this, simConfig.getFrontierAlgorithm(), baseStation);
                     }
                     break;
                 case RoleBasedExploration:
-                    exploration = new RoleBasedExploration(timeElapsed, this, this.getRendezvousStrategy());
+                    exploration = new RoleBasedExploration(timeElapsed, this, this.getRendezvousStrategy(), baseStation);
                     break;
 
                 case Testing:
                     exploration = new RelayFrontierExploration(this, simConfig.getFrontierAlgorithm(), simConfig.useComStations(), simConfig.getComStationDropChance(), baseStation);
                     break;
                 default:
-                    exploration = new FrontierExploration(this, simConfig.getFrontierAlgorithm());
+                    exploration = new FrontierExploration(this, simConfig.getFrontierAlgorithm(), baseStation);
                     break;
             }
             nextStep = exploration.takeStep(timeElapsed);

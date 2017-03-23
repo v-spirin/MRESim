@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -57,32 +57,30 @@ import java.util.LinkedList;
  *
  * @author Christian Clausen
  */
-public class RelayFrontierExploration extends FrontierExploration{
-    
-    
+public class RelayFrontierExploration extends FrontierExploration {
+
     boolean useRelayStations;
     double dropChance;
-    Agent baseStation;
-    
+
     public RelayFrontierExploration(RealAgent agent,
             SimulatorConfig.frontiertype frontierExpType,
             boolean useRelayStations, double dropChance,
-            Agent baseStation) {
-        super(agent, frontierExpType);
+            RealAgent baseStation) {
+        super(agent, frontierExpType, baseStation);
         this.useRelayStations = useRelayStations;
         this.dropChance = dropChance;
         this.baseStation = baseStation;
     }
-    
+
     /**
      * Returns new X, Y of RealAgent.
-     * 
+     *
      * @param timeElapsed Cycle we are in
      * @return
      */
     @Override
-    public Point takeStep(int timeElapsed){
-                long realtimeStartAgentCycle = System.currentTimeMillis();
+    public Point takeStep(int timeElapsed) {
+        long realtimeStartAgentCycle = System.currentTimeMillis();
 
         Point nextStep;
         if (useRelayStations && (Math.random() < dropChance)) {
@@ -93,8 +91,8 @@ public class RelayFrontierExploration extends FrontierExploration{
         //update timeLastDirectContactCS and lastContactAreaKnown and refill relayStations
         if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
             //When in com-range, maybe even in handoverRange?
-            if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInHandoverRange(agent) &&
-                    (agent.comStations.size() < agent.getComStationLimit())) {
+            if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInHandoverRange(agent)
+                    && (agent.comStations.size() < agent.getComStationLimit())) {
                 //TODO One Comstation per step... needs to be enough by now
                 agent.takeComStation(baseStation.giveComStation());
             }
@@ -110,7 +108,7 @@ public class RelayFrontierExploration extends FrontierExploration{
             nextStep = RandomWalk.takeStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
         } else if (agent.getEnvError()) {
-            // CHECK 1: if agent hasn't moved, then he may be stuck in front of a wall.  
+            // CHECK 1: if agent hasn't moved, then he may be stuck in front of a wall.
             // Taking a random step might help.
             agent.resetPathToBaseStation();
             nextStep = RandomWalk.takeStep(agent);
@@ -118,11 +116,11 @@ public class RelayFrontierExploration extends FrontierExploration{
             agent.setEnvError(false);
         } else if ((agent.getStats().getTimeSinceLastPlan() < Constants.REPLAN_INTERVAL)
                 && agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
-            // CHECK 2: Agent isn't stuck, not yet time to replan. 
+            // CHECK 2: Agent isn't stuck, not yet time to replan.
             // Continue if we have points left in the previously planned path.
             nextStep = agent.getNextPathPoint();
         } else if (agent.getStats().getTimeSinceLastPlan() >= Constants.REPLAN_INTERVAL) {
-            // CHECK 3: Agent isn't stuck. Is it time to replan? 
+            // CHECK 3: Agent isn't stuck. Is it time to replan?
             //Have we moved on to next time cycle?
             nextStep = replan(timeElapsed);
         } else {
@@ -136,8 +134,8 @@ public class RelayFrontierExploration extends FrontierExploration{
         //agent.setLastBaseKnowledgeBelief(agent.getCurrentBaseKnowledgeBelief());
         //agent.setLastNewInfo(agent.getNewInfo());
         if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent.toString() + "takeStep took " + 
-                    (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
+            System.out.println(agent.toString() + "takeStep took "
+                    + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
         }
         return nextStep;
     }
@@ -155,8 +153,8 @@ public class RelayFrontierExploration extends FrontierExploration{
         FrontierExploration.calculateFrontiers(agent, frontierExpType);
 
         if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent.toString() + "calculateFrontiers took " + 
-                    (System.currentTimeMillis() - realtimeStart) + "ms.");
+            System.out.println(agent.toString() + "calculateFrontiers took "
+                    + (System.currentTimeMillis() - realtimeStart) + "ms.");
         }
 
         //<editor-fold defaultstate="collapsed" desc="If no frontiers found, or reached exploration goal, return to ComStation">
@@ -179,35 +177,34 @@ public class RelayFrontierExploration extends FrontierExploration{
 
         long realtimeStart2 = System.currentTimeMillis();
         boolean foundFrontier = false;
-        FrontierExploration frontierEx = new FrontierExploration(agent, frontierExpType);
         if (!agent.getSimConfig().keepAssigningRobotsToFrontiers()) {
-            foundFrontier = (frontierEx.chooseFrontier(true, null) == null);
+            foundFrontier = (chooseFrontier(true, null) == null);
             if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent.toString() + "chooseFrontier took " + 
-                        (System.currentTimeMillis() - realtimeStart2) + "ms.");
+                System.out.println(agent.toString() + "chooseFrontier took "
+                        + (System.currentTimeMillis() - realtimeStart2) + "ms.");
             }
 
             //<editor-fold defaultstate="collapsed" desc="If could not find frontier, try to disregard other agents when planning">
             if (!foundFrontier) {
                 if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(agent.toString() + 
-                            " could not find frontier, trying to ignore other agents...");
+                    System.out.println(agent.toString()
+                            + " could not find frontier, trying to ignore other agents...");
                 }
-                foundFrontier = (frontierEx.chooseFrontier(false, null) == null);
+                foundFrontier = (chooseFrontier(false, null) == null);
             }
             //</editor-fold>
         } else {
             LinkedList<Integer> assignedTeammates = new LinkedList<Integer>();
             for (int i = 0; (i < agent.getAllTeammates().size()) && !foundFrontier; i++) {
-                assignedTeammates = frontierEx.chooseFrontier(true, assignedTeammates);
+                assignedTeammates = chooseFrontier(true, assignedTeammates);
                 if (assignedTeammates == null) {
                     foundFrontier = true;
                 }
             }
         }
 
-        if ((agent.getRole() == RobotConfig.roletype.Relay) && 
-                (agent.getState() == Agent.ExploreState.GoToChild)) {
+        if ((agent.getRole() == RobotConfig.roletype.Relay)
+                && (agent.getState() == Agent.ExploreState.GoToChild)) {
             return takeStep_GoToChild();
         }
 
@@ -268,10 +265,10 @@ public class RelayFrontierExploration extends FrontierExploration{
         agent.getPath().getPoints().remove(0);
         nextStep = agent.getNextPathPoint();
         if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent.toString() + "replan took " + 
-                    (System.currentTimeMillis() - realtimeStart) + "ms.");
+            System.out.println(agent.toString() + "replan took "
+                    + (System.currentTimeMillis() - realtimeStart) + "ms.");
         }
         return nextStep;
     }
-   
+
 }

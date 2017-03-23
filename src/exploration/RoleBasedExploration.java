@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -44,13 +44,13 @@
 
 package exploration;
 
-import exploration.rendezvous.Rendezvous;
 import agents.Agent;
 import agents.RealAgent;
 import config.Constants;
 import config.RobotConfig;
 import config.SimulatorConfig;
 import exploration.rendezvous.IRendezvousStrategy;
+import exploration.rendezvous.Rendezvous;
 import exploration.rendezvous.RendezvousAgentData;
 import java.awt.Point;
 import java.util.concurrent.atomic.AtomicReference;
@@ -60,15 +60,14 @@ import path.Path;
  *
  * @author julh, vspirin
  */
-public class RoleBasedExploration implements Exploration{
+public class RoleBasedExploration extends FrontierExploration {
 
     int timeElapsed;
-    RealAgent agent;
     IRendezvousStrategy rendezvousStrategy;
 
-    public RoleBasedExploration(int timeElapsed, RealAgent agent, IRendezvousStrategy rendezvousStrategy) {
+    public RoleBasedExploration(int timeElapsed, RealAgent agent, IRendezvousStrategy rendezvousStrategy, RealAgent baseStation) {
+        super(agent, SimulatorConfig.frontiertype.ReturnWhenComplete, baseStation);
         this.timeElapsed = timeElapsed;
-        this.agent = agent;
         this.rendezvousStrategy = rendezvousStrategy;
     }
 
@@ -88,8 +87,8 @@ public class RoleBasedExploration implements Exploration{
                 && (agent.getState() != Agent.ExploreState.GiveParentInfo)
                 && (agent.getState() != Agent.ExploreState.WaitForChild)
                 && (agent.getState() != Agent.ExploreState.WaitForParent)) {
-            System.out.println(agent.toString() + 
-                    "!!!RoleBasedExploration: Env reports error, taking random step.");
+            System.out.println(agent.toString()
+                    + "!!!RoleBasedExploration: Env reports error, taking random step.");
             nextStep = RandomWalk.takeStep(agent);
             agent.setEnvError(false);
             return nextStep;
@@ -154,8 +153,7 @@ public class RoleBasedExploration implements Exploration{
         else if (agent.isExplorer()) {
             agent.setState(RealAgent.ExploreState.Explore);
             agent.getStats().setTimeSinceLastPlan(0);
-            Exploration frontierEx = new FrontierExploration(agent, SimulatorConfig.frontiertype.ReturnWhenComplete);
-            return frontierEx.replan(0);
+            return replan(0);
         } else {
             agent.setState(RealAgent.ExploreState.GoToChild);
             agent.setStateTimer(0);
@@ -242,7 +240,7 @@ public class RoleBasedExploration implements Exploration{
                 }
             }
             // relay must be waiting for us, we are near rv, have new info - try to comm with relay
-            /*else if (((pathToParentRendezvous.getLength() / Constants.DEFAULT_SPEED) + timeElapsed) >= 
+            /*else if (((pathToParentRendezvous.getLength() / Constants.DEFAULT_SPEED) + timeElapsed) >=
                     agent.getRendezvousAgentData().getParentRendezvous().getMinTimeMeeting()) {
                 if (pathToParentRendezvous.getLength() < 100) {
                     System.out.println(agent + " returning to relay early.");
@@ -259,11 +257,10 @@ public class RoleBasedExploration implements Exploration{
                 }
             }*/
         }
-        // </editor-fold>   
+        // </editor-fold>
 
         //if we reach this point we continue exploring
-        Exploration frontierEx = new FrontierExploration(agent, SimulatorConfig.frontiertype.ReturnWhenComplete);
-        Point nextStep = frontierEx.takeStep(timeElapsed);
+        Point nextStep = takeStep(timeElapsed);
 
         //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
         if (timeElapsed > 100) { //prevent setting mission complete at the very start of the exploration
@@ -436,8 +433,7 @@ public class RoleBasedExploration implements Exploration{
             //<editor-fold defaultstate="collapsed" desc="Case 1: Explorer">
             if (agent.isExplorer()) {
                 // First, plan next frontier, as we need this for rendezvous point calculation
-                Exploration frontierEx = new FrontierExploration(agent, SimulatorConfig.frontiertype.ReturnWhenComplete);
-                frontierEx.replan(0);
+                replan(0);
             }
 
             agent.getRendezvousStrategy().processJustGotIntoParentRange(timeElapsed);
@@ -455,9 +451,9 @@ public class RoleBasedExploration implements Exploration{
                 agent.setStateTimer(0);
 
                 return takeStep_Explore();
-            //</editor-fold>
+                //</editor-fold>
             } else {
-            //<editor-fold defaultstate="collapsed" desc="Relay - process & go to child">
+                //<editor-fold defaultstate="collapsed" desc="Relay - process & go to child">
                 //--the below section is for logging only
                 //---------------------------------------
                 Path pathToMeeting = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
@@ -508,8 +504,8 @@ public class RoleBasedExploration implements Exploration{
                     }
                     //</editor-fold>
                 }
-            } //</editor-fold>
-        }        //</editor-fold>
+            } //</editor-fold>        //</editor-fold>
+        }
     }
 
     public Point takeStep_GoToChild() {
@@ -631,7 +627,7 @@ public class RoleBasedExploration implements Exploration{
         }
     }
 
-// </editor-fold>  
+// </editor-fold>
     private boolean isDueToReturnToRV(AtomicReference<Path> outPathToParentRendezvous) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         System.out.println(agent.toString() + "Checking if it's time to rendezvous ... ");
@@ -656,37 +652,37 @@ public class RoleBasedExploration implements Exploration{
         return false;
     }
 
-// <editor-fold defaultstate="collapsed" desc="Calculate rendezvous">    
+// <editor-fold defaultstate="collapsed" desc="Calculate rendezvous">
     /*//Calculate time to next RV (we are the relay)
     private static void calculateOwnTimeToRVEx(RealAgent agent)
     {
         //System.out.println(agent.toString() + "Calculating time to next rendezvous...");
-        
+
         //<editor-fold defaultstate="collapsed" desc="let's find the point, where RV will actually communicate with base">
             Point baseLoc = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
             Point relayLoc = agent.getLocation();
             Point baseComm = baseLoc;
             OccupancyGrid occGrid = agent.getOccupancyGrid();
-            
+
             Polygon commPoly = PropModel1.getRangeForRV(occGrid,
                     new Agent(0, "", 0, baseLoc.x, baseLoc.y, 0, 0, 400, 0,
                             RobotConfig.roletype.Relay, 0, 0, 0)
             );
-            
+
             LinkedList<Point> candidatePoints = new LinkedList<Point>();
             //for(Point p : ExplorationImage.polygonPoints(commPoly))
             for (int i = 0; i < commPoly.npoints; i++)
             {
                 Point p = new Point(commPoly.xpoints[i], commPoly.ypoints[i]);
                 if (occGrid.freeSpaceAt(p.x, p.y)//&& !env.directLinePossible(firstRV.x, firstRV.y, p.x, p.y))
-                {                    
+                {
                     if (occGrid.directLinePossible(baseLoc.x, baseLoc.y, p.x, p.y))
                         candidatePoints.add(p);
                 }
             }
-            
+
             double minBaseRelayDistance = agent.calculatePath(baseLoc, relayLoc).getLength();
-            
+
             for (Point p: candidatePoints)
             {
                 double distance = agent.calculatePath(p, relayLoc).getLength();
@@ -697,12 +693,12 @@ public class RoleBasedExploration implements Exploration{
                 }
             }
             //</editor-fold>
-        
+
         Path pathParentToCS = agent.calculatePath(agent.getLocation(),
                 baseComm);
         Path pathCSToRendezvous = agent.calculatePath(baseComm,
                 agent.getChildRendezvous().getParentLocation());
-        
+
         //<editor-fold defaultstate="collapsed" desc="Couldn't find pathCSToRV - approximate">
         if ((pathCSToRendezvous.getLength() == 0) &&
                 (!agent.getChildRendezvous().getParentLocation().equals(
@@ -713,34 +709,34 @@ public class RoleBasedExploration implements Exploration{
             pathCSToRendezvous = pathParentToCS;
         }
         //</editor-fold>
-        
+
         agent.setTimeUntilRendezvous(Math.max((int)((pathParentToCS.getLength()+pathCSToRendezvous.getLength())
                 /Constants.DEFAULT_SPEED), 10));
 
-        
+
         //<editor-fold defaultstate="collapsed" desc="Check time for explorer to reach frontier, to make sure he has time to explore before returning">
         Point frontierCentre = agent.getChildTeammate().getFrontierCentre();
         if (frontierCentre != null)
-        {                
+        {
             Path here2Frontier = agent.calculatePath(agent.getChildTeammate().getLocation(), frontierCentre);
             Path front2rv = agent.calculatePath(frontierCentre, agent.getChildRendezvous().getChildLocation());
-            
+
             int expTime = (int)(here2Frontier.getLength() + front2rv.getLength())/Constants.DEFAULT_SPEED;
             if (!agent.getChildRendezvous().getParentLocation().equals(agent.getChildRendezvous().getChildLocation()))
             {
-                agent.getChildRendezvous().setMinTimeMeeting(Math.max(timeElapsed + agent.getTimeUntilRendezvous(), 
+                agent.getChildRendezvous().setMinTimeMeeting(Math.max(timeElapsed + agent.getTimeUntilRendezvous(),
                         timeElapsed + expTime + 15));
                 expTime += Constants.FRONTIER_MIN_EXPLORE_TIME;
             }
-            
-            agent.setTimeUntilRendezvous(Math.max(agent.getTimeUntilRendezvous(), 
+
+            agent.setTimeUntilRendezvous(Math.max(agent.getTimeUntilRendezvous(),
                     expTime));
         }
         //</editor-fold>
-        
-        agent.getChildRendezvous().setTimeMeeting(timeElapsed + agent.getTimeUntilRendezvous());        
+
+        agent.getChildRendezvous().setTimeMeeting(timeElapsed + agent.getTimeUntilRendezvous());
         agent.getChildRendezvous().setTimeWait(Constants.WAIT_AT_RV_BEFORE_REPLAN);
-        
+
         System.out.println("\nP2CS " + pathParentToCS.getLength() + "; " +
                 " CS2R " + pathCSToRendezvous.getLength() + "; " +
                 agent.getParentTeammate().getCommRange() + "; " +
@@ -751,21 +747,21 @@ public class RoleBasedExploration implements Exploration{
     {
         //System.out.println(agent.toString() + "Calculating time to next rendezvous...");
         if (agent.getChildBackupRendezvous() == null) return;
-        
+
         int timeAtStart = agent.getChildRendezvous().getTimeMeeting() + agent.getChildRendezvous().getTimeWait();
-        
+
         Path pathMeToRV2 = agent.calculatePath(agent.getChildRendezvous().getParentLocation(),
                 agent.getChildBackupRendezvous().getParentLocation());
-        
+
         Path pathChildToRV2 = agent.calculatePath(agent.getChildRendezvous().getChildLocation(),
                 agent.getChildBackupRendezvous().getChildLocation());
-        
+
         if (pathMeToRV2.found && pathChildToRV2.found)
         {
             System.out.println(agent + "Calculating child backup RV");
-            agent.getChildBackupRendezvous().setTimeMeeting(timeAtStart + 
+            agent.getChildBackupRendezvous().setTimeMeeting(timeAtStart +
                     Math.max((int)pathMeToRV2.getLength(), (int)pathChildToRV2.getLength())/Constants.DEFAULT_SPEED);
-            agent.getChildBackupRendezvous().setMinTimeMeeting(timeAtStart + 
+            agent.getChildBackupRendezvous().setMinTimeMeeting(timeAtStart +
                     Math.max((int)pathMeToRV2.getLength(), (int)pathChildToRV2.getLength())/Constants.DEFAULT_SPEED);
             agent.getChildBackupRendezvous().setTimeWait(Constants.WAIT_AT_RV_BEFORE_REPLAN);
         } else
@@ -781,53 +777,52 @@ public class RoleBasedExploration implements Exploration{
             return;
         else
             agent.setTimeSinceLastRVCalc(0);
-        
+
         long realtimeStart = System.currentTimeMillis();
         System.out.println(agent.toString() + "Calculating RV Through Walls");
-        
+
         agent.updateTopologicalMap(true);
-        
+
         agent.getTopologicalMap().generateSkeletonNearBorders();
-        
+
         System.out.println(" 1 Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         realtimeStart = System.currentTimeMillis();
-        
+
         agent.getTopologicalMap().findKeyPointsBorder();
-        
+
         System.out.println(" 2 Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         realtimeStart = System.currentTimeMillis();
-        
-        agent.getTopologicalMap().findSecondKeyPointsBorder(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), 
+
+        agent.getTopologicalMap().findSecondKeyPointsBorder(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(),
                 agent);
-        
+
         System.out.println(" 3 Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         realtimeStart = System.currentTimeMillis();
-        
-        Rendezvous newLocation = 
+
+        Rendezvous newLocation =
             agent.getTopologicalMap().findNearestBorderKeyPoint(agent.getParentRendezvous().getChildLocation(), agent);
-        
+
         System.out.println(" 4 Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         realtimeStart = System.currentTimeMillis();
-        
-        
+
+
         agent.setParentRendezvous(newLocation);
     }
-    
+
     public static boolean isParentRVThroughWallEx(RealAgent agent)
     {
         return !agent.getOccupancyGrid().directLinePossible(
-                agent.getParentRendezvous().getChildLocation().x, agent.getParentRendezvous().getChildLocation().y, 
+                agent.getParentRendezvous().getChildLocation().x, agent.getParentRendezvous().getChildLocation().y,
                 agent.getParentRendezvous().getParentLocation().x, agent.getParentRendezvous().getParentLocation().y);
     }
-    
+
     public static boolean isChildRVThroughWallEx(RealAgent agent)
     {
         return !agent.getOccupancyGrid().directLinePossible(
-                agent.getChildRendezvous().getChildLocation().x, agent.getChildRendezvous().getChildLocation().y, 
+                agent.getChildRendezvous().getChildLocation().x, agent.getChildRendezvous().getChildLocation().y,
                 agent.getChildRendezvous().getParentLocation().x, agent.getChildRendezvous().getParentLocation().y);
     }*/
-// </editor-fold>     
-
+// </editor-fold>
     @Override
     public Point replan(int timeElapsed) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.

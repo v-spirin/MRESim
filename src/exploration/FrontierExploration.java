@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -63,20 +63,25 @@ import path.Path;
  *
  * @author julh
  */
-public class FrontierExploration implements Exploration{
+public class FrontierExploration extends BasicExploration implements Exploration {
 
-    RealAgent agent;
     SimulatorConfig.frontiertype frontierExpType;
-    
-    public FrontierExploration(RealAgent agent, SimulatorConfig.frontiertype frontierExpType) {
+    int PERIODIC_RETURN = 100;
+    RealAgent baseStation;
+    int noReturnTimer;
+
+    public FrontierExploration(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, RealAgent baseStation) {
+        super(agent);
         this.agent = agent;
         this.frontierExpType = frontierExpType;
+        this.baseStation = baseStation;
+        this.noReturnTimer = 0;
     }
 
     // Returns new X, Y of RealAgent
     @Override
     public Point takeStep(int timeElapsed) {
-        if (frontierExpType == SimulatorConfig.frontiertype.UtilReturn){
+        if (frontierExpType == SimulatorConfig.frontiertype.UtilReturn) {
             throw new IllegalArgumentException("Frontier-UtilReturn is implemented in UtilExploration.java");
         }
         long realtimeStartAgentCycle = System.currentTimeMillis();
@@ -308,16 +313,16 @@ public class FrontierExploration implements Exploration{
     }
 
     private static double utilityEstimate(Point agentLoc, Frontier frontier) {
-        if (agentLoc.getX() == frontier.getCentre().x &&
-                agentLoc.getY() == frontier.getCentre().y){
+        if (agentLoc.getX() == frontier.getCentre().x
+                && agentLoc.getY() == frontier.getCentre().y) {
             return -1001;
         }
         return ((frontier.getArea() * 100000000) / Math.pow(agentLoc.distance(frontier.getCentre()), 4));
     }
 
     private static void calculateUtilityExact(RealAgent agent, FrontierUtility ute) {
-        if (agent.getLocation().getX() == ute.frontier.getCentre().x &&
-                agent.getLocation().getY() == ute.frontier.getCentre().y){
+        if (agent.getLocation().getX() == ute.frontier.getCentre().x
+                && agent.getLocation().getY() == ute.frontier.getCentre().y) {
             ute.utility = -1001;
             return;
         }
@@ -330,7 +335,7 @@ public class FrontierExploration implements Exploration{
         }
 
         // old method:
-        //Path p = new Path(agent, start, ute.frontier.getCentre());        
+        //Path p = new Path(agent, start, ute.frontier.getCentre());
         Path p;
         /*if (ute.frontier.getClosestPoint(start, agent.getOccupancyGrid()).x == 0)
         {
@@ -400,7 +405,7 @@ public class FrontierExploration implements Exploration{
                                             ute.ID + " for frontier at " +
                                             ute.frontier.getCentre().x + "," +
                                             ute.frontier.getCentre().y + " is " +
-                                            (int)ute.utility);                                            
+                                            (int)ute.utility);
          */
     }
 
@@ -448,8 +453,8 @@ public class FrontierExploration implements Exploration{
                     if (Constants.DEBUG_OUTPUT) {
                         System.out.println(Constants.INDENT + "Utility of robot with ID "
                                 + teammate.getID() + " at location "
-                                + "(" + (int)teammate.getLocation().getX() + ","
-                                + (int)teammate.getLocation().getY()
+                                + "(" + (int) teammate.getLocation().getX() + ","
+                                + (int) teammate.getLocation().getY()
                                 + ") for frontier at "
                                 + frontier.getCentre().x + ","
                                 + frontier.getCentre().y + " is "
@@ -478,7 +483,7 @@ public class FrontierExploration implements Exploration{
 
         return utilities;
     }
-    
+
     public Point takeStep_GoToChild() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="Check if we are in range of child. If yes, GetInfoFromChild">
@@ -548,7 +553,7 @@ public class FrontierExploration implements Exploration{
 
         return agent.getLocation();
     }
-    
+
     public Point takeStep_GetInfoFromChild() {
         //we've exchanged info, now return to parent (but wait for one timestep to learn new RV point)
 
@@ -648,7 +653,7 @@ public class FrontierExploration implements Exploration{
                                 }
                             }
                         }
-                        
+
                         best.path = agent.calculatePath(agent.getLocation(), best.frontier.getCentre());
                     }
 
@@ -686,46 +691,46 @@ public class FrontierExploration implements Exploration{
                 }
 
             } else //System.out.println("UtilityExact: " + best.utility);
-            if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
-                if (best.ID == agent.getID()) {
-                    if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
-                        agent.setState(Agent.ExploreState.GoToChild);
-                        return null;
-                    }
-                    agent.setLastFrontier(best.frontier);
-                    agent.setCurrentGoal(best.frontier.getCentre());
-                    if (agent.getPath() != null) {
-                        agent.addDirtyCells(agent.getPath().getAllPathPixels());
-                    }
-                    agent.setPath(best.path);
-                    return null;
-                } else {
-                    // This robot assigned, so remove all remaining associated utilities
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println(agent + "This robot assigned, so remove all remaining associated utilities");
-                    }
-                    removal = new LinkedList<FrontierUtility>();
-                    for (FrontierUtility u : utilities) {
-                        if (u.ID == best.ID
-                                || u.frontier == best.frontier) {
-                            removal.add(u);
+             if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
+                    if (best.ID == agent.getID()) {
+                        if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
+                            agent.setState(Agent.ExploreState.GoToChild);
+                            return null;
                         }
+                        agent.setLastFrontier(best.frontier);
+                        agent.setCurrentGoal(best.frontier.getCentre());
+                        if (agent.getPath() != null) {
+                            agent.addDirtyCells(agent.getPath().getAllPathPixels());
+                        }
+                        agent.setPath(best.path);
+                        return null;
+                    } else {
+                        // This robot assigned, so remove all remaining associated utilities
+                        if (Constants.DEBUG_OUTPUT) {
+                            System.out.println(agent + "This robot assigned, so remove all remaining associated utilities");
+                        }
+                        removal = new LinkedList<FrontierUtility>();
+                        for (FrontierUtility u : utilities) {
+                            if (u.ID == best.ID
+                                    || u.frontier == best.frontier) {
+                                removal.add(u);
+                            }
+                        }
+                        for (FrontierUtility r : removal) {
+                            utilities.remove(r);
+                        }
+                        teammatesAssignedIDs.add(best.ID);
                     }
-                    for (FrontierUtility r : removal) {
-                        utilities.remove(r);
-                    }
-                    teammatesAssignedIDs.add(best.ID);
+                } else {
+                    utilities.add(best);
                 }
-            } else {
-                utilities.add(best);
-            }
 
-        counter++;
+            counter++;
         }
 
         return teammatesAssignedIDs;  // couldn't assign frontier - could be there are more robots than frontiers?
     }
-// </editor-fold>     
+// </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Calculate Frontiers">
     public static void calculateFrontiers(RealAgent agent, SimulatorConfig.frontiertype frontierExpType) {
@@ -773,5 +778,5 @@ public class FrontierExploration implements Exploration{
         }
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
-// </editor-fold> 
+// </editor-fold>
 }
