@@ -1,0 +1,70 @@
+<script src="http://code.highcharts.com/highcharts.js"></script>
+<script src="http://code.highcharts.com/modules/data.js"></script>
+<script src="http://code.highcharts.com/modules/exporting.js"></script>
+
+<pre id="csv" style="display:none"></pre>
+
+<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+<script>
+var rawFile = new XMLHttpRequest();
+rawFile.open("GET", "explorationSingleThread.csv", false);
+rawFile.onreadystatechange = function (){
+	if(rawFile.readyState === 4){
+	    if(rawFile.status === 200 || rawFile.status == 0)
+	    {
+		var allText = rawFile.responseText;
+		document.getElementById("csv").innerHTML = allText;
+	    }
+	}
+}
+rawFile.send(null)
+
+Highcharts.chart('container', {
+
+    chart: {
+        zoomType: 'x'
+    },
+    title: {
+        text: 'Exploration'
+    },
+
+    subtitle: {
+        text: ''
+    },
+    xAxis: {
+            title: {
+		text: 'Cycle'
+		}
+        },
+        yAxis: {
+            title: {
+                text: '%Exploration'
+            }
+        },
+
+    data: {
+        csv: document.getElementById('csv').innerHTML
+    },
+
+    plotOptions: {
+        series: {
+            marker: {
+                enabled: false
+            }
+        }
+    },
+
+    series: [{
+	type: 'areaspline',
+        color: '#c4392d',
+        negativeColor: '#5679c4',
+        fillOpacity: 0.5
+    }, {
+        lineWidth: 1,
+	color: '#0000FF'
+    }, {
+	lineWidth: 1,
+	color: '#00FF00'
+    }]
+});
+</script>
