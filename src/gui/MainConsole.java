@@ -1,5 +1,5 @@
 /*
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -44,6 +44,7 @@
 
 package gui;
 
+import Logging.ExplorationLogger;
 import agents.RealAgent;
 import batch.BatchExecution;
 import config.Constants;
@@ -59,12 +60,14 @@ import java.util.logging.Logger;
  * @author christian
  */
 public class MainConsole extends MainGUI implements Runnable {
+
     private static final Logger LOGGER = Logger.getLogger(MainConsole.class.getName());
     private boolean batch;
     private BatchExecution batchExecution;
     private String threadName = "unnamed";
-    
-    public static void main(String args[]){
+    private ExplorationLogger exploreLog;
+
+    public static void main(String args[]) {
         MainConsole mainConsole = new MainConsole(null, false, "SingleThread");
         mainConsole.load();
         try {
@@ -73,28 +76,30 @@ public class MainConsole extends MainGUI implements Runnable {
             LOGGER.log(Level.SEVERE, null, ex);
         }
     }
-    
-    public MainConsole(BatchExecution batchExecution, boolean batch, String name){
+
+    public MainConsole(BatchExecution batchExecution, boolean batch, String name) {
         this.batchExecution = batchExecution;
         this.batch = batch;
         this.threadName = name;
         robotTeamConfig = new RobotTeamConfig();
         simConfig = new SimulatorConfig();
         explorationImage = new ExplorationImage(simConfig.getEnv());
+        new File(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName).mkdir();
     }
-    public void load(){
+
+    public void load() {
         explorationImage.redrawEnvAndAgents(this, robotTeamConfig, simConfig);
         simulation = new SimulationFramework(this, robotTeamConfig, simConfig, explorationImage);
     }
-    
-    public void start() throws InterruptedException{
+
+    public void start() throws InterruptedException {
         simulation.start();
     }
-    
-    public void loadConfig(SimulatorConfig simConf){
+
+    public void loadConfig(SimulatorConfig simConf) {
         this.simConfig = simConf;
     }
-    
+
     @Override
     public void runComplete(RealAgent[] agent, int timeElapsed, double pctAreaKnownTeam, int avgCycleTime) {
         simulation.logScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
@@ -103,6 +108,7 @@ public class MainConsole extends MainGUI implements Runnable {
                 + "AvgTime/Cycle: {3}",
                 new Object[]{Thread.currentThread().getName(), timeElapsed, Math.round(pctAreaKnownTeam), avgCycleTime});
         LOGGER.log(Level.FINE, "{0} finished", this.threadName);
+        this.exploreLog.writeLog(timeElapsed);
         if (!batch) {
             System.exit(0);
         } else {
@@ -112,29 +118,35 @@ public class MainConsole extends MainGUI implements Runnable {
         }
 //        loop = false;
     }
-    
+
     @Override
-    public void updateRobotConfig(){}
-    
+    public void updateRobotConfig() {
+    }
+
     @Override
-    public void updateFromData(RealAgent agent[], 
-            int timeElapsed, 
-            double pctAreaKnown, 
-            int avgCycleTime){
+    public void updateFromData(RealAgent agent[],
+            int timeElapsed,
+            double pctAreaKnown,
+            int avgCycleTime) {
+        if (this.exploreLog == null) {
+            this.exploreLog = new ExplorationLogger(agent, threadName, simConfig);
+        }
+        //this.exploreLog.writeLog(timeElapsed);
         LOGGER.log(Level.FINE, "Name: {0}\n"
                 + "Cycle: {1}\n"
                 + "AreaKnown: {2}%\n"
-                + "AvgTime/Cycle: {3}", 
-                new Object[]{this.threadName, timeElapsed, Math.round(pctAreaKnown), (int)avgCycleTime});
+                + "AvgTime/Cycle: {3}",
+                new Object[]{this.threadName, timeElapsed, Math.round(pctAreaKnown), (int) avgCycleTime});
         //simulation.logScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
-        if ((timeElapsed % 50) == 0){
+        if ((timeElapsed % 50) == 0) {
             simulation.logScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
             System.out.format("Name: %s"
                     + "\nCycle: %d\n"
-                + "AreaKnown: %d%%\n"
-                + "AvgTime/Cycle: %d\n", 
-                new Object[]{this.threadName, timeElapsed, Math.round(pctAreaKnown), avgCycleTime});
+                    + "AreaKnown: %d%%\n"
+                    + "AvgTime/Cycle: %d\n",
+                    new Object[]{this.threadName, timeElapsed, Math.round(pctAreaKnown), avgCycleTime});
         }
+        exploreLog.log(timeElapsed, agent);
 
     }
 
@@ -146,7 +158,7 @@ public class MainConsole extends MainGUI implements Runnable {
         } catch (InterruptedException ex) {
             Logger.getLogger(MainConsole.class.getName()).log(Level.SEVERE, null, ex);
         }
-        synchronized(this){
+        synchronized (this) {
             try {
                 this.wait();
             } catch (InterruptedException ex) {
@@ -154,5 +166,5 @@ public class MainConsole extends MainGUI implements Runnable {
             }
         }
     }
-    
+
 }

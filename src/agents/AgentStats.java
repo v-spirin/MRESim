@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -54,7 +54,7 @@ public class AgentStats {
     //for logging / to observe agent's behaviour
 
     private int timeLastCentralCommand;
-    /* units of time elapsed since command 
+    /* units of time elapsed since command
                                      received from ComStation */
     private double distanceTraveled;      // Distance traveled
     private int areaKnown;                // How much area this agent knows about
@@ -96,6 +96,28 @@ public class AgentStats {
         timeReturning = 0;
         timeDoubleSensing = 0;
         timeBaseMessageReceived = new LinkedList<Integer>();
+    }
+
+    public AgentStats(AgentStats agentStats) {
+        timeLastCentralCommand = agentStats.timeLastCentralCommand;
+        distanceTraveled = agentStats.distanceTraveled;
+        areaKnown = agentStats.areaKnown;
+        newInfo = agentStats.newInfo;
+        lastContactAreaKnown = agentStats.lastContactAreaKnown;
+        timeLastDirectContactCS = agentStats.timeLastDirectContactCS;
+        maxRateOfInfoGatheringBelief = agentStats.maxRateOfInfoGatheringBelief;
+        currentTotalKnowledgeBelief = agentStats.currentTotalKnowledgeBelief;
+        currentBaseKnowledgeBelief = agentStats.currentBaseKnowledgeBelief;
+        timeSinceLastPlan = agentStats.timeSinceLastPlan;
+
+        lastIncrementedTimeSensing = agentStats.lastIncrementedTimeSensing;
+        lastIncrementedTimeReturning = agentStats.lastIncrementedTimeReturning;
+        lastIncrementedTimeDoubleSensing = agentStats.lastIncrementedTimeDoubleSensing;
+
+        timeSensing = agentStats.timeSensing;
+        timeReturning = agentStats.timeReturning;
+        timeDoubleSensing = agentStats.timeDoubleSensing;
+        timeBaseMessageReceived = (LinkedList<Integer>) agentStats.timeBaseMessageReceived.clone();
     }
 
     public int getTimeLastCentralCommand() {
@@ -278,5 +300,10 @@ public class AgentStats {
             totalLatency += item - curTime;
         }
         return (double) totalLatency / (double) curTime;
+    }
+
+    public AgentStats copy() {
+        AgentStats copy = new AgentStats();
+        return copy;
     }
 }
