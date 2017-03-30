@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -49,160 +49,271 @@ import java.io.File;
 import java.nio.file.Paths;
 
 /**
+ * Constants used in the whole project.
  *
- * @author julh
+ * @author julh, cclausen
  */
 public class Constants {
 
+    /**
+     * Show messages on stdout. Remember to clean build if changed!
+     */
     public static final boolean DEBUG_OUTPUT = false;
 
-    // Max number of rows in environment
+    /**
+     * Max number of rows in environment
+     */
     public static final int MAX_ROWS = 600;
 
-    // Max number of columns in enviroment
+    /**
+     * Max number of columns in enviroment.
+     */
     public static final int MAX_COLS = 800;
 
-    // Random seed for random walk 
-    //(set to a constant for testing, otherwise to System.currentTimeMillis())
-    public static final int RANDOM_SEED = 12345;//(int) System.currentTimeMillis();
+    /**
+     * Random seed for random walk. (int) System.currentTimeMillis(); for random any constant
+     * int-value for testing
+     */
+    public static final int RANDOM_SEED = 12345;
 
-    // Max time to search for a path, in ms
+    /**
+     * Max time to search for a path, in ms.
+     */
     public static final int MAX_PATH_SEARCH_TIME = 500;
 
-    // Size of relay in image
-    public static final int AGENT_RADIUS = 4; // default 4;
+    /**
+     * Size of relay in image. Default 4
+     */
+    public static final int AGENT_RADIUS = 4;
 
-    // Distance that the grid is partitioned into for A* path planning
+    /**
+     * Distance that the grid is partitioned into for A* path planning. Default 3
+     */
     public static final int STEP_SIZE = 2; // default 3;
 
-    // Target ratio of info known at base to total info known at agents
-    //public static final double TARGET_INFO_RATIO = 1; 
-    // default agent speed
+    /*
+     * Target ratio of info known at base to total info known at agents public static final double
+     * TARGET_INFO_RATIO = 1;
+     */
+    /**
+     * Default agent speed. Can be overridden by agents individual speed
+     */
     public static final int DEFAULT_SPEED = 10;
 
-    // Safe distance for each relay's Safe Range, percentage of Free Space Range
+    /**
+     * Safe distance for each relay's Safe Range, percentage of Free Space Range.
+     */
     public static final int SAFE_RANGE = 10;
 
-    // How thick should the agent mark the obstacles/walls in the OccGrid
-    public static final int WALL_THICKNESS = 3; //was 3
+    /**
+     * How thick should the agent mark the obstacles/walls in the OccGrid. Default 3
+     */
+    public static final int WALL_THICKNESS = 3;
 
-    // How often should we calculate area known by all the agents? (Takes around 200ms)
+    /**
+     * How often should we calculate area known by all the agents? (Takes around 200ms).
+     */
     public static final int RECALC_JOINT_AREA = 10;
 
-    // Initial delay of timer
+    /**
+     * Initial delay of timer.
+     */
     public static final int INIT_DELAY = 500;
 
-    // Replan every ... steps
+    /**
+     * Replan every REPLAN_INTERVAL steps.
+     *
+     */
     public static final int REPLAN_INTERVAL = 15;
 
-    // Min time between RV replan
+    /**
+     * Min time between RV replan.
+     *
+     */
     public static final int RV_REPLAN_INTERVAL = REPLAN_INTERVAL;
 
-    // Difference in milliseconds between increments in simulation rate slider bar
+    /**
+     * Difference in milliseconds between increments in simulation rate slider bar.
+     *
+     */
     public static final int TIME_INCREMENT = 111;
 
-    // Maximum proximity an relay may have to a wall, in pixels, when planning paths
-    // (May cause bugs if less than step size)
-    public static final int WALL_DISTANCE = 3; // default 3;
+    /**
+     * Maximum proximity an relay may have to a wall, in pixels, when planning paths. (May cause
+     * bugs if less than step size) Default 3
+     */
+    public static final int WALL_DISTANCE = 3;
 
-    // How many neighbours are added to the queue for AStar search when planning paths
+    /**
+     * How many neighbours are added to the queue for AStar search when planning paths.
+     *
+     */
     public static final int PATH_SEARCH_RESOLUTION = 12;
 
-    // Maximum number of nodes to examine for path planner
+    /**
+     * Maximum number of nodes to examine for path planner.
+     *
+     */
     public static final int MAX_PATH_PLANNER_ITERATIONS = Integer.MAX_VALUE;
 
-    // Number of frontiers (closest ones and biggest) to be evaluated when choosing a frontier
-    public static final int MAX_NUM_FRONTIERS = 6;  //was 6
+    /**
+     * Number of frontiers (closest ones and biggest) to be evaluated when choosing a frontier.
+     * Default 6
+     */
+    public static final int MAX_NUM_FRONTIERS = 6;
 
-    // Minimum size a frontier must have to be considered as part of exploration
-    public static final int MIN_FRONTIER_SIZE = 5; // default 20; was 3
+    /**
+     * Minimum size a frontier must have to be considered as part of exploration. Default 20 or 3 or
+     * 5
+     */
+    public static final int MIN_FRONTIER_SIZE = 5;
 
-    // How long should we assume that the teammate is exploring the 
-    // frontier that he last told us he was to explore?
+    /**
+     * How long should we assume that the teammate is exploring the. frontier that he last told us
+     * he was to explore?
+     */
     public static final int REMEMBER_TEAMMATE_FRONTIER_PERIOD = 500;
 
-    // Minimum wait time until attempting to communicate with the Base Station again. 
-    // This is to ensure when in range
-    // with the base station we do not try to transfer big maps every step, resulting in slowdown.
+    /**
+     * Minimum wait time until attempting to communicate with the Base Station again. This is to
+     * ensure when in range with the base station we do not try to transfer big maps every step,
+     * resulting in slowdown.
+     */
     public static final int MIN_COMM_WITH_CS_PERIOD = 10;
 
-    // Probability of going out of service at any given time
-    public static final double PROB_OUT_OF_SERVICE = 0.0;//0.002;
+    /**
+     * Probability of going out of service at any given time. Default 0.0 or 0.002
+     */
+    public static final double PROB_OUT_OF_SERVICE = 0.0;
 
-    // Maximum possible time (for divisions by zero speed)
+    /**
+     * Maximum possible time (for divisions by zero speed).
+     *
+     */
     public static final int MAX_TIME = 10000;
 
-    // Percent of a territory that must be explored
+    /**
+     * Percent of a territory that must be explored.
+     *
+     */
     public static final double TERRITORY_PERCENT_EXPLORED_GOAL = 0.95;
 
-    // Probability of new debris at each time step
+    /**
+     * Probability of new debris at each time step.
+     *
+     */
     public static final double NEW_DEBRIS_LIKELIHOOD = 0.5;
 
-    // Maximum size of new debris
+    /**
+     * Maximum size of new debris.
+     *
+     */
     public static final int NEW_DEBRIS_MAX_SIZE = 50;
 
-    // How often agents should recalculate how much they know, how much they are relaying etc.
+    /**
+     * How often agents should recalculate how much they know, how much they are relaying etc.
+     *
+     */
     public static final int UPDATE_AGENT_KNOWLEDGE_INTERVAL = 1;
 
-    // Unexplored topological space ID
+    /**
+     * Unexplored topological space ID.
+     *
+     */
     public static final int UNEXPLORED_NODE_ID = Integer.MAX_VALUE;
 
-    // Time an agent needs to be in a state, 
-    // before he starts communicating with the parent for RoleBasedExploration
+    /**
+     * Time an agent needs to be in a state, before he starts communicating with the parent for
+     * RoleBasedExploration
+     */
     public static final int MIN_TIME_IN_EXPLORE_STATE = 15;
 
     public static final int BASE_STATION_TEAMMATE_ID = 1;
     public static final int BASE_STATION_AGENT_ID = 0;
 
-    // How often should we check if it's time to RV?
+    /**
+     * How often should we check if it's time to RV?.
+     *
+     */
     public static final int CHECK_INTERVAL_TIME_TO_RV = 2;
 
-    // How often should we recalculate path to parent
+    /**
+     * How often should we recalculate path to parent.
+     *
+     */
     public static final int PATH_RECALC_PARENT_INTERVAL = 8;
     public static final int PATH_RECALC_CHILD_INTERVAL = 8;
 
-    // How long should we wait at RV, before we make alternative arrangements
+    /**
+     * How long should we wait at RV, before we make alternative arrangements.
+     *
+     */
     public static final int WAIT_AT_RV_BEFORE_REPLAN = 60;
 
-    // Minimal time an explorer should explore a frontier before delivering the information back
+    /**
+     * Minimal time an explorer should explore a frontier before delivering the information back.
+     *
+     */
     public static final int FRONTIER_MIN_EXPLORE_TIME = 75;
 
-    //In role-based exploration try not to go to frontiers if we will have to 
-    // turn back to RV before we can even reach the frontier.
+    /**
+     * In role-based exploration try not to go to frontiers if we will have to turn back to RV
+     * before we can even reach the frontier.
+     */
     public static final boolean AVOID_FRONTIERS_WE_CANNOT_REACH_IN_TIME = false;
 
-    // How often should we check if we need to rebuild topological path?
+    /**
+     * How often should we check if we need to rebuild topological path?.
+     *
+     */
     public static final int REBUILD_TOPOLOGICAL_MAP_INTERVAL = REPLAN_INTERVAL;
 
-    // How often MUST we rebuild topological map?
+    /**
+     * How often MUST we rebuild topological map?.
+     *
+     */
     public static final int MUST_REBUILD_TOPOLOGICAL_MAP_INTERVAL = REPLAN_INTERVAL * 10;
 
-    // How many cells in the occupancy grid need to change for us to rebuild topological map
+    /**
+     * How many cells in the occupancy grid need to change for us to rebuild topological map.
+     *
+     */
     public static final int MAP_CHANGED_THRESHOLD = 100;
 
-    // How many steps should we initialize for
+    /**
+     * How many steps should we initialize for.
+     *
+     */
     public static final int INIT_CYCLES = 3;
 
-    // How much better should RV through a Wall be, 
-    // compared to RV from the same spot not through a wall, to be accepted
+    /**
+     * How much better should RV through a Wall be, compared to RV from the same spot not through a
+     * wall, to be accepted.
+     */
     public static final double MIN_RV_THROUGH_WALL_ACCEPT_RATIO = 0.8;
 
-    // Maximum time we're allowed to search for distance by skeleton, in ms
+    /**
+     * Maximum time we're allowed to search for distance by skeleton, in ms.
+     *
+     */
     public static final long MAX_TIME_DISTANCE_BY_SKELETON = 100;
 
     public static final boolean OUTPUT_PATH_ERROR = false;
-    public static final String DEFAULT_PATH_LOG_DIRECTORY = 
-            Paths.get(System.getProperty("user.dir"), "patherror").toString() + File.separator;
-    public static final String DEFAULT_LOG_DIRECTORY = 
-            Paths.get(System.getProperty("user.dir"), "logs").toString() + File.separator;
-    public static final String DEFAULT_IMAGE_LOG_DIRECTORY = 
-            Paths.get(System.getProperty("user.dir"), "logs", "images").toString() + File.separator;
+    public static final String DEFAULT_PATH_LOG_DIRECTORY
+            = Paths.get(System.getProperty("user.dir"), "patherror").toString() + File.separator;
+    public static final String DEFAULT_LOG_DIRECTORY
+            = Paths.get(System.getProperty("user.dir"), "logs").toString() + File.separator;
+    public static final String DEFAULT_IMAGE_LOG_DIRECTORY
+            = Paths.get(System.getProperty("user.dir"), "logs", "images").toString() + File.separator;
     public static int MAXIMUM_TIME = 3000;
     public static double HANDOVER_RANGE = 8;
     public static double FRONTIER_PERIODIC_RETURN = 50;
     public static boolean PROFILING = false;
 
-    // Colors to be used on map
+    /**
+     * Colors to be used on map.
+     *
+     */
     public static class MapColor {
 
         public static final Color background() {
@@ -231,7 +342,7 @@ public class Constants {
 
         public static final Color explorer() {
             return Color.BLUE;
-        } //{return new Color(238,118,33);}
+        }
 
         public static final Color comStation() {
             return Color.BLACK;
@@ -306,6 +417,9 @@ public class Constants {
         }
     }
 
-    // Indent in console information
+    /**
+     * Indent in console information.
+     *
+     */
     public static final String INDENT = "    - ";
 }

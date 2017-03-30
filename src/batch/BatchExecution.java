@@ -1,5 +1,5 @@
 /*
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -58,42 +58,42 @@ import java.util.logging.Logger;
  * @author christian
  */
 public class BatchExecution {
-    
-    private static final Logger LOGGER = Logger.getLogger( BatchExecution.class.getName() );
-    
+
+    private static final Logger LOGGER = Logger.getLogger(BatchExecution.class.getName());
+
     private MainConsole console;
     private List<SimulatorConfig> configs;
-    
-    public BatchExecution(){
+
+    public BatchExecution() {
         configs = new ArrayList<>();
         SimulatorConfig config = new SimulatorConfig();
-        
+
         //Fixed settings
         config.setExpAlgorithm(SimulatorConfig.exptype.Testing);
         config.setCommModel(SimulatorConfig.commtype.DirectLine);
         config.setUseComStations(true);
-        for (int i = 0; i < 5; i++){
+        for (int i = 0; i < 5; i++) {
             config.setComStationDropChance(0.1 + (0.1 * i));
             configs.add(config);
         }
     }
-    
-    public void run(){
+
+    public void run() {
         List<Thread> threads = new ArrayList<Thread>();
         int counter = 0;
         for (SimulatorConfig conf : configs) {
             String name = "Batch " + counter;
             new File(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + name).mkdir();
-            
+
             counter++;
-            console = new MainConsole(this, true, name);
+            console = new MainConsole(true, name);
             console.load();
             console.loadConfig(conf);
             Thread worker = new Thread(console, name);
             worker.setName(name);
             worker.start();
             threads.add(worker);
-            
+
 //            try {
 //                console.start();
 //            } catch (InterruptedException ex) {
@@ -105,12 +105,12 @@ public class BatchExecution {
                 threads.get(i).join();
                 LOGGER.log(Level.INFO, "Thread {0} joined", i);
             } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, "Thread {0} threw exception {1}: {2}", new Object[]{i,e.getMessage(), e} );
+                LOGGER.log(Level.SEVERE, "Thread {0} threw exception {1}: {2}", new Object[]{i, e.getMessage(), e});
             }
         }
     }
-  
-    public static void main(String args[]){
+
+    public static void main(String args[]) {
         BatchExecution batch = new BatchExecution();
         batch.run();
         System.exit(0);

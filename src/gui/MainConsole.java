@@ -46,7 +46,6 @@ package gui;
 
 import Logging.ExplorationLogger;
 import agents.RealAgent;
-import batch.BatchExecution;
 import config.Constants;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
@@ -56,19 +55,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Run simulation without GUI. Main-method, startable
  *
- * @author christian
+ * @author Christian
  */
 public class MainConsole extends MainGUI implements Runnable {
 
     private static final Logger LOGGER = Logger.getLogger(MainConsole.class.getName());
     private boolean batch;
-    private BatchExecution batchExecution;
     private String threadName = "unnamed";
     private ExplorationLogger exploreLog;
+    private boolean loaded = false;
 
+    /**
+     * Start simulation
+     *
+     * @param args none
+     */
     public static void main(String args[]) {
-        MainConsole mainConsole = new MainConsole(null, false, "SingleThread");
+        MainConsole mainConsole = new MainConsole(false, "SingleThread");
         mainConsole.load();
         try {
             mainConsole.start();
@@ -77,8 +82,13 @@ public class MainConsole extends MainGUI implements Runnable {
         }
     }
 
-    public MainConsole(BatchExecution batchExecution, boolean batch, String name) {
-        this.batchExecution = batchExecution;
+    /**
+     * Constructor for ConsoleMode
+     *
+     * @param batch TRUE if used in batch-execution
+     * @param name Name of the run, used in threadnaming and logging
+     */
+    public MainConsole(boolean batch, String name) {
         this.batch = batch;
         this.threadName = name;
         robotTeamConfig = new RobotTeamConfig();
@@ -87,19 +97,45 @@ public class MainConsole extends MainGUI implements Runnable {
         new File(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName).mkdir();
     }
 
+    /**
+     * Call after creating! Needs to be called to load the simulation in a save state.
+     */
     public void load() {
         explorationImage.redrawEnvAndAgents(this, robotTeamConfig, simConfig);
         simulation = new SimulationFramework(this, robotTeamConfig, simConfig, explorationImage);
+        loaded = true;
     }
 
+    /**
+     * Starts the simulation
+     *
+     * @throws InterruptedException if called before load()
+     */
     public void start() throws InterruptedException {
-        simulation.start();
+        if (loaded) {
+            simulation.start();
+        } else {
+            throw new IllegalStateException("Need to call load() first!");
+        }
     }
 
+    /**
+     * Loads a specific simulation-config. Otherwise the defaultconfig is used
+     *
+     * @param simConf specific simulation-config
+     */
     public void loadConfig(SimulatorConfig simConf) {
         this.simConfig = simConf;
     }
 
+    /**
+     * Gets called by threads, DO NOT CALL YOURSELF!
+     *
+     * @param agent
+     * @param timeElapsed
+     * @param pctAreaKnownTeam
+     * @param avgCycleTime
+     */
     @Override
     public void runComplete(RealAgent[] agent, int timeElapsed, double pctAreaKnownTeam, int avgCycleTime) {
         simulation.logScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
@@ -116,13 +152,24 @@ public class MainConsole extends MainGUI implements Runnable {
                 this.notify();
             }
         }
-//        loop = false;
     }
 
+    /**
+     * Overrides the inherited updateRobotConfig() which would update Robot-data in GUI. DO NOT CALL
+     * YOURSELF
+     */
     @Override
     public void updateRobotConfig() {
     }
 
+    /**
+     * Gets called by threads, DO NOT CALL YOURSELF!
+     *
+     * @param agent
+     * @param timeElapsed
+     * @param pctAreaKnown
+     * @param avgCycleTime
+     */
     @Override
     public void updateFromData(RealAgent agent[],
             int timeElapsed,
@@ -150,17 +197,21 @@ public class MainConsole extends MainGUI implements Runnable {
 
     }
 
+    /**
+     * Needed in batchmode for multithreading. Only calls start, cares about multithread-logging and
+     * Exceptions DO NOT CALL YOURSELF!
+     */
     @Override
     public void run() {
         LOGGER.log(Level.FINE, "{0} started", this.threadName);
         try {
-            this.start();
+            start();
         } catch (InterruptedException ex) {
             Logger.getLogger(MainConsole.class.getName()).log(Level.SEVERE, null, ex);
         }
         synchronized (this) {
             try {
-                this.wait();
+                wait();
             } catch (InterruptedException ex) {
                 Logger.getLogger(MainConsole.class.getName()).log(Level.SEVERE, null, ex);
             }
