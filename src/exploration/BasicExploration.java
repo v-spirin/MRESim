@@ -48,14 +48,28 @@ import agents.RealAgent;
 import path.Path;
 
 /**
+ * Class to inherit from to share some code for all Explorations. Do not use this as type, use
+ * Interface 'Exploration' instead
  *
- * @author christian
+ * @author Christian Clausen
  */
 abstract class BasicExploration {
 
+    /**
+     * The agent using this ExplorationStrategy.
+     */
     RealAgent agent;
+
+    /**
+     * The planned path, null if no replan called.
+     */
     Path path;
 
+    /**
+     * Just builds the object and initializes the agent.
+     *
+     * @param agent The agend using this ExplorationStrategy
+     */
     public BasicExploration(RealAgent agent) {
         this.agent = agent;
     }

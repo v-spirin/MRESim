@@ -45,7 +45,6 @@ package exploration.rendezvous;
 
 import agents.RealAgent;
 import config.Constants;
-import exploration.NearRVPoint;
 import gui.ExplorationImage;
 import java.awt.Color;
 import java.awt.Graphics2D;

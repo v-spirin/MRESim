@@ -43,7 +43,7 @@
  */
 package communication;
 
-import exploration.NearRVPoint;
+import exploration.rendezvous.NearRVPoint;
 import java.awt.Point;
 
 /**

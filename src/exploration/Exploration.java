@@ -1,5 +1,5 @@
 /*
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -47,10 +47,26 @@ package exploration;
 import java.awt.Point;
 
 /**
+ * Interface for "Strategy Pattern"-like Exploration-strategies. Do implement this interface!
  *
- * @author christian
+ * @author Christian Clausen
  */
 public interface Exploration {
+
+    /**
+     * Calculates the next step the robot shouls take. This calls replan is necessary.
+     *
+     * @param timeElapsed Cycle we are in currently
+     * @return Next step
+     */
     public Point takeStep(int timeElapsed);
+
+    /**
+     * Recalculates the current plan. Only need to call this after severe map-changes or similar
+     * situations. Will be called by takeStep if necessary.
+     *
+     * @param timeElapsed Cycle we are in currently
+     * @return Nothing ASAP! //TODO no return!
+     */
     public Point replan(int timeElapsed);
 }

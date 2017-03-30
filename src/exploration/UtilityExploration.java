@@ -44,6 +44,7 @@
 
 package exploration;
 
+import exploration.rendezvous.NearRVPoint;
 import agents.Agent;
 import agents.RealAgent;
 import communication.CommLink;

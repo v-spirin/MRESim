@@ -51,7 +51,6 @@ import communication.PropModel1;
 import config.Constants;
 import environment.Frontier;
 import environment.OccupancyGrid;
-import exploration.NearRVPoint;
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.PriorityQueue;

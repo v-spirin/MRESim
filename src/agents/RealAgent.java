@@ -57,7 +57,7 @@ import environment.TopologicalMap;
 import exploration.Exploration;
 import exploration.FrontierExploration;
 import exploration.LeaderFollower;
-import exploration.NearRVPoint;
+import exploration.rendezvous.NearRVPoint;
 import exploration.RelayFrontierExploration;
 import exploration.RoleBasedExploration;
 import exploration.RunFromLog;

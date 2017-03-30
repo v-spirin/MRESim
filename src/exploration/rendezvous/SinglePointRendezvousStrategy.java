@@ -51,7 +51,6 @@ import environment.Skeleton;
 import static environment.Skeleton.gridToList;
 import static environment.Skeleton.neighborTraversal;
 import static environment.Skeleton.numNonzeroNeighbors;
-import exploration.NearRVPoint;
 import java.awt.Point;
 import java.util.LinkedList;
 import java.util.List;

@@ -41,7 +41,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
-package exploration;
+package exploration.rendezvous;
 
 import communication.CommLink;
 import java.awt.Point;
