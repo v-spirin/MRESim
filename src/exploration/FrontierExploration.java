@@ -60,8 +60,9 @@ import java.util.PriorityQueue;
 import path.Path;
 
 /**
+ * Calculate Frontiers, weight them by utility and decide which one to explore first.
  *
- * @author julh
+ * @author julh, Christian Clausen
  */
 public class FrontierExploration extends BasicExploration implements Exploration {
 
@@ -78,7 +79,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
         this.noReturnTimer = 0;
     }
 
-    // Returns new X, Y of RealAgent
     @Override
     public Point takeStep(int timeElapsed) {
         if (frontierExpType == SimulatorConfig.frontiertype.UtilReturn) {
@@ -88,44 +88,32 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         Point nextStep;
 
-        //<editor-fold defaultstate="collapsed" desc="If base station is in range, update timeLastDirectContactCS and lastContactAreaKnown">
         if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
             agent.getStats().setTimeLastDirectContactCS(1);
             agent.getStats().setLastContactAreaKnown(agent.getStats().getAreaKnown());
         } else {
             agent.getStats().incrementLastDirectContactCS();
         }
-        //</editor-fold>
 
-        //<editor-fold defaultstate="collapsed" desc="CHECK 0: Take a couple of random steps to start (just to gather some sensor data).">
         if (timeElapsed < Constants.INIT_CYCLES) {
             nextStep = RandomWalk.takeStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="CHECK 1: if agent hasn't moved, then he may be stuck in front of a wall.  Taking a random step might help.">
-        else if (agent.getEnvError()) {
+        } else if (agent.getEnvError()) {
             agent.resetPathToBaseStation();
             nextStep = RandomWalk.takeStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="CHECK 2: Agent isn't stuck, not yet time to replan. Continue if we have points left in the previously planned path.">
-        else if ((agent.getStats().getTimeSinceLastPlan() < Constants.REPLAN_INTERVAL)
+        } else if ((agent.getStats().getTimeSinceLastPlan() < Constants.REPLAN_INTERVAL)
                 && agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
             nextStep = agent.getNextPathPoint();
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println("Agent " + agent + " continuing on path.");
             }
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="CHECK 3: Agent isn't stuck. Is it time to replan? Have we moved on to next time cycle?">
-        else if (agent.getStats().getTimeSinceLastPlan() >= Constants.REPLAN_INTERVAL) {
+        } else if (agent.getStats().getTimeSinceLastPlan() >= Constants.REPLAN_INTERVAL) {
             nextStep = replan(timeElapsed);
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="CHECK 4: Agent isn't stuck, not yet time to replan, but we have no points left">
-        else {
+        } else {
             nextStep = replan(timeElapsed);
         }
-        //</editor-fold>
 
         agent.getStats().incrementTimeSinceLastPlan();
 
@@ -502,19 +490,19 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 agent.addDirtyCells(existingPath.getAllPathPixels());
             }
 
-            Path path = agent.getRendezvousStrategy().processGoToChildReplan();
+            Path _path = agent.getRendezvousStrategy().processGoToChildReplan();
 
-            if (path == null) {
-                path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
+            if (_path == null) {
+                _path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
             }
             //<editor-fold defaultstate="collapsed" desc="Could not find full path! Trying pure A*">
-            if (!path.found) {
+            if (!_path.found) {
                 System.out.println(agent.toString() + "!!!ERROR!  Could not find full path! Trying pure A*");
-                path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), true);
+                _path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), true);
             }
             //</editor-fold>
             //<editor-fold defaultstate="collapsed" desc="Still couldn't find path, trying existing path or if that fails, taking random step">
-            if (!path.found) {
+            if (!_path.found) {
                 System.out.println(agent.toString() + "!!!ERROR!  Could not find full path!");
                 if ((existingPath != null) && (existingPath.getPoints().size() > 2)) {
                     agent.setPath(existingPath);
@@ -525,7 +513,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 }
                 //</editor-fold>
             } else {
-                agent.setPath(path);
+                agent.setPath(_path);
                 agent.setCurrentGoal(rvd.getChildRendezvous().getParentLocation());
                 // Must remove first point in path as this is robot's location.
                 agent.getPath().getPoints().remove(0);
@@ -559,11 +547,11 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         if (agent.getStateTimer() == 0) {
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
-            Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+            Path _path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
             /*if (agent.getChildTeammate().getState() == Agent.ExploreState.GiveParentInfo) {
                 agent.setTimeSinceGetChildInfo(0);
             }*/
-            agent.setPath(path);
+            agent.setPath(_path);
             agent.setStateTimer(1);
             agent.setCurrentGoal(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
             return agent.getLocation();
