@@ -41,7 +41,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
-package agents;
+package Logging;
 
 import java.util.LinkedList;
 
@@ -75,6 +75,8 @@ public class AgentStats {
     private int timeDoubleSensing;
     private int lastIncrementedTimeDoubleSensing;
     private final LinkedList<Integer> timeBaseMessageReceived;
+    private int comStationsDropped;
+    private int batteryPower; //Just for logging!!!
 
     public AgentStats() {
         timeLastCentralCommand = 0;
@@ -96,6 +98,8 @@ public class AgentStats {
         timeReturning = 0;
         timeDoubleSensing = 0;
         timeBaseMessageReceived = new LinkedList<Integer>();
+        comStationsDropped = 0;
+        batteryPower = 0;
     }
 
     public AgentStats(AgentStats agentStats) {
@@ -118,6 +122,16 @@ public class AgentStats {
         timeReturning = agentStats.timeReturning;
         timeDoubleSensing = agentStats.timeDoubleSensing;
         timeBaseMessageReceived = (LinkedList<Integer>) agentStats.timeBaseMessageReceived.clone();
+        comStationsDropped = agentStats.comStationsDropped;
+        batteryPower = agentStats.batteryPower;
+    }
+
+    public int getBatteryPower() {
+        return batteryPower;
+    }
+
+    public void setBatteryPower(int batteryPower) {
+        this.batteryPower = batteryPower;
     }
 
     public int getTimeLastCentralCommand() {
@@ -305,5 +319,13 @@ public class AgentStats {
     public AgentStats copy() {
         AgentStats copy = new AgentStats();
         return copy;
+    }
+
+    public void incrementDroppedComStations() {
+        this.comStationsDropped += 1;
+    }
+
+    public int getComStationsDropped() {
+        return this.comStationsDropped;
     }
 }

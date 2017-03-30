@@ -44,7 +44,6 @@
 
 package Logging;
 
-import agents.AgentStats;
 import agents.RealAgent;
 import config.Constants;
 import config.SimulatorConfig;
@@ -93,12 +92,18 @@ public class ExplorationLogger {
         PrintWriter exploration;
         try {
             exploration = new PrintWriter(Constants.DEFAULT_LOG_DIRECTORY + "exploration" + this.name + ".csv");
-            exploration.printf("Cycle,%s,%s,%s\n", agents[0].getName(), agents[1].getName(), agents[2].getName());
+            exploration.printf("Cycle,%s,%s,%s,ComStationsInUse,EnergyConsumption\n", agents[0].getName(), agents[1].getName(), agents[2].getName());
             for (int i = 1; i < timeElapsed; i++) {
                 long area1 = Math.round(100 * (double) this.log.get(agents[0]).get(i).getAreaKnown() / (double) total);
                 long area2 = Math.round(100 * (double) this.log.get(agents[1]).get(i).getAreaKnown() / (double) total);
                 long area3 = Math.round(100 * (double) this.log.get(agents[2]).get(i).getAreaKnown() / (double) total);
-                exploration.printf("%d,%d,%d,%d\n", i, area1, area2, area3);
+                int coms = this.log.get(agents[0]).get(i).getComStationsDropped();
+
+                int energy = log.get(agents[0]).get(i).getBatteryPower();
+                energy += log.get(agents[1]).get(i).getBatteryPower();
+                energy += log.get(agents[2]).get(i).getBatteryPower();
+
+                exploration.printf("%d,%d,%d,%d,%d,%d\n", i, area1, area2, area3, coms, energy);
 
             }
 //            exploration.flush();

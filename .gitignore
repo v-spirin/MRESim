@@ -4,4 +4,4 @@
 config/*
 *.swp
 logs/*
-
+*.csv

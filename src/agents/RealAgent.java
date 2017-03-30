@@ -44,6 +44,7 @@
 
 package agents;
 
+import Logging.AgentStats;
 import communication.CommLink;
 import communication.DataMessage;
 import config.Constants;
@@ -453,6 +454,7 @@ public class RealAgent extends Agent {
         prevX = x;
         prevY = y;
         this.oldTimeElapsed = this.timeElapsed;
+        this.getStats().setBatteryPower(batteryPower);
 
         // Only for testing, uncommenting the line below leads to massive slow down
         //occGrid.initializeTestBits();
@@ -1181,6 +1183,8 @@ public class RealAgent extends Agent {
             comStation.setState(ExploreState.RELAY);
             comStation.setX(this.x);
             comStation.setY(this.y);
+            this.getStats().incrementDroppedComStations();
+            baseStation.getStats().incrementDroppedComStations();
         }
     }
 }
