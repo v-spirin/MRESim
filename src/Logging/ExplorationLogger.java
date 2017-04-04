@@ -93,7 +93,7 @@ public class ExplorationLogger {
         try {
             exploration = new PrintWriter(Constants.DEFAULT_LOG_DIRECTORY + "exploration" + this.name + ".csv");
             exploration.printf("Cycle,%s,%s,%s,ComStationsInUse,EnergyConsumption\n", agents[0].getName(), agents[1].getName(), agents[2].getName());
-            for (int i = 1; i < timeElapsed; i++) {
+            for (int i = 1; i <= timeElapsed; i++) {
                 long area1 = Math.round(100 * (double) this.log.get(agents[0]).get(i).getAreaKnown() / (double) total);
                 long area2 = Math.round(100 * (double) this.log.get(agents[1]).get(i).getAreaKnown() / (double) total);
                 long area3 = Math.round(100 * (double) this.log.get(agents[2]).get(i).getAreaKnown() / (double) total);
