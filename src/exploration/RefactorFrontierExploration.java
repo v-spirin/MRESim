@@ -64,14 +64,14 @@ import path.Path;
  *
  * @author julh, Christian Clausen
  */
-public class FrontierExploration extends BasicExploration implements Exploration {
+public class RefactorFrontierExploration extends BasicExploration implements Exploration {
 
     SimulatorConfig.frontiertype frontierExpType;
     int PERIODIC_RETURN = 100;
     RealAgent baseStation;
     int noReturnTimer;
 
-    public FrontierExploration(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, RealAgent baseStation) {
+    public RefactorFrontierExploration(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, RealAgent baseStation) {
         super(agent);
         this.agent = agent;
         this.frontierExpType = frontierExpType;
