@@ -77,6 +77,7 @@ public class AgentStats {
     private final LinkedList<Integer> timeBaseMessageReceived;
     private int comStationsDropped;
     private int batteryPower; //Just for logging!!!
+    private int communications;
 
     public AgentStats() {
         timeLastCentralCommand = 0;
@@ -100,6 +101,7 @@ public class AgentStats {
         timeBaseMessageReceived = new LinkedList<Integer>();
         comStationsDropped = 0;
         batteryPower = 0;
+        communications = 0;
     }
 
     public AgentStats(AgentStats agentStats) {
@@ -124,6 +126,19 @@ public class AgentStats {
         timeBaseMessageReceived = (LinkedList<Integer>) agentStats.timeBaseMessageReceived.clone();
         comStationsDropped = agentStats.comStationsDropped;
         batteryPower = agentStats.batteryPower;
+        communications = agentStats.communications;
+    }
+
+    public int getCommunications() {
+        return communications;
+    }
+
+    public void setCommunications(int communications) {
+        this.communications = communications;
+    }
+
+    public void incrementCommunications() {
+        this.communications++;
     }
 
     public int getBatteryPower() {

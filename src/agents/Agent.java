@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -76,7 +76,7 @@ abstract public class Agent {
     RobotConfig.roletype role;
 
     public static enum ExploreState {
-        Initial, Explore, ReturnToParent, WaitForParent, GiveParentInfo, 
+        Initial, Explore, ReturnToParent, WaitForParent, GiveParentInfo,
         GoToChild, WaitForChild, GetInfoFromChild, OutOfService, RELAY, INACTIVE
     }
     private ExploreState state;
@@ -89,7 +89,7 @@ abstract public class Agent {
     private int timeSinceGetChildInfo; //how long since we got child info
 
     // Keeps historical data about agent knowledge
-    public Map<Integer, Double> knowledgeData = new HashMap(); 
+    public Map<Integer, Double> knowledgeData = new HashMap();
 
     public Agent(RobotConfig robot) {
         robotNumber = robot.getRobotNumber();
@@ -112,7 +112,6 @@ abstract public class Agent {
         this.comStationLimit = robot.getComStationLimit();
     }
 
-// <editor-fold defaultstate="collapsed" desc="Get and Set">
     public int getAbility() {
         return ability;
     }
@@ -265,17 +264,17 @@ abstract public class Agent {
             this.comStations.add(com);
         }
     }
-    
-    public ComStation giveComStation(){
-        if (this.comStations.size() > 0){
+
+    public ComStation giveComStation() {
+        if (this.comStations.size() > 0) {
             return this.comStations.remove(0);
         } else {
             return null;
         }
     }
-    
-    public boolean takeComStation(ComStation comstation){
-        if (comstation != null){
+
+    public boolean takeComStation(ComStation comstation) {
+        if (comstation != null) {
             this.addComStation(comstation);
             return true;
         } else {
@@ -286,8 +285,6 @@ abstract public class Agent {
     public ArrayList<ComStation> getComStations() {
         return comStations;
     }
-    
-// </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Utility Functions">
     //Adds all points in list2 to list1 (no duplicates), returns merged list.
@@ -329,29 +326,31 @@ abstract public class Agent {
         return ("[" + this.name + "] [" + this.ID + "] ");
     }
 
-    public RobotConfig extractConfig(){
+    public RobotConfig extractConfig() {
         RobotConfig robot = new RobotConfig(
-                this.robotNumber, 
-                this.name, 
-                this.x, 
-                this.y, 
-                this.heading, 
-                this.sensRange, 
-                this.commRange, 
-                this.batteryPower, 
-                this.role.toString(), 
-                this.parent, 
-                this.child, 
-                this.ability, 
-                this.comStationLimit, 
+                this.robotNumber,
+                this.name,
+                this.x,
+                this.y,
+                this.heading,
+                this.sensRange,
+                this.commRange,
+                this.batteryPower,
+                this.role.toString(),
+                this.parent,
+                this.child,
+                this.ability,
+                this.comStationLimit,
                 this.speed);
         return robot;
     }
 // </editor-fold>
-    
+
 // <editor-fold defaultstate="collapsed" desc="Abstract Functions">
     abstract public Point takeStep(int timeElapsed);
+
     abstract public void writeStep(Point nextLoc, double[] sensorData, boolean updateSensorData);
+
     abstract public void flush();
 //</editor-fold>
 }

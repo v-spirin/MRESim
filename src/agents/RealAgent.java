@@ -57,7 +57,6 @@ import environment.TopologicalMap;
 import exploration.Exploration;
 import exploration.FrontierExploration;
 import exploration.LeaderFollower;
-import exploration.rendezvous.NearRVPoint;
 import exploration.RelayFrontierExploration;
 import exploration.RoleBasedExploration;
 import exploration.RunFromLog;
@@ -65,6 +64,7 @@ import exploration.SimulationFramework;
 import exploration.UtilityExploration;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.MultiPointRendezvousStrategy;
+import exploration.rendezvous.NearRVPoint;
 import exploration.rendezvous.RendezvousAgentData;
 import exploration.rendezvous.RendezvousStrategyFactory;
 import java.awt.Point;
@@ -1138,8 +1138,8 @@ public class RealAgent extends Agent {
     }
 
     // </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Communicate">
     public void receiveMessage(DataMessage msg) {
+        stats.incrementCommunications();
         TeammateAgent teammate = getTeammateByNumber(msg.ID);
 
         msg.receiveMessage(this, teammate);
@@ -1162,8 +1162,6 @@ public class RealAgent extends Agent {
             updateAreaRelayed(teammate);
         }
 
-        //replan?
-        //stats.setTimeSinceLastPlan(Integer.MAX_VALUE);
     }
 
     public boolean isCommunicating() {
@@ -1175,7 +1173,6 @@ public class RealAgent extends Agent {
             teammate.setTimeSinceLastComm(teammate.getTimeSinceLastComm() + 1);
         }); //processRelayMarks();
     }
-// </editor-fold>
 
     public void dropComStation() {
         if (comStations.size() > 0) {
