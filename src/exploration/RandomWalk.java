@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -54,7 +54,7 @@ import path.Path;
  *
  * @author julh
  */
-public class RandomWalk implements Exploration{
+public class RandomWalk implements Exploration {
 
     public static Random generator = new Random(Constants.RANDOM_SEED);
     RealAgent agent;
@@ -62,7 +62,7 @@ public class RandomWalk implements Exploration{
     public RandomWalk(RealAgent agent) {
         this.agent = agent;
     }
-    
+
     @Override
     public Point takeStep(int timeElapsed) {
         int maxcounter = 100;
@@ -154,9 +154,8 @@ public class RandomWalk implements Exploration{
                 speed = speed - 1;
             }
         }
-        Path path = new Path();
-        path.setStartPoint(new Point(agent.getX(), agent.getY()));
-        path.setGoalPoint(new Point(newX, newY));
+        Point newPoint = new Point(newX, newY);
+        Path path = new Path(agent.getOccupancyGrid(), agent.getLocation(), newPoint, true, true);
         agent.setPath(path);
 
         return (new Point(newX, newY));
@@ -166,8 +165,8 @@ public class RandomWalk implements Exploration{
     public Point replan(int timeElapsed) {
         return takeStep(timeElapsed);
     }
-    
-    public static Point takeStep(RealAgent agent){
+
+    public static Point takeStep(RealAgent agent) {
         return new RandomWalk(agent).takeStep(0);
     }
 }

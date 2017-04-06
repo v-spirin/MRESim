@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -100,7 +100,7 @@ public class ExplorationImage {
         resetImage();
     }
 
-// <editor-fold defaultstate="collapsed" desc="Get and Set">    
+// <editor-fold defaultstate="collapsed" desc="Get and Set">
     public void resetSize(int newWidth, int newHeight) {
         width = newWidth;
         height = newHeight;
@@ -190,7 +190,7 @@ public class ExplorationImage {
     }
 // </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Dirt">  
+// <editor-fold defaultstate="collapsed" desc="Dirt">
     private void addDirtyAgentCells(RealAgent agent) {
         // Erase old relay triangle
         for (int i = agent.getX() - 2 * Constants.AGENT_RADIUS; i <= agent.getX() + 2 * Constants.AGENT_RADIUS; i++) {
@@ -282,11 +282,11 @@ public class ExplorationImage {
     }
     //</editor-fold>
     //draw RV generation process
-/*public void fullUpdateRVPoints(OccupancyGrid agentGrid, PriorityQueue<NearRVPoint> rvPoints, 
+/*public void fullUpdateRVPoints(OccupancyGrid agentGrid, PriorityQueue<NearRVPoint> rvPoints,
             LinkedList<NearRVPoint> generatedPoints, Point frontierCenter,
             ShowSettingsAgent agentSettings) {
         setG2D();
-        
+
         //<editor-fold defaultstate="collapsed" desc="Draw agent grid according to agentSettings">
         for(int i=0; i<agentGrid.width; i++)
             for(int j=0; j<agentGrid.height; j++)
@@ -295,12 +295,12 @@ public class ExplorationImage {
                 updatePixelAgent(agentSettings, agentGrid, i, j);
             }
         //</editor-fold>
-        
+
         for(Point p: generatedPoints) {
             g2D.setPaint(Color.MAGENTA);
             g2D.fillOval(p.x-2, p.y-2, 4, 4);
         }
-        
+
         int counter = 0;
         while (!rvPoints.isEmpty()) {
             NearRVPoint p = rvPoints.poll();
@@ -316,7 +316,7 @@ public class ExplorationImage {
                 drawLine(p, p1, c);
                 NearRVPoint p2 = p1.parentPoint;
                 g2D.drawOval(p2.x-2, p2.y-2, 4, 4);
-                drawLine(p1, p2, c);            
+                drawLine(p1, p2, c);
                 g2D.setPaint(Color.BLACK);
                 g2D.drawString(Double.toString(Math.round(p.utility)), p.x - 5, p.y - 5);
             }
@@ -419,11 +419,11 @@ public class ExplorationImage {
             //Draw paths
             if (agentSettings[i].showPath) {
                 drawPath(agents[i].getPath(), agents[i].pathTaken);
-                agents[i].updatePathDirt(agents[i].getPath());
+                agents[i].updatePathDirt();
             }
             //Draw skeleton
             //if(agentSettings[i].showSkeleton)
-            //drawSkeleton(agents[i]);                
+            //drawSkeleton(agents[i]);
             //Draw border skeleton
             if (agentSettings[i].showBorderSkel) {
                 drawBorderSkeleton(agents[i]);
@@ -530,7 +530,7 @@ public class ExplorationImage {
         } catch (NullPointerException npe) {
             System.err.println("Error: could not draw agents");
         }
-        
+
     }
 
     public void updateBackground() {
@@ -664,10 +664,10 @@ public class ExplorationImage {
                 g2D.drawLine(((Point) pts.get(i)).x, ((Point) pts.get(i)).y, ((Point) pts.get(i + 1)).x, ((Point) pts.get(i + 1)).y);
             }
 
-            //part 2:  past path 
+            //part 2:  past path
             /*g2D.setPaint(Color.BLUE);
             for(int i=0; i<pastPath.size()-1; i++)
-                g2D.drawLine(((Point)pastPath.get(i)).x, ((Point)pastPath.get(i)).y, ((Point)pastPath.get(i+1)).x, ((Point)pastPath.get(i+1)).y);                
+                g2D.drawLine(((Point)pastPath.get(i)).x, ((Point)pastPath.get(i)).y, ((Point)pastPath.get(i+1)).x, ((Point)pastPath.get(i+1)).y);
              */
         } catch (java.lang.NullPointerException e) {
         }
@@ -900,7 +900,7 @@ public class ExplorationImage {
     }
 
 // </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Helper functions">    
+// <editor-fold defaultstate="collapsed" desc="Helper functions">
     public void drawRange(Environment env, RealAgent agent, Polygon range, Color color) {
         for (Point p : polygonPoints(range)) {
             if (env.locationExists(p.x, p.y)) {

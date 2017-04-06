@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -66,6 +66,8 @@ public class Path {
     private Point start;
     private Point goal;
     private OccupancyGrid grid;
+    private boolean jump_allowed;
+    private boolean limit;
 
     List<Point> reversePathPoints;
     List<Point> pathPoints;
@@ -74,51 +76,9 @@ public class Path {
     LinkedList<Point> allPathPixels;
     double length;
 
-    private void OutputPathError(OccupancyGrid agentGrid, Point startpoint, Point endpoint, String dir) {
-        if (Constants.OUTPUT_PATH_ERROR) {
-            try {
-                ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
-                ShowSettingsAgent agentSettings = new ShowSettingsAgent();
-                agentSettings.showFreeSpace = true;
-                agentSettings.showBaseSpace = false;
-                img.fullUpdatePath(agentGrid, startpoint, endpoint, agentSettings);
-                img.saveScreenshot(dir);
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println("Outputting path debug screens to: " + dir);
-                }
-            } catch (Exception e) {
-                System.err.println("Couldn't save path error screenshot, reason: " + e.getMessage());
-            }
-        }
-    }
-
-    private void OutputPathError(OccupancyGrid agentGrid, TopologicalMap tMap,
-            Point startpoint, Point endpoint, String dir) {
-        if (Constants.OUTPUT_PATH_ERROR) {
-            try {
-                ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
-                ShowSettingsAgent agentSettings = new ShowSettingsAgent();
-                agentSettings.showFreeSpace = true;
-                agentSettings.showTopologicalMap = true;
-                img.fullUpdatePath(agentGrid, tMap, startpoint, endpoint, agentSettings);
-                img.saveScreenshot(dir);
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println("Outputting path debug screens to: " + dir);
-                }
-            } catch (Exception e) {
-                System.err.println("Couldn't save path error screenshot, reason: " + e.getMessage());
-            }
-        }
-    }
-
-    public Path() {
-        allPathPixels = new LinkedList<Point>();
-        pathPoints = new LinkedList<Point>();
-    }
-
     public Path(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit, boolean jump) {
-        setStartPoint(startpoint);
-        setGoalPoint(endpoint);
+        this.start = startpoint;
+        this.goal = endpoint;
         if (!jump) {
             getAStarPath(agentGrid, startpoint, endpoint, limit);
         } else {
@@ -132,8 +92,8 @@ public class Path {
         int[][] areaGrid = tMap.getAreaGrid();
         HashMap<Integer, TopologicalNode> topologicalNodes = tMap.getTopologicalNodes();
 
-        setStartPoint(startpoint);
-        setGoalPoint(endpoint);
+        this.start = startpoint;
+        this.goal = endpoint;
         TopologicalNode startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
         TopologicalNode goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
 
@@ -342,7 +302,7 @@ public class Path {
         }
         for (TopologicalNode n : pathNodes) {
             //node only
-            //pathPoints.add(n.getPosition());            
+            //pathPoints.add(n.getPosition());
 
             if (n.equals(startNode)) {
                 p1.getPoints().stream().forEach((p) -> {
@@ -640,12 +600,12 @@ public class Path {
     }
 
     /**
-     * Search recursively in the direction (parent -> child), stopping only when
-     * a jump point is found.
+     * Search recursively in the direction (parent -> child), stopping only when a jump point is
+     * found.
      *
      * @protected
-     * @return {Array.<[number, number]>} The x, y coordinate of the jump point
-     * found, or null if not found
+     * @return {Array.<[number, number]>} The x, y coordinate of the jump point found, or null if
+     * not found
      */
     private Point jump(Point neighbour, Point current) {
         int x = neighbour.x;
@@ -665,9 +625,9 @@ public class Path {
         // check for forced neighbors
         // along the diagonal
         if (dx != 0 && dy != 0) {
-            /*if (((grid.locationExists(x - dx, y + dy) && !grid.obstacleAt(x - dx, y + dy)) && 
+            /*if (((grid.locationExists(x - dx, y + dy) && !grid.obstacleAt(x - dx, y + dy)) &&
                     !(grid.locationExists(x - dx, y) && !grid.obstacleAt(x - dx, y))) ||
-                ((grid.locationExists(x + dx, y - dy) && !grid.obstacleAt(x + dx, y - dy)) && 
+                ((grid.locationExists(x + dx, y - dy) && !grid.obstacleAt(x + dx, y - dy)) &&
                     !(grid.locationExists(x, y - dy) && !grid.obstacleAt(x, y - dy)))) {
                 return new Point(x, y);
             }*/ //This should never happen anyway as we are not cutting corners
@@ -678,9 +638,9 @@ public class Path {
             }
         } // horizontally/vertically
         else if (dx != 0) { // moving along x
-            /*if(((grid.locationExists(x + dx, y + 1) && !grid.obstacleAt(x + dx, y + 1)) && 
+            /*if(((grid.locationExists(x + dx, y + 1) && !grid.obstacleAt(x + dx, y + 1)) &&
                         !(grid.locationExists(x, y + 1) && !grid.obstacleAt(x, y + 1))) ||
-                ((grid.locationExists(x + dx, y - 1) && !grid.obstacleAt(x + dx, y - 1)) && 
+                ((grid.locationExists(x + dx, y - 1) && !grid.obstacleAt(x + dx, y - 1)) &&
                         !(grid.locationExists(x, y - 1) && !grid.obstacleAt(x, y - 1)))) {
                     return new Point(x, y);
                 }*/
@@ -747,11 +707,11 @@ public class Path {
                     && (grid.locationExists(nodeX + dx, nodeY) && grid.freeSpaceAt(nodeX + dx, nodeY))) {
                 validNeighbours.add(new Point(nodeX + dx, nodeY + dy));
             }
-            /*if (!(grid.locationExists(nodeX - dx, nodeY) && !grid.obstacleAt(nodeX - dx, nodeY)) && 
+            /*if (!(grid.locationExists(nodeX - dx, nodeY) && !grid.obstacleAt(nodeX - dx, nodeY)) &&
                     (grid.locationExists(nodeX, nodeY + dy) && !grid.obstacleAt(nodeX, nodeY + dy))) {
                 validNeighbours.add(new Point(nodeX - dx, nodeY + dy));
             }
-            if (!(grid.locationExists(nodeX, nodeY - dy) && !grid.obstacleAt(nodeX, nodeY - dy)) && 
+            if (!(grid.locationExists(nodeX, nodeY - dy) && !grid.obstacleAt(nodeX, nodeY - dy)) &&
                    (grid.locationExists(nodeX + dx, nodeY) && !grid.obstacleAt(nodeX + dx, nodeY))) {
                 validNeighbours.add(new Point(nodeX + dx, nodeY - dy));
             }*/
@@ -930,7 +890,7 @@ public class Path {
                 if (pts.get(0).distance(current_node) < pts.get(pts.size() - 1).distance(current_node)) //points are in reverse
                 {
                     for (int i = pts.size() - 2; i >= 0; i--) {
-                        //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0) 
+                        //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0)
                         //        && (pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) <= 2))
                         pathPoints.add(pts.get(i));
                         //else
@@ -938,7 +898,7 @@ public class Path {
                     }
                 } else {
                     for (int i = 1; i < pts.size(); i++) {
-                        //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0) 
+                        //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0)
                         //        && (pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) <= 2))
                         pathPoints.add(pts.get(i));
                         //else
@@ -957,7 +917,7 @@ public class Path {
             if (pts.get(0).distance(current_node) < pts.get(pts.size() - 1).distance(current_node)) //points are in reverse
             {
                 for (int i = pts.size() - 2; i >= 0; i--) {
-                    //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0) 
+                    //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0)
                     //        && (pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) <= 2))
                     pathPoints.add(pts.get(i));
                     //else
@@ -965,7 +925,7 @@ public class Path {
                 }
             } else {
                 for (int i = 1; i < pts.size(); i++) {
-                    //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0) 
+                    //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0)
                     //        && (pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) <= 2))
                     pathPoints.add(pts.get(i));
                     //else
@@ -1031,12 +991,10 @@ public class Path {
         reversePathPoints = t;
     }
 
-    public Path generateReversePath() {
-        Path p = new Path();
+    public Path getReversePath() {
+        Path p = new Path(grid, goal, start, limit, jump_allowed);
         p.pathPoints = reversePathPoints;
         p.reversePathPoints = pathPoints;
-        p.goal = start;
-        p.start = goal;
         p.found = found;
         p.length = length;
         return p;
@@ -1111,7 +1069,7 @@ public class Path {
                 // Check 5: avoid running into teammates
                 /*teammateCollision = false;
                 for(TeammateAgent t: agent.getAllTeammates().values())
-                    if(t.isInDirectRange() && 
+                    if(t.isInDirectRange() &&
                        t.distanceTo(new Point(neighbourX, neighbourY)) < 2*Constants.WALL_DISTANCE &&
                        !(goal.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE )) {
                         teammateCollision = true;
@@ -1164,6 +1122,43 @@ public class Path {
             return ("[Path Planner] (" + this.start.x + "," + this.start.y + ") -> (" + this.goal.x + "," + this.goal.y + ")");
         } else {
             return ("[Path Planner] null-Path");
+        }
+    }
+
+    private void OutputPathError(OccupancyGrid agentGrid, Point startpoint, Point endpoint, String dir) {
+        if (Constants.OUTPUT_PATH_ERROR) {
+            try {
+                ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
+                ShowSettingsAgent agentSettings = new ShowSettingsAgent();
+                agentSettings.showFreeSpace = true;
+                agentSettings.showBaseSpace = false;
+                img.fullUpdatePath(agentGrid, startpoint, endpoint, agentSettings);
+                img.saveScreenshot(dir);
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println("Outputting path debug screens to: " + dir);
+                }
+            } catch (Exception e) {
+                System.err.println("Couldn't save path error screenshot, reason: " + e.getMessage());
+            }
+        }
+    }
+
+    private void OutputPathError(OccupancyGrid agentGrid, TopologicalMap tMap,
+            Point startpoint, Point endpoint, String dir) {
+        if (Constants.OUTPUT_PATH_ERROR) {
+            try {
+                ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
+                ShowSettingsAgent agentSettings = new ShowSettingsAgent();
+                agentSettings.showFreeSpace = true;
+                agentSettings.showTopologicalMap = true;
+                img.fullUpdatePath(agentGrid, tMap, startpoint, endpoint, agentSettings);
+                img.saveScreenshot(dir);
+                if (Constants.DEBUG_OUTPUT) {
+                    System.out.println("Outputting path debug screens to: " + dir);
+                }
+            } catch (Exception e) {
+                System.err.println("Couldn't save path error screenshot, reason: " + e.getMessage());
+            }
         }
     }
 }

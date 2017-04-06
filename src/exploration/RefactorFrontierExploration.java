@@ -321,16 +321,7 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
         } else {
             start = agent.getTeammate(ute.ID).getLocation();
         }
-
-        // old method:
-        //Path p = new Path(agent, start, ute.frontier.getCentre());
         Path p;
-        /*if (ute.frontier.getClosestPoint(start, agent.getOccupancyGrid()).x == 0)
-        {
-            //System.out.println("Closest point is 0, this shouldn't happen");
-            p = new Path();
-            p.found = false;
-        } else*/
         {
             p = agent.calculatePath(start, ute.frontier.getCentre()/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
         }
@@ -679,7 +670,8 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
                 }
 
             } else //System.out.println("UtilityExact: " + best.utility);
-             if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
+            {
+                if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
                     if (best.ID == agent.getID()) {
                         if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
                             agent.setState(Agent.ExploreState.GoToChild);
@@ -712,6 +704,7 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
                 } else {
                     utilities.add(best);
                 }
+            }
 
             counter++;
         }

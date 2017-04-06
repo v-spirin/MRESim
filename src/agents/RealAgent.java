@@ -159,8 +159,6 @@ public class RealAgent extends Agent {
 
         frontiers = new PriorityQueue();
 
-        path = new Path();
-
         teammates = new HashMap<Integer, TeammateAgent>();
 
         setState(RealAgent.ExploreState.Initial);
@@ -388,13 +386,17 @@ public class RealAgent extends Agent {
     }
 
 // </editor-fold>
-    public void updatePathDirt(Path p) {
-        java.util.List pts = p.getPoints();
+    public void updatePathDirt() {
+        if (path == null) {
+            return;
+        }
+        addDirtyCells(path.getAllPathPixels());
+        /*        java.util.List pts = path.getPoints();
         if (pts != null) {
             for (int i = 0; i < pts.size() - 1; i++) {
                 addDirtyCells(pointsAlongSegment(((Point) pts.get(i)).x, ((Point) pts.get(i)).y, ((Point) pts.get(i + 1)).x, ((Point) pts.get(i + 1)).y));
             }
-        }
+        }*/
     }
 
     public void computePathToBaseStation(boolean comRangeSufficient) {
@@ -545,11 +547,7 @@ public class RealAgent extends Agent {
             nextStep = exploration.takeStep(timeElapsed);
             if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
                 //Make sure the GUI can display a path estimate
-                Path straightLine = new Path();
-                straightLine.setStartPoint(getLocation());
-                straightLine.setGoalPoint(((RunFromLog) exploration).getGoal(timeElapsed));
-                straightLine.getPoints().add(straightLine.getStartPoint());
-                straightLine.getPoints().add(straightLine.getGoalPoint());
+                Path straightLine = new Path(occGrid, getLocation(), ((RunFromLog) exploration).getGoal(timeElapsed), true, true);
                 setPath(straightLine);
             }
         } else {
@@ -658,18 +656,16 @@ public class RealAgent extends Agent {
             updateTopologicalMap(true);
         }
         boolean topologicalMapUpdated = (timeTopologicalMapUpdated == timeElapsed);
-        topologicalMap.setPathStart(startPoint);
-        topologicalMap.setPathGoal(goalPoint);
+        Path tpath = new Path(occGrid, topologicalMap, startPoint, goalPoint, pureAStar);
         if (!pureAStar) {
-            topologicalMap.calculateTopologicalPath();
-            if (!topologicalMap.getPath().found && !topologicalMapUpdated) {
+            if (!tpath.found && !topologicalMapUpdated) {
                 if (Constants.DEBUG_OUTPUT) {
                     System.out.println(this + "Trying to rebuild topological map and replan path "
                             + startPoint + " to " + goalPoint);
                 }
                 timeTopologicalMapUpdated = -1;
                 return calculatePath(startPoint, goalPoint);
-            } else if (!topologicalMap.getPath().found) {
+            } else if (!tpath.found) {
                 if (Constants.DEBUG_OUTPUT) {
                     System.out.println(this + "at location (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") failed to plan path (" + (int) startPoint.getX() + "," + (int) startPoint.getY() + ") to (" + (int) goalPoint.getX() + "," + (int) goalPoint.getY() + "), not retrying; "
                             + "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed
@@ -681,12 +677,12 @@ public class RealAgent extends Agent {
                 System.out.println(this + "calculating jump path from "
                         + startPoint + " to " + goalPoint);
             }
-            topologicalMap.calculateJumpPath();
-            if (topologicalMap.getPath() == null) {
+            tpath = new Path(occGrid, startPoint, goalPoint, false, pureAStar);
+            if (!tpath.found) {
                 System.err.println("!!!! CATASTROPHIC FAILURE !!!!!");
             }
         }
-        return topologicalMap.getPath();
+        return tpath;
     }
 
     private LinkedList<Point> pointsAlongSegment(int x1, int y1, int x2, int y2) {
