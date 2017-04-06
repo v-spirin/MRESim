@@ -77,7 +77,7 @@ abstract public class Agent {
 
     public static enum ExploreState {
         Initial, Explore, ReturnToParent, WaitForParent, GiveParentInfo,
-        GoToChild, WaitForChild, GetInfoFromChild, OutOfService, RELAY, INACTIVE
+        GoToChild, WaitForChild, GetInfoFromChild, OutOfService, RELAY, INACTIVE, OCCUPIED, AKTIVE
     }
     private ExploreState state;
     private ExploreState prevExploreState;

@@ -129,6 +129,12 @@ public class RealAgent extends Agent {
     private SimulationFramework simFramework;
     private int oldTimeElapsed;
 
+    /**
+     * Indicates that the agend did something using occupied cycles (cycles left until available
+     * again).
+     */
+    private int occupied = 0;
+
     public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, RealAgent baseStation) {
         super(robot);
 
@@ -476,7 +482,17 @@ public class RealAgent extends Agent {
         //previous time elapsed, used to check if we advanced to a new time cycle
         this.oldTimeElapsed = this.timeElapsed;
         this.timeElapsed = timeElapsed;
-
+        if (oldTimeElapsed != timeElapsed) {
+            if (occupied != 0) {
+                occupied -= 1;
+            }
+        }
+        if (occupied > 0) {
+            this.setState(ExploreState.OCCUPIED);
+            return getLocation();
+        } else {
+            setState(ExploreState.AKTIVE);
+        }
         //shall we go out of service?
         if (Math.random() < Constants.PROB_OUT_OF_SERVICE) {
             if ((timeElapsed > (robotNumber * 150)) && (robotNumber > 0)) {
@@ -831,9 +847,6 @@ public class RealAgent extends Agent {
             }
         }
 
-        if ((getState() != ExploreState.Initial) && (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)) {
-            setStateTimer(0); //replan
-        }        //System.out.println(this.toString() + "updateAreaRelayed took " + (System.currentTimeMillis()-timer) + "ms.\n");
     }
 
     protected void updateGrid(double sensorData[]) {
@@ -1182,6 +1195,7 @@ public class RealAgent extends Agent {
             comStation.setY(this.y);
             this.getStats().incrementDroppedComStations();
             baseStation.getStats().incrementDroppedComStations();
+            occupied = Constants.COM_STATION_DROP_TIME; // use X cycles to drop ComStation (including current one
         }
     }
 }

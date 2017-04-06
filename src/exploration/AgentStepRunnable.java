@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -95,8 +95,8 @@ public class AgentStepRunnable implements Runnable {
             }
             agent.flush();
             if (Constants.PROFILING) {
-                System.out.println(agent.toString() + "Get next step (" + nextStep.x + "," 
-                        + nextStep.y + ") took " 
+                System.out.println(agent.toString() + "Get next step (" + nextStep.x + ","
+                        + nextStep.y + ") took "
                         + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
             }
             //</editor-fold>
@@ -167,7 +167,8 @@ public class AgentStepRunnable implements Runnable {
             if ((agent.getState() != Agent.ExploreState.Explore)
                     && (agent.getState() != Agent.ExploreState.GoToChild)
                     && (agent.getState() != Agent.ExploreState.ReturnToParent)
-                    && (agent.getState() != Agent.ExploreState.Initial)) {
+                    && (agent.getState() != Agent.ExploreState.Initial)
+                    && (agent.getState() != Agent.ExploreState.AKTIVE)) {
                 break;
             }
             if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
@@ -177,7 +178,7 @@ public class AgentStepRunnable implements Runnable {
         }
         //</editor-fold>
 
- /*if (simConfig.getExpAlgorithm() != SimulatorConfig.exptype.RunFromLog)
+        /*if (simConfig.getExpAlgorithm() != SimulatorConfig.exptype.RunFromLog)
             agent.updateTrueAreaKnown(env);*/
         //benchmark
         agent.getStats().incrementTimeLastCentralCommand();

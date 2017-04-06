@@ -298,6 +298,11 @@ public class Constants {
      */
     public static final long MAX_TIME_DISTANCE_BY_SKELETON = 100;
 
+    /**
+     * Time an agent needs to drop a ComStation (including the current one).
+     */
+    public static int COM_STATION_DROP_TIME = 2;
+
     public static final boolean OUTPUT_PATH_ERROR = false;
     public static final String DEFAULT_PATH_LOG_DIRECTORY
             = Paths.get(System.getProperty("user.dir"), "patherror").toString() + File.separator;
