@@ -87,21 +87,22 @@ public class RelayFrontierExploration extends FrontierExploration {
             agent.dropComStation();
         }
 
-        //<editor-fold defaultstate="collapsed" desc="If base station is in range,">
-        //update timeLastDirectContactCS and lastContactAreaKnown and refill relayStations
+        /* If base station is in range,
+         * update timeLastDirectContactCS and lastContactAreaKnown and refill relayStations
+         */
         if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
-            //When in com-range, maybe even in handoverRange?
+            //When in com-range, maybe even in handover-range?
             if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInHandoverRange(agent)
                     && (agent.comStations.size() < agent.getComStationLimit())) {
-                //TODO One Comstation per step... needs to be enough by now
-                agent.takeComStation(baseStation.giveComStation());
+                for (int i = 0; i < agent.getComStationLimit(); i++) {
+                    agent.takeComStation(baseStation.giveComStation());
+                }
             }
             agent.getStats().setTimeLastDirectContactCS(1);
             agent.getStats().setLastContactAreaKnown(agent.getStats().getAreaKnown());
         } else {
             agent.getStats().incrementLastDirectContactCS();
         }
-        //</editor-fold>
 
         if (timeElapsed < Constants.INIT_CYCLES) {
             // CHECK 0: Take a couple of random steps to start (just to gather some sensor data)
