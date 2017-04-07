@@ -81,9 +81,9 @@ public class Path {
         this.start = startpoint;
         this.goal = endpoint;
         if (!jump) {
-            getAStarPath(agentGrid, startpoint, endpoint, limit);
+            calculateAStarPath(agentGrid, startpoint, endpoint, limit);
         } else {
-            getJumpPath(agentGrid, startpoint, endpoint, limit);
+            calculateJumpPath(agentGrid, startpoint, endpoint, limit);
         }
     }
 
@@ -160,7 +160,7 @@ public class Path {
                 || ((startNode.getID() == Constants.UNEXPLORED_NODE_ID) && (goalNode.getID() == Constants.UNEXPLORED_NODE_ID))) {
             boolean pathFound = false; //getJumpPath(agentGrid, startpoint, endpoint, limit);
             if (!pathFound) {
-                pathFound = getAStarPath(agentGrid, startpoint, endpoint, limit);
+                pathFound = calculateAStarPath(agentGrid, startpoint, endpoint, limit);
                 if (Constants.DEBUG_OUTPUT) {
                     System.out.println("Jump path did not work either... trying A* path");
                 }
@@ -250,7 +250,7 @@ public class Path {
             return;
         }
 
-        getAStarPath(startNode, goalNode);
+        calculateAStarPath(startNode, goalNode);
         if (pathNodes.size() == 0) //No path found
         {
             if (Constants.DEBUG_OUTPUT) {
@@ -258,9 +258,9 @@ public class Path {
                         + ", endpoint is " + endpoint.toString() + ", trying A*...");
             }
             outputPathError();
-            boolean pathFound = getAStarPath(agentGrid, startpoint, endpoint, limit);
+            boolean pathFound = calculateAStarPath(agentGrid, startpoint, endpoint, limit);
             if (!pathFound) {
-                pathFound = getJumpPath(agentGrid, startpoint, endpoint, limit);
+                pathFound = calculateJumpPath(agentGrid, startpoint, endpoint, limit);
                 if (!pathFound) {
                     if (Constants.DEBUG_OUTPUT) {
                         System.out.println("A* and JumpPath did not work either... :(");
@@ -330,12 +330,12 @@ public class Path {
                 pathPoints.add(p);
             }
         }
-        this.recalcLength();
+        recalcLength();
 
         //System.out.println("Path length is " + this.getLength());
     }
 
-    public void getAStarPath(TopologicalNode startNode, TopologicalNode goalNode) {
+    public void calculateAStarPath(TopologicalNode startNode, TopologicalNode goalNode) {
         found = false;
         pathNodesReverse = new LinkedList<TopologicalNode>();
         pathNodes = new LinkedList<TopologicalNode>();
@@ -397,7 +397,7 @@ public class Path {
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
-    public boolean getAStarPath(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit) {
+    public boolean calculateAStarPath(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit) {
         grid = agentGrid;
         start = startpoint;
         goal = endpoint;
@@ -495,7 +495,7 @@ public class Path {
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
-    public boolean getJumpPath(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit) {
+    public boolean calculateJumpPath(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit) {
         grid = agentGrid;
         start = startpoint;
         goal = endpoint;
@@ -589,7 +589,7 @@ public class Path {
                 last = curr;
             }
 
-            this.recalcLength();
+            recalcLength();
             //System.out.print(pathPoints.size() + " points, length " + (int)length + ". ");
             if ((length < 1) && (pathPoints.size() < 1)) {
                 //Something went wrong!
@@ -753,7 +753,7 @@ public class Path {
         return validNeighbours;
     }
 
-    public void findNearestExploredNode(OccupancyGrid agentGrid, int[][] areaGrid, Point startpoint, Point endpoint,
+    private void findNearestExploredNode(OccupancyGrid agentGrid, int[][] areaGrid, Point startpoint, Point endpoint,
             HashMap<Integer, TopologicalNode> topologicalNodes) {
         grid = agentGrid;
         start = startpoint;
@@ -869,7 +869,7 @@ public class Path {
         for (int i = pathPoints.size() - 1; i >= 0; i--) {
             reversePathPoints.add(pathPoints.get(i));
         }
-        makeReverse();
+        reverse();
         found = true;
         recalcLength();
     }
@@ -931,7 +931,7 @@ public class Path {
         for (int i = pathPoints.size() - 1; i >= 0; i--) {
             reversePathPoints.add(pathPoints.get(i));
         }
-        makeReverse();
+        reverse();
         found = true;
         recalcLength();
     }
@@ -971,6 +971,9 @@ public class Path {
     }
 
     public double getLength() {
+        if (length == 0) {
+            recalcLength();
+        }
         return length;
     }
 
@@ -978,7 +981,7 @@ public class Path {
         return allPathPixels;
     }
 
-    public void makeReverse() {
+    public void reverse() {
         List<Point> t = pathPoints;
         pathPoints = reversePathPoints;
         reversePathPoints = t;
@@ -993,10 +996,8 @@ public class Path {
         return p;
     }
 
-    public double recalcLength() {
-        if (pathPoints == null || pathPoints.isEmpty()) {
-            return 0;
-        } else {
+    private void recalcLength() {
+        if (pathPoints != null && !pathPoints.isEmpty()) {
             Iterator<Point> i = pathPoints.iterator();
             Point curr, last = pathPoints.get(0);
             length = 0;
@@ -1006,7 +1007,6 @@ public class Path {
                 //allPathPixels = mergeLists(allPathPixels, pointsAlongSegment(last.x, last.y, curr.x, curr.y));
                 last = curr;
             }
-            return length;
         }
     }
 
@@ -1086,7 +1086,7 @@ public class Path {
     }
 
     //Adds all points in list2 to list1 (no duplicates), returns merged list.
-    public LinkedList<Point> mergeLists(LinkedList<Point> list1, LinkedList<Point> list2) {
+    private LinkedList<Point> mergeLists(LinkedList<Point> list1, LinkedList<Point> list2) {
         list2.stream().filter((p) -> (!list1.contains(p))).forEach((p) -> {
             list1.add(p);
         });

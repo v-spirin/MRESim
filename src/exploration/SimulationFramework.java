@@ -1127,8 +1127,8 @@ public class SimulationFramework implements ActionListener {
         try {
             Path path_a1g2 = agent1.calculatePath(agent1.getLocation(), agent2.getCurrentGoal());
             Path path_a2g1 = agent2.calculatePath(agent2.getLocation(), agent1.getCurrentGoal());
-            double agent1_goal1 = agent1.getPath().recalcLength();
-            double agent2_goal2 = agent2.getPath().recalcLength();
+            double agent1_goal1 = agent1.getPath().getLength();
+            double agent2_goal2 = agent2.getPath().getLength();
             double agent1_goal2 = path_a1g2.getLength();
             double agent2_goal1 = path_a2g1.getLength();
 
