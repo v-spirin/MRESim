@@ -975,6 +975,14 @@ public class Path {
     }
 
     public LinkedList<Point> getAllPathPixels() {
+        allPathPixels = new LinkedList<>();
+        Iterator<Point> i = pathPoints.iterator();
+        Point curr, prev = start;
+        while (i.hasNext()) {
+            curr = i.next();
+            allPathPixels = mergeLists(allPathPixels, pointsAlongSegment(prev.x, prev.y, curr.x, curr.y));
+            prev = curr;
+        }
         return allPathPixels;
     }
 
@@ -1001,7 +1009,7 @@ public class Path {
             while (i.hasNext()) {
                 curr = i.next();
                 length += last.distance(curr);
-                //allPathPixels = mergeLists(allPathPixels, pointsAlongSegment(last.x, last.y, curr.x, curr.y));
+                //allPathPixels = mergeLists(allPathPixels, pointsAlongSegment(prev.x, prev.y, curr.x, curr.y));
                 last = curr;
             }
         }
