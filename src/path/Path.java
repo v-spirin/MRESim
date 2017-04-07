@@ -80,10 +80,12 @@ public class Path {
     public Path(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit, boolean jump) {
         this.start = startpoint;
         this.goal = endpoint;
+        this.limit = limit;
+        this.grid = agentGrid;
         if (!jump) {
-            calculateAStarPath(agentGrid, startpoint, endpoint, limit);
+            calculateAStarPath();
         } else {
-            calculateJumpPath(agentGrid, startpoint, endpoint, limit);
+            calculateJumpPath();
         }
     }
 
@@ -96,6 +98,7 @@ public class Path {
         this.start = startpoint;
         this.goal = endpoint;
         this.tMap = tMap;
+        this.grid = agentGrid;
         TopologicalNode startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
         TopologicalNode goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
 
@@ -160,7 +163,7 @@ public class Path {
                 || ((startNode.getID() == Constants.UNEXPLORED_NODE_ID) && (goalNode.getID() == Constants.UNEXPLORED_NODE_ID))) {
             boolean pathFound = false; //getJumpPath(agentGrid, startpoint, endpoint, limit);
             if (!pathFound) {
-                pathFound = calculateAStarPath(agentGrid, startpoint, endpoint, limit);
+                pathFound = calculateAStarPath();
                 if (Constants.DEBUG_OUTPUT) {
                     System.out.println("Jump path did not work either... trying A* path");
                 }
@@ -258,9 +261,9 @@ public class Path {
                         + ", endpoint is " + endpoint.toString() + ", trying A*...");
             }
             outputPathError();
-            boolean pathFound = calculateAStarPath(agentGrid, startpoint, endpoint, limit);
+            boolean pathFound = calculateAStarPath();
             if (!pathFound) {
-                pathFound = calculateJumpPath(agentGrid, startpoint, endpoint, limit);
+                pathFound = calculateJumpPath();
                 if (!pathFound) {
                     if (Constants.DEBUG_OUTPUT) {
                         System.out.println("A* and JumpPath did not work either... :(");
@@ -397,10 +400,7 @@ public class Path {
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
-    public boolean calculateAStarPath(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit) {
-        grid = agentGrid;
-        start = startpoint;
-        goal = endpoint;
+    public boolean calculateAStarPath() {
         found = false;
         pathPoints = new LinkedList<Point>();
         reversePathPoints = new LinkedList<Point>();
@@ -442,8 +442,8 @@ public class Path {
             long time_elapsed = System.currentTimeMillis() - realtimeStart;
             if ((time_elapsed > Constants.MAX_PATH_SEARCH_TIME) /*&& (limit)*/) {
                 if (Constants.DEBUG_OUTPUT) {
-                    System.out.println("Took too long (A*), startpoint is " + startpoint.toString()
-                            + ", endpoint is " + endpoint.toString() + "time elapsed: " + time_elapsed + "ms.");
+                    System.out.println("Took too long (A*), startpoint is " + start.toString()
+                            + ", endpoint is " + goal.toString() + "time elapsed: " + time_elapsed + "ms.");
                 }
                 outputPathError();
                 limit_hit = true;
@@ -495,10 +495,7 @@ public class Path {
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
-    public boolean calculateJumpPath(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit) {
-        grid = agentGrid;
-        start = startpoint;
-        goal = endpoint;
+    public boolean calculateJumpPath() {
         found = false;
         pathPoints = new LinkedList<Point>();
         reversePathPoints = new LinkedList<Point>();

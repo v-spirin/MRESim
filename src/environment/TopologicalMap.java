@@ -185,13 +185,13 @@ public class TopologicalMap {
                                             System.out.println("Retrieved from cache path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")");
                                         }
                                     } else {
-                                        pathToNode = new Path(occGrid, (Point) node.getPosition().clone(), (Point) neighbourNode.getPosition().clone(), false, true);
+                                        pathToNode = new Path(occGrid, (Point) node.getPosition(), (Point) neighbourNode.getPosition(), false, true);
 
                                         if (Constants.DEBUG_OUTPUT) {
                                             System.out.println("Generating path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + ")");
                                         }
                                         //pathToNode.calculateAStarPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
-                                        pathToNode.calculateJumpPath(occGrid, (Point) node.getPosition().clone(), (Point) neighbourNode.getPosition().clone(), false);
+                                        pathToNode.calculateJumpPath();
                                         if (!pathToNode.getStartPoint().equals(node.getPosition())
                                                 || !pathToNode.getGoalPoint().equals(neighbourNode.getPosition())) {
                                             System.err.println("CATASTROPHIC ERROR!! Path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")");
