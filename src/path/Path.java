@@ -105,9 +105,7 @@ public class Path {
         if ((startNode == null) || (goalNode == null)) //Something wrong with building topological map
         {
             if (startNode == null) {
-                if (!agentGrid.obstacleAt(startpoint.x, startpoint.y)) {
-                    startNode = topologicalNodes.get(Constants.UNEXPLORED_NODE_ID);
-                } else {
+                if (agentGrid.obstacleAt(startpoint.x, startpoint.y)) {
                     // there cannot be an obstacle here, as we are planning a path from this point!
                     agentGrid.setNoObstacleAt(startpoint.x, startpoint.y);
                     if (Constants.DEBUG_OUTPUT) {
@@ -120,9 +118,7 @@ public class Path {
                 }
             }
             if (goalNode == null) {
-                if (!agentGrid.obstacleAt(endpoint.x, endpoint.y)) {
-                    goalNode = topologicalNodes.get(Constants.UNEXPLORED_NODE_ID);
-                } else {
+                if (agentGrid.obstacleAt(endpoint.x, endpoint.y)) {
                     if (Constants.DEBUG_OUTPUT) {
                         System.out.println("There was an obstacle at goalpoint! Aborting.");
                     }
@@ -239,7 +235,6 @@ public class Path {
                 for (Point p : p0.getPoints()) {
                     pathPoints.add(p);
                 }
-                startpoint = p0.start;
             }
             p1.getPoints().stream().forEach((p) -> {
                 pathPoints.add(p);
@@ -248,13 +243,12 @@ public class Path {
                 for (Point p : p3.getPoints()) {
                     pathPoints.add(p);
                 }
-                endpoint = p3.goal;
             }
             return;
         }
 
         calculateAStarPath(startNode, goalNode);
-        if (pathNodes.size() == 0) //No path found
+        if (pathNodes.isEmpty()) //No path found
         {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println("Could not find topological path, startpoint is " + startpoint.toString()
