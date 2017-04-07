@@ -189,7 +189,7 @@ public class Path {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println("Start point " + startpoint + " in unexplored space!");
             }
-            findNearestExploredNode(agentGrid, areaGrid, startpoint, endpoint, topologicalNodes);
+            findNearestExploredNode(areaGrid, topologicalNodes);
             List<Point> pathToExploredPoints = pathPoints;
             if (pathPoints.isEmpty()) {
                 return;
@@ -209,7 +209,7 @@ public class Path {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println("Goal point " + endpoint + " in unexplored space!");
             }
-            findNearestExploredNode(agentGrid, areaGrid, endpoint, startpoint, topologicalNodes);
+            findNearestExploredNode(areaGrid, topologicalNodes);
             List<Point> pathToExploredPoints = pathPoints;
             if (pathPoints.isEmpty()) {
                 return;
@@ -404,7 +404,6 @@ public class Path {
         found = false;
         pathPoints = new LinkedList<Point>();
         reversePathPoints = new LinkedList<Point>();
-        allPathPixels = new LinkedList<Point>();
 
         /*if (start == goal)
         {
@@ -476,20 +475,7 @@ public class Path {
                 }
             }
         }
-
-        if (reversePathPoints != null) {
-            Iterator<Point> i = reversePathPoints.iterator();
-            Point curr, last = start;
-            length = 0;
-            while (i.hasNext()) {
-                curr = i.next();
-                length += last.distance(curr);
-                allPathPixels = mergeLists(allPathPixels, pointsAlongSegment(last.x, last.y, curr.x, curr.y));
-                last = curr;
-            }
-            recalcLength();
-            //System.out.print(pathPoints.size() + " points, length " + (int)length + ". ");
-        }
+        recalcLength();
 
         return !limit_hit;
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
@@ -499,7 +485,6 @@ public class Path {
         found = false;
         pathPoints = new LinkedList<Point>();
         reversePathPoints = new LinkedList<Point>();
-        allPathPixels = new LinkedList<Point>();
 
         /*if (start == goal)
         {
@@ -574,24 +559,7 @@ public class Path {
                 }
             }
         }
-
-        if (reversePathPoints != null) {
-            Iterator<Point> i = reversePathPoints.iterator();
-            Point curr, last = start;
-            length = 0;
-            while (i.hasNext()) {
-                curr = i.next();
-                length += last.distance(curr);
-                allPathPixels = mergeLists(allPathPixels, pointsAlongSegment(last.x, last.y, curr.x, curr.y));
-                last = curr;
-            }
-
-            recalcLength();
-            //System.out.print(pathPoints.size() + " points, length " + (int)length + ". ");
-            if ((length < 1) && (pathPoints.size() < 1)) {
-                //Something went wrong!
-            }
-        }
+        recalcLength();
 
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         return !limit_hit;
@@ -750,15 +718,10 @@ public class Path {
         return validNeighbours;
     }
 
-    private void findNearestExploredNode(OccupancyGrid agentGrid, int[][] areaGrid, Point startpoint, Point endpoint,
-            HashMap<Integer, TopologicalNode> topologicalNodes) {
-        grid = agentGrid;
-        start = startpoint;
-        goal = endpoint;
+    private void findNearestExploredNode(int[][] areaGrid, HashMap<Integer, TopologicalNode> topologicalNodes) {
         found = false;
         pathPoints = new LinkedList<Point>();
         reversePathPoints = new LinkedList<Point>();
-        allPathPixels = new LinkedList<Point>();
 
         /*if (start == goal)
         {
@@ -823,19 +786,6 @@ public class Path {
                     f_score.put(neighbour, g_score.get(neighbour) + heuristicCostEstimate(neighbour, goal));
                 }
             }
-        }
-
-        if (reversePathPoints != null) {
-            Iterator<Point> i = reversePathPoints.iterator();
-            Point curr, last = start;
-            length = 0;
-            while (i.hasNext()) {
-                curr = i.next();
-                length += last.distance(curr);
-                allPathPixels = mergeLists(allPathPixels, pointsAlongSegment(last.x, last.y, curr.x, curr.y));
-                last = curr;
-            }
-            //System.out.print(pathPoints.size() + " points, length " + (int)length + ". ");
         }
 
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
