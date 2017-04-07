@@ -45,6 +45,7 @@
 package exploration;
 
 import agents.RealAgent;
+import java.awt.Point;
 import path.Path;
 
 /**
@@ -73,5 +74,14 @@ abstract class BasicExploration {
     public BasicExploration(RealAgent agent) {
         this.agent = agent;
     }
+
+    /**
+     * Recalculates the current plan. Only need to call this after severe map-changes or similar
+     * situations. Will be called by takeStep if necessary.
+     *
+     * @param timeElapsed Cycle we are in currently
+     * @return Nothing ASAP! //TODO no return!
+     */
+    abstract protected Point replan(int timeElapsed);
 
 }

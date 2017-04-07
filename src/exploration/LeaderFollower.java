@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -67,7 +67,7 @@ public class LeaderFollower implements Exploration {
     public LeaderFollower(RealAgent agent) {
         this.agent = agent;
     }
-    
+
 // <editor-fold defaultstate="collapsed" desc="Take Step">
     @Override
     public Point takeStep(int timeElapsed) {
@@ -155,7 +155,7 @@ public class LeaderFollower implements Exploration {
     }
 
     public Point replanRelay() {
-        Path P2C = agent.calculatePath(agent.getLocation(), agent.getChildTeammate().getLocation());
+        Path P2C = agent.calculatePath(agent.getLocation(), agent.getChildTeammate().getLocation(), false);
 
         if (agent.getLocation().distance(agent.getParentTeammate().getLocation())
                 < agent.getCommRange() - 1 * agent.getSpeed()) {
@@ -194,7 +194,7 @@ public class LeaderFollower implements Exploration {
 
         if(agent.getPath() == null || agent.getPath().getPoints().size()<2)
             return RandomWalk.takeStep(agent);
-        
+
         agent.getPath().getPoints().remove(0);
         return agent.getNextPathPoint();*/
     }
@@ -357,7 +357,7 @@ public class LeaderFollower implements Exploration {
             start = agent.getTeammate(ute.ID).getLocation();
         }
 
-        Path p = agent.calculatePath(start, ute.frontier.getClosestPointInRange(agent));
+        Path p = agent.calculatePath(start, ute.frontier.getClosestPointInRange(agent), false);
 
         if (p.found) {
             ute.path = p;
@@ -476,7 +476,7 @@ public class LeaderFollower implements Exploration {
                 //if(best.ID == agent.getID()) {
                 // just in case path hasn't been computed yet
                 if (best.path == null) {
-                    best.path = agent.calculatePath(agent.getLocation(), best.frontier.getClosestPointInRange(agent));
+                    best.path = agent.calculatePath(agent.getLocation(), best.frontier.getClosestPointInRange(agent), false);
                 }
 
                 agent.setLastFrontier(best.frontier);
@@ -595,9 +595,4 @@ public class LeaderFollower implements Exploration {
     }
 
 // </editor-fold>
-
-    @Override
-    public Point replan(int timeElapsed) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
 }

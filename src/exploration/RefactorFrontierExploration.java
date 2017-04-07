@@ -70,6 +70,7 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
     int PERIODIC_RETURN = 100;
     RealAgent baseStation;
     int noReturnTimer;
+    Path path;
 
     public RefactorFrontierExploration(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, RealAgent baseStation) {
         super(agent);
@@ -84,7 +85,6 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
         if (frontierExpType == SimulatorConfig.frontiertype.UtilReturn) {
             throw new IllegalArgumentException("Frontier-UtilReturn is implemented in UtilExploration.java");
         }
-        long realtimeStartAgentCycle = System.currentTimeMillis();
 
         Point nextStep;
 
@@ -106,9 +106,6 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
         } else if ((agent.getStats().getTimeSinceLastPlan() < Constants.REPLAN_INTERVAL)
                 && agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
             nextStep = agent.getNextPathPoint();
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println("Agent " + agent + " continuing on path.");
-            }
         } else if (agent.getStats().getTimeSinceLastPlan() >= Constants.REPLAN_INTERVAL) {
             nextStep = replan(timeElapsed);
         } else {
@@ -117,37 +114,22 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
 
         agent.getStats().incrementTimeSinceLastPlan();
 
-        //agent.setLastTotalKnowledgeBelief(agent.getCurrentTotalKnowledgeBelief());
-        //agent.setLastBaseKnowledgeBelief(agent.getCurrentBaseKnowledgeBelief());
-        //agent.setLastNewInfo(agent.getNewInfo());
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent.toString() + "takeStep took " + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
-        }
         return nextStep;
     }
 
     @Override
-    public Point replan(int timeElapsed) {
+    protected Point replan(int timeElapsed) {
         Point nextStep;
 
         agent.getStats().setTimeSinceLastPlan(0);
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent.toString() + "starting replan");
-        }
+
         long realtimeStart = System.currentTimeMillis();
 
         calculateFrontiers(agent, frontierExpType);
 
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent.toString() + "calculateFrontiers took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
-
-        //<editor-fold defaultstate="collapsed" desc="If no frontiers found, or reached exploration goal, return to ComStation">
+        //If no frontiers found, or reached exploration goal, return to ComStation
         if (((agent.getFrontiers().isEmpty()) || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))
                 && timeElapsed > 100) {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent + " setting mission complete");
-            }
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
             nextStep = agent.getNextPathPoint();
@@ -158,7 +140,6 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
             agent.setCurrentGoal(agent.getTeammate(1).getLocation());
             return nextStep;
         }
-        //</editor-fold>
 
         long realtimeStart2 = System.currentTimeMillis();
         boolean foundFrontier = false;
@@ -169,14 +150,10 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
                 System.out.println(agent.toString() + "chooseFrontier took " + (System.currentTimeMillis() - realtimeStart2) + "ms.");
             }
 
-            //<editor-fold defaultstate="collapsed" desc="If could not find frontier, try to disregard other agents when planning">
+            //If could not find frontier, try to disregard other agents when planning
             if (!foundFrontier) {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(agent.toString() + " could not find frontier, trying to ignore other agents...");
-                }
                 foundFrontier = (chooseFrontier(false, null) == null);
             }
-            //</editor-fold>
         } else {
             LinkedList<Integer> assignedTeammates = new LinkedList<Integer>();
             for (int i = 0; (i < agent.getAllTeammates().size()) && !foundFrontier; i++) {
@@ -191,13 +168,8 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
             return takeStep_GoToChild();
         }
 
-        //<editor-fold defaultstate="collapsed" desc="If no frontier could be assigned, then go back to base.">
+        //If no frontier could be assigned, then go back to base.">
         if (!foundFrontier && timeElapsed > 100) {
-            /*System.out.println(agent.toString() + " No frontier chosen, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
-            agent.setTimeSinceLastPlan(0);
-            agent.setCurrentGoal(nextStep);
-            return nextStep;*/
             // mission complete
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent.toString() + " could not find frontier, proceeding to BaseStation (Mission Complete).");
@@ -212,21 +184,16 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
             agent.setCurrentGoal(agent.getTeammate(1).getLocation());
             return nextStep;
         }
-        //</editor-fold>
 
-        //<editor-fold defaultstate="collapsed" desc="If overlapping another agent, take random step">
+        //If overlapping another agent, take random step
         for (TeammateAgent teammate : agent.getAllTeammates().values()) {
             if (agent.getLocation().equals(teammate.getLocation())) {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(agent + " overlapping " + teammate + ", taking random step");
-                }
                 nextStep = RandomWalk.takeStep(agent);
                 agent.getStats().setTimeSinceLastPlan(0);
                 agent.setCurrentGoal(nextStep);
                 return nextStep;
             }
         }
-        //</editor-fold>
 
         // Note: Path to best frontier has already been set when calculating
         // utility, no need to recalculate
@@ -235,9 +202,6 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
                 || agent.getPath().getPoints() == null
                 || agent.getPath().getPoints().isEmpty()
                 || agent.getPath().getPoints().size() == 1) {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent + " has no path, taking random step.");
-            }
             nextStep = RandomWalk.takeStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
@@ -247,9 +211,6 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
         // since this is the robot itself.
         agent.getPath().getPoints().remove(0);
         nextStep = agent.getNextPathPoint();
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent.toString() + "replan took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
         return nextStep;
     }
 
@@ -280,7 +241,7 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
                     && counter < Constants.MAX_NUM_FRONTIERS) {
                 //ignore frontiers not reachable from base
                 Path pathToFrontier = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(),
-                        currFrontier.getCentre());
+                        currFrontier.getCentre(), false);
                 if (/*(currFrontier.getArea() < Constants.MIN_FRONTIER_SIZE * 4) && */ //(grid.obstacleWithinDistance(currFrontier.getCentre().x, currFrontier.getCentre().y, 1)))
                         !pathToFrontier.found) {
                     if (Constants.DEBUG_OUTPUT) {
@@ -323,7 +284,7 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
         }
         Path p;
         {
-            p = agent.calculatePath(start, ute.frontier.getCentre()/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
+            p = agent.calculatePath(start, ute.frontier.getCentre(), false/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
         }
 
         if (p.found) {
@@ -338,14 +299,14 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
                 if (agent.getRole() == RobotConfig.roletype.Explorer) {
                     RVDestination = rvd.getParentRendezvous().getChildLocation();
                     if (RVDestination != null) {
-                        frontierToRV = agent.calculatePath(ute.frontier.getCentre(), RVDestination);
+                        frontierToRV = agent.calculatePath(ute.frontier.getCentre(), RVDestination, false);
                     }
                     timeMeeting = rvd.getParentRendezvous().getTimeMeeting();
                 } else if (agent.getRole() == RobotConfig.roletype.Relay) {
                     RVDestination = rvd.getChildRendezvous().getParentLocation();
                     if (RVDestination != null) {
-                        Path frontierToParent = agent.calculatePath(ute.frontier.getCentre(), RVDestination);
-                        Path frontierToChild = agent.calculatePath(ute.frontier.getCentre(), rvd.getChildRendezvous().getChildLocation());
+                        Path frontierToParent = agent.calculatePath(ute.frontier.getCentre(), RVDestination, false);
+                        Path frontierToChild = agent.calculatePath(ute.frontier.getCentre(), rvd.getChildRendezvous().getChildLocation(), false);
                         if (frontierToParent.getLength() < frontierToChild.getLength() && frontierToParent.found) {
                             frontierToRV = frontierToParent;
                         } else if (frontierToParent.getLength() >= frontierToChild.getLength() && frontierToChild.found) {
@@ -380,12 +341,6 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
             ute.utility = -1000;
         }
 
-        /*System.out.println(Constants.INDENT + "New utility with ID " +
-                                            ute.ID + " for frontier at " +
-                                            ute.frontier.getCentre().x + "," +
-                                            ute.frontier.getCentre().y + " is " +
-                                            (int)ute.utility);
-         */
     }
 
     // Calculates Euclidean distance from all known teammates and self to frontiers of interest
@@ -465,16 +420,15 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
 
     public Point takeStep_GoToChild() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
-        //<editor-fold defaultstate="collapsed" desc="Check if we are in range of child. If yes, GetInfoFromChild">
+        //Check if we are in range of child. If yes, GetInfoFromChild
         if ((agent.getChildTeammate().isInRange()) /*&& !agent.getParentTeammate().isInRange()*/) {
             agent.setState(RealAgent.ExploreState.GetInfoFromChild);
             agent.setStateTimer(0);
 
             return takeStep_GetInfoFromChild();
         }
-        //</editor-fold>
 
-        //<editor-fold defaultstate="collapsed" desc="Assume that a path back to child has been calculated in previous state, recalculate every PATH_RECALC_CHILD_INTERVAL steps">
+        //Assume that a path back to child has been calculated in previous state, recalculate every PATH_RECALC_CHILD_INTERVAL steps
         Path existingPath = agent.getPath();
         if (((agent.getStateTimer() % Constants.PATH_RECALC_CHILD_INTERVAL) == (Constants.PATH_RECALC_CHILD_INTERVAL - 1))) {
             if (existingPath != null) {
@@ -484,15 +438,14 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
             Path _path = agent.getRendezvousStrategy().processGoToChildReplan();
 
             if (_path == null) {
-                _path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
+                _path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation(), false);
             }
-            //<editor-fold defaultstate="collapsed" desc="Could not find full path! Trying pure A*">
+            //Could not find full path! Trying pure A*
             if (!_path.found) {
                 System.out.println(agent.toString() + "!!!ERROR!  Could not find full path! Trying pure A*");
                 _path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), true);
             }
-            //</editor-fold>
-            //<editor-fold defaultstate="collapsed" desc="Still couldn't find path, trying existing path or if that fails, taking random step">
+            //Still couldn't find path, trying existing path or if that fails, taking random step
             if (!_path.found) {
                 System.out.println(agent.toString() + "!!!ERROR!  Could not find full path!");
                 if ((existingPath != null) && (existingPath.getPoints().size() > 2)) {
@@ -502,7 +455,6 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
                     agent.setCurrentGoal(agent.getLocation());
                     return RandomWalk.takeStep(agent);
                 }
-                //</editor-fold>
             } else {
                 agent.setPath(_path);
                 agent.setCurrentGoal(rvd.getChildRendezvous().getParentLocation());
@@ -510,7 +462,6 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
                 agent.getPath().getPoints().remove(0);
             }
         }
-        //</editor-fold>
 
         if (agent.getPath().found && !agent.getPath().getPoints().isEmpty()) {
             return ((Point) agent.getPath().getPoints().remove(0));
@@ -538,10 +489,7 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
 
         if (agent.getStateTimer() == 0) {
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
-            Path _path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
-            /*if (agent.getChildTeammate().getState() == Agent.ExploreState.GiveParentInfo) {
-                agent.setTimeSinceGetChildInfo(0);
-            }*/
+            Path _path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation(), false);
             agent.setPath(_path);
             agent.setStateTimer(1);
             agent.setCurrentGoal(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
@@ -598,50 +546,6 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
                 }
             }
 
-            /*// If this is the only remaining frontier
-            if(isLastFrontier) {
-                //if(best.ID == agent.getID()) {
-                    // just in case path hasn't been computed yet
-                    if(best.path == null) {
-                        // find closest point on frontier farthest away from teammates
-                        double closestDist = 1000000;
-                        Point closestPoint = best.frontier.getCentre();
-                        double closestTeammateDist = 1000000;
-                        for(int i=0; i<best.frontier.getPolygonOutline().size(); i++) {
-                            if(!agent.getOccupancyGrid().obstacleWithinDistance(best.frontier.getPolygonOutline().get(i).x, best.frontier.getPolygonOutline().get(i).y, Constants.WALL_DISTANCE)) {
-                                if(best.frontier.getPolygonOutline().get(i).distance(agent.getLocation()) < closestDist) {
-                                    closestPoint = best.frontier.getPolygonOutline().get(i);
-                                    closestDist = best.frontier.getPolygonOutline().get(i).distance(agent.getLocation());
-                                    closestTeammateDist = 0;
-                                     for(TeammateAgent teammate: agent.getAllTeammates().values())
-                                        if(teammate.isInDirectRange())
-                                            closestTeammateDist += teammate.getLocation().distance(best.frontier.getPolygonOutline().get(i));
-
-                                }
-                                else if(best.frontier.getPolygonOutline().get(i).distance(agent.getLocation()) == closestDist) {
-                                    double newTeammateDist = 0;
-                                     for(TeammateAgent teammate: agent.getAllTeammates().values())
-                                        if(teammate.isInDirectRange())
-                                            newTeammateDist += teammate.getLocation().distance(best.frontier.getPolygonOutline().get(i));
-                                    if(newTeammateDist > closestTeammateDist) {
-                                        closestPoint = best.frontier.getPolygonOutline().get(i);
-                                        closestDist = best.frontier.getPolygonOutline().get(i).distance(agent.getLocation());
-                                        closestTeammateDist = newTeammateDist;
-                                    }
-
-                                }
-                            }
-                        }
-
-                        best.path = agent.calculatePath(agent.getLocation(), best.frontier.getCentre());
-                    }
-
-                    agent.setLastFrontier(best.frontier);
-                    agent.setCurrentGoal(best.frontier.getCentre());
-                    agent.addDirtyCells(agent.getPath().getAllPathPixels());
-                    agent.setPath(best.path);
-                    return true;
-            }*/
             // If this is an estimate, calculate true utility
             if (best.path == null) {
                 calculateUtilityExact(agent, best);
@@ -670,8 +574,7 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
                 }
 
             } else //System.out.println("UtilityExact: " + best.utility);
-            {
-                if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
+             if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
                     if (best.ID == agent.getID()) {
                         if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
                             agent.setState(Agent.ExploreState.GoToChild);
@@ -704,19 +607,16 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
                 } else {
                     utilities.add(best);
                 }
-            }
 
             counter++;
         }
 
         return teammatesAssignedIDs;  // couldn't assign frontier - could be there are more robots than frontiers?
     }
-// </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Calculate Frontiers">
+//Calculate Frontiers
     public static void calculateFrontiers(RealAgent agent, SimulatorConfig.frontiertype frontierExpType) {
         long realtimeStart = System.currentTimeMillis();
-        //System.out.print(agent.toString() + "Calculating frontiers. ");
         // If recalculating frontiers, must set old frontiers dirty for image rendering
         agent.getFrontiers().stream().forEach((f) -> {
             agent.addDirtyCells(f.getPolygonOutline());
@@ -759,5 +659,4 @@ public class RefactorFrontierExploration extends BasicExploration implements Exp
         }
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
-// </editor-fold>
 }

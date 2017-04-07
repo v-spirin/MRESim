@@ -127,7 +127,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
     }
 
     @Override
-    public Point replan(int timeElapsed) {
+    protected Point replan(int timeElapsed) {
         Point nextStep;
 
         agent.getStats().setTimeSinceLastPlan(0);
@@ -280,7 +280,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                     && counter < Constants.MAX_NUM_FRONTIERS) {
                 //ignore frontiers not reachable from base
                 Path pathToFrontier = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(),
-                        currFrontier.getCentre());
+                        currFrontier.getCentre(), false);
                 if (/*(currFrontier.getArea() < Constants.MIN_FRONTIER_SIZE * 4) && */ //(grid.obstacleWithinDistance(currFrontier.getCentre().x, currFrontier.getCentre().y, 1)))
                         !pathToFrontier.found) {
                     if (Constants.DEBUG_OUTPUT) {
@@ -324,7 +324,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         Path p;
         {
-            p = agent.calculatePath(start, ute.frontier.getCentre()/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
+            p = agent.calculatePath(start, ute.frontier.getCentre(), false/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
         }
 
         if (p.found) {
@@ -339,14 +339,14 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 if (agent.getRole() == RobotConfig.roletype.Explorer) {
                     RVDestination = rvd.getParentRendezvous().getChildLocation();
                     if (RVDestination != null) {
-                        frontierToRV = agent.calculatePath(ute.frontier.getCentre(), RVDestination);
+                        frontierToRV = agent.calculatePath(ute.frontier.getCentre(), RVDestination, false);
                     }
                     timeMeeting = rvd.getParentRendezvous().getTimeMeeting();
                 } else if (agent.getRole() == RobotConfig.roletype.Relay) {
                     RVDestination = rvd.getChildRendezvous().getParentLocation();
                     if (RVDestination != null) {
-                        Path frontierToParent = agent.calculatePath(ute.frontier.getCentre(), RVDestination);
-                        Path frontierToChild = agent.calculatePath(ute.frontier.getCentre(), rvd.getChildRendezvous().getChildLocation());
+                        Path frontierToParent = agent.calculatePath(ute.frontier.getCentre(), RVDestination, false);
+                        Path frontierToChild = agent.calculatePath(ute.frontier.getCentre(), rvd.getChildRendezvous().getChildLocation(), false);
                         if (frontierToParent.getLength() < frontierToChild.getLength() && frontierToParent.found) {
                             frontierToRV = frontierToParent;
                         } else if (frontierToParent.getLength() >= frontierToChild.getLength() && frontierToChild.found) {
@@ -485,7 +485,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
             Path _path = agent.getRendezvousStrategy().processGoToChildReplan();
 
             if (_path == null) {
-                _path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
+                _path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation(), false);
             }
             //<editor-fold defaultstate="collapsed" desc="Could not find full path! Trying pure A*">
             if (!_path.found) {
@@ -539,7 +539,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         if (agent.getStateTimer() == 0) {
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
-            Path _path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+            Path _path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation(), false);
             /*if (agent.getChildTeammate().getState() == Agent.ExploreState.GiveParentInfo) {
                 agent.setTimeSinceGetChildInfo(0);
             }*/

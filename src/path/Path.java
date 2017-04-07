@@ -563,7 +563,6 @@ public class Path {
      * Search recursively in the direction (parent -> child), stopping only when a jump point is
      * found.
      *
-     * @protected
      * @return {Array.<[number, number]>} The x, y coordinate of the jump point found, or null if
      * not found
      */

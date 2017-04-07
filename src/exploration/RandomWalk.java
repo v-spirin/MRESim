@@ -161,11 +161,6 @@ public class RandomWalk implements Exploration {
         return (new Point(newX, newY));
     }
 
-    @Override
-    public Point replan(int timeElapsed) {
-        return takeStep(timeElapsed);
-    }
-
     public static Point takeStep(RealAgent agent) {
         return new RandomWalk(agent).takeStep(0);
     }

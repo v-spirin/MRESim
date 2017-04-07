@@ -44,13 +44,13 @@
 
 package exploration;
 
-import exploration.rendezvous.NearRVPoint;
 import agents.Agent;
 import agents.RealAgent;
 import communication.CommLink;
 import config.Constants;
 import config.SimulatorConfig;
 import exploration.rendezvous.MultiPointRendezvousStrategy;
+import exploration.rendezvous.NearRVPoint;
 import java.awt.Point;
 import java.util.List;
 import path.Path;
@@ -202,7 +202,7 @@ public class UtilityExploration extends FrontierExploration {
             agent.setMissionComplete(true);
             Point baseLocation = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
-            Path path = agent.calculatePath(agent.getLocation(), baseLocation);
+            Path path = agent.calculatePath(agent.getLocation(), baseLocation, false);
             agent.setPath(path);
             agent.setState(RealAgent.ExploreState.ReturnToParent);
             agent.setStateTimer(0);
@@ -282,7 +282,7 @@ public class UtilityExploration extends FrontierExploration {
             }
 
             agent.updateTopologicalMap(false);
-            Path path = agent.calculatePath(agent.getLocation(), baseLocation);
+            Path path = agent.calculatePath(agent.getLocation(), baseLocation, false);
             //<editor-fold defaultstate="collapsed" desc="If path not found, try A*">
             if (!path.found) {
                 System.out.println(agent.toString() + "ERROR!  Could not find full path! Trying pure A*");

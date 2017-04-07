@@ -301,7 +301,7 @@ public class SimulationFramework implements ActionListener {
                                     + " and " + agent[j].getName() + "\n");
                         }
                         Path path = agent[i].calculatePath(agent[i].getLocation(),
-                                agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
+                                agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation(), false);
                         agent[i].setPath(path);
                         agent[i].setCurrentGoal(
                                 agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
@@ -1125,8 +1125,8 @@ public class SimulationFramework implements ActionListener {
             return true;
         }*/
         try {
-            Path path_a1g2 = agent1.calculatePath(agent1.getLocation(), agent2.getCurrentGoal());
-            Path path_a2g1 = agent2.calculatePath(agent2.getLocation(), agent1.getCurrentGoal());
+            Path path_a1g2 = agent1.calculatePath(agent1.getLocation(), agent2.getCurrentGoal(), false);
+            Path path_a2g1 = agent2.calculatePath(agent2.getLocation(), agent1.getCurrentGoal(), false);
             double agent1_goal1 = agent1.getPath().getLength();
             double agent2_goal2 = agent2.getPath().getLength();
             double agent1_goal2 = path_a1g2.getLength();
@@ -1151,14 +1151,14 @@ public class SimulationFramework implements ActionListener {
                         && agent2.isExplorer() && agent2.getState() == Agent.ExploreState.Explore) {
 
                     Path rv1ToCS = agent1.calculatePath(agent1.getRendezvousAgentData().getParentRendezvous().getParentLocation(),
-                            agent1.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
+                            agent1.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), false);
                     Path rv2ToCS = agent2.calculatePath(agent2.getRendezvousAgentData().getParentRendezvous().getParentLocation(),
-                            agent2.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
+                            agent2.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), false);
 
                     Path a1ToRV2 = agent1.calculatePath(agent1.getLocation(),
-                            agent2.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+                            agent2.getRendezvousAgentData().getParentRendezvous().getChildLocation(), false);
                     Path a2ToRV1 = agent2.calculatePath(agent2.getLocation(),
-                            agent1.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+                            agent1.getRendezvousAgentData().getParentRendezvous().getChildLocation(), false);
 
                     double noRoleSwitch = Math.max(agent1.getRendezvousAgentData().getTimeUntilRendezvous() + rv1ToCS.getLength(),
                             agent2.getRendezvousAgentData().getTimeUntilRendezvous() + rv2ToCS.getLength());

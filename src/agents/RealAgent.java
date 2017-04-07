@@ -416,7 +416,7 @@ public class RealAgent extends Agent {
                 nearestBaseCommunicationPoint = baseLocation;
             }
         }
-        pathToBase = calculatePath(getLocation(), nearestBaseCommunicationPoint);
+        pathToBase = calculatePath(getLocation(), nearestBaseCommunicationPoint, false);
         if (Constants.DEBUG_OUTPUT || Constants.PROFILING) {
             System.out.println(this.toString() + "Path to base computation took " + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
         }
@@ -638,11 +638,6 @@ public class RealAgent extends Agent {
     }
 
 // </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Calculate paths">
-    public Path calculatePath(Point startPoint, Point goalPoint) {
-        return calculatePath(startPoint, goalPoint, false);
-    }
-
     public Path calculatePath(Point startPoint, Point goalPoint, boolean pureAStar) {
 
         if (timeTopologicalMapUpdated < 0) {
@@ -664,7 +659,7 @@ public class RealAgent extends Agent {
                             + startPoint + " to " + goalPoint);
                 }
                 timeTopologicalMapUpdated = -1;
-                return calculatePath(startPoint, goalPoint);
+                return calculatePath(startPoint, goalPoint, false);
             } else if (!tpath.found) {
                 if (Constants.DEBUG_OUTPUT) {
                     System.out.println(this + "at location (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") failed to plan path (" + (int) startPoint.getX() + "," + (int) startPoint.getY() + ") to (" + (int) goalPoint.getX() + "," + (int) goalPoint.getY() + "), not retrying; "
@@ -685,22 +680,6 @@ public class RealAgent extends Agent {
         return tpath;
     }
 
-    private LinkedList<Point> pointsAlongSegment(int x1, int y1, int x2, int y2) {
-        LinkedList<Point> pts = new LinkedList<Point>();
-
-        for (int i = Math.min(x1, x2); i <= Math.max(x1, x2); i++) {
-            for (int j = Math.min(y1, y2); j <= Math.max(y1, y2); j++) {
-                if (occGrid.distPointToLine(x1, y1, x2, y2, i, j) < 0.5) {
-                    pts.add(new Point(i, j));
-                }
-            }
-        }
-
-        return pts;
-    }
-// </editor-fold>
-
-    //
     /**
      * update stats of what we know about the environment. TODO: we shouldn't call this every time
      * step, this is a performance bottleneck and can be made more efficient.

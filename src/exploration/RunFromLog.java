@@ -205,9 +205,4 @@ public class RunFromLog implements Exploration {
         return RobotConfig.roletype.BaseStation;
     }
 
-    @Override
-    public Point replan(int timeElapsed) {
-        //Not useful in RunFromLog!
-        return null;
-    }
 }
