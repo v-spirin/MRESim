@@ -844,14 +844,6 @@ public class Path {
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
-    public void setStartPoint(Point start) {
-        this.start = start;
-    }
-
-    public void setGoalPoint(Point goal) {
-        this.goal = goal;
-    }
-
     public Point getStartPoint() {
         return start;
     }

@@ -186,8 +186,6 @@ public class TopologicalMap {
                                         }
                                     } else {
                                         pathToNode = new Path(occGrid, (Point) node.getPosition().clone(), (Point) neighbourNode.getPosition().clone(), false, true);
-                                        pathToNode.setStartPoint((Point) node.getPosition().clone());
-                                        pathToNode.setGoalPoint((Point) neighbourNode.getPosition().clone());
 
                                         if (Constants.DEBUG_OUTPUT) {
                                             System.out.println("Generating path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + ")");
