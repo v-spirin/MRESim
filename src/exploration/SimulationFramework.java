@@ -73,7 +73,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Scanner;
 import javax.swing.ImageIcon;
@@ -984,10 +983,10 @@ public class SimulationFramework implements ActionListener {
         //agent1.setStateTimer(15);
         //agent2.setStateTimer(15);
         // exchange frontiers
-        PriorityQueue<Frontier> tempFrontiers = agent1.getFrontiers();
-        agent1.setFrontiers(agent2.getFrontiers());
-        agent2.setFrontiers(tempFrontiers);
-
+        //Should be the same!
+//        PriorityQueue<Frontier> tempFrontiers = agent1.getFrontiers();
+//        agent1.setFrontiers(agent2.getFrontiers());
+//        agent2.setFrontiers(tempFrontiers);
         // exchange childRV
         /*Rendezvous tempChildRV = agent1.getRendezvousAgentData().getChildRendezvous();
         agent1.getRendezvousAgentData().setChildRendezvous(agent2.getRendezvousAgentData().getChildRendezvous());

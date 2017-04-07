@@ -134,6 +134,7 @@ public class RealAgent extends Agent {
      * again).
      */
     private int occupied = 0;
+    Exploration exploration;
 
     public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, RealAgent baseStation) {
         super(robot);
@@ -240,13 +241,16 @@ public class RealAgent extends Agent {
     }
 
     public PriorityQueue<Frontier> getFrontiers() {
-        return (this.frontiers);
+        if (exploration instanceof FrontierExploration) {
+            return ((FrontierExploration) this.exploration).getFrontiers();
+        } else {
+            return null;
+        }
     }
 
-    public void setFrontiers(PriorityQueue<Frontier> newFrontierList) {
+    /*public void setFrontiers(PriorityQueue<Frontier> newFrontierList) {
         this.frontiers = newFrontierList;
-    }
-
+    }*/
     public Frontier getLastFrontier() {
         return this.lastFrontier;
     }
@@ -515,7 +519,6 @@ public class RealAgent extends Agent {
             // First call in cycle
             //TODO Only needed for Util and RoleBased, but needs to be done on request!!!
             //setDistanceToBase(getPathToBaseStation().getLength());
-            Exploration exploration;
             switch (simConfig.getExpAlgorithm()) {
                 case RunFromLog:
                     exploration = new RunFromLog(simConfig.getRunFromLogFilename(), this.robotNumber);
@@ -524,7 +527,7 @@ public class RealAgent extends Agent {
                     break;
 
                 case LeaderFollower:
-                    exploration = new LeaderFollower(this);
+                    exploration = new LeaderFollower(this, simConfig.getFrontierAlgorithm(), baseStation);
                     break;
                 case FrontierExploration:
                     if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn)) {

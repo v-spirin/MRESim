@@ -264,7 +264,7 @@ public class RoleBasedExploration extends FrontierExploration {
 
         //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
         if (timeElapsed > 100) { //prevent setting mission complete at the very start of the exploration
-            if ((agent.getFrontiers().isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
+            if ((frontiers.isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
                 Path pathToParentRendezvous = agent.calculatePath(agent.getLocation(), agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), false);//rvd.getParentRendezvous().getChildLocation());
                 agent.setPath(pathToParentRendezvous);
                 agent.setState(RealAgent.ExploreState.ReturnToParent);
@@ -443,7 +443,8 @@ public class RoleBasedExploration extends FrontierExploration {
         } //</editor-fold>
         //<editor-fold defaultstate="collapsed" desc="else, we've recalculated rv, time to move on">
         else //<editor-fold defaultstate="collapsed" desc="Explorer - process & go into Explore state">
-         if (agent.isExplorer()) {
+        {
+            if (agent.isExplorer()) {
                 agent.getRendezvousStrategy().processAfterGiveParentInfoExplorer(timeElapsed);
 
                 agent.setState(RealAgent.ExploreState.Explore);
@@ -504,6 +505,7 @@ public class RoleBasedExploration extends FrontierExploration {
                     //</editor-fold>
                 }
             } //</editor-fold>        //</editor-fold>
+        }
     }
 
     public Point takeStep_GoToChild() {
@@ -590,7 +592,8 @@ public class RoleBasedExploration extends FrontierExploration {
         if (canStillWait) {
             return agent.getRendezvousStrategy().processWaitForChild();
         } else //Go to backup RV if available. Otherwise do what the strategy requires us to do, e.g. become an explorer.
-         if (rvd.getChildBackupRendezvous() != null) {
+        {
+            if (rvd.getChildBackupRendezvous() != null) {
                 rvd.setChildRendezvous(rvd.getChildBackupRendezvous());
                 rvd.setChildBackupRendezvous(null);
                 agent.setState(RealAgent.ExploreState.GoToChild);
@@ -599,6 +602,7 @@ public class RoleBasedExploration extends FrontierExploration {
             } else {
                 return agent.getRendezvousStrategy().processWaitForChildTimeoutNoBackup();
             }
+        }
     }
 
     public Point takeStep_GetInfoFromChild() {

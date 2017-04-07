@@ -77,6 +77,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
+import java.util.PriorityQueue;
 import javax.imageio.ImageIO;
 import path.Path;
 
@@ -632,7 +633,11 @@ public class ExplorationImage {
     }
 
     public void drawFrontierOutlines(RealAgent agent) {
-        for (Frontier f : agent.getFrontiers()) {
+        PriorityQueue<Frontier> frontiers = agent.getFrontiers();
+        if (frontiers == null) {
+            return;
+        }
+        for (Frontier f : frontiers) {
             for (Point p : f.getPolygonOutline()) {
                 setPixel(p.x, p.y, Constants.MapColor.frontier());
                 agent.getDirtyCells().add(new Point(p.x, p.y));

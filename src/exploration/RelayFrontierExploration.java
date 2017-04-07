@@ -151,7 +151,7 @@ public class RelayFrontierExploration extends FrontierExploration {
         }
         long realtimeStart = System.currentTimeMillis();
 
-        FrontierExploration.calculateFrontiers(agent, frontierExpType);
+        FrontierExploration.calculateFrontiers(agent, frontierExpType, frontiers);
 
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(agent.toString() + "calculateFrontiers took "
@@ -159,7 +159,7 @@ public class RelayFrontierExploration extends FrontierExploration {
         }
 
         //<editor-fold defaultstate="collapsed" desc="If no frontiers found, or reached exploration goal, return to ComStation">
-        if (((agent.getFrontiers().isEmpty()) || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))
+        if (((frontiers.isEmpty()) || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))
                 && timeElapsed > 100) {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent + " setting mission complete");

@@ -60,4 +60,5 @@ public interface Exploration {
      * @return Next step
      */
     public Point takeStep(int timeElapsed);
+
 }
