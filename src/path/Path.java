@@ -75,6 +75,7 @@ public class Path {
     LinkedList<TopologicalNode> pathNodes;
     LinkedList<Point> allPathPixels;
     double length;
+    private TopologicalMap tMap;
 
     public Path(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit, boolean jump) {
         this.start = startpoint;
@@ -94,6 +95,7 @@ public class Path {
 
         this.start = startpoint;
         this.goal = endpoint;
+        this.tMap = tMap;
         TopologicalNode startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
         TopologicalNode goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
 
@@ -167,11 +169,11 @@ public class Path {
                         System.out.println("Cannot use topological map, startpoint is " + startpoint.toString()
                                 + ", endpoint is " + endpoint.toString() + ", trying A*...");
                     }
-                    OutputPathError(agentGrid, tMap, startpoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
+                    outputPathError();
                     if (Constants.DEBUG_OUTPUT) {
                         System.out.println("A* and JumpPath did not work either... :(");
                     }
-                    OutputPathError(agentGrid, startpoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
+                    outputPathError();
                 }
             }
             return;
@@ -195,7 +197,7 @@ public class Path {
             p0 = new Path(agentGrid, startpoint, lastPoint, false, false);
             if (!p0.found) {
                 found = false;
-                OutputPathError(agentGrid, startpoint, lastPoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
+                outputPathError();
                 return;
             }
             startpoint = lastPoint;
@@ -215,7 +217,7 @@ public class Path {
             p3 = new Path(agentGrid, lastPoint, endpoint, false, false);
             if (!p3.found) {
                 found = false;
-                OutputPathError(agentGrid, lastPoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
+                p3.outputPathError();
                 return;
             }
             endpoint = lastPoint;
@@ -226,7 +228,7 @@ public class Path {
             Path p1 = new Path(agentGrid, startpoint, endpoint, false, true);
             if (!p1.found) {
                 found = false;
-                OutputPathError(agentGrid, startpoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
+                outputPathError();
                 return;
             }
             pathPoints = new LinkedList<Point>();
@@ -255,7 +257,7 @@ public class Path {
                 System.out.println("Could not find topological path, startpoint is " + startpoint.toString()
                         + ", endpoint is " + endpoint.toString() + ", trying A*...");
             }
-            OutputPathError(agentGrid, tMap, startpoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
+            outputPathError();
             boolean pathFound = getAStarPath(agentGrid, startpoint, endpoint, limit);
             if (!pathFound) {
                 pathFound = getJumpPath(agentGrid, startpoint, endpoint, limit);
@@ -263,7 +265,7 @@ public class Path {
                     if (Constants.DEBUG_OUTPUT) {
                         System.out.println("A* and JumpPath did not work either... :(");
                     }
-                    OutputPathError(agentGrid, startpoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
+                    outputPathError();
                 }
             } else if (Constants.DEBUG_OUTPUT) {
                 System.out.println("A* worked! Successfully recovered full path");
@@ -277,7 +279,7 @@ public class Path {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println("Could not find p1! From " + startpoint + " to " + (Point) pathNodes.get(1).getPosition());
             }
-            OutputPathError(agentGrid, startpoint, (Point) pathNodes.get(1).getPosition().clone(), Constants.DEFAULT_PATH_LOG_DIRECTORY);
+            p1.outputPathError();
             found = false;
             return;
         }
@@ -287,8 +289,7 @@ public class Path {
                 System.out.println("Could not find p2! From " + (Point) pathNodes.get(pathNodes.size() - 2).getPosition()
                         + " to " + endpoint);
             }
-            OutputPathError(agentGrid, (Point) pathNodes.get(pathNodes.size() - 2).getPosition().clone(),
-                    endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
+            p2.outputPathError();
             found = false;
             return;
         }
@@ -444,7 +445,7 @@ public class Path {
                     System.out.println("Took too long (A*), startpoint is " + startpoint.toString()
                             + ", endpoint is " + endpoint.toString() + "time elapsed: " + time_elapsed + "ms.");
                 }
-                OutputPathError(agentGrid, startpoint, endpoint, Constants.DEFAULT_PATH_LOG_DIRECTORY);
+                outputPathError();
                 limit_hit = true;
                 break;
             }
@@ -1125,36 +1126,22 @@ public class Path {
         }
     }
 
-    private void OutputPathError(OccupancyGrid agentGrid, Point startpoint, Point endpoint, String dir) {
+    private void outputPathError() {
         if (Constants.OUTPUT_PATH_ERROR) {
             try {
-                ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
+                ExplorationImage img = new ExplorationImage(new Environment(grid.height, grid.width));
                 ShowSettingsAgent agentSettings = new ShowSettingsAgent();
                 agentSettings.showFreeSpace = true;
-                agentSettings.showBaseSpace = false;
-                img.fullUpdatePath(agentGrid, startpoint, endpoint, agentSettings);
-                img.saveScreenshot(dir);
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println("Outputting path debug screens to: " + dir);
+                if (tMap == null) {
+                    agentSettings.showBaseSpace = false;
+                    img.fullUpdatePath(grid, start, goal, agentSettings);
+                } else {
+                    agentSettings.showTopologicalMap = true;
+                    img.fullUpdatePath(grid, tMap, start, goal, agentSettings);
                 }
-            } catch (Exception e) {
-                System.err.println("Couldn't save path error screenshot, reason: " + e.getMessage());
-            }
-        }
-    }
-
-    private void OutputPathError(OccupancyGrid agentGrid, TopologicalMap tMap,
-            Point startpoint, Point endpoint, String dir) {
-        if (Constants.OUTPUT_PATH_ERROR) {
-            try {
-                ExplorationImage img = new ExplorationImage(new Environment(agentGrid.height, agentGrid.width));
-                ShowSettingsAgent agentSettings = new ShowSettingsAgent();
-                agentSettings.showFreeSpace = true;
-                agentSettings.showTopologicalMap = true;
-                img.fullUpdatePath(agentGrid, tMap, startpoint, endpoint, agentSettings);
-                img.saveScreenshot(dir);
+                img.saveScreenshot(Constants.DEFAULT_PATH_LOG_DIRECTORY);
                 if (Constants.DEBUG_OUTPUT) {
-                    System.out.println("Outputting path debug screens to: " + dir);
+                    System.out.println("Outputting path debug screens to: " + Constants.DEFAULT_PATH_LOG_DIRECTORY);
                 }
             } catch (Exception e) {
                 System.err.println("Couldn't save path error screenshot, reason: " + e.getMessage());
