@@ -220,7 +220,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
         return nextStep;
     }
 
-// <editor-fold defaultstate="collapsed" desc="Choose best frontier">
     private void frontiersOfInterest(Frontier lastFrontier, OccupancyGrid grid) {
         PriorityQueue<Frontier> list = new PriorityQueue<>();
 
@@ -258,7 +257,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         frontiers = list;
     }
 
-    private static double utilityEstimate(Point agentLoc, Frontier frontier) {
+    private double utilityEstimate(Point agentLoc, Frontier frontier) {
         if (agentLoc.getX() == frontier.getCentre().x
                 && agentLoc.getY() == frontier.getCentre().y) {
             return -1001;
@@ -266,7 +265,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         return ((frontier.getArea() * 100000000) / Math.pow(agentLoc.distance(frontier.getCentre()), 4));
     }
 
-    private static void calculateUtilityExact(RealAgent agent, FrontierUtility ute) {
+    private void calculateUtilityExact(FrontierUtility ute) {
         if (agent.getLocation().getX() == ute.frontier.getCentre().x
                 && agent.getLocation().getY() == ute.frontier.getCentre().y) {
             ute.utility = -1001;
@@ -341,8 +340,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
     }
 
     // Calculates Euclidean distance from all known teammates and self to frontiers of interest
-    private static PriorityQueue initializeUtilities(RealAgent agent, PriorityQueue<Frontier> frontiers,
-            boolean considerOtherAgents, LinkedList<Integer> teammatesAssignedIDs) {
+    private PriorityQueue initializeUtilities(boolean considerOtherAgents, LinkedList<Integer> teammatesAssignedIDs) {
         if (teammatesAssignedIDs == null) {
             teammatesAssignedIDs = new LinkedList<Integer>();
         }
@@ -399,7 +397,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
     }
 
     // Calculates Euclidean distance from all known teammates and self to frontiers of interest
-    private static PriorityQueue initializeUtilities(Point p, PriorityQueue<Frontier> frontiers) {
+    private PriorityQueue initializeUtilities(Point p) {
         PriorityQueue<FrontierUtility> utilities = new PriorityQueue<FrontierUtility>();
 
         // For each frontier of interest
@@ -500,8 +498,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
         }
     }
 
-    public static double maxFrontierUtility(PriorityQueue<Frontier> frontiers, OccupancyGrid grid, Point start) {
-        PriorityQueue<FrontierUtility> utilities = initializeUtilities(start, frontiers);
+    public double maxFrontierUtility(Point start) {
+        PriorityQueue<FrontierUtility> utilities = initializeUtilities(start);
 
         return utilities.peek().utility;
     }
@@ -517,7 +515,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
             System.out.println(agent + " frontiers of interest: " + frontiers.size());
         }
         // Step 2:  Create priorityQueue of utility estimates (Euclidean distance)
-        PriorityQueue<FrontierUtility> utilities = initializeUtilities(agent, frontiers, considerOtherAgents, teammatesAssignedIDs);
+        PriorityQueue<FrontierUtility> utilities = initializeUtilities(considerOtherAgents, teammatesAssignedIDs);
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(agent + " frontier utilities: " + utilities.size());
         }
@@ -544,7 +542,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
             // If this is an estimate, calculate true utility
             if (best.path == null) {
-                calculateUtilityExact(agent, best);
+                calculateUtilityExact(best);
             }
 
             if (best.path == null) {
