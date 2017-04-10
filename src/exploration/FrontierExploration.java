@@ -131,7 +131,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         long realtimeStart = System.currentTimeMillis();
 
-        calculateFrontiers(agent, frontierExpType, frontiers);
+        calculateFrontiers();
 
         //If no frontiers found, or reached exploration goal, return to ComStation
         if (((frontiers.isEmpty()) || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))
@@ -221,35 +221,26 @@ public class FrontierExploration extends BasicExploration implements Exploration
     }
 
 // <editor-fold defaultstate="collapsed" desc="Choose best frontier">
-    private LinkedList<Frontier> frontiersOfInterest(Frontier lastFrontier, PriorityQueue<Frontier> frontiers, OccupancyGrid grid) {
-        PriorityQueue<Frontier> copy = new PriorityQueue();
-        LinkedList<Frontier> list = new LinkedList();
+    private void frontiersOfInterest(Frontier lastFrontier, OccupancyGrid grid) {
+        PriorityQueue<Frontier> list = new PriorityQueue<>();
 
-        frontiers.stream().forEach((f) -> {
-            copy.add(f.copy());
-        });
-
-        Frontier currFrontier;
         int counter = 0;
-        for (int i = copy.size(); i > 0; i--) {
-            currFrontier = copy.poll();
-
+        for (Frontier currFrontier : frontiers) {
+            if (counter >= Constants.MAX_NUM_FRONTIERS) {
+                break;
+            }
             // To avoid oscillation, add last frontier to list (just in case it
             // still is the best, but is not one of the closest)
             if (currFrontier == lastFrontier) {
-                list.add(currFrontier);
                 counter++;
-                if (counter > Constants.MAX_NUM_FRONTIERS) {
-                    break;
-                }
-            } else if (currFrontier.getArea() >= Constants.MIN_FRONTIER_SIZE
-                    && currFrontier.hasUnknownBoundary(grid)
-                    && counter < Constants.MAX_NUM_FRONTIERS) {
-                //ignore frontiers not reachable from base
+                continue;
+            }
+            if (currFrontier.getArea() >= Constants.MIN_FRONTIER_SIZE
+                    && currFrontier.hasUnknownBoundary(grid)) {//TODO Unneccessary!?!?
+                //ignore frontiers not reachable from base //TODO WHY??? Woudn't path from agent be better?
                 Path pathToFrontier = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(),
                         currFrontier.getCentre(), false);
-                if (/*(currFrontier.getArea() < Constants.MIN_FRONTIER_SIZE * 4) && */ //(grid.obstacleWithinDistance(currFrontier.getCentre().x, currFrontier.getCentre().y, 1)))
-                        !pathToFrontier.found) {
+                if (!pathToFrontier.found) {
                     if (Constants.DEBUG_OUTPUT) {
                         System.out.println(agent + "adding bad frontier " + currFrontier);
                     }
@@ -264,7 +255,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         }
 
-        return list;
+        frontiers = list;
     }
 
     private static double utilityEstimate(Point agentLoc, Frontier frontier) {
@@ -350,7 +341,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
     }
 
     // Calculates Euclidean distance from all known teammates and self to frontiers of interest
-    private static PriorityQueue initializeUtilities(RealAgent agent, LinkedList<Frontier> frontiers,
+    private static PriorityQueue initializeUtilities(RealAgent agent, PriorityQueue<Frontier> frontiers,
             boolean considerOtherAgents, LinkedList<Integer> teammatesAssignedIDs) {
         if (teammatesAssignedIDs == null) {
             teammatesAssignedIDs = new LinkedList<Integer>();
@@ -521,12 +512,12 @@ public class FrontierExploration extends BasicExploration implements Exploration
             teammatesAssignedIDs = new LinkedList<Integer>();
         }
         // Step 1:  Create list of frontiers of interest (closest ones)
-        LinkedList<Frontier> frontiersOfInterrest = frontiersOfInterest(agent.getLastFrontier(), frontiers, agent.getOccupancyGrid());
+        frontiersOfInterest(agent.getLastFrontier(), agent.getOccupancyGrid());
         if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent + " frontiers of interest: " + frontiersOfInterrest.size());
+            System.out.println(agent + " frontiers of interest: " + frontiers.size());
         }
         // Step 2:  Create priorityQueue of utility estimates (Euclidean distance)
-        PriorityQueue<FrontierUtility> utilities = initializeUtilities(agent, frontiersOfInterrest, considerOtherAgents, teammatesAssignedIDs);
+        PriorityQueue<FrontierUtility> utilities = initializeUtilities(agent, frontiers, considerOtherAgents, teammatesAssignedIDs);
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(agent + " frontier utilities: " + utilities.size());
         }
@@ -534,7 +525,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
         FrontierUtility best;
         LinkedList<FrontierUtility> removal;
         boolean isLastFrontier = false;
-        int counter = 0;
 
         while (!utilities.isEmpty()) {    // && counter < 5) {
             best = utilities.poll();
@@ -614,14 +604,13 @@ public class FrontierExploration extends BasicExploration implements Exploration
                     utilities.add(best);
                 }
 
-            counter++;
         }
 
         return teammatesAssignedIDs;  // couldn't assign frontier - could be there are more robots than frontiers?
     }
 
 //Calculate Frontiers
-    public static PriorityQueue<Frontier> calculateFrontiers(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, PriorityQueue<Frontier> frontiers) {
+    public void calculateFrontiers() {
         long realtimeStart = System.currentTimeMillis();
         // If recalculating frontiers, must set old frontiers dirty for image rendering
         frontiers.stream().forEach((f) -> {
@@ -662,7 +651,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
             System.out.println("retained " + contourCounter + " of them, disregarded due to size " + contoursSmall
                     + ", disregarded as bad " + contoursBad + ". Took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
         }
-        return frontiers;
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 

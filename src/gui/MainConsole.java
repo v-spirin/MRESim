@@ -49,7 +49,7 @@ import agents.RealAgent;
 import config.Constants;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
-import exploration.SimulationFramework;
+import simulator.SimulationFramework;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;

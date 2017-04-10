@@ -48,7 +48,7 @@ import agents.RealAgent;
 import config.RobotConfig;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
-import exploration.SimulationFramework;
+import simulator.SimulationFramework;
 import gui.ShowSettings.ShowSettings;
 import gui.ShowSettings.ShowSettingsAgent;
 import java.awt.BasicStroke;

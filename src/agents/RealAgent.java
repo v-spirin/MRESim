@@ -60,7 +60,6 @@ import exploration.LeaderFollower;
 import exploration.RelayFrontierExploration;
 import exploration.RoleBasedExploration;
 import exploration.RunFromLog;
-import exploration.SimulationFramework;
 import exploration.UtilityExploration;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.MultiPointRendezvousStrategy;
@@ -75,6 +74,7 @@ import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 import path.Path;
+import simulator.SimulationFramework;
 
 /**
  *
@@ -519,33 +519,35 @@ public class RealAgent extends Agent {
             // First call in cycle
             //TODO Only needed for Util and RoleBased, but needs to be done on request!!!
             //setDistanceToBase(getPathToBaseStation().getLength());
-            switch (simConfig.getExpAlgorithm()) {
-                case RunFromLog:
-                    exploration = new RunFromLog(simConfig.getRunFromLogFilename(), this.robotNumber);
-                    setState(((RunFromLog) exploration).getState(timeElapsed));
-                    setRole(((RunFromLog) exploration).getRole(timeElapsed));
-                    break;
+            if (exploration == null) {
+                switch (simConfig.getExpAlgorithm()) {
+                    case RunFromLog:
+                        exploration = new RunFromLog(simConfig.getRunFromLogFilename(), this.robotNumber);
+                        setState(((RunFromLog) exploration).getState(timeElapsed));
+                        setRole(((RunFromLog) exploration).getRole(timeElapsed));
+                        break;
 
-                case LeaderFollower:
-                    exploration = new LeaderFollower(this, simConfig.getFrontierAlgorithm(), baseStation);
-                    break;
-                case FrontierExploration:
-                    if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn)) {
-                        exploration = new UtilityExploration(this, simConfig, baseStation);
-                    } else {
+                    case LeaderFollower:
+                        exploration = new LeaderFollower(this, simConfig.getFrontierAlgorithm(), baseStation);
+                        break;
+                    case FrontierExploration:
+                        if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn)) {
+                            exploration = new UtilityExploration(this, simConfig, baseStation);
+                        } else {
+                            exploration = new FrontierExploration(this, simConfig.getFrontierAlgorithm(), baseStation);
+                        }
+                        break;
+                    case RoleBasedExploration:
+                        exploration = new RoleBasedExploration(timeElapsed, this, this.getRendezvousStrategy(), baseStation);
+                        break;
+
+                    case Testing:
+                        exploration = new RelayFrontierExploration(this, simConfig.getFrontierAlgorithm(), simConfig.useComStations(), simConfig.getComStationDropChance(), baseStation);
+                        break;
+                    default:
                         exploration = new FrontierExploration(this, simConfig.getFrontierAlgorithm(), baseStation);
-                    }
-                    break;
-                case RoleBasedExploration:
-                    exploration = new RoleBasedExploration(timeElapsed, this, this.getRendezvousStrategy(), baseStation);
-                    break;
-
-                case Testing:
-                    exploration = new RelayFrontierExploration(this, simConfig.getFrontierAlgorithm(), simConfig.useComStations(), simConfig.getComStationDropChance(), baseStation);
-                    break;
-                default:
-                    exploration = new FrontierExploration(this, simConfig.getFrontierAlgorithm(), baseStation);
-                    break;
+                        break;
+                }
             }
             nextStep = exploration.takeStep(timeElapsed);
             if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {

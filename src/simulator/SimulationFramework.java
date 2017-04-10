@@ -42,7 +42,7 @@
  *     If not, see <http://www.gnu.org/licenses/>.
  */
 
-package exploration;
+package simulator;
 
 import agents.Agent;
 import agents.ComStation;
@@ -59,6 +59,7 @@ import config.SimulatorConfig;
 import environment.Environment;
 import environment.Environment.Status;
 import environment.Frontier;
+import exploration.RandomWalk;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.RendezvousAgentData;
 import gui.ExplorationImage;
@@ -88,7 +89,6 @@ import path.Path;
  */
 public class SimulationFramework implements ActionListener {
 
-// <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">
     boolean pauseSimulation;                   // For stepping through simulation one step at a time
 
     boolean isBatch;                            // Are we running a batch file
@@ -214,7 +214,6 @@ public class SimulationFramework implements ActionListener {
         }
     }
 
-// </editor-fold>
     public int getTotalArea() {
         return totalArea;
     }
@@ -1435,96 +1434,8 @@ public class SimulationFramework implements ActionListener {
     }
 // </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Utility">
     @Override
     public String toString() {
         return ("[Simulator] ");
     }
-// </editor-fold>
-
-// <editor-fold defaultstate="collapsed" desc="Debris">
-    private void simulateDebris() {
-        int debrisSize, currX, currY, nextX, nextY;
-
-        /* The below puts random debris anywhere
-        // according to constant NEW_DEBRIS_LIKELIHOOD, add debris
-        if(random.nextInt(100) < (int)(Constants.NEW_DEBRIS_LIKELIHOOD * 100)) {
-            debrisSize = random.nextInt(Constants.NEW_DEBRIS_MAX_SIZE) + 1;
-
-            System.out.println(this.toString() + "Adding random debris of size " + debrisSize + "!");
-
-            currX = random.nextInt(env.getColumns());
-            currY = random.nextInt(env.getRows());
-
-            for(int i=0; i<debrisSize; i++) {
-                env.setStatus(currY, currX, Status.obstacle);
-                do {
-                    nextX = currX + random.nextInt(3) - 1;
-                    nextY = currY + random.nextInt(3) - 1;
-                }
-                while(!env.locationExists(nextX, nextY));
-                currX = nextX;
-                currY = nextY;
-            }
-        } */
-
- /* The below is purely for the aisleRoom environment */
-        // Gate 1
-        /*if(debrisTimer[0] <= 0) {
-            if(random.nextInt(100) < 5) {
-                closeGate(46);
-                debrisTimer[0] = 10;
-            }
-        }
-        else if(debrisTimer[0] == 1) {
-            openGate(46);
-            debrisTimer[0] = 0;
-        }
-        else
-            debrisTimer[0]--;
-
-        if(debrisTimer[1] <= 0) {
-            if(random.nextInt(100) < 5) {
-                closeGate(121);
-                debrisTimer[0] = 10;
-            }
-        }
-        else if(debrisTimer[1] == 1) {
-            openGate(121);
-            debrisTimer[1] = 0;
-        }
-        else
-            debrisTimer[1]--;
-
-        if(debrisTimer[2] <= 0) {
-            if(random.nextInt(100) < 5) {
-                closeGate(196);
-                debrisTimer[0] = 10;
-            }
-        }
-        else if(debrisTimer[2] == 1) {
-            openGate(196);
-            debrisTimer[2] = 0;
-        }
-        else
-            debrisTimer[2]--;*/
-    }
-
-    private void closeGate(int yTop) {
-        for (int i = yTop; i < yTop + 67; i++) {
-            for (int j = 250; j < 258; j++) {
-                env.setStatus(j, i, Status.obstacle);
-            }
-        }
-    }
-
-    private void openGate(int yTop) {
-        for (int i = yTop; i < yTop + 67; i++) {
-            for (int j = 250; j < 258; j++) {
-                env.setStatus(j, i, Status.explored);
-            }
-        }
-    }
-
-// </editor-fold>
 }

@@ -62,7 +62,6 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         super(agent, frontierExpType, baseStation);
     }
 
-// <editor-fold defaultstate="collapsed" desc="Take Step">
     @Override
     public Point takeStep(int timeElapsed) {
         Point nextStep = new Point(agent.getX(), agent.getY());
@@ -240,8 +239,6 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         return nextStep;
     }
 
-    // </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Replan">
     public Point replanExplorer() {
         if (!agent.getParentTeammate().isInRange()) {
             agent.getStats().setTimeSinceLastPlan(0);
@@ -250,7 +247,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         Point nextStep;
 
         // Find frontiers
-        calculateFrontiers(agent, frontierExpType, frontiers);
+        calculateFrontiers();
 
         // If no frontiers found, return to ComStation
         if (frontiers.isEmpty()) {
@@ -299,5 +296,4 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         return agent.getNextPathPoint();
     }
 
-// </editor-fold>
 }

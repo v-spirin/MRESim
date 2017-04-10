@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -72,7 +72,7 @@ public class Environment {
         initCells();
     }
 
-// </editor-fold>     
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
     public int getRows() {
         return this.rows;
@@ -102,7 +102,7 @@ public class Environment {
         return status;
     }
 
-// </editor-fold>  
+// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Initialization">
     private void initCells() {
         status = new Status[columns][rows];
@@ -112,7 +112,7 @@ public class Environment {
             }
         }
     }
-// </editor-fold>     
+// </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Information of Interest">
     public boolean locationExists(int x, int y) {
@@ -236,4 +236,86 @@ public class Environment {
     }
 
 // </editor-fold>
+    private void simulateDebris() {
+        int debrisSize, currX, currY, nextX, nextY;
+
+        /* The below puts random debris anywhere
+        // according to constant NEW_DEBRIS_LIKELIHOOD, add debris
+        if(random.nextInt(100) < (int)(Constants.NEW_DEBRIS_LIKELIHOOD * 100)) {
+            debrisSize = random.nextInt(Constants.NEW_DEBRIS_MAX_SIZE) + 1;
+
+            System.out.println(this.toString() + "Adding random debris of size " + debrisSize + "!");
+
+            currX = random.nextInt(env.getColumns());
+            currY = random.nextInt(env.getRows());
+
+            for(int i=0; i<debrisSize; i++) {
+                env.setStatus(currY, currX, Status.obstacle);
+                do {
+                    nextX = currX + random.nextInt(3) - 1;
+                    nextY = currY + random.nextInt(3) - 1;
+                }
+                while(!env.locationExists(nextX, nextY));
+                currX = nextX;
+                currY = nextY;
+            }
+        } */
+
+ /* The below is purely for the aisleRoom environment */
+        // Gate 1
+        /*if(debrisTimer[0] <= 0) {
+            if(random.nextInt(100) < 5) {
+                closeGate(46);
+                debrisTimer[0] = 10;
+            }
+        }
+        else if(debrisTimer[0] == 1) {
+            openGate(46);
+            debrisTimer[0] = 0;
+        }
+        else
+            debrisTimer[0]--;
+
+        if(debrisTimer[1] <= 0) {
+            if(random.nextInt(100) < 5) {
+                closeGate(121);
+                debrisTimer[0] = 10;
+            }
+        }
+        else if(debrisTimer[1] == 1) {
+            openGate(121);
+            debrisTimer[1] = 0;
+        }
+        else
+            debrisTimer[1]--;
+
+        if(debrisTimer[2] <= 0) {
+            if(random.nextInt(100) < 5) {
+                closeGate(196);
+                debrisTimer[0] = 10;
+            }
+        }
+        else if(debrisTimer[2] == 1) {
+            openGate(196);
+            debrisTimer[2] = 0;
+        }
+        else
+            debrisTimer[2]--;*/
+    }
+
+    private void closeGate(int yTop) {
+        for (int i = yTop; i < yTop + 67; i++) {
+            for (int j = 250; j < 258; j++) {
+                setStatus(j, i, Status.obstacle);
+            }
+        }
+    }
+
+    private void openGate(int yTop) {
+        for (int i = yTop; i < yTop + 67; i++) {
+            for (int j = 250; j < 258; j++) {
+                setStatus(j, i, Status.explored);
+            }
+        }
+    }
 }

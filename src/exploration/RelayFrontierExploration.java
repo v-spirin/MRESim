@@ -151,7 +151,7 @@ public class RelayFrontierExploration extends FrontierExploration {
         }
         long realtimeStart = System.currentTimeMillis();
 
-        FrontierExploration.calculateFrontiers(agent, frontierExpType, frontiers);
+        calculateFrontiers();
 
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(agent.toString() + "calculateFrontiers took "
