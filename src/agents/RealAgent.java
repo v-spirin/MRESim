@@ -57,10 +57,12 @@ import environment.TopologicalMap;
 import exploration.Exploration;
 import exploration.FrontierExploration;
 import exploration.LeaderFollower;
+import exploration.RandomExploration;
 import exploration.RelayFrontierExploration;
 import exploration.RoleBasedExploration;
 import exploration.RunFromLog;
 import exploration.UtilityExploration;
+import exploration.WallFollowExploration;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.MultiPointRendezvousStrategy;
 import exploration.rendezvous.NearRVPoint;
@@ -544,8 +546,14 @@ public class RealAgent extends Agent {
                     case Testing:
                         exploration = new RelayFrontierExploration(this, simConfig.getFrontierAlgorithm(), simConfig.useComStations(), simConfig.getComStationDropChance(), baseStation);
                         break;
+                    case Random:
+                        exploration = new RandomExploration(this);
+                        break;
+                    case WallFollow:
+                        exploration = new WallFollowExploration(this, occGrid);
+                        break;
                     default:
-                        exploration = new FrontierExploration(this, simConfig.getFrontierAlgorithm(), baseStation);
+                        exploration = new RandomExploration(this);
                         break;
                 }
             }

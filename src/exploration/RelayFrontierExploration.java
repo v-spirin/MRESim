@@ -44,11 +44,9 @@
 
 package exploration;
 
-import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.Constants;
-import config.RobotConfig;
 import config.SimulatorConfig;
 import java.awt.Point;
 import java.util.LinkedList;
@@ -106,13 +104,13 @@ public class RelayFrontierExploration extends FrontierExploration {
 
         if (timeElapsed < Constants.INIT_CYCLES) {
             // CHECK 0: Take a couple of random steps to start (just to gather some sensor data)
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
         } else if (agent.getEnvError()) {
             // CHECK 1: if agent hasn't moved, then he may be stuck in front of a wall.
             // Taking a random step might help.
             agent.resetPathToBaseStation();
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
         } else if ((agent.getStats().getTimeSinceLastPlan() < Constants.REPLAN_INTERVAL)
@@ -204,15 +202,10 @@ public class RelayFrontierExploration extends FrontierExploration {
             }
         }
 
-        if ((agent.getRole() == RobotConfig.roletype.Relay)
-                && (agent.getState() == Agent.ExploreState.GoToChild)) {
-            return takeStep_GoToChild();
-        }
-
         //<editor-fold defaultstate="collapsed" desc="If no frontier could be assigned, then go back to base.">
         if (!foundFrontier && timeElapsed > 100) {
             /*System.out.println(agent.toString() + " No frontier chosen, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.setTimeSinceLastPlan(0);
             agent.setCurrentGoal(nextStep);
             return nextStep;*/
@@ -238,7 +231,7 @@ public class RelayFrontierExploration extends FrontierExploration {
                 if (Constants.DEBUG_OUTPUT) {
                     System.out.println(agent + " overlapping " + teammate + ", taking random step");
                 }
-                nextStep = RandomWalk.takeStep(agent);
+                nextStep = RandomWalk.randomStep(agent);
                 agent.getStats().setTimeSinceLastPlan(0);
                 agent.setCurrentGoal(nextStep);
                 return nextStep;
@@ -256,7 +249,7 @@ public class RelayFrontierExploration extends FrontierExploration {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent + " has no path, taking random step.");
             }
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
             return nextStep;

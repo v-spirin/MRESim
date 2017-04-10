@@ -48,13 +48,13 @@ import config.Constants;
 import environment.Environment;
 import environment.OccupancyGrid;
 import environment.TopologicalMap;
-import simulator.ExplorationImage;
 import gui.ShowSettings.ShowSettingsAgent;
 import java.awt.Point;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import simulator.ExplorationImage;
 
 /**
  *
@@ -76,12 +76,16 @@ public class Path {
     LinkedList<Point> allPathPixels;
     double length;
     private TopologicalMap tMap;
+    private int currentPoint = 0;
+    private boolean jump;
 
     public Path(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit, boolean jump) {
         this.start = startpoint;
         this.goal = endpoint;
         this.limit = limit;
         this.grid = agentGrid;
+        this.jump = jump;
+        System.out.println("Path between " + start + "and" + goal);
         if (!jump) {
             calculateAStarPath();
         } else {
@@ -1087,5 +1091,35 @@ public class Path {
                 System.err.println("Couldn't save path error screenshot, reason: " + e.getMessage());
             }
         }
+    }
+
+    /**
+     * New method to use paths: create path and walk throug it by itetator nextPoint.
+     *
+     * @return next Point to go to
+     */
+    public Point nextPoint() {
+        if (pathPoints.isEmpty()) {
+            if (!jump) {
+                calculateAStarPath();
+            } else {
+                calculateJumpPath();
+            }
+        }
+        //currentPOint starts with 0 (startPoint) so we want to increment first!
+        // pathPoints.size() - 1 is the goal
+        if (currentPoint >= pathPoints.size() - 1) {
+            currentPoint = pathPoints.size() - 1;
+        } else {
+            currentPoint++;
+        }
+        if (currentPoint < 0) {
+            throw new RuntimeException("FATAL ERROR: Path is size 0");
+        }
+        return pathPoints.get(currentPoint);
+    }
+
+    public boolean isFinished() {
+        return currentPoint >= pathPoints.size() - 1;
     }
 }

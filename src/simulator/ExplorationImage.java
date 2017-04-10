@@ -512,7 +512,7 @@ public class ExplorationImage {
 
     public void redrawEnvAndAgents(MainGUI mainGUI, RobotTeamConfig rtc, SimulatorConfig simConfig) {
         if (mainGUI.showEnv()) {
-            drawEnvironment(simConfig.getEnv().getFullStatus());
+            drawEnvironment(simConfig.getEnvironment().getFullStatus());
         }
         try {
             RobotConfig curr = new RobotConfig();

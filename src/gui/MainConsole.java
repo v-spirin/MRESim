@@ -44,21 +44,21 @@
 
 package gui;
 
-import simulator.ExplorationImage;
 import Logging.ExplorationLogger;
 import agents.RealAgent;
 import config.Constants;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
-import simulator.SimulationFramework;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import simulator.ExplorationImage;
+import simulator.SimulationFramework;
 
 /**
  * Run simulation without GUI. Main-method, startable
  *
- * @author Christian
+ * @author Christian Clausen
  */
 public class MainConsole extends MainGUI implements Runnable {
 
@@ -69,7 +69,7 @@ public class MainConsole extends MainGUI implements Runnable {
     private boolean loaded = false;
 
     /**
-     * Start simulation
+     * Start simulation without GUI
      *
      * @param args none
      */
@@ -94,7 +94,7 @@ public class MainConsole extends MainGUI implements Runnable {
         this.threadName = name;
         robotTeamConfig = new RobotTeamConfig();
         simConfig = new SimulatorConfig();
-        explorationImage = new ExplorationImage(simConfig.getEnv());
+        explorationImage = new ExplorationImage(simConfig.getEnvironment());
         new File(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName).mkdir();
     }
 

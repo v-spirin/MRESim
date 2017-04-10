@@ -219,11 +219,27 @@ abstract public class Agent {
         return new Point(x, y);
     }
 
+    /**
+     * Gives the current heading of the agent.
+     *
+     * @return heading in radians
+     */
     public double getHeading() {
         return this.heading;
     }
 
+    /**
+     * Sets the agents current heading. Will be corrected to a value between 0 and 2 Math.PI
+     *
+     * @param newHeading heading in radians
+     */
     public void setHeading(double newHeading) {
+        if (newHeading >= 2 * Math.PI) {
+            setHeading(newHeading - 2 * Math.PI);
+        }
+        if (newHeading < 0) {
+            setHeading(newHeading + 2 * Math.PI);
+        }
         this.heading = newHeading;
     }
 

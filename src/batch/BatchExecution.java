@@ -45,6 +45,7 @@
 package batch;
 
 import config.Constants;
+import config.RobotTeamConfig;
 import config.SimulatorConfig;
 import gui.MainConsole;
 import java.io.File;
@@ -55,7 +56,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author christian
+ * @author Christian Clausen
  */
 public class BatchExecution {
 
@@ -63,6 +64,8 @@ public class BatchExecution {
 
     private MainConsole console;
     private List<SimulatorConfig> configs;
+    private RobotTeamConfig team;
+    int num_threads = 1;
 
     public BatchExecution() {
         configs = new ArrayList<>();
@@ -72,10 +75,22 @@ public class BatchExecution {
         config.setExpAlgorithm(SimulatorConfig.exptype.Testing);
         config.setCommModel(SimulatorConfig.commtype.DirectLine);
         config.setUseComStations(true);
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < num_threads; i++) {
             config.setComStationDropChance(0.1 + (0.1 * i));
             configs.add(config);
         }
+
+        //Team
+        team = new RobotTeamConfig();
+
+        team.loadConfig("maze_hill_2robots_8relays");
+        //team.loadConfig("maze_hill_2robots");
+        config.loadEnvironment("maze_with_hill");
+        /*
+        team.loadConfig("maze1_2robots_8relays");
+        config.loadEnvironment("maze1");
+         */
+
     }
 
     public void run() {
@@ -87,6 +102,9 @@ public class BatchExecution {
 
             counter++;
             console = new MainConsole(true, name);
+            if (team != null) {
+                console.setRobotTeamConfig(team);
+            }
             console.load();
             console.loadConfig(conf);
             Thread worker = new Thread(console, name);

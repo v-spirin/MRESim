@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -80,7 +80,8 @@ public class SimulatorConfig {
     private Environment env;
 
     public static enum exptype {
-        BatchRun, RunFromLog, LeaderFollower, FrontierExploration, RoleBasedExploration, Testing
+        BatchRun, RunFromLog, LeaderFollower, FrontierExploration,
+        RoleBasedExploration, Testing, Random, WallFollow
     }
 
     public static enum frontiertype {
@@ -180,6 +181,7 @@ public class SimulatorConfig {
     public void setCommModel(int n) {
         commModel = commtype.values()[n];
     }
+
     public void setCommModel(commtype com) {
         commModel = com;
     }
@@ -232,7 +234,7 @@ public class SimulatorConfig {
         simRate = s;
     }
 
-    public Environment getEnv() {
+    public Environment getEnvironment() {
         return env;
     }
 
@@ -527,13 +529,13 @@ public class SimulatorConfig {
         String oldConfigFilename = System.getProperty("user.dir") + "/config/lastEnvironment.png";
         File file = new File(oldConfigFilename);
         if (file.exists()) {
-            return loadWallConfig(oldConfigFilename);
+            return loadEnvironment(oldConfigFilename);
         } else {
             return false;
         }
     }
 
-    public boolean loadWallConfig(String fileName) {
+    public boolean loadEnvironment(String fileName) {
         env = EnvLoader.loadWallConfig(fileName);
 
         return env != null;

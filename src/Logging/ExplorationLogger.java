@@ -88,7 +88,7 @@ public class ExplorationLogger {
     }
 
     public void writeLog(int timeElapsed) {
-        double total = simConfig.getEnv().getTotalFreeSpace();
+        double total = simConfig.getEnvironment().getTotalFreeSpace();
         PrintWriter exploration;
         try {
             exploration = new PrintWriter(Constants.DEFAULT_LOG_DIRECTORY + "exploration" + this.name + ".csv");

@@ -51,7 +51,6 @@ import java.awt.Point;
  */
 public class Environment {
 
-// <editor-fold defaultstate="collapsed" desc="Class variables and constructor">
     private int rows;           // The environment's size
     private int columns;
 
@@ -72,7 +71,6 @@ public class Environment {
         initCells();
     }
 
-// </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
     public int getRows() {
         return this.rows;
@@ -236,6 +234,21 @@ public class Environment {
     }
 
 // </editor-fold>
+    /**
+     * Calculates the point from a source with a direction/angle. Not neccesaryly existant, probably
+     * not free!
+     *
+     * @param p source-point
+     * @param direction to go in radian
+     * @param distance from source
+     * @return calculated point. Not neccesaryly existant, probably not free!
+     */
+    public static Point getPointFromDirection(Point p, double direction, int distance) {
+        int x = (int) p.getX() + (int) Math.round((distance * Math.cos(direction)));
+        int y = (int) p.getY() + (int) Math.round((distance * Math.sin(direction)));
+        return new Point(x, y);
+    }
+
     private void simulateDebris() {
         int debrisSize, currX, currY, nextX, nextY;
 

@@ -102,11 +102,11 @@ public class FrontierExploration extends BasicExploration implements Exploration
         }
 
         if (timeElapsed < Constants.INIT_CYCLES) {
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
         } else if (agent.getEnvError()) {
             agent.resetPathToBaseStation();
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
         } else if ((agent.getStats().getTimeSinceLastPlan() < Constants.REPLAN_INTERVAL)
@@ -129,8 +129,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         agent.getStats().setTimeSinceLastPlan(0);
 
-        long realtimeStart = System.currentTimeMillis();
-
         calculateFrontiers();
 
         //If no frontiers found, or reached exploration goal, return to ComStation
@@ -147,13 +145,13 @@ public class FrontierExploration extends BasicExploration implements Exploration
             return nextStep;
         }
 
-        long realtimeStart2 = System.currentTimeMillis();
+        long realtimeStart = System.currentTimeMillis();
         boolean foundFrontier = false;
 
         if (!agent.getSimConfig().keepAssigningRobotsToFrontiers()) {
             foundFrontier = (chooseFrontier(true, null) == null);
             if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent.toString() + "chooseFrontier took " + (System.currentTimeMillis() - realtimeStart2) + "ms.");
+                System.out.println(agent.toString() + "chooseFrontier took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
             }
 
             //If could not find frontier, try to disregard other agents when planning
@@ -168,10 +166,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
                     foundFrontier = true;
                 }
             }
-        }
-
-        if ((agent.getRole() == RobotConfig.roletype.Relay) && (agent.getState() == Agent.ExploreState.GoToChild)) {
-            return takeStep_GoToChild();
         }
 
         //If no frontier could be assigned, then go back to base.">
@@ -194,7 +188,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         //If overlapping another agent, take random step
         for (TeammateAgent teammate : agent.getAllTeammates().values()) {
             if (agent.getLocation().equals(teammate.getLocation())) {
-                nextStep = RandomWalk.takeStep(agent);
+                nextStep = RandomWalk.randomStep(agent);
                 agent.getStats().setTimeSinceLastPlan(0);
                 agent.setCurrentGoal(nextStep);
                 return nextStep;
@@ -208,7 +202,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 || agent.getPath().getPoints() == null
                 || agent.getPath().getPoints().isEmpty()
                 || agent.getPath().getPoints().size() == 1) {
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
             return nextStep;
@@ -422,98 +416,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         return utilities;
     }
 
-    public Point takeStep_GoToChild() {
-        RendezvousAgentData rvd = agent.getRendezvousAgentData();
-        //Check if we are in range of child. If yes, GetInfoFromChild
-        if ((agent.getChildTeammate().isInRange()) /*&& !agent.getParentTeammate().isInRange()*/) {
-            agent.setState(RealAgent.ExploreState.GetInfoFromChild);
-            agent.setStateTimer(0);
-
-            return takeStep_GetInfoFromChild();
-        }
-
-        //Assume that a path back to child has been calculated in previous state, recalculate every PATH_RECALC_CHILD_INTERVAL steps
-        Path existingPath = agent.getPath();
-        if (((agent.getStateTimer() % Constants.PATH_RECALC_CHILD_INTERVAL) == (Constants.PATH_RECALC_CHILD_INTERVAL - 1))) {
-            if (existingPath != null) {
-                agent.addDirtyCells(existingPath.getAllPathPixels());
-            }
-
-            Path _path = agent.getRendezvousStrategy().processGoToChildReplan();
-
-            if (_path == null) {
-                _path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation(), false);
-            }
-            //Could not find full path! Trying pure A*
-            if (!_path.found) {
-                System.out.println(agent.toString() + "!!!ERROR!  Could not find full path! Trying pure A*");
-                _path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), true);
-            }
-            //Still couldn't find path, trying existing path or if that fails, taking random step
-            if (!_path.found) {
-                System.out.println(agent.toString() + "!!!ERROR!  Could not find full path!");
-                if ((existingPath != null) && (existingPath.getPoints().size() > 2)) {
-                    agent.setPath(existingPath);
-                    agent.setCurrentGoal(existingPath.getGoalPoint());
-                } else {
-                    agent.setCurrentGoal(agent.getLocation());
-                    return RandomWalk.takeStep(agent);
-                }
-            } else {
-                agent.setPath(_path);
-                agent.setCurrentGoal(rvd.getChildRendezvous().getParentLocation());
-                // Must remove first point in path as this is robot's location.
-                agent.getPath().getPoints().remove(0);
-            }
-        }
-
-        if (agent.getPath().found && !agent.getPath().getPoints().isEmpty()) {
-            return ((Point) agent.getPath().getPoints().remove(0));
-        }
-
-        // If we reach this point, we are not in range of the child and the
-        // path is empty, so we must have reached rendezvous point.
-        // Just check to make sure we are though and if not take random step.
-        if ((agent.getLocation().distance(rvd.getChildRendezvous().getParentLocation()) > 2 * Constants.STEP_SIZE)
-                && (agent.getLocation().distance(rvd.getChildRendezvous().getChildLocation()) > 2 * Constants.STEP_SIZE)) {
-            System.out.println(agent.toString()
-                    + "!!!ERROR! We should have reached child RV, but we are too far from it! Taking random step");
-            return RandomWalk.takeStep(agent);
-        }
-
-        // If we reach this point, we're at the rendezvous point and waiting.
-        agent.setState(RealAgent.ExploreState.WaitForChild);
-        agent.setStateTimer(0);
-
-        return agent.getLocation();
-    }
-
-    public Point takeStep_GetInfoFromChild() {
-        //we've exchanged info, now return to parent (but wait for one timestep to learn new RV point)
-
-        if (agent.getStateTimer() == 0) {
-            agent.addDirtyCells(agent.getPath().getAllPathPixels());
-            Path _path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation(), false);
-            agent.setPath(_path);
-            agent.setStateTimer(1);
-            agent.setCurrentGoal(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
-            return agent.getLocation();
-        } else {
-            if (agent.getChildTeammate().getState() == Agent.ExploreState.GiveParentInfo) {
-                agent.setTimeSinceGetChildInfo(0);
-            }
-            agent.setState(RealAgent.ExploreState.ReturnToParent);
-            return agent.getLocation();
-        }
-    }
-
-    public double maxFrontierUtility(Point start) {
-        PriorityQueue<FrontierUtility> utilities = initializeUtilities(start);
-
-        return utilities.peek().utility;
-    }
-
-    public LinkedList<Integer> chooseFrontier(boolean considerOtherAgents,
+    protected LinkedList<Integer> chooseFrontier(boolean considerOtherAgents,
             LinkedList<Integer> teammatesAssignedIDs) {
         if (teammatesAssignedIDs == null) {
             teammatesAssignedIDs = new LinkedList<Integer>();
@@ -618,8 +521,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         return teammatesAssignedIDs;  // couldn't assign frontier - could be there are more robots than frontiers?
     }
 
-//Calculate Frontiers
-    public void calculateFrontiers() {
+    protected void calculateFrontiers() {
         long realtimeStart = System.currentTimeMillis();
         // If recalculating frontiers, must set old frontiers dirty for image rendering
         frontiers.stream().forEach((f) -> {
@@ -663,6 +565,11 @@ public class FrontierExploration extends BasicExploration implements Exploration
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
+    /**
+     * Returns the frontiers for display purpose only.
+     *
+     * @return list of frontiers
+     */
     public PriorityQueue<Frontier> getFrontiers() {
         return frontiers;
     }

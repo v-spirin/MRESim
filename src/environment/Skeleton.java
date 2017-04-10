@@ -1030,7 +1030,7 @@ public class Skeleton {
 
         SimulatorConfig tempSimConfig = new SimulatorConfig();
 
-        int[][] update = findSkeleton(tempSimConfig.getEnv().getFullStatus(), 70);
+        int[][] update = findSkeleton(tempSimConfig.getEnvironment().getFullStatus(), 70);
         writeToFile(update);
 
 

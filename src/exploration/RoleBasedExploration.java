@@ -89,12 +89,12 @@ public class RoleBasedExploration extends FrontierExploration {
                 && (agent.getState() != Agent.ExploreState.WaitForParent)) {
             System.out.println(agent.toString()
                     + "!!!RoleBasedExploration: Env reports error, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.setEnvError(false);
             return nextStep;
         }
 
-        //Run correct takeStep function depending on agent state, set nextStep to output
+        //Run correct randomStep function depending on agent state, set nextStep to output
         switch (agent.getState()) {
             case Initial:
                 nextStep = takeStep_Initial();
@@ -127,7 +127,7 @@ public class RoleBasedExploration extends FrontierExploration {
         // this shouldn't happen, looks like one of takeSteps returned an error
         if (nextStep == null) {
             System.out.println(agent.toString() + "!!!RoleBasedExploration: nextStep is null, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
         }
 
         agent.setStateTimer(agent.getStateTimer() + 1);
@@ -142,12 +142,12 @@ public class RoleBasedExploration extends FrontierExploration {
         // <editor-fold defaultstate="collapsed" desc="First 3 steps? Explorers take 2 random steps while others wait, then everyone takes a random step">
         if (agent.getStateTimer() < 2) {
             if (agent.isExplorer()) {
-                return RandomWalk.takeStep(agent);
+                return RandomWalk.randomStep(agent);
             } else {
                 return (agent.getLocation());
             }
         } else if (agent.getStateTimer() < 3) {
-            return RandomWalk.takeStep(agent);
+            return RandomWalk.randomStep(agent);
         } // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="Otherwise? Explorers go into Explore state, others go into GoToChild state. Explorers replan using FrontierExploration, others do nothing.">
         else if (agent.isExplorer()) {
@@ -229,7 +229,7 @@ public class RoleBasedExploration extends FrontierExploration {
                             //take random step and try again
                             agent.setState(Agent.ExploreState.Explore);
                             agent.setStateTimer(Constants.CHECK_INTERVAL_TIME_TO_RV - 2);
-                            return RandomWalk.takeStep(agent);
+                            return RandomWalk.randomStep(agent);
                         } else {
                             agent.setPath(pathToParentRendezvous);
                             agent.setStateTimer(0);
@@ -289,7 +289,7 @@ public class RoleBasedExploration extends FrontierExploration {
                 }
                 else {
                     System.out.println(agent.toString() + "!!!Nothing left to explore, but cannot plan path to parent!!!");
-                    nextStep = RandomWalk.takeStep(agent);
+                    nextStep = RandomWalk.randomStep(agent);
                     agent.setCurrentGoal(nextStep);
                     return(nextStep);
                 }*/
@@ -341,7 +341,7 @@ public class RoleBasedExploration extends FrontierExploration {
                     agent.setCurrentGoal(existingPath.getGoalPoint());
                 } else {
                     agent.setCurrentGoal(agent.getLocation());
-                    return RandomWalk.takeStep(agent);
+                    return RandomWalk.randomStep(agent);
                 }
             } //</editor-fold>
             else {
@@ -362,7 +362,7 @@ public class RoleBasedExploration extends FrontierExploration {
         // Just check to make sure we are though and if not take random step.
         if (agent.getLocation().distance(rvd.getParentRendezvous().getChildLocation()) > 2 * Constants.STEP_SIZE) {
             System.out.println(agent.toString() + "!!!ERROR! We should have reached parent RV, but we are too far from it! Taking random step");
-            return RandomWalk.takeStep(agent);
+            return RandomWalk.randomStep(agent);
         }
 
         // If we reach this point, we're at the rendezvous point and waiting.
@@ -495,7 +495,7 @@ public class RoleBasedExploration extends FrontierExploration {
                     if (!path.found) {
                         System.out.println(agent.toString() + "!!!ERROR!  Could not find full path! Taking random step");
                         agent.setCurrentGoal(agent.getLocation());
-                        return RandomWalk.takeStep(agent);
+                        return RandomWalk.randomStep(agent);
                     } else {
                         System.out.println(agent.toString() + "Pure A* worked");
                         agent.setPath(path);
@@ -545,7 +545,7 @@ public class RoleBasedExploration extends FrontierExploration {
                     agent.setCurrentGoal(existingPath.getGoalPoint());
                 } else {
                     agent.setCurrentGoal(agent.getLocation());
-                    return RandomWalk.takeStep(agent);
+                    return RandomWalk.randomStep(agent);
                 }
                 //</editor-fold>
             } else {
@@ -568,7 +568,7 @@ public class RoleBasedExploration extends FrontierExploration {
                 && (agent.getLocation().distance(rvd.getChildRendezvous().getChildLocation()) > 2 * Constants.STEP_SIZE)) {
             System.out.println(agent.toString()
                     + "!!!ERROR! We should have reached child RV, but we are too far from it! Taking random step");
-            return RandomWalk.takeStep(agent);
+            return RandomWalk.randomStep(agent);
         }
 
         // If we reach this point, we're at the rendezvous point and waiting.

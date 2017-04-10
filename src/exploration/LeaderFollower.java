@@ -72,7 +72,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // Update:  this state is never really reached but leave in just in case
         if (agent.getEnvError()) {
             System.out.println(agent.toString() + "LeaderFollower: Env reports error, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.setEnvError(false);
             return nextStep;
         }
@@ -89,7 +89,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         }
 
         if (nextStep == null) {
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
         }
 
         return nextStep;
@@ -111,7 +111,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // help.
         else if (agent.getEnvError()) {
             System.out.println(agent.toString() + "LeaderFollower: No step taken since last timeStep, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
         } // Check 1.5, make sure parent is in range
@@ -186,7 +186,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         }
 
         if(agent.getPath() == null || agent.getPath().getPoints().size()<2)
-            return RandomWalk.takeStep(agent);
+            return RandomWalk.randomStep(agent);
 
         agent.getPath().getPoints().remove(0);
         return agent.getNextPathPoint();*/
@@ -199,7 +199,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // Take a couple of random steps to start (just to gather some sensor data).
         if (timeElapsed < 3) {
             System.out.println(agent.toString() + "LeaderFollower: Starting up, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
         } // CHECK 1
         // if agent hasn't moved, then he may be stuck in front of a wall and the
@@ -207,7 +207,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // help.
         else if (agent.getEnvError()) {
             System.out.println(agent.toString() + "LeaderFollower: No step taken since last timeStep, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
         } // CHECK 2
@@ -270,7 +270,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // then take random step.
         if (!foundFrontier) {
             System.out.println(agent.toString() + "No frontier chosen, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setCurrentGoal(nextStep);
             return nextStep;
@@ -281,7 +281,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // If no path could be found, take random step.
         if (agent.getPath() == null || agent.getPath().getPoints() == null || agent.getPath().getPoints().isEmpty()) {
             System.out.println(agent.toString() + "No path found, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setCurrentGoal(nextStep);
             return nextStep;

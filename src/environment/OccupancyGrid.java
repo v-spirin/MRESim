@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -190,7 +190,7 @@ public class OccupancyGrid {
                         }
                         if (partnerOccGrid.obstacleAt(i, j)) {
                             if (this.safeSpaceAt(i, j) && (!this.obstacleAt(i, j))) {
-                                //Both think it's safe space, partner thinks it's obstacle, we think it's free                                
+                                //Both think it's safe space, partner thinks it's obstacle, we think it's free
                             } else {
                                 this.setNoFreeSpaceAt(i, j);
                                 this.setObstacleAt(i, j);
@@ -218,7 +218,7 @@ public class OccupancyGrid {
                             }
                         }
                     }
-                    /*   
+                    /*
                     if (partnerOccGrid.freeSpaceAt(i, j) && (!this.obstacleAt(i, j))) {
                         this.setFreeSpaceAt(i, j);
                     }
@@ -251,7 +251,7 @@ public class OccupancyGrid {
 
     public boolean frontierCellAt(int xCoord, int yCoord) {
         return //(
-                //freeSpaceAt(xCoord, yCoord) && 
+                //freeSpaceAt(xCoord, yCoord) &&
                 //!safeSpaceAt(xCoord, yCoord) &&
                 //!obstacleAt(xCoord, yCoord)
                 //) ||
@@ -302,6 +302,10 @@ public class OccupancyGrid {
         return (!freeSpaceAt(xCoord, yCoord)
                 && //!safeSpaceAt(xCoord, yCoord) &&
                 !obstacleAt(xCoord, yCoord));
+    }
+
+    public boolean freeSpaceAt(Point p) {
+        return freeSpaceAt((int) p.getX(), (int) p.getY());
     }
 
     public boolean freeSpaceAt(int xCoord, int yCoord) {
@@ -721,12 +725,10 @@ public class OccupancyGrid {
             } else {
                 grid[xCoord][yCoord] += (byte) (Math.pow(2, bit));
             }
+        } else if (value == 1) {
+            return;
         } else {
-            if (value == 1) {
-                return;
-            } else {
-                grid[xCoord][yCoord] -= (byte) (Math.pow(2, bit));
-            }
+            grid[xCoord][yCoord] -= (byte) (Math.pow(2, bit));
         }
     }
 
@@ -745,7 +747,7 @@ public class OccupancyGrid {
     public void setTestTrueAt(int xCoord, int yCoord) {
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.Test, 1);
     }
-    
+
     // Sets test bit in all occupancy grids to 0 -- purely for testing purposes.
     public void initializeTestBits() {
         for(int i=0; i<grid.length; i++)

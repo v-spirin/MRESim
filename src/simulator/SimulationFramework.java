@@ -59,7 +59,6 @@ import config.SimulatorConfig;
 import environment.Environment;
 import environment.Environment.Status;
 import environment.Frontier;
-import exploration.RandomWalk;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.RendezvousAgentData;
 import gui.MainGUI;
@@ -137,7 +136,7 @@ public class SimulationFramework implements ActionListener {
         mainGUI = maingui;
         image = img;
         simConfig = newSimConfig;
-        env = simConfig.getEnv();
+        env = simConfig.getEnvironment();
         robotTeamConfig = newRobotTeamConfig;
 
         logging_agent = false;
@@ -147,12 +146,12 @@ public class SimulationFramework implements ActionListener {
 
     private void reset() {
         pauseSimulation = false;
-        env = simConfig.getEnv();
+        env = simConfig.getEnvironment();
 
         timeElapsed = 0;
         jointAreaKnown = 1;             // to prevent divide by 0
         pctAreaKnownTeam = 0;
-        totalArea = simConfig.getEnv().getTotalFreeSpace();
+        totalArea = simConfig.getEnvironment().getTotalFreeSpace();
         avgComStationKnowledge = 0;
         avgAgentKnowledge = 0;
         avgTimeLastCommand = 0;
@@ -462,7 +461,7 @@ public class SimulationFramework implements ActionListener {
             simConfig.setLogData(true);
             simConfig.setLogScreenshots(true);
 
-            simConfig.loadWallConfig(envDir + "\\" + map);
+            simConfig.loadEnvironment(envDir + "\\" + map);
             robotTeamConfig.loadConfig(envDir + "\\" + conf);
 
             if (Constants.DEBUG_OUTPUT) {
@@ -497,7 +496,7 @@ public class SimulationFramework implements ActionListener {
  /*int map = 2;
         if (runNumber == 1)
         {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
+            simConfig.loadEnvironment(root + "maps\\" +  map + ".png");
             simConfig.setExpAlgorithm(exptype.RoleBasedExploration);
             simConfig.setRoleSwitchAllowed(true);
             simConfig.setReplanningAllowed(false);
@@ -530,7 +529,6 @@ public class SimulationFramework implements ActionListener {
             reset();
         }
         //simConfig.TARGET_INFO_RATIO = 0.90;
-        RandomWalk.generator.setSeed(Constants.RANDOM_SEED);
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Starting exploration!");
         }
