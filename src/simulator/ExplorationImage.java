@@ -41,7 +41,7 @@
  *     You should have received a copy of the GNU General Public License along with MRESim.
  *     If not, see <http://www.gnu.org/licenses/>.
  */
-package gui;
+package simulator;
 
 import agents.RealAgent;
 import agents.TeammateAgent;
@@ -53,6 +53,7 @@ import environment.Environment;
 import environment.Frontier;
 import environment.OccupancyGrid;
 import environment.TopologicalMap;
+import gui.MainGUI;
 import gui.ShowSettings.ShowSettings;
 import gui.ShowSettings.ShowSettingsAgent;
 import java.awt.Color;

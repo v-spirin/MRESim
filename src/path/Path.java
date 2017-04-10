@@ -48,7 +48,7 @@ import config.Constants;
 import environment.Environment;
 import environment.OccupancyGrid;
 import environment.TopologicalMap;
-import gui.ExplorationImage;
+import simulator.ExplorationImage;
 import gui.ShowSettings.ShowSettingsAgent;
 import java.awt.Point;
 import java.util.HashMap;

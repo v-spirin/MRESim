@@ -43,6 +43,7 @@
  */
 package gui;
 
+import simulator.ExplorationImage;
 import agents.ComStation;
 import agents.RealAgent;
 import config.RobotConfig;

@@ -44,6 +44,7 @@
 
 package gui;
 
+import simulator.ExplorationImage;
 import Logging.ExplorationLogger;
 import agents.RealAgent;
 import config.Constants;

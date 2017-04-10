@@ -62,7 +62,6 @@ import environment.Frontier;
 import exploration.RandomWalk;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.RendezvousAgentData;
-import gui.ExplorationImage;
 import gui.MainGUI;
 import java.awt.Point;
 import java.awt.Polygon;

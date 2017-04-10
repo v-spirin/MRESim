@@ -45,7 +45,7 @@ package exploration.rendezvous;
 
 import agents.RealAgent;
 import config.Constants;
-import gui.ExplorationImage;
+import simulator.ExplorationImage;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;

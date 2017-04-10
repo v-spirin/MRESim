@@ -220,6 +220,15 @@ public class FrontierExploration extends BasicExploration implements Exploration
         return nextStep;
     }
 
+    /**
+     * Filter frontiers to remove to small frontiers and frontiers not reachable from basestation
+     * (don't know why). Unreachable frontiers well be saved in badFrontiers
+     *
+     * @param lastFrontier current goal-frontier to consider it in any case, otherwise agent might
+     * oszillate
+     * @param grid current agents occupancygrid to see if a frontier is still interresting because
+     * next to unknown
+     */
     private void frontiersOfInterest(Frontier lastFrontier, OccupancyGrid grid) {
         PriorityQueue<Frontier> list = new PriorityQueue<>();
 
@@ -568,7 +577,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 }
 
             } else //System.out.println("UtilityExact: " + best.utility);
-             if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
+            {
+                if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
                     if (best.ID == agent.getID()) {
                         if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
                             agent.setState(Agent.ExploreState.GoToChild);
@@ -601,6 +611,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 } else {
                     utilities.add(best);
                 }
+            }
 
         }
 
