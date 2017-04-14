@@ -128,7 +128,7 @@ public class UtilityExploration extends FrontierExploration {
         } else {
             // Otherwise? Explorers go into Explore state, others go into GoToChild state.
             // Explorers replan using FrontierExploration, others do nothing.
-            agent.setState(RealAgent.ExploreState.Explore);
+            agent.setState(RealAgent.AgentState.Explore);
             agent.getStats().setTimeSinceLastPlan(0);
             return takeStep_Explore(timeElapsed);
         }
@@ -152,7 +152,7 @@ public class UtilityExploration extends FrontierExploration {
         {
             System.out.println(agent.toString() + " Decided to return. infoRatio = "
                     + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO);
-            agent.setState(Agent.ExploreState.ReturnToParent);
+            agent.setState(Agent.AgentState.ReturnToParent);
             //agent.setRole(RobotConfig.roletype.Relay);
             agent.computePathToBaseStation(true);
             agent.setPathToBaseStation();
@@ -192,7 +192,7 @@ public class UtilityExploration extends FrontierExploration {
             Point baseLocation = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
             agent.setPath(agent.calculatePath(agent.getLocation(), baseLocation, false));
-            agent.setState(RealAgent.ExploreState.ReturnToParent);
+            agent.setState(RealAgent.AgentState.ReturnToParent);
             agent.setStateTimer(0);
 
             if (agent.getPath().getPoints() != null) {
@@ -212,7 +212,7 @@ public class UtilityExploration extends FrontierExploration {
         System.out.println(agent + " takeStep_ReturnToParent timeInState: " + agent.getStateTimer());
         // If base is in range, go back to exploring
         if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
-            agent.setState(RealAgent.ExploreState.Explore);
+            agent.setState(RealAgent.AgentState.Explore);
             agent.setStateTimer(0);
             return takeStep_Explore(timeElapsed);
         }
@@ -232,7 +232,7 @@ public class UtilityExploration extends FrontierExploration {
         double infoRatio = (double) totalNewInfo / (double) 57600;
 
         if ((totalNewInfo == 0) && (infoRatio > simConfig.TARGET_INFO_RATIO)) { //just in case, to avoid returning with 0 new info
-            agent.setState(RealAgent.ExploreState.Explore);
+            agent.setState(RealAgent.AgentState.Explore);
             agent.setStateTimer(0);
             System.out.println(agent + " switching to takeStep_Explore. infoRatio = "
                     + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO);
@@ -317,7 +317,7 @@ public class UtilityExploration extends FrontierExploration {
         } else {
 
             // If we reach this point, we're at the base station; go back to exploring.
-            agent.setState(RealAgent.ExploreState.Explore);
+            agent.setState(RealAgent.AgentState.Explore);
             agent.setStateTimer(0);
             return takeStep_Explore(timeElapsed);
         }

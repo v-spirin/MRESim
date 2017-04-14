@@ -164,7 +164,7 @@ public class RealAgent extends Agent {
 
         teammates = new HashMap<Integer, TeammateAgent>();
 
-        setState(RealAgent.ExploreState.Initial);
+        setState(RealAgent.AgentState.Initial);
 
         missionComplete = false;
 
@@ -408,7 +408,7 @@ public class RealAgent extends Agent {
     public void computePathToBaseStation(boolean comRangeSufficient) {
         long realtimeStartAgentCycle = System.currentTimeMillis();
         Point baseLocation = baseStation.getLocation();
-        if (nearestBaseCommunicationPoint == null) {
+        if (nearestBaseCommunicationPoint == null || !comRangeSufficient) {
             nearestBaseCommunicationPoint = baseLocation;
         }
         if (simConfig.getBaseRange() && (this.getTimeElapsed() % 10 == 1)) {
@@ -496,20 +496,20 @@ public class RealAgent extends Agent {
             }
         }
         if (occupied > 0) {
-            this.setState(ExploreState.OCCUPIED);
+            this.setState(AgentState.OCCUPIED);
             return getLocation();
         } else {
-            setState(ExploreState.AKTIVE);
+            setState(AgentState.AKTIVE);
         }
         //shall we go out of service?
         if (Math.random() < Constants.PROB_OUT_OF_SERVICE) {
             if ((timeElapsed > (robotNumber * 150)) && (robotNumber > 0)) {
-                setState(ExploreState.OutOfService);
+                setState(AgentState.OutOfService);
             }
         }
 
         //if we are out of service, don't move, act as relay
-        if (getState() == ExploreState.OutOfService) {
+        if (getState() == AgentState.OutOfService) {
             setSpeed(0);
             return getLocation();
         }
@@ -544,7 +544,7 @@ public class RealAgent extends Agent {
                         break;
 
                     case Testing:
-                        exploration = new RelayFrontierExploration(this, simConfig.getFrontierAlgorithm(), simConfig.useComStations(), simConfig.getComStationDropChance(), baseStation);
+                        exploration = new RelayFrontierExploration(this, simConfig.getFrontierAlgorithm(), simConfig.getRelayAlgorithm(), simConfig.useComStations(), simConfig.getComStationDropChance(), baseStation);
                         break;
                     case Random:
                         exploration = new RandomExploration(this);
@@ -576,10 +576,10 @@ public class RealAgent extends Agent {
                     nextStep = this.getNextPathPoint();
                     break;
                 case RoleBasedExploration:
-                    if ((this.getState() != ExploreState.GiveParentInfo)
-                            && (this.getState() != ExploreState.GetInfoFromChild)
-                            && (this.getState() != ExploreState.WaitForChild)
-                            && (this.getState() != ExploreState.WaitForParent)) {
+                    if ((this.getState() != AgentState.GiveParentInfo)
+                            && (this.getState() != AgentState.GetInfoFromChild)
+                            && (this.getState() != AgentState.WaitForChild)
+                            && (this.getState() != AgentState.WaitForParent)) {
                         nextStep = this.getNextPathPoint();
                     }
                     break;
@@ -819,18 +819,18 @@ public class RealAgent extends Agent {
 
             if ((simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)
                     && (simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.UtilReturn)) {
-                if (((getState() == ExploreState.ReturnToParent) || ag.getState() == ExploreState.ReturnToParent)
+                if (((getState() == AgentState.ReturnToParent) || ag.getState() == AgentState.ReturnToParent)
                         && (ag.getNewInfo() > 1 || stats.getNewInfo() > 1)) {
-                    setState(ExploreState.ReturnToParent);
+                    setState(AgentState.ReturnToParent);
                 } else {
-                    setState(ExploreState.Explore);
+                    setState(AgentState.Explore);
                 }
             }
 
         } else {
             if ((simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)
                     && (simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.UtilReturn)) {
-                setState(ExploreState.Explore);
+                setState(AgentState.Explore);
             }
             if (stats.getNewInfo() > 0) {
                 // Need to iterate over a copy of getOwnedCells list, as the list gets changed by setGotRelayed.
@@ -1050,11 +1050,11 @@ public class RealAgent extends Agent {
                 stats.incrementTimeDoubleSensing(timeElapsed);
             }
         }
-        if (getState().equals(ExploreState.ReturnToParent)
-                || getState().equals(ExploreState.WaitForParent)
-                || getState().equals(ExploreState.WaitForChild)
-                || //getState().equals(ExploreState.GetInfoFromChild) ||
-                getState().equals(ExploreState.GiveParentInfo)) //don't include GoToChild here, as in UtilityExploration
+        if (getState().equals(AgentState.ReturnToParent)
+                || getState().equals(AgentState.WaitForParent)
+                || getState().equals(AgentState.WaitForChild)
+                || //getState().equals(AgentState.GetInfoFromChild) ||
+                getState().equals(AgentState.GiveParentInfo)) //don't include GoToChild here, as in UtilityExploration
         //agents end up going to child in Explore state as
         //they don't know they are going to child at the time!
         {
@@ -1186,7 +1186,7 @@ public class RealAgent extends Agent {
     public void dropComStation() {
         if (comStations.size() > 0) {
             ComStation comStation = this.comStations.remove(0);
-            comStation.setState(ExploreState.RELAY);
+            comStation.setState(AgentState.RELAY);
             comStation.setX(this.x);
             comStation.setY(this.y);
             this.getStats().incrementDroppedComStations();

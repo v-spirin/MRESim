@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -57,16 +57,13 @@ import java.util.LinkedList;
 import path.TopologicalNode;
 
 /**
+ * Skeleton of a monochrome map. SOME CODE IN THIS FILE TAKEN FROM Sudhanshu Kumar:
+ * http://www.sourcecodesworld.com/source/show.asp?ScriptID=692
  *
  * @author julh
  */
 public class Skeleton {
 
-    // SOME CODE IN THIS FILE TAKEN FROM Sudhanshu Kumar:
-    // http://www.sourcecodesworld.com/source/show.asp?ScriptID=692
-    //1:newfndistrans.java
-//2:A bmp monochrome image(preferably 512-512)
-// the image from mspaint or any other source
     private static int[][] distanceTransform(int[][] inputGrid) {
         int width = inputGrid.length;
         int height = inputGrid[0].length;
@@ -217,16 +214,16 @@ public class Skeleton {
         return numChanges;
     }
 
-    static int[][] skeletonize(int[][] grid) {
+    public static int[][] skeletonize(int[][] grid) {
         return skeletonize(grid, Integer.MAX_VALUE);
     }
 
-    static int[][] findCSpace(int[][] grid) {
+    private static int[][] findCSpace(int[][] grid) {
         return skeletonize(grid, 0);
     }
 
     // this method finds the points that are within a margin of the obstacles
-    static int[][] skeletonizeNearBorders(int[][] grid) {
+    private static int[][] skeletonizeNearBorders(int[][] grid) {
         int[][] cspace = findCSpace(grid);
 
         int width = cspace.length;
@@ -261,7 +258,7 @@ public class Skeleton {
         return false;
     }
 
-    static int[][] skeletonize(int[][] grid, int max) {
+    private static int[][] skeletonize(int[][] grid, int max) {
         long realtimeStart = System.currentTimeMillis();
         int width = grid.length;
         int height = grid[0].length;
@@ -329,7 +326,7 @@ public class Skeleton {
         return sk;
     }
 
-    static void printMatrix(int[][] mat) {
+    private static void printMatrix(int[][] mat) {
         for (int j = 0; j < mat[0].length; j++) {
             for (int[] mat1 : mat) {
                 System.out.print(mat1[j] + " ");
@@ -418,20 +415,44 @@ public class Skeleton {
     }
     //</editor-fold>
 
-    public static LinkedList<Point> findKeyPoints(int[][] skeleton, OccupancyGrid occGrid) {
-        LinkedList<Point> rvPts = new LinkedList<Point>();
-        boolean add;
+    public static LinkedList<Point> findJunctionPoints(int[][] skeleton, OccupancyGrid occGrid) {
+        LinkedList<Point> junctions = new LinkedList<Point>();
 
         // Pass 1:  find key points (junctions)
         for (int i = 2; i < skeleton.length - 2; i++) {
             for (int j = 2; j < skeleton[0].length - 2; j++) {
                 if (numNonzeroNeighbors(skeleton, i, j) >= 3 && neighborTraversal(skeleton, i, j) >= 3 && skeleton[i][j] != 0) {
-                    rvPts.add(new Point(i, j));
+                    junctions.add(new Point(i, j));
                 }
                 //if (numNonzeroNeighbors(skeleton, i, j) == 1 && skeleton[i][j] != 0)
-                //    rvPts.add(new Point(i,j));
+                //    junctions.add(new Point(i,j));
             }
         }
+
+        // Pass 3:  prune points too close to another rv point or too close to an obstacle
+        Point p;
+        for (int i = junctions.size() - 1; i >= 0; i--) {
+            p = junctions.get(i);
+            if (occGrid.obstacleWithinDistance(p.x, p.y, Constants.WALL_DISTANCE)) {
+                junctions.remove(i);
+                continue;
+            }
+            for (int j = junctions.size() - 1; j >= 0; j--) {
+                if (p.distance(junctions.get(j)) < Constants.KEY_POINT_DISTANCE && i != j) {
+                    junctions.remove(i);
+                    break;
+                }
+            }
+        }
+
+        return junctions;
+    }
+
+    public static LinkedList<Point> findKeyPoints(int[][] skeleton, OccupancyGrid occGrid) {
+        LinkedList<Point> rvPts = new LinkedList<Point>();
+
+        // Pass 1:  find key points (junctions)
+        rvPts.addAll(findJunctionPoints(skeleton, occGrid));
 
         // Pass 2:  fill in gaps
         LinkedList<Point> pts = gridToList(skeleton);
@@ -823,7 +844,7 @@ public class Skeleton {
             {
                 if (areaGrid[i][j] == 0)
                 {
-                    if ((areaGrid[i - 1][j] > 0) 
+                    if ((areaGrid[i - 1][j] > 0)
                         || (areaGrid[i + 1][j] > 0)
                         || (areaGrid[i][j - 1] > 0)
                         || (areaGrid[i][j + 1] > 0)
@@ -831,7 +852,7 @@ public class Skeleton {
                         || (areaGrid[i - 1][j - 1] > 0)
                         || (areaGrid[i + 1][j - 1] > 0)
                         || (areaGrid[i + 1][j + 1] > 0))
-                        pointsOfInterest.add(new Point(i, j));  
+                        pointsOfInterest.add(new Point(i, j));
                 }
             }*/
         return areaGrid;
@@ -921,7 +942,7 @@ public class Skeleton {
  /*child = new Point(a.x+1, a.y-1);
         if (!child.equals(came_from) && (skeleton[child.x][child.y] == 1))
             topr = withinDistanceBySkeleton(skeleton, child, b, a, distance-1);*/
-        return top || right || bottom || left;// || topl || topr || bottomr || bottoml;         
+        return top || right || bottom || left;// || topl || topr || bottomr || bottoml;
     }
 
     public static LinkedList<Point> findBorderRVPoints(int[][] skeleton, OccupancyGrid occGrid) {
@@ -986,7 +1007,7 @@ public class Skeleton {
             }
         }
 
-        //System.out.println("---  Removed " + counter + "rvPts that were too close");
+        //System.out.println("---  Removed " + counter + "junctions that were too close");
         return rvPts;
     }
 
@@ -1036,18 +1057,18 @@ public class Skeleton {
 
         /*
         int[][] transform, grid = new int[20][10];
-        
+
         for(int i=0; i<20; i++)
             for(int j=0; j<10; j++)
                 grid[i][j] = 1;
-        
+
         for(int i=0; i<10; i++) {
             grid[0][i] = 0;
             grid[1][i] = 0;
             grid[18][i] = 0;
             grid[19][i] = 0;
         }
-        
+
         for(int i=0; i<20; i++) {
             grid[i][0] = 0;
             grid[i][1] = 0;
@@ -1055,7 +1076,7 @@ public class Skeleton {
             grid[i][8] = 0;
             grid[i][9] = 0;
         }
-        
+
         /*grid[13][1] = 0;
         grid[14][2] = 0;
         grid[15][3] = 0;

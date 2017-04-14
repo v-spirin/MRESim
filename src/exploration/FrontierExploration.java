@@ -484,7 +484,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
                     if (best.ID == agent.getID()) {
                         if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
-                            agent.setState(Agent.ExploreState.GoToChild);
+                            agent.setState(Agent.AgentState.GoToChild);
                             return null;
                         }
                         agent.setLastFrontier(best.frontier);

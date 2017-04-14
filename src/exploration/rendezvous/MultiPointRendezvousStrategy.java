@@ -220,7 +220,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
                     Path newPath = agent.calculatePath(point1, agent.getParentTeammate().getLocation(), false);
                     agent.setPath(newPath);
 
-                    agent.setState(Agent.ExploreState.ReturnToParent);
+                    agent.setState(Agent.AgentState.ReturnToParent);
                     return agent.getLocation();
                 }
             } else {
@@ -339,7 +339,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
                 //If we do, calc frontiers and check if we can reach the center of any of them, and get to RV in time
                 //if we can, go to that frontier.
                 //Adapt explore state / frontier exploration to only go to frontiers that we have time to explore. Then we can simply go to explore state above, and once it's time to go back go back into GoToParent state.
-                agent.setState(Agent.ExploreState.Explore);
+                agent.setState(Agent.AgentState.Explore);
             }
         }
     }

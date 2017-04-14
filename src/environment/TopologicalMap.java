@@ -100,8 +100,16 @@ public class TopologicalMap {
         }
     }
 
+    /**
+     * Calculates the keyPoints of this map. KeyPoints are basically nodes of the skeleton. Call
+     * generateSkeleton first!
+     */
     public void findKeyPoints() {
         keyPoints = Skeleton.findKeyPoints(skeletonGrid, occGrid);
+    }
+
+    public LinkedList<Point> getJunctionPoints() {
+        return Skeleton.findJunctionPoints(skeletonGrid, occGrid);
     }
 
     public LinkedList<Point> getSkeletonPoints() {

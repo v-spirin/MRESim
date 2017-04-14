@@ -44,14 +44,19 @@
 
 package exploration;
 
+import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.Constants;
 import config.SimulatorConfig;
+import environment.OccupancyGrid;
+import environment.TopologicalMap;
 import java.awt.Point;
 import java.util.LinkedList;
+import path.Path;
 
 /**
+ * Using relays in FrontierExploration
  *
  * @author Christian Clausen
  */
@@ -59,32 +64,41 @@ public class RelayFrontierExploration extends FrontierExploration {
 
     boolean useRelayStations;
     double dropChance;
+    SimulatorConfig.relaytype relayType;
+    private final OccupancyGrid occGrid;
+    private double KEY_POINT_DISTANCE = 100;
+    private Point currentGoal;
+    private LinkedList<Point> keyPoints;
 
     public RelayFrontierExploration(RealAgent agent,
             SimulatorConfig.frontiertype frontierExpType,
+            SimulatorConfig.relaytype relayType,
             boolean useRelayStations, double dropChance,
             RealAgent baseStation) {
         super(agent, frontierExpType, baseStation);
         this.useRelayStations = useRelayStations;
         this.dropChance = dropChance;
         this.baseStation = baseStation;
+        this.relayType = relayType;
+        this.occGrid = agent.getOccupancyGrid();
+        this.state = ExplorationState.Exploring;
+        this.keyPoints = new LinkedList<>();
     }
 
-    /**
-     * Returns new X, Y of RealAgent.
-     *
-     * @param timeElapsed Cycle we are in
-     * @return
-     */
     @Override
     public Point takeStep(int timeElapsed) {
         long realtimeStartAgentCycle = System.currentTimeMillis();
 
         Point nextStep;
-        if (useRelayStations && (Math.random() < dropChance)) {
+        /*if (useRelayStations && (Math.random() < dropChance)) {
             agent.dropComStation();
+        }*/
+        for (Point p : keyPoints) {
+            if (agent.getLocation().distance(p) < KEY_POINT_DISTANCE && noRelay(p)) {
+                System.out.println("Near->replan");
+                replan(timeElapsed);
+            }
         }
-
         /* If base station is in range,
          * update timeLastDirectContactCS and lastContactAreaKnown and refill relayStations
          */
@@ -129,19 +143,13 @@ public class RelayFrontierExploration extends FrontierExploration {
 
         agent.getStats().incrementTimeSinceLastPlan();
 
-        //agent.setLastTotalKnowledgeBelief(agent.getCurrentTotalKnowledgeBelief());
-        //agent.setLastBaseKnowledgeBelief(agent.getCurrentBaseKnowledgeBelief());
-        //agent.setLastNewInfo(agent.getNewInfo());
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent.toString() + "takeStep took "
-                    + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
-        }
         return nextStep;
     }
 
     @Override
     public Point replan(int timeElapsed) {
-        Point nextStep;
+        Path tpath = null;
+        Point goal = null;
 
         agent.getStats().setTimeSinceLastPlan(0);
         if (Constants.DEBUG_OUTPUT) {
@@ -149,19 +157,70 @@ public class RelayFrontierExploration extends FrontierExploration {
         }
         long realtimeStart = System.currentTimeMillis();
 
+        switch (state) {
+            case Exploring:
+
+                switch (relayType) {
+                    case KeyPoints:
+                        TopologicalMap tmap = new TopologicalMap(occGrid);
+                        tmap.generateSkeleton();
+                        for (Point p : tmap.getJunctionPoints()) {
+                            simulator.ExplorationImage.addErrorMarker(p, "", true);
+                            if (agent.getLocation().distance(p) < KEY_POINT_DISTANCE && noRelay(p)) {
+                                goal = p;
+                                currentGoal = p;
+
+                                agent.setPath(tpath);
+                                state = ExplorationState.SettingRelay;
+                                System.out.println("State:Relay");
+                            } else {
+                                goal = replan_frontier(realtimeStart, timeElapsed);
+                            }
+                        }
+
+                        break;
+                    case RangeBorder:
+                        //TODO
+                        goal = replan_frontier(realtimeStart, timeElapsed);
+                        break;
+                    case Random:
+                        //dropChance is drop/step, this is speed-long planning
+                        if (useRelayStations && (Math.random() < dropChance * agent.getSpeed())) {
+                            agent.dropComStation();
+                        }
+                        goal = replan_frontier(realtimeStart, timeElapsed);
+                        break;
+                    default:
+                        goal = replan_frontier(realtimeStart, timeElapsed);
+                }
+                break;
+
+            case SettingRelay:
+                if (currentGoal == null) {
+                    currentGoal = replan_frontier(realtimeStart, timeElapsed);
+                    state = ExplorationState.Exploring;
+                }
+                if (agent.getLocation().distance(currentGoal) <= 1) {
+                    agent.dropComStation();
+                    System.out.println("DROP");
+                    state = ExplorationState.Exploring;
+                }
+                goal = currentGoal;
+                agent.setPath(tpath);
+                break;
+            default:
+                goal = replan_frontier(realtimeStart, timeElapsed);
+        }
+        return goal;
+    }
+
+    private Point replan_frontier(long realtimeStart, int timeElapsed) {
+        Point nextStep;
         calculateFrontiers();
 
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent.toString() + "calculateFrontiers took "
-                    + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
-
-        //<editor-fold defaultstate="collapsed" desc="If no frontiers found, or reached exploration goal, return to ComStation">
+        //If no frontiers found, or reached exploration goal, return to ComStation
         if (((frontiers.isEmpty()) || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))
                 && timeElapsed > 100) {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent + " setting mission complete");
-            }
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
             nextStep = agent.getNextPathPoint();
@@ -172,26 +231,16 @@ public class RelayFrontierExploration extends FrontierExploration {
             agent.setCurrentGoal(agent.getTeammate(1).getLocation());
             return nextStep;
         }
-        //</editor-fold>
 
         long realtimeStart2 = System.currentTimeMillis();
         boolean foundFrontier = false;
         if (!agent.getSimConfig().keepAssigningRobotsToFrontiers()) {
             foundFrontier = (chooseFrontier(true, null) == null);
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent.toString() + "chooseFrontier took "
-                        + (System.currentTimeMillis() - realtimeStart2) + "ms.");
-            }
 
-            //<editor-fold defaultstate="collapsed" desc="If could not find frontier, try to disregard other agents when planning">
+            //If could not find frontier, try to disregard other agents when planning
             if (!foundFrontier) {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(agent.toString()
-                            + " could not find frontier, trying to ignore other agents...");
-                }
                 foundFrontier = (chooseFrontier(false, null) == null);
             }
-            //</editor-fold>
         } else {
             LinkedList<Integer> assignedTeammates = new LinkedList<Integer>();
             for (int i = 0; (i < agent.getAllTeammates().size()) && !foundFrontier; i++) {
@@ -202,17 +251,9 @@ public class RelayFrontierExploration extends FrontierExploration {
             }
         }
 
-        //<editor-fold defaultstate="collapsed" desc="If no frontier could be assigned, then go back to base.">
+        //If no frontier could be assigned, then go back to base.
         if (!foundFrontier && timeElapsed > 100) {
-            /*System.out.println(agent.toString() + " No frontier chosen, taking random step.");
-            nextStep = RandomWalk.randomStep(agent);
-            agent.setTimeSinceLastPlan(0);
-            agent.setCurrentGoal(nextStep);
-            return nextStep;*/
             // mission complete
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent.toString() + " could not find frontier, proceeding to BaseStation (Mission Complete).");
-            }
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
             nextStep = agent.getNextPathPoint();
@@ -223,21 +264,16 @@ public class RelayFrontierExploration extends FrontierExploration {
             agent.setCurrentGoal(agent.getTeammate(1).getLocation());
             return nextStep;
         }
-        //</editor-fold>
 
-        //<editor-fold defaultstate="collapsed" desc="If overlapping another agent, take random step">
+        //If overlapping another agent, take random step
         for (TeammateAgent teammate : agent.getAllTeammates().values()) {
             if (agent.getLocation().equals(teammate.getLocation())) {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(agent + " overlapping " + teammate + ", taking random step");
-                }
                 nextStep = RandomWalk.randomStep(agent);
                 agent.getStats().setTimeSinceLastPlan(0);
                 agent.setCurrentGoal(nextStep);
                 return nextStep;
             }
         }
-        //</editor-fold>
 
         // Note: Path to best frontier has already been set when calculating
         // utility, no need to recalculate
@@ -246,9 +282,6 @@ public class RelayFrontierExploration extends FrontierExploration {
                 || agent.getPath().getPoints() == null
                 || agent.getPath().getPoints().isEmpty()
                 || agent.getPath().getPoints().size() == 1) {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent + " has no path, taking random step.");
-            }
             nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
@@ -258,11 +291,18 @@ public class RelayFrontierExploration extends FrontierExploration {
         // since this is the robot itself.
         agent.getPath().getPoints().remove(0);
         nextStep = agent.getNextPathPoint();
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent.toString() + "replan took "
-                    + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
         return nextStep;
+    }
+
+    private boolean noRelay(Point p) {
+
+        for (Agent agt : agent.getAllTeammates().values()) {
+
+            if (agt.getClass().toString().equals("ComStation") && agt.getLocation().equals(p)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

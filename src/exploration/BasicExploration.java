@@ -66,6 +66,12 @@ abstract class BasicExploration {
      */
     Path path;
 
+    enum ExplorationState {
+        Initial, Exploring, BackToBase, Finished, SettingRelay
+    }
+
+    ExplorationState state = ExplorationState.Initial;
+
     /**
      * Just builds the object and initializes the agent.
      *

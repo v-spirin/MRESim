@@ -283,13 +283,13 @@ public class SimulationFramework implements ActionListener {
             // second role switch check (to avoid duplicate relays)
             for (int i = 1; i < numRobots; i++) {
                 for (int j = 1; j < numRobots; j++) {
-                    if (i != j && agent[i].getState() == Agent.ExploreState.ReturnToParent
+                    if (i != j && agent[i].getState() == Agent.AgentState.ReturnToParent
                             && !agent[i].isExplorer()
-                            && agent[j].getState() == Agent.ExploreState.ReturnToParent
+                            && agent[j].getState() == Agent.AgentState.ReturnToParent
                             && !agent[j].isExplorer()
                             && agent[i].getTeammate(agent[j].getID()).isInRange()
                             && agent[i].getPath().getLength() < agent[j].getPath().getLength()) {
-                        agent[i].setState(Agent.ExploreState.GoToChild);
+                        agent[i].setState(Agent.AgentState.GoToChild);
                         agent[i].setStateTimer(0);
                         agent[i].addDirtyCells(agent[i].getPath().getAllPathPixels());
                         if (Constants.DEBUG_OUTPUT) {
@@ -1002,7 +1002,7 @@ public class SimulationFramework implements ActionListener {
         agent2.setRendezvousAgentData(tempData);
 
         // exchange exploreState
-        Agent.ExploreState tempExploreState = agent1.getState();
+        Agent.AgentState tempExploreState = agent1.getState();
         agent1.setState(agent2.getState());
         agent2.setState(tempExploreState);
 
@@ -1083,14 +1083,14 @@ public class SimulationFramework implements ActionListener {
         RealAgent agent1 = agent[first];
         RealAgent agent2 = agent[second];
 
-        if ((agent1.getState() == Agent.ExploreState.GetInfoFromChild)
-                || (agent1.getState() == Agent.ExploreState.GiveParentInfo)
-                || (agent1.getState() == Agent.ExploreState.WaitForChild)
-                || (agent1.getState() == Agent.ExploreState.WaitForParent)
-                || (agent2.getState() == Agent.ExploreState.GetInfoFromChild)
-                || (agent2.getState() == Agent.ExploreState.GiveParentInfo)
-                || (agent2.getState() == Agent.ExploreState.WaitForChild)
-                || (agent2.getState() == Agent.ExploreState.WaitForParent)) {
+        if ((agent1.getState() == Agent.AgentState.GetInfoFromChild)
+                || (agent1.getState() == Agent.AgentState.GiveParentInfo)
+                || (agent1.getState() == Agent.AgentState.WaitForChild)
+                || (agent1.getState() == Agent.AgentState.WaitForParent)
+                || (agent2.getState() == Agent.AgentState.GetInfoFromChild)
+                || (agent2.getState() == Agent.AgentState.GiveParentInfo)
+                || (agent2.getState() == Agent.AgentState.WaitForChild)
+                || (agent2.getState() == Agent.AgentState.WaitForParent)) {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println("Not swapping roles, " + agent1 + " is in state " + agent1.getState() + ", " + agent2
                         + "is in state " + agent2.getState());
@@ -1104,10 +1104,10 @@ public class SimulationFramework implements ActionListener {
         }
 
         // Specific scenario which leads to oscillation must be avoided
-        /*if((agent1.isExplorer() && agent1.getState() == ExploreState.Explore &&
-           !agent2.isExplorer() && agent2.getState() == ExploreState.GoToChild) ||
-           (agent2.isExplorer() && agent2.getState() == ExploreState.Explore &&
-           !agent1.isExplorer() && agent1.getState() == ExploreState.GoToChild))
+        /*if((agent1.isExplorer() && agent1.getState() == AgentState.Explore &&
+           !agent2.isExplorer() && agent2.getState() == AgentState.GoToChild) ||
+           (agent2.isExplorer() && agent2.getState() == AgentState.Explore &&
+           !agent1.isExplorer() && agent1.getState() == AgentState.GoToChild))
              return false;*/
  /* path.Path path1 = new path.Path(agent1.getOccupancyGrid(), agent1.getLocation(), agent1.getCurrentGoal());
         path.Path path2 = new path.Path(agent2.getOccupancyGrid(), agent2.getLocation(), agent2.getCurrentGoal());
@@ -1142,8 +1142,8 @@ public class SimulationFramework implements ActionListener {
             if (simConfig.strictRoleSwitch()) {
 
                 // Case 1:  Two explorers both in state explore
-                if (agent1.isExplorer() && agent1.getState() == Agent.ExploreState.Explore
-                        && agent2.isExplorer() && agent2.getState() == Agent.ExploreState.Explore) {
+                if (agent1.isExplorer() && agent1.getState() == Agent.AgentState.Explore
+                        && agent2.isExplorer() && agent2.getState() == Agent.AgentState.Explore) {
 
                     Path rv1ToCS = agent1.calculatePath(agent1.getRendezvousAgentData().getParentRendezvous().getParentLocation(),
                             agent1.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), false);

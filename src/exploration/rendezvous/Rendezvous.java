@@ -123,8 +123,6 @@ public class Rendezvous {
         return hash;
     }
 
-    // find the second RV point in a pair (one agent goes to the first point, other goes to the second)
-    // The second point is found through wall, within comm range, that gives an advantage heading to the goal
     /**
      * find the second RV point in a pair. (one agent goes to the first point, other goes to the
      * second) The second point is found through wall, within comm range, that gives an advantage

@@ -91,6 +91,7 @@ public class ExplorationImage {
     private static LinkedList<Point> errorPoint = new LinkedList<>();
     private static LinkedList<String> errorLabel = new LinkedList<>();
     private static LinkedList<Boolean> errorX = new LinkedList<>();
+    private static LinkedList<Point> errorDirt = new LinkedList<>();
 
     private int width;
     private int height;
@@ -235,23 +236,6 @@ public class ExplorationImage {
             allDirt = mergeLists(allDirt, agent.getDirtyCells());
         }
 
-        LinkedList<Point> errorDirt = new LinkedList<>();
-        for (int i = 0; i < errorPoint.size(); i++) {
-            Point p = errorPoint.get(i);
-            if (errorX.get(i)) {
-                errorDirt.add(p);
-                errorDirt.add(new Point(p.x + 1, p.y));
-                errorDirt.add(new Point(p.x + 2, p.y));
-                errorDirt.add(new Point(p.x - 1, p.y));
-                errorDirt.add(new Point(p.x - 2, p.y));
-                errorDirt.add(new Point(p.x, p.y + 1));
-                errorDirt.add(new Point(p.x, p.y + 2));
-                errorDirt.add(new Point(p.x, p.y - 1));
-                errorDirt.add(new Point(p.x, p.y - 2));
-            } else {
-                errorDirt.add(p);
-            }
-        }
         allDirt = mergeLists(allDirt, errorDirt);
 
         return allDirt;
@@ -468,7 +452,7 @@ public class ExplorationImage {
         }
 
         drawErrors();
-        //resetErrors();
+        resetErrors();
     }
 
 // </editor-fold>
@@ -1184,6 +1168,22 @@ public class ExplorationImage {
     }
 
     static public void resetErrors() {
+        for (int i = 0; i < errorPoint.size(); i++) {
+            Point p = errorPoint.get(i);
+            if (errorX.get(i)) {
+                errorDirt.add(p);
+                errorDirt.add(new Point(p.x + 1, p.y));
+                errorDirt.add(new Point(p.x + 2, p.y));
+                errorDirt.add(new Point(p.x - 1, p.y));
+                errorDirt.add(new Point(p.x - 2, p.y));
+                errorDirt.add(new Point(p.x, p.y + 1));
+                errorDirt.add(new Point(p.x, p.y + 2));
+                errorDirt.add(new Point(p.x, p.y - 1));
+                errorDirt.add(new Point(p.x, p.y - 2));
+            } else {
+                errorDirt.add(p);
+            }
+        }
         errorPoint.clear();
         errorLabel.clear();
         errorX.clear();

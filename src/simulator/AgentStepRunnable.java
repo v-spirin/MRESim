@@ -164,11 +164,11 @@ public class AgentStepRunnable implements Runnable {
                 break;
             }
 
-            if ((agent.getState() != Agent.ExploreState.Explore)
-                    && (agent.getState() != Agent.ExploreState.GoToChild)
-                    && (agent.getState() != Agent.ExploreState.ReturnToParent)
-                    && (agent.getState() != Agent.ExploreState.Initial)
-                    && (agent.getState() != Agent.ExploreState.AKTIVE)) {
+            if ((agent.getState() != Agent.AgentState.Explore)
+                    && (agent.getState() != Agent.AgentState.GoToChild)
+                    && (agent.getState() != Agent.AgentState.ReturnToParent)
+                    && (agent.getState() != Agent.AgentState.Initial)
+                    && (agent.getState() != Agent.AgentState.AKTIVE)) {
                 break;
             }
             if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {

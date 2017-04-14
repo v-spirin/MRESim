@@ -75,12 +75,12 @@ abstract public class Agent {
 
     RobotConfig.roletype role;
 
-    public static enum ExploreState {
+    public static enum AgentState {
         Initial, Explore, ReturnToParent, WaitForParent, GiveParentInfo,
         GoToChild, WaitForChild, GetInfoFromChild, OutOfService, RELAY, INACTIVE, OCCUPIED, AKTIVE
     }
-    private ExploreState state;
-    private ExploreState prevExploreState;
+    private AgentState state;
+    private AgentState prevExploreState;
 
     int parent;             // Should keep ID and NOT RobotNumber of the parent
     int child;              // Should keep ID and NOT RobotNumber of the child
@@ -102,7 +102,7 @@ abstract public class Agent {
         commRange = robot.getCommRange();
         batteryPower = robot.getBatteryLife();
         role = robot.getRole();
-        state = ExploreState.Initial;
+        state = AgentState.Initial;
         parent = robot.getParent();
         child = robot.getChild();
         speed = robot.getSpeed();
@@ -172,15 +172,15 @@ abstract public class Agent {
         this.batteryPower = power;
     }
 
-    public ExploreState getState() {
+    public AgentState getState() {
         return state;
     }
 
-    public ExploreState getPrevState() {
+    public AgentState getPrevState() {
         return prevExploreState;
     }
 
-    public final void setState(ExploreState s) {
+    public final void setState(AgentState s) {
         if (this.state != s) {
             prevExploreState = this.state;
             this.setStateTimer(0);

@@ -42,8 +42,6 @@
  *     If not, see <http://www.gnu.org/licenses/>.
  */
 package config;
-//import java.io.*;
-//import environment.*;
 
 import environment.Environment;
 import java.io.BufferedReader;
@@ -60,7 +58,6 @@ import java.io.PrintWriter;
  */
 public class SimulatorConfig {
 
-// <editor-fold defaultstate="collapsed" desc="Variables and Constructor">
     private boolean logAgents;
     private String logAgentsFilename;
     private boolean logData;
@@ -87,9 +84,14 @@ public class SimulatorConfig {
     public static enum frontiertype {
         RangeConstrained, PeriodicReturn, ReturnWhenComplete, UtilReturn
     }
+
+    public static enum relaytype {
+        KeyPoints, RangeBorder, Random
+    }
     public double TARGET_INFO_RATIO;
     private exptype expAlgorithm;
     private frontiertype frontierAlgorithm;
+    private relaytype relayAlgorithm;
     private boolean useImprovedRendezvous;
     private boolean allowReplanning;
     private boolean allowRoleSwitch;
@@ -124,6 +126,7 @@ public class SimulatorConfig {
             //set defaults
             expAlgorithm = exptype.RoleBasedExploration;
             frontierAlgorithm = frontiertype.PeriodicReturn;
+            relayAlgorithm = relaytype.Random;
             runFromLogFilename = null;
             commModel = commtype.DirectLine;
             logAgents = false;
@@ -155,7 +158,6 @@ public class SimulatorConfig {
             env = new Environment(Constants.MAX_ROWS, Constants.MAX_COLS);
         }
     }
-// </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
     public boolean useComStations() {
@@ -194,6 +196,10 @@ public class SimulatorConfig {
         return frontierAlgorithm;
     }
 
+    public relaytype getRelayAlgorithm() {
+        return relayAlgorithm;
+    }
+
     public String getRunFromLogFilename() {
         return runFromLogFilename;
     }
@@ -224,6 +230,14 @@ public class SimulatorConfig {
 
     public void setFrontierAlgorithm(frontiertype fType) {
         frontierAlgorithm = fType;
+    }
+
+    public void setRelayAlgorithm(int n) {
+        relayAlgorithm = relaytype.values()[n];
+    }
+
+    public void setRelayAlgorithm(relaytype fType) {
+        relayAlgorithm = fType;
     }
 
     public int getSimRate() {
@@ -426,6 +440,7 @@ public class SimulatorConfig {
 
                 expAlgorithm = exptype.valueOf(inFile.readLine());
                 frontierAlgorithm = frontiertype.valueOf(inFile.readLine());
+                relayAlgorithm = relaytype.valueOf(inFile.readLine());
                 runFromLogFilename = String.valueOf(inFile.readLine());
                 commModel = commtype.valueOf(inFile.readLine());
                 logAgents = Boolean.parseBoolean(inFile.readLine());
@@ -550,6 +565,7 @@ public class SimulatorConfig {
 
             outFile.println(expAlgorithm.toString());
             outFile.println(frontierAlgorithm.toString());
+            outFile.println(relayAlgorithm.toString());
             outFile.println(runFromLogFilename);
             outFile.println(commModel.toString());
             outFile.println(logAgents);
@@ -592,7 +608,6 @@ public class SimulatorConfig {
     }
 
 // </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Utility">
     @Override
     public String toString() {
         return ("[SimulatorConfig] expAlgorithm: " + expAlgorithm.toString()
@@ -622,6 +637,5 @@ public class SimulatorConfig {
                 + "\n relayExplore: " + relayExplore
                 + "\n exploreReplan: " + exploreReplan);
     }
-// </editor-fold>
 
 }

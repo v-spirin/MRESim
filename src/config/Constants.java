@@ -314,6 +314,10 @@ public class Constants {
     public static double HANDOVER_RANGE = 8;
     public static double FRONTIER_PERIODIC_RETURN = 50;
     public static boolean PROFILING = false;
+    /**
+     * Minimum distance from one KeyPoint to the next. Default: 20
+     */
+    public static double KEY_POINT_DISTANCE = 25;
 
     /**
      * Colors to be used on map.

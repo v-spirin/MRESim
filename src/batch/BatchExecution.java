@@ -75,6 +75,7 @@ public class BatchExecution {
         config.setExpAlgorithm(SimulatorConfig.exptype.Testing);
         config.setCommModel(SimulatorConfig.commtype.DirectLine);
         config.setUseComStations(true);
+        config.setRelayAlgorithm(SimulatorConfig.relaytype.Random);
         for (int i = 0; i < num_threads; i++) {
             config.setComStationDropChance(0.1 + (0.1 * i));
             configs.add(config);
