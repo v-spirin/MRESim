@@ -256,7 +256,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             for (int x = oldX - Constants.DEFAULT_SPEED; x <= oldX + Constants.DEFAULT_SPEED; x++) {
                 for (int y = oldY - Constants.DEFAULT_SPEED; y <= oldY + Constants.DEFAULT_SPEED; y++) {
                     Point testPoint = new Point(x, y);
-                    if (ag.getOccupancyGrid().directLinePossible(point1.x, point1.y, testPoint.x, testPoint.y)) {
+                    if (ag.getOccupancyGrid().directLinePossible(point1.x, point1.y, testPoint.x, testPoint.y, true, false)) {
                         double newSignal = PropModel1.signalStrength(
                                 ag.getCommRange(), ag.getOccupancyGrid(), testPoint, point2);
                         if (newSignal > curSignal) {

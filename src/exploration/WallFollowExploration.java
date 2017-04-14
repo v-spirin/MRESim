@@ -55,8 +55,10 @@ import path.Path;
  */
 public class WallFollowExploration extends BasicExploration implements Exploration {
 
-    private final OccupancyGrid grid;
-    private double TURN_HEADING = Math.PI * 0.1;
+    private OccupancyGrid grid;
+    private double TURN_HEADING = Math.PI * 0.15;
+    private int MEASURE_DISTANCE = 20;
+    private int SENSING_DISTANCE = 30;
 
     public WallFollowExploration(RealAgent agent, OccupancyGrid grid) {
         super(agent);
@@ -66,31 +68,44 @@ public class WallFollowExploration extends BasicExploration implements Explorati
 
     @Override
     public Point takeStep(int timeElapsed) {
-        if (path == null || path.isFinished()) {
-            double direction = agent.getHeading() + (0.5 * Math.PI);
-            Point nearPoint = environment.Environment.getPointFromDirection(agent.getLocation(), direction + (Math.PI / 2), agent.getSpeed() / 2);
-            Point farPoint = environment.Environment.getPointFromDirection(agent.getLocation(), direction + (Math.PI / 2), agent.getSpeed() / 2 + agent.getSpeed());
-            Point nextPoint = null;
-            if (grid.freeSpaceAt(nearPoint) && grid.freeSpaceAt(farPoint)) {
-                //distance from wall, turn right
-                System.out.println("Right");
-                nextPoint = environment.Environment.getPointFromDirection(agent.getLocation(), direction + TURN_HEADING, agent.getSpeed());
-            }
-            if (grid.freeSpaceAt(nearPoint) && !grid.freeSpaceAt(farPoint)) {
-                //wall beginns between meassurepoints, keep going
-                System.out.println("Head On");
-                nextPoint = environment.Environment.getPointFromDirection(agent.getLocation(), direction, agent.getSpeed());
-            }
-            if (!grid.freeSpaceAt(nearPoint)) {
-                //not enough distance from wall, turn left
-                System.out.println("Left");
-                nextPoint = environment.Environment.getPointFromDirection(agent.getLocation(), direction - TURN_HEADING, agent.getSpeed());
-            }
-            path = new Path(grid, agent.getLocation(), nextPoint, true, false);
+        //if (path == null || path.isFinished()) {
+        double senseDirection = agent.getHeading() + (0.5 * Math.PI);
+        double moveDirection = agent.getHeading();
+        Point nearPoint = environment.Environment.getPointFromDirection(agent.getLocation(), senseDirection, SENSING_DISTANCE);
+        Point farPoint = environment.Environment.getPointFromDirection(agent.getLocation(), senseDirection, SENSING_DISTANCE + MEASURE_DISTANCE);
+        Point nextPoint;
+        if (!grid.directLinePossible(agent.getLocation(), nearPoint, true, true)) {
+            //not enough distance from wall, turn left
+            System.out.println("Left");
+            nextPoint = environment.Environment.getPointFromDirection(agent.getLocation(), moveDirection - TURN_HEADING, agent.getSpeed());
+            /*while (grid.freeSpaceAt(nextPoint)) {
+                    heading -= TURN_HEADING;
+                    nextPoint = environment.Environment.getPointFromDirection(agent.getLocation(), moveDirection - TURN_HEADING, agent.getSpeed());
+                }*/
+        } else if (!grid.directLinePossible(nearPoint, farPoint, true, true)) {
+            //wall beginns between meassurepoints, keep going
+            System.out.println("Head On");
+            nextPoint = environment.Environment.getPointFromDirection(agent.getLocation(), moveDirection, agent.getSpeed());
         } else {
-            System.out.println("Cached");
+            //distance from wall, turn right
+            System.out.println("Right");
+            nextPoint = environment.Environment.getPointFromDirection(agent.getLocation(), moveDirection + TURN_HEADING, agent.getSpeed());
+
         }
-        return path.nextPoint();
+
+        double heading = moveDirection - TURN_HEADING;
+        int counter = 0;
+        while (counter < 10 && !grid.obstacleAt(nextPoint)) {
+            counter++;
+            heading -= TURN_HEADING;
+            nextPoint = environment.Environment.getPointFromDirection(agent.getLocation(), heading, agent.getSpeed());
+        }
+
+        simulator.ExplorationImage.addErrorMarker(nextPoint, "->", true);
+        path = new Path(grid, agent.getLocation(), nextPoint, true, false);
+        agent.setPath(path);
+        //}
+        return path.getPoints().get(1);
     }
 
     @Override
@@ -100,5 +115,9 @@ public class WallFollowExploration extends BasicExploration implements Explorati
 
     public void forceReplan() {
         path = null;
+    }
+
+    public void updateGrid(OccupancyGrid grid) {
+        this.grid = grid;
     }
 }

@@ -85,7 +85,6 @@ public class Path {
         this.limit = limit;
         this.grid = agentGrid;
         this.jump = jump;
-        System.out.println("Path between " + start + "and" + goal);
         if (!jump) {
             calculateAStarPath();
         } else {
@@ -991,7 +990,7 @@ public class Path {
                 }
 
                 // Check 3: is location reachable
-                if (!grid.directLinePossible(pt.x, pt.y, neighbourX, neighbourY)) {
+                if (!grid.directLinePossible(pt.x, pt.y, neighbourX, neighbourY, true, false)) {
                     continue;
                 }
 

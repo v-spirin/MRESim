@@ -557,6 +557,7 @@ public class RealAgent extends Agent {
                         break;
                 }
             }
+
             nextStep = exploration.takeStep(timeElapsed);
             if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
                 //Make sure the GUI can display a path estimate
@@ -585,6 +586,13 @@ public class RealAgent extends Agent {
                 case Testing:
                     nextStep = this.getNextPathPoint();
                     break;
+                case Random:
+                    nextStep = exploration.takeStep(timeElapsed);
+                    break;
+                case WallFollow:
+                    ((WallFollowExploration) exploration).updateGrid(occGrid);
+                    nextStep = exploration.takeStep(timeElapsed);
+
                 default:
                     break;
             }

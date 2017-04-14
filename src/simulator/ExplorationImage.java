@@ -88,6 +88,10 @@ import path.Path;
  */
 public class ExplorationImage {
 
+    private static LinkedList<Point> errorPoint = new LinkedList<>();
+    private static LinkedList<String> errorLabel = new LinkedList<>();
+    private static LinkedList<Boolean> errorX = new LinkedList<>();
+
     private int width;
     private int height;
     ColorModel colorModel;
@@ -226,10 +230,29 @@ public class ExplorationImage {
     }
 
     private LinkedList<Point> findAllDirt(RealAgent[] agents) {
-        LinkedList<Point> allDirt = new LinkedList<Point>();
+        LinkedList<Point> allDirt = new LinkedList<>();
         for (RealAgent agent : agents) {
             allDirt = mergeLists(allDirt, agent.getDirtyCells());
         }
+
+        LinkedList<Point> errorDirt = new LinkedList<>();
+        for (int i = 0; i < errorPoint.size(); i++) {
+            Point p = errorPoint.get(i);
+            if (errorX.get(i)) {
+                errorDirt.add(p);
+                errorDirt.add(new Point(p.x + 1, p.y));
+                errorDirt.add(new Point(p.x + 2, p.y));
+                errorDirt.add(new Point(p.x - 1, p.y));
+                errorDirt.add(new Point(p.x - 2, p.y));
+                errorDirt.add(new Point(p.x, p.y + 1));
+                errorDirt.add(new Point(p.x, p.y + 2));
+                errorDirt.add(new Point(p.x, p.y - 1));
+                errorDirt.add(new Point(p.x, p.y - 2));
+            } else {
+                errorDirt.add(p);
+            }
+        }
+        allDirt = mergeLists(allDirt, errorDirt);
 
         return allDirt;
     }
@@ -269,7 +292,7 @@ public class ExplorationImage {
     public void fullUpdatePath(OccupancyGrid agentGrid, Point startpoint, Point endpoint, ShowSettingsAgent agentSettings) {
         setG2D();
 
-        //<editor-fold defaultstate="collapsed" desc="Draw agent grid according to agentSettings">
+        //<editor-fold defaultstate="collapsed" desc="Draw agent grid according nearPoint agentSettings">
         for (int i = 0; i < agentGrid.width; i++) {
             for (int j = 0; j < agentGrid.height; j++) {
                 setPixel(i, j, Constants.MapColor.background());
@@ -289,7 +312,7 @@ public class ExplorationImage {
             ShowSettingsAgent agentSettings) {
         setG2D();
 
-        //<editor-fold defaultstate="collapsed" desc="Draw agent grid according to agentSettings">
+        //<editor-fold defaultstate="collapsed" desc="Draw agent grid according nearPoint agentSettings">
         for(int i=0; i<agentGrid.width; i++)
             for(int j=0; j<agentGrid.height; j++)
             {
@@ -332,7 +355,7 @@ public class ExplorationImage {
     public void fullUpdatePath(OccupancyGrid agentGrid, TopologicalMap tMap, Point startpoint, Point endpoint, ShowSettingsAgent agentSettings) {
         setG2D();
 
-        //<editor-fold defaultstate="collapsed" desc="Draw agent grid according to agentSettings">
+        //<editor-fold defaultstate="collapsed" desc="Draw agent grid according nearPoint agentSettings">
         for (int i = 0; i < agentGrid.width; i++) {
             for (int j = 0; j < agentGrid.height; j++) {
                 setPixel(i, j, Constants.MapColor.background());
@@ -436,13 +459,16 @@ public class ExplorationImage {
             }
         }
 
-        // separate loop to have rendezvous points on top
+        // separate loop nearPoint have rendezvous points on top
         for (int i = 0; i < agents.length; i++) {
             //Draw rendezvous
             if (agentSettings[i].showRendezvous) {
                 drawRendezvous(agents[i]);
             }
         }
+
+        drawErrors();
+        //resetErrors();
     }
 
 // </editor-fold>
@@ -519,7 +545,7 @@ public class ExplorationImage {
             for (int i = 0; i < rtc.getNumRobots(); i++) {
                 if (mainGUI.getRobotPanel(i).showAgent()) {
                     curr = rtc.getRobotTeam().get(i + 1);
-                    updateAgent(curr.getName(), curr.getStartX(), curr.getStartY(), curr.getStartHeading(), curr.getRole());
+                    updateAgent(curr.getName(), curr.getStartX(), curr.getStartY(), curr.getStartHeading(), curr.getRole(), null);
                 }
                 if (mainGUI.showHierarchy()) {
                     RobotConfig parent = rtc.getRobotTeam().get(curr.getParent());
@@ -543,12 +569,12 @@ public class ExplorationImage {
     }
 
     public void updateAgent(RealAgent agent) {
-        updateAgent(agent.getName(), agent.getX(), agent.getY(), agent.getHeading(), agent.getRole());
-        // Add changed cells to relay's dirt
+        updateAgent(agent.getName(), agent.getX(), agent.getY(), agent.getHeading(), agent.getRole(), agent);
+        // Add changed cells nearPoint relay's dirt
         addDirtyAgentCells(agent);
     }
 
-    public void updateAgent(String name, int xLoc, int yLoc, double head, RobotConfig.roletype role) {
+    public void updateAgent(String name, int xLoc, int yLoc, double head, RobotConfig.roletype role, RealAgent agent) {
         if ((xLoc < 0) || (yLoc < 0)) {
             return;
         }
@@ -600,6 +626,14 @@ public class ExplorationImage {
         g2D.setPaint(Constants.MapColor.text());
         g2D.drawString(name, xLoc + Constants.AGENT_RADIUS, yLoc - Constants.AGENT_RADIUS);
 
+        /*        if (agent != null) {
+            //draw debug Wall stuff
+            Point nearPoint = environment.Environment.getPointFromDirection(new Point(xLoc, yLoc), head + (Math.PI / 2), 30);
+            Point farPoint = environment.Environment.getPointFromDirection(nearPoint, head + (Math.PI / 2), 20);
+            g2D.drawLine(xLoc, yLoc, (int) nearPoint.getX(), (int) nearPoint.getY());
+            g2D.setPaint(Color.GREEN);
+            g2D.drawLine((int) nearPoint.getX(), (int) nearPoint.getY(), (int) farPoint.getX(), (int) farPoint.getY());
+        }*/
     }
 
     public void updateCommRange(Environment env, RealAgent agent, Polygon range) {
@@ -1029,7 +1063,7 @@ public class ExplorationImage {
         return pts;
     }
 
-    //Adds all points in list2 to list1 (duplicates allowed), returns merged list.
+    //Adds all points in list2 nearPoint list1 (duplicates allowed), returns merged list.
     public LinkedList<Point> mergeLists(LinkedList<Point> list1, LinkedList<Point> list2) {
         if (list1 == list2) {
             return list1;
@@ -1142,5 +1176,36 @@ public class ExplorationImage {
         return ("[ExplorationImage] ");
     }
 // </editor-fold>
+
+    static public void addErrorMarker(Point p, String label, boolean X) {
+        errorPoint.add(p);
+        errorLabel.add(label);
+        errorX.add(X);
+    }
+
+    static public void resetErrors() {
+        errorPoint.clear();
+        errorLabel.clear();
+        errorX.clear();
+    }
+
+    private void drawErrors() {
+        for (int i = 0; i < errorPoint.size(); i++) {
+            drawError(errorPoint.get(i), errorLabel.get(i), errorX.get(i));
+        }
+    }
+
+    private void drawError(Point problem, String label, Boolean X) {
+        g2D.setPaint(Color.MAGENTA);
+        if (X) {
+            g2D.drawLine(problem.x + 2, problem.y, problem.x - 2, problem.y);
+            g2D.drawLine(problem.x, problem.y + 2, problem.x, problem.y - 2);
+        } else {
+            setPixel(problem.x, problem.y, Color.MAGENTA);
+        }
+        if (label != null) {
+            g2D.drawString(label, problem.x + Constants.AGENT_RADIUS, problem.y - Constants.AGENT_RADIUS);
+        }
+    }
 
 }
