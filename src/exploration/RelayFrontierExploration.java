@@ -44,7 +44,6 @@
 
 package exploration;
 
-import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.Constants;
@@ -87,7 +86,6 @@ public class RelayFrontierExploration extends FrontierExploration {
 
     @Override
     public Point takeStep(int timeElapsed) {
-        long realtimeStartAgentCycle = System.currentTimeMillis();
 
         Point nextStep;
         /*if (useRelayStations && (Math.random() < dropChance)) {
@@ -128,7 +126,7 @@ public class RelayFrontierExploration extends FrontierExploration {
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
         } else if ((agent.getStats().getTimeSinceLastPlan() < Constants.REPLAN_INTERVAL)
-                && agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
+                && agent.getPath() != null && agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
             // CHECK 2: Agent isn't stuck, not yet time to replan.
             // Continue if we have points left in the previously planned path.
             nextStep = agent.getNextPathPoint();
@@ -148,51 +146,14 @@ public class RelayFrontierExploration extends FrontierExploration {
 
     @Override
     public Point replan(int timeElapsed) {
-        Path tpath = null;
-        Point goal = null;
+        Point goal;
 
         agent.getStats().setTimeSinceLastPlan(0);
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent.toString() + "starting replan");
-        }
         long realtimeStart = System.currentTimeMillis();
 
         switch (state) {
             case Exploring:
-
-                switch (relayType) {
-                    case KeyPoints:
-                        TopologicalMap tmap = new TopologicalMap(occGrid);
-                        tmap.generateSkeleton();
-                        for (Point p : tmap.getJunctionPoints()) {
-                            simulator.ExplorationImage.addErrorMarker(p, "", true);
-                            if (agent.getLocation().distance(p) < KEY_POINT_DISTANCE && noRelay(p)) {
-                                goal = p;
-                                currentGoal = p;
-
-                                agent.setPath(tpath);
-                                state = ExplorationState.SettingRelay;
-                                System.out.println("State:Relay");
-                            } else {
-                                goal = replan_frontier(realtimeStart, timeElapsed);
-                            }
-                        }
-
-                        break;
-                    case RangeBorder:
-                        //TODO
-                        goal = replan_frontier(realtimeStart, timeElapsed);
-                        break;
-                    case Random:
-                        //dropChance is drop/step, this is speed-long planning
-                        if (useRelayStations && (Math.random() < dropChance * agent.getSpeed())) {
-                            agent.dropComStation();
-                        }
-                        goal = replan_frontier(realtimeStart, timeElapsed);
-                        break;
-                    default:
-                        goal = replan_frontier(realtimeStart, timeElapsed);
-                }
+                goal = replan_explore(realtimeStart, timeElapsed);
                 break;
 
             case SettingRelay:
@@ -202,11 +163,56 @@ public class RelayFrontierExploration extends FrontierExploration {
                 }
                 if (agent.getLocation().distance(currentGoal) <= 1) {
                     agent.dropComStation();
-                    System.out.println("DROP");
                     state = ExplorationState.Exploring;
                 }
                 goal = currentGoal;
-                agent.setPath(tpath);
+                //agent.setPath(tpath);
+                break;
+            default:
+                goal = replan_frontier(realtimeStart, timeElapsed);
+        }
+        agent.setPath(new Path(occGrid, agent.getLocation(), goal, false, true));
+        return goal;
+    }
+
+    private Point replan_explore(long realtimeStart, int timeElapsed) {
+        Point goal;
+        Path tpath;
+        switch (relayType) {
+            case KeyPoints:
+                if (!agent.comStations.isEmpty()) {
+
+                    TopologicalMap tmap = new TopologicalMap(occGrid);
+                    tmap.generateSkeleton();
+                    for (Point p : tmap.getJunctionPoints()) {
+                        simulator.ExplorationImage.addErrorMarker(p, "", true);
+                        if (agent.getLocation().distance(p) < KEY_POINT_DISTANCE) {
+                            if (noRelay(p) && noNearRelay(p)) {
+                                goal = p;
+                                currentGoal = p;
+//                                tpath = new Path(occGrid, agent.getLocation(), p, false, true);
+//                                agent.setPath(tpath);
+                                state = ExplorationState.SettingRelay;
+                                break;
+                            }
+                        }
+
+                    }
+                }
+                //No ComStation to place
+                goal = replan_frontier(realtimeStart, timeElapsed);
+
+                break;
+            case RangeBorder:
+                //TODO
+                goal = replan_frontier(realtimeStart, timeElapsed);
+                break;
+            case Random:
+                //dropChance is drop/step, this is speed-long planning
+                if (useRelayStations && (Math.random() < dropChance * agent.getSpeed())) {
+                    agent.dropComStation();
+                }
+                goal = replan_frontier(realtimeStart, timeElapsed);
                 break;
             default:
                 goal = replan_frontier(realtimeStart, timeElapsed);
@@ -228,7 +234,6 @@ public class RelayFrontierExploration extends FrontierExploration {
                 nextStep = agent.getNextPathPoint();
             }
             agent.getStats().setTimeSinceLastPlan(0);
-            agent.setCurrentGoal(agent.getTeammate(1).getLocation());
             return nextStep;
         }
 
@@ -261,7 +266,6 @@ public class RelayFrontierExploration extends FrontierExploration {
                 nextStep = agent.getNextPathPoint();
             }
             agent.getStats().setTimeSinceLastPlan(0);
-            agent.setCurrentGoal(agent.getTeammate(1).getLocation());
             return nextStep;
         }
 
@@ -270,7 +274,6 @@ public class RelayFrontierExploration extends FrontierExploration {
             if (agent.getLocation().equals(teammate.getLocation())) {
                 nextStep = RandomWalk.randomStep(agent);
                 agent.getStats().setTimeSinceLastPlan(0);
-                agent.setCurrentGoal(nextStep);
                 return nextStep;
             }
         }
@@ -296,9 +299,18 @@ public class RelayFrontierExploration extends FrontierExploration {
 
     private boolean noRelay(Point p) {
 
-        for (Agent agt : agent.getAllTeammates().values()) {
+        for (TeammateAgent agt : agent.getAllTeammates().values()) {
+            if (agt.isRelay() && agt.getLocation().equals(p)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
-            if (agt.getClass().toString().equals("ComStation") && agt.getLocation().equals(p)) {
+    private boolean noNearRelay(Point p) {
+
+        for (TeammateAgent agt : agent.getAllTeammates().values()) {
+            if (agt.isRelay() && (agt.getLocation().distance(p) < Constants.MIN_RELAY_DISTANCE)) {
                 return false;
             }
         }

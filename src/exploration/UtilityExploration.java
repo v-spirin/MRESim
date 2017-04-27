@@ -161,7 +161,6 @@ public class UtilityExploration extends FrontierExploration {
                 System.out.println(agent.toString() + "Can't find my way home, taking random step.");
                 nextStep = RandomWalk.randomStep(agent);
                 agent.getStats().setTimeSinceLastPlan(0);
-                agent.setCurrentGoal(nextStep);
                 return nextStep;
             }
 
@@ -174,7 +173,6 @@ public class UtilityExploration extends FrontierExploration {
             }
 
             agent.getStats().setTimeSinceLastPlan(0);
-            agent.setCurrentGoal(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
             return nextStep;
         }
 
@@ -196,12 +194,10 @@ public class UtilityExploration extends FrontierExploration {
             agent.setStateTimer(0);
 
             if (agent.getPath().getPoints() != null) {
-                agent.setCurrentGoal(baseLocation);
                 return ((Point) agent.getPath().getPoints().remove(0));
             } else {
                 System.out.println(agent.toString() + "!!!Nothing left to explore, but cannot plan path to parent!!!");
                 nextStep = RandomWalk.randomStep(agent);
-                agent.setCurrentGoal(nextStep);
                 return (nextStep);
             }
         }
@@ -276,15 +272,12 @@ public class UtilityExploration extends FrontierExploration {
                 System.out.println(agent.toString() + "!!!ERROR!  Could not find full path!");
                 if ((existingPath != null) && (existingPath.getPoints().size() > 2)) {
                     agent.setPath(existingPath);
-                    agent.setCurrentGoal(existingPath.getGoalPoint());
                 } else {
-                    agent.setCurrentGoal(agent.getLocation());
                     return RandomWalk.randomStep(agent);
                 }
             } else {
                 System.out.println(agent + " path to Base found.");
                 agent.setPath(tpath);
-                agent.setCurrentGoal(baseLocation);
                 // Must remove first point in tpath as this is robot's location.
                 agent.getPath().getPoints().remove(0);
             }

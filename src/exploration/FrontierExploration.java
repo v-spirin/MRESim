@@ -141,7 +141,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 nextStep = agent.getNextPathPoint();
             }
             agent.getStats().setTimeSinceLastPlan(0);
-            agent.setCurrentGoal(agent.getTeammate(1).getLocation());
             return nextStep;
         }
 
@@ -181,7 +180,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 nextStep = agent.getNextPathPoint();
             }
             agent.getStats().setTimeSinceLastPlan(0);
-            agent.setCurrentGoal(agent.getTeammate(1).getLocation());
             return nextStep;
         }
 
@@ -190,7 +188,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
             if (agent.getLocation().equals(teammate.getLocation())) {
                 nextStep = RandomWalk.randomStep(agent);
                 agent.getStats().setTimeSinceLastPlan(0);
-                agent.setCurrentGoal(nextStep);
                 return nextStep;
             }
         }
@@ -480,15 +477,13 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 }
 
             } else //System.out.println("UtilityExact: " + best.utility);
-            {
-                if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
+             if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
                     if (best.ID == agent.getID()) {
                         if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
                             agent.setState(Agent.AgentState.GoToChild);
                             return null;
                         }
                         agent.setLastFrontier(best.frontier);
-                        agent.setCurrentGoal(best.frontier.getCentre());
                         if (agent.getPath() != null) {
                             agent.addDirtyCells(agent.getPath().getAllPathPixels());
                         }
@@ -514,7 +509,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 } else {
                     utilities.add(best);
                 }
-            }
 
         }
 

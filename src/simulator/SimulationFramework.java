@@ -299,8 +299,7 @@ public class SimulationFramework implements ActionListener {
                         Path path = agent[i].calculatePath(agent[i].getLocation(),
                                 agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation(), false);
                         agent[i].setPath(path);
-                        agent[i].setCurrentGoal(
-                                agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
+
                     }
                 }
             }
@@ -1028,11 +1027,6 @@ public class SimulationFramework implements ActionListener {
         RobotConfig.roletype tempRole = agent1.getRole();
         agent1.setRole(agent2.getRole());
         agent2.setRole(tempRole);
-
-        // exchange current goal (important!)
-        Point tempCurrGoal = agent1.getCurrentGoal();
-        agent1.setCurrentGoal(agent2.getCurrentGoal());
-        agent2.setCurrentGoal(tempCurrGoal);
 
         // set newly calculated path
         agent1.setPath(p1);

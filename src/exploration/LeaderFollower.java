@@ -256,7 +256,6 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
             agent.setPathToBaseStation();
             nextStep = agent.getNextPathPoint();
             agent.getStats().setTimeSinceLastPlan(0);
-            agent.setCurrentGoal(agent.getTeammate(1).getLocation());
             return nextStep;
         }
 
@@ -272,7 +271,6 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
             System.out.println(agent.toString() + "No frontier chosen, taking random step.");
             nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
-            agent.setCurrentGoal(nextStep);
             return nextStep;
         }
 
@@ -283,7 +281,6 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
             System.out.println(agent.toString() + "No path found, taking random step.");
             nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
-            agent.setCurrentGoal(nextStep);
             return nextStep;
         }
 

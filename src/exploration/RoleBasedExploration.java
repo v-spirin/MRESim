@@ -233,7 +233,6 @@ public class RoleBasedExploration extends FrontierExploration {
                         } else {
                             agent.setPath(pathToParentRendezvous);
                             agent.setStateTimer(0);
-                            agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
                             return ((Point) agent.getPath().getPoints().remove(0));
                         }
                     }
@@ -252,7 +251,6 @@ public class RoleBasedExploration extends FrontierExploration {
                     agent.setStateTimer(0);
 
 
-                    agent.setCurrentGoal(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
                     return ((Point) agent.getPath().getPoints().remove(0));
                 }
             }*/
@@ -272,7 +270,6 @@ public class RoleBasedExploration extends FrontierExploration {
                 agent.setMissionComplete(true);
                 agent.setStateTimer(0);
 
-                agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
                 return ((Point) agent.getPath().getPoints().remove(0));
                 /*
                 agent.setMissionComplete();
@@ -284,13 +281,11 @@ public class RoleBasedExploration extends FrontierExploration {
                 agent.setStateTimer(0);
 
                 if(agent.getPath().getPoints() != null) {
-                    agent.setCurrentGoal(agent.getParentRendezvous().getChildLocation());
                     return((Point)agent.getPath().getPoints().remove(0));
                 }
                 else {
                     System.out.println(agent.toString() + "!!!Nothing left to explore, but cannot plan path to parent!!!");
                     nextStep = RandomWalk.randomStep(agent);
-                    agent.setCurrentGoal(nextStep);
                     return(nextStep);
                 }*/
             }
@@ -338,15 +333,12 @@ public class RoleBasedExploration extends FrontierExploration {
                 System.out.println(agent.toString() + "!!!ERROR!  Could not find full path!");
                 if ((existingPath != null) && (existingPath.getPoints().size() > 2)) {
                     agent.setPath(existingPath);
-                    agent.setCurrentGoal(existingPath.getGoalPoint());
                 } else {
-                    agent.setCurrentGoal(agent.getLocation());
                     return RandomWalk.randomStep(agent);
                 }
             } //</editor-fold>
             else {
                 agent.setPath(path);
-                agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
                 // Must remove first point in path as this is robot's location.
                 agent.getPath().getPoints().remove(0);
             }
@@ -418,10 +410,8 @@ public class RoleBasedExploration extends FrontierExploration {
             agent.setStateTimer(0);
 
             if (agent.getPath().getPoints().size() > 0) {
-                agent.setCurrentGoal(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
                 return ((Point) agent.getPath().getPoints().remove(0));
             } else {
-                agent.setCurrentGoal(agent.getLocation());
                 return (agent.getLocation());
             }
         }
@@ -474,7 +464,6 @@ public class RoleBasedExploration extends FrontierExploration {
                 agent.addDirtyCells(agent.getPath().getAllPathPixels());
                 Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), false);
                 agent.setPath(path);
-                agent.setCurrentGoal(agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
 
                 if (path.found) {
                     // stay in comm range with base, till it's time to go meet child
@@ -494,12 +483,10 @@ public class RoleBasedExploration extends FrontierExploration {
                     //<editor-fold defaultstate="collapsed" desc="If path still not found, take random step">
                     if (!path.found) {
                         System.out.println(agent.toString() + "!!!ERROR!  Could not find full path! Taking random step");
-                        agent.setCurrentGoal(agent.getLocation());
                         return RandomWalk.randomStep(agent);
                     } else {
                         System.out.println(agent.toString() + "Pure A* worked");
                         agent.setPath(path);
-                        agent.setCurrentGoal(agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
                         return ((Point) agent.getPath().getPoints().remove(0));
                     }
                     //</editor-fold>
@@ -542,15 +529,12 @@ public class RoleBasedExploration extends FrontierExploration {
                 System.out.println(agent.toString() + "!!!ERROR!  Could not find full path!");
                 if ((existingPath != null) && (existingPath.getPoints().size() > 2)) {
                     agent.setPath(existingPath);
-                    agent.setCurrentGoal(existingPath.getGoalPoint());
                 } else {
-                    agent.setCurrentGoal(agent.getLocation());
                     return RandomWalk.randomStep(agent);
                 }
                 //</editor-fold>
             } else {
                 agent.setPath(path);
-                agent.setCurrentGoal(rvd.getChildRendezvous().getParentLocation());
                 // Must remove first point in path as this is robot's location.
                 agent.getPath().getPoints().remove(0);
             }
@@ -616,7 +600,6 @@ public class RoleBasedExploration extends FrontierExploration {
             }*/
             agent.setPath(path);
             agent.setStateTimer(1);
-            agent.setCurrentGoal(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
             return agent.getLocation();
         } else {
             if (agent.getChildTeammate().getState() == Agent.AgentState.GiveParentInfo) {

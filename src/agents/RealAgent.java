@@ -122,9 +122,6 @@ public class RealAgent extends Agent {
     private RendezvousAgentData rendezvousAgentData;
     private IRendezvousStrategy rendezvousStrategy;
 
-    // dynamic behavior
-    private Point currentGoal;  // needed for calculating dynamic role switch
-
     private SimulatorConfig simConfig;
 
     // Used only for logging - direct reference to other agents. DO NOT use this for anything else
@@ -171,7 +168,6 @@ public class RealAgent extends Agent {
         this.simConfig = simConfig;
         rendezvousAgentData = new RendezvousAgentData(this);
         rendezvousStrategy = null;
-        currentGoal = new Point(x, y);
 
         nearestBaseCommunicationPoint = null;
 
@@ -315,11 +311,7 @@ public class RealAgent extends Agent {
     }
 
     public Point getCurrentGoal() {
-        return currentGoal;
-    }
-
-    public void setCurrentGoal(Point cg) {
-        currentGoal = cg;
+        return path.getGoalPoint();
     }
 
     public TopologicalMap getTopologicalMap() {

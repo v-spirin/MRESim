@@ -318,6 +318,7 @@ public class Constants {
      * Minimum distance from one KeyPoint to the next. Default: 20
      */
     public static double KEY_POINT_DISTANCE = 25;
+    public static double MIN_RELAY_DISTANCE = 50;
 
     /**
      * Colors to be used on map.
