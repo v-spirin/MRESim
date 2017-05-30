@@ -140,10 +140,11 @@ public class MainConsole extends MainGUI implements Runnable {
     @Override
     public void runComplete(RealAgent[] agent, int timeElapsed, double pctAreaKnownTeam, int avgCycleTime) {
         simulation.logScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
-        System.out.format("{0}\nCycle: {1}\n"
-                + "AreaKnown: {2}%%\n"
-                + "AvgTime/Cycle: {3}",
-                new Object[]{Thread.currentThread().getName(), timeElapsed, Math.round(pctAreaKnownTeam), avgCycleTime});
+        System.out.format("%s\n"
+                + "\tCycle: %d\n"
+                + "\tAreaKnown: %d%%\n"
+                + "\tAvgTime/Cycle: %d\n\n",
+                new Object[]{threadName, timeElapsed, Math.round(pctAreaKnownTeam), avgCycleTime});
         LOGGER.log(Level.FINE, "{0} finished", this.threadName);
         this.exploreLog.writeLog(timeElapsed);
         if (!batch) {

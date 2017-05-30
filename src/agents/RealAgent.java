@@ -172,6 +172,8 @@ public class RealAgent extends Agent {
         nearestBaseCommunicationPoint = null;
 
         this.baseStation = baseStation;
+        this.oldTimeElapsed = -1;
+        this.timeElapsed = -1;
     }
 
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
@@ -506,9 +508,9 @@ public class RealAgent extends Agent {
             return getLocation();
         }
 
-        if (timeElapsed == 0) {
+        /*if (timeElapsed == 0) {
             oldTimeElapsed = -1; //hack for initial time step
-        }
+        }*/ //Not necessary anymore I think
         if (oldTimeElapsed != timeElapsed) {
             // First call in cycle
             //TODO Only needed for Util and RoleBased, but needs to be done on request!!!

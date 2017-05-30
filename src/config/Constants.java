@@ -308,6 +308,8 @@ public class Constants {
             = Paths.get(System.getProperty("user.dir"), "patherror").toString() + File.separator;
     public static final String DEFAULT_LOG_DIRECTORY
             = Paths.get(System.getProperty("user.dir"), "logs").toString() + File.separator;
+    public static final String DEFAULT_ENV_DIRECTORY
+            = Paths.get(System.getProperty("user.dir"), "environments").toString() + File.separator;
     public static final String DEFAULT_IMAGE_LOG_DIRECTORY
             = Paths.get(System.getProperty("user.dir"), "logs", "images").toString() + File.separator;
     public static int MAXIMUM_TIME = 3000;
