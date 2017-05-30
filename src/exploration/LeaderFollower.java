@@ -44,10 +44,9 @@
 package exploration;
 
 import agents.RealAgent;
-import config.Constants;
 import config.SimulatorConfig;
+import exploration.Frontier.FrontierUtility;
 import java.awt.Point;
-import java.util.LinkedList;
 import path.Path;
 
 /**
@@ -57,6 +56,8 @@ import path.Path;
 public class LeaderFollower extends FrontierExploration implements Exploration {
 
     int TIME_BETWEEN_PLANS = 10;
+    Point prelast_com_point;
+    Point last_com_point;
 
     public LeaderFollower(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, RealAgent baseStation) {
         super(agent, frontierExpType, baseStation);
@@ -70,13 +71,12 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // simulator isn't allowing him to go through.  Taking a random step might
         // help.
         // Update:  this state is never really reached but leave in just in case
-        if (agent.getEnvError()) {
+        /*if (agent.getEnvError()) {
             System.out.println(agent.toString() + "LeaderFollower: Env reports error, taking random step.");
             nextStep = RandomWalk.randomStep(agent);
             agent.setEnvError(false);
             return nextStep;
-        }
-
+        }*/
         switch (agent.getRole()) {
             case Explorer:
                 nextStep = takeStep_Explorer(timeElapsed);
@@ -102,7 +102,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // CHECK 0
         // Wait for a few time steps at start (to let Explorer get some moves in).
         if (timeElapsed < 3) {
-            System.out.println(agent.toString() + "LeaderFollower: Starting up, staying stationary for now.");
+            //System.out.println(agent.toString() + "LeaderFollower: Starting up, staying stationary for now.");
             nextStep = new Point(agent.getX(), agent.getY());
             agent.getStats().setTimeSinceLastPlan(0);
         } // CHECK 1
@@ -110,28 +110,34 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // simulator isn't allowing him to go through.  Taking a random step might
         // help.
         else if (agent.getEnvError()) {
-            System.out.println(agent.toString() + "LeaderFollower: No step taken since last timeStep, taking random step.");
+            //System.out.println(agent.toString() + "LeaderFollower: No step taken since last timeStep, taking random step.");
             nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
         } // Check 1.5, make sure parent is in range
         else if (!agent.getParentTeammate().isInRange()) {
+            //System.out.println(agent.toString() + "LeaderFollower: Out of Comandcenter-range, go to last position.");
             agent.getStats().setTimeSinceLastPlan(0);
-            return (new Point(agent.getPrevX(), agent.getPrevY()));
+            nextStep = last_com_point;
+            last_com_point = prelast_com_point;
         } // CHECK 2
         // Agent isn't stuck.
         // Is it time to replan?
         else if (agent.getStats().getTimeSinceLastPlan() > TIME_BETWEEN_PLANS) {
+            //System.out.println(agent.toString() + "LeaderFollower: Timed replanning.");
             nextStep = replanRelay();
             agent.getStats().setTimeSinceLastPlan(0);
         } // CHECK 3
         // Agent isn't stuck, not yet time to replan.
         // Do we have points left in the previously planned path?
-        else if (agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
+        else if (agent.getPath() != null && agent.getPath().found
+                && agent.getPath().getPoints().size() >= 2) {
+            //System.out.println(agent.toString() + "LeaderFollower: Just go on.");
             nextStep = agent.getNextPathPoint();
         } // CHECK 4
         // Agent isn't stuck, not yet time to replan, but we have no points left
         else {
+            //System.out.println(agent.toString() + "LeaderFollower: Replanning.");
             nextStep = replanRelay();
             agent.getStats().setTimeSinceLastPlan(0);
         }
@@ -141,6 +147,10 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
             agent.getStats().setTimeLastDirectContactCS(1);
         } else {
             agent.getStats().incrementLastDirectContactCS();
+        }
+        if (agent.getParentTeammate().isInRange()) {
+            prelast_com_point = last_com_point;
+            last_com_point = agent.getLocation();
         }
         agent.getStats().incrementTimeSinceLastPlan();
 
@@ -198,7 +208,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // CHECK 0
         // Take a couple of random steps to start (just to gather some sensor data).
         if (timeElapsed < 3) {
-            System.out.println(agent.toString() + "LeaderFollower: Starting up, taking random step.");
+            //System.out.println(agent.toString() + "LeaderFollower: Starting up, taking random step.");
             nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
         } // CHECK 1
@@ -206,7 +216,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // simulator isn't allowing him to go through.  Taking a random step might
         // help.
         else if (agent.getEnvError()) {
-            System.out.println(agent.toString() + "LeaderFollower: No step taken since last timeStep, taking random step.");
+            //System.out.println(agent.toString() + "LeaderFollower: No step taken since last timeStep, taking random step.");
             nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
@@ -214,16 +224,19 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // Agent isn't stuck.
         // Is it time to replan?
         else if (agent.getStats().getTimeSinceLastPlan() % TIME_BETWEEN_PLANS == 0) {
+            //System.out.println(agent.toString() + "LeaderFollower: Timed replanning.");
             nextStep = replanExplorer();
             agent.getStats().setTimeSinceLastPlan(0);
         } // CHECK 3
         // Agent isn't stuck, not yet time to replan.
         // Do we have points left in the previously planned path?
         else if (agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
+            //System.out.println(agent.toString() + "LeaderFollower: follow Path.");
             nextStep = agent.getNextPathPoint();
         } // CHECK 4
         // Agent isn't stuck, not yet time to replan, but we have no points left
         else {
+            //System.out.println(agent.toString() + "LeaderFollower: Path finished, replanning.");
             nextStep = replanExplorer();
             agent.getStats().setTimeSinceLastPlan(0);
         }
@@ -234,24 +247,31 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         } else {
             agent.getStats().incrementLastDirectContactCS();
         }
+        if (agent.getParentTeammate().isInRange()) {
+            prelast_com_point = last_com_point;
+            last_com_point = agent.getLocation();
+        }
         agent.getStats().incrementTimeSinceLastPlan();
 
         return nextStep;
     }
 
     public Point replanExplorer() {
+        Point nextStep;
         if (!agent.getParentTeammate().isInRange()) {
             agent.getStats().setTimeSinceLastPlan(0);
-            return (new Point(agent.getPrevX(), agent.getPrevY()));
+            //System.out.println(agent.toString() + "UseComPoint: " + last_com_point + " now: " + agent.getLocation());
+            nextStep = last_com_point;
+            prelast_com_point = last_com_point;
+            return nextStep;
         }
-        Point nextStep;
 
         // Find frontiers
         calculateFrontiers();
 
         // If no frontiers found, return to ComStation
         if (frontiers.isEmpty()) {
-            System.out.println(agent.toString() + "No frontiers found, returning home.");
+            //System.out.println(agent.toString() + "No frontiers found, returning home.");
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
             nextStep = agent.getNextPathPoint();
@@ -261,24 +281,28 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
 
         // If we reach this point, there are frontiers to explore -- find best one
         long realtimeStart = System.currentTimeMillis();
-        System.out.println(agent.toString() + "Choosing a frontier ...");
+        //System.out.println(agent.toString() + "Choosing a frontier ...");
 
-        boolean foundFrontier = (chooseFrontier(false, new LinkedList<Integer>()) != null);
+        FrontierUtility frontierUtil = chooseFrontier();
 
         // If no best frontier could be assigned (can happen e.g. when more robots than frontiers),
         // then take random step.
-        if (!foundFrontier) {
-            System.out.println(agent.toString() + "No frontier chosen, taking random step.");
+        if (frontierUtil == null) {
+            //System.out.println(agent.toString() + "No frontier chosen, taking random step.");
             nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             return nextStep;
+        } else {
+            agent.setLastFrontier(frontierUtil.frontier);
+            agent.setPath(frontierUtil.path);
+
         }
 
         // Note: Path to best frontier has already been set when calculating
         // utility, no need to recalculate
         // If no path could be found, take random step.
         if (agent.getPath() == null || agent.getPath().getPoints() == null || agent.getPath().getPoints().isEmpty()) {
-            System.out.println(agent.toString() + "No path found, taking random step.");
+            //System.out.println(agent.toString() + "No path found, taking random step.");
             nextStep = RandomWalk.randomStep(agent);
             agent.getStats().setTimeSinceLastPlan(0);
             return nextStep;
@@ -288,8 +312,8 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // since this is the robot itself.
         agent.getPath().getPoints().remove(0);
         agent.getStats().setTimeSinceLastPlan(0);
-        System.out.print(Constants.INDENT + "Chose frontier at " + agent.getLastFrontier().getCentre().x + "," + agent.getLastFrontier().getCentre().y + ". ");
-        System.out.println("Took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
+        //System.out.print(Constants.INDENT + "Chose frontier at " + agent.getLastFrontier().getCentre().x + "," + agent.getLastFrontier().getCentre().y + ". ");
+        //System.out.println("Took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
         return agent.getNextPathPoint();
     }
 

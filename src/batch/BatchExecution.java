@@ -67,14 +67,15 @@ public class BatchExecution {
     private List<SimulatorConfig> configs;
     private RobotTeamConfig team;
     int num_threads = 2;
-    int num_sims = 5;
+    int num_sims = 1;
 
     public BatchExecution() {
         configs = new ArrayList<>();
         SimulatorConfig config = new SimulatorConfig();
 
-        config.setExpAlgorithm(SimulatorConfig.exptype.Random);
-        config.setCommModel(SimulatorConfig.commtype.DirectLine);
+        config.setExpAlgorithm(SimulatorConfig.exptype.FrontierExploration);
+        config.setFrontierAlgorithm(SimulatorConfig.frontiertype.ReturnWhenComplete);
+        config.setCommModel(SimulatorConfig.commtype.PropModel1);
 
         //Fixed settings
         /*config.setExpAlgorithm(SimulatorConfig.exptype.Testing);
@@ -88,7 +89,8 @@ public class BatchExecution {
         //Team
         team = new RobotTeamConfig();
 
-        team.loadConfig("maze_hill_2robots_8relays");
+        team.loadConfig(Constants.DEFAULT_ENV_DIRECTORY + "frontierbased_1_maze1_100");
+        //team.loadConfig("maze_hill_2robots_8relays");
         //team.loadConfig("maze_hill_2robots");
         //boolean loaded = config.loadEnvironment("maze_with_hill");
         boolean loaded = config.loadEnvironment(Constants.DEFAULT_ENV_DIRECTORY + "maze1.png");
