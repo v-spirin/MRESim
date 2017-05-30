@@ -477,8 +477,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 }
 
             } else //System.out.println("UtilityExact: " + best.utility);
-             //System.out.println("UtilityExact: " + best.utility);
-                if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
+            //System.out.println("UtilityExact: " + best.utility);
+             if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
                     if (best.agentID == agent.getID()) {
                         if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
                             agent.setState(Agent.AgentState.GoToChild);

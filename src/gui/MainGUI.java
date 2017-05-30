@@ -207,6 +207,8 @@ public class MainGUI extends javax.swing.JFrame {
 
     public void setRobotTeamConfig(RobotTeamConfig robotTeamConfig) {
         this.robotTeamConfig = robotTeamConfig;
+        updateFromRobotTeamConfig();
+        updateFromEnvConfig();
     }
     // </editor-fold>
 

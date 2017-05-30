@@ -73,9 +73,12 @@ public class BatchExecution {
         configs = new ArrayList<>();
         SimulatorConfig config = new SimulatorConfig();
 
-        config.setExpAlgorithm(SimulatorConfig.exptype.FrontierExploration);
-        config.setFrontierAlgorithm(SimulatorConfig.frontiertype.ReturnWhenComplete);
-        config.setCommModel(SimulatorConfig.commtype.PropModel1);
+        team = new RobotTeamConfig();
+
+        config.setExpAlgorithm(SimulatorConfig.exptype.LeaderFollower);
+        config.setCommModel(SimulatorConfig.commtype.StaticCircle);
+        team.loadConfig(Constants.DEFAULT_CONF_DIRECTORY + "leaderFollower_1-1_maze1_100");
+        boolean loaded = config.loadEnvironment(Constants.DEFAULT_ENV_DIRECTORY + "maze1.png");
 
         //Fixed settings
         /*config.setExpAlgorithm(SimulatorConfig.exptype.Testing);
@@ -87,13 +90,9 @@ public class BatchExecution {
             configs.add(config);
         }*/
         //Team
-        team = new RobotTeamConfig();
-
-        team.loadConfig(Constants.DEFAULT_ENV_DIRECTORY + "frontierbased_1_maze1_100");
         //team.loadConfig("maze_hill_2robots_8relays");
         //team.loadConfig("maze_hill_2robots");
         //boolean loaded = config.loadEnvironment("maze_with_hill");
-        boolean loaded = config.loadEnvironment(Constants.DEFAULT_ENV_DIRECTORY + "maze1.png");
         if (!loaded) {
             System.err.println("Could not load env");
         }
@@ -116,12 +115,13 @@ public class BatchExecution {
                 SimulatorConfig conf = c_it.next();
                 String name = "Batch " + batch_counter;
                 new File(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + name).mkdir();
+                //console = new MainConsole(true, name);
                 console = new MainConsole(true, name);
                 if (team != null) {
                     console.setRobotTeamConfig(team);
                 }
-                console.load();
                 console.loadConfig(conf);
+                console.load();
                 Thread worker = new Thread(console, name);
                 worker.setName(name);
                 worker.start();
