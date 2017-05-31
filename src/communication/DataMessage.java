@@ -43,7 +43,7 @@
  */
 package communication;
 
-import agents.Agent.ExploreState;
+import agents.Agent.AgentState;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.Constants;
@@ -71,7 +71,7 @@ public class DataMessage implements IDataMessage {
     public double pathLength;
     public boolean missionComplete;
     public boolean directComm;
-    public ExploreState state;
+    public AgentState state;
     public double distToBase;
     public int speed;
     public int relayID;

@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -66,7 +66,6 @@ public class TopologicalMap {
     private LinkedList<Point> borderPoints;
     private int areaGrid[][];
     private HashMap<Integer, TopologicalNode> topologicalNodes;
-    private Path path;
 
     private int skeletonGridBorder[][];
     private LinkedList<Point> skeletonPointsBorder;
@@ -78,7 +77,6 @@ public class TopologicalMap {
 
     public TopologicalMap(OccupancyGrid occGrid) {
         setGrid(occGrid);
-        path = new Path();
     }
 
     public final void setGrid(OccupancyGrid occGrid) {
@@ -102,8 +100,16 @@ public class TopologicalMap {
         }
     }
 
+    /**
+     * Calculates the keyPoints of this map. KeyPoints are basically nodes of the skeleton. Call
+     * generateSkeleton first!
+     */
     public void findKeyPoints() {
         keyPoints = Skeleton.findKeyPoints(skeletonGrid, occGrid);
+    }
+
+    public LinkedList<Point> getJunctionPoints() {
+        return Skeleton.findJunctionPoints(skeletonGrid, occGrid);
     }
 
     public LinkedList<Point> getSkeletonPoints() {
@@ -187,21 +193,19 @@ public class TopologicalMap {
                                             System.out.println("Retrieved from cache path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")");
                                         }
                                     } else {
-                                        pathToNode = new Path();
-                                        pathToNode.setStartPoint((Point) node.getPosition().clone());
-                                        pathToNode.setGoalPoint((Point) neighbourNode.getPosition().clone());
+                                        pathToNode = new Path(occGrid, (Point) node.getPosition(), (Point) neighbourNode.getPosition(), false, true);
 
                                         if (Constants.DEBUG_OUTPUT) {
                                             System.out.println("Generating path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + ")");
                                         }
                                         //pathToNode.calculateAStarPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
-                                        pathToNode.getJumpPath(occGrid, (Point) node.getPosition().clone(), (Point) neighbourNode.getPosition().clone(), false);
+                                        pathToNode.calculateJumpPath();
                                         if (!pathToNode.getStartPoint().equals(node.getPosition())
                                                 || !pathToNode.getGoalPoint().equals(neighbourNode.getPosition())) {
                                             System.err.println("CATASTROPHIC ERROR!! Path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")");
                                         }
                                         pathCache.put(pathCoords, pathToNode);
-                                        Path reversePath = pathToNode.generateReversePath();
+                                        Path reversePath = pathToNode.getReversePath();
                                         Rectangle reversePathCoords = new Rectangle(neighbourNode.getPosition().x, neighbourNode.getPosition().y,
                                                 node.getPosition().x, node.getPosition().y);
                                         pathCache.put(reversePathCoords, reversePath);
@@ -209,7 +213,7 @@ public class TopologicalMap {
                                     //pathToNode.calculateJumpPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
                                     timeSpentOnPaths += (System.currentTimeMillis() - realtimeStart);
                                     node.addNeighbour(neighbourNode, pathToNode);
-                                    neighbourNode.addNeighbour(node, pathToNode.generateReversePath());
+                                    neighbourNode.addNeighbour(node, pathToNode.getReversePath());
                                 } else {
 
                                     node.addNeighbour(neighbourNode, null);
@@ -238,38 +242,6 @@ public class TopologicalMap {
 
     public int[][] getAreaGrid() {
         return areaGrid;
-    }
-
-    public void setPathStart(Point start) {
-        path.setStartPoint(start);
-    }
-
-    public void setPathGoal(Point goal) {
-        path.setGoalPoint(goal);
-    }
-
-    public Point getPathStart() {
-        return path.getStartPoint();
-    }
-
-    public Point getPathGoal() {
-        return path.getGoalPoint();
-    }
-
-    public void calculateAStarPath() {
-        path = new Path(occGrid, path.getStartPoint(), path.getGoalPoint(), false, false);
-    }
-
-    public void calculateJumpPath() {
-        path = new Path(occGrid, path.getStartPoint(), path.getGoalPoint(), false, true);
-    }
-
-    public void calculateTopologicalPath() {
-        path = new Path(occGrid, this, path.getStartPoint(), path.getGoalPoint(), false);
-    }
-
-    public Path getPath() {
-        return path;
     }
 
     public LinkedList<Point> getKeyPointsBorder() {
@@ -319,42 +291,42 @@ public class TopologicalMap {
 //
 //            //strict rule - too strict?
 //            /*
-//            Path Base2OldRV = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_ID).getLocation(), 
+//            Path Base2OldRV = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_ID).getLocation(),
 //                    agent.getParentRendezvous().getParentLocation());
-//            
-//            Path Base2NewRV = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_ID).getLocation(), 
+//
+//            Path Base2NewRV = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_ID).getLocation(),
 //                    result.getParentLocation());
-//            
+//
 //            if (!Base2OldRV.found || !Base2NewRV.found || (Base2OldRV.getLength() < Base2NewRV.getLength()))
 //            {
 //                result.setChildLocation(agent.getParentRendezvous().getChildLocation());
 //                result.setParentLocation(agent.getParentRendezvous().getParentLocation());
 //                return result;
 //            }
-//            
+//
 //            Point frontierCentre = null;
 //            if(agent.getLastFrontier() != null)
 //                frontierCentre = agent.getLastFrontier().getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
 //            else
 //                frontierCentre = agent.getLocation();
 //            if (frontierCentre != null)
-//            {                
+//            {
 //                Path Front2OldRV = agent.calculatePath(frontierCentre, agent.getParentRendezvous().getChildLocation());
 //                Path Front2NewRV = agent.calculatePath(frontierCentre, result.getChildLocation());
-//                
+//
 //                if (!Front2NewRV.found || !Front2NewRV.found || (Front2OldRV.getLength() < Front2NewRV.getLength()))
 //                {
 //                    result.setChildLocation(agent.getParentRendezvous().getChildLocation());
 //                    result.setParentLocation(agent.getParentRendezvous().getParentLocation());
 //                    return result;
-//                }                
+//                }
 //            } else
 //            {
 //                result.setChildLocation(agent.getParentRendezvous().getChildLocation());
 //                result.setParentLocation(agent.getParentRendezvous().getParentLocation());
 //                return result;
 //            }
-//            
+//
 //            return result;*/
 //            double relayPathLengthOld;
 //            double relayPathLengthNew;
@@ -401,21 +373,21 @@ public class TopologicalMap {
 //                    new Agent(0, "", 0, oldRV.x, oldRV.y, 0, 0, 400, 0,
 //                            RobotConfig.roletype.Relay, 0, 0, 0)
 //            );
-//            
+//
 //            LinkedList<Point> candidatePoints2 = new LinkedList<Point>();
 //            //for(Point p : ExplorationImage.polygonPoints(commPoly))
 //            for (int i = 0; i < commPoly.npoints; i++)
 //            {
 //                Point p = new Point(commPoly.xpoints[i], commPoly.ypoints[i]);
 //                if (occGrid.freeSpaceAt(p.x, p.y))
-//                {                    
+//                {
 //                    if (occGrid.directLinePossible(oldRV.x, oldRV.y, p.x, p.y))
 //                        candidatePoints2.add(p);
 //                }
 //            }
-//            
+//
 //            double minRVRelayDistance = agent.calculatePath(baseLoc, oldComm).getLength();
-//            
+//
 //            for (Point p: candidatePoints2)
 //            {
 //                double distance = agent.calculatePath(p, baseLoc).getLength();
@@ -520,6 +492,5 @@ public class TopologicalMap {
 //
 //        return result;
 //    }
-
     //</editor-fold>
 }

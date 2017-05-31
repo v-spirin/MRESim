@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -45,11 +45,11 @@ package environment;
 
 import config.Constants;
 import java.awt.Color;
-import java.util.LinkedList;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 import javax.imageio.ImageIO;
 
 /**
@@ -226,8 +226,6 @@ public class ContourTracer {
     public static LinkedList<LinkedList> findAllContours(OccupancyGrid occGrid) {
         LinkedList<LinkedList> contourList = new LinkedList<LinkedList>();
         LinkedList<Point> currContour;
-        boolean hasFrontierCell;
-        int maxGap, currGap;
 
         long realtimeStart = System.currentTimeMillis();
 
@@ -255,27 +253,8 @@ public class ContourTracer {
                     // We must have found external contour of new component
                     currContour = traceContour(occGrid, labels, i, j, direction.NE, componentIndex);
 
-                    // Check to make sure that current contour
-                    //  (i)  borders on open space somewhere (ignore frontiers in e.g. corners of rooms)
-                    //  (ii) has a gap somewhere big enough to plan a path into it
-                    /*hasFrontierCell = false;
-                    maxGap = 0;
-                    currGap = 0;
-                    for(Point p: currContour) {
-                        if(occGrid.frontierBorderCellAt(p.x, p.y)) 
-                            hasFrontierCell = true;
-                        
-                        if(occGrid.isInOpenSpace(p.x, p.y))
-                            currGap++;
-                        else if(currGap > maxGap) {
-                            maxGap = currGap;
-                            currGap = 0;
-                        }
-                    }
-                    System.out.println("****** Max gap: " + maxGap);*/
                     for (Point p : currContour) {
                         if (occGrid.frontierBorderCellAt(p.x, p.y)) {
-                            //if(hasFrontierCell) { // && maxGap >= Constants.STEP_SIZE) {
                             // this contour should be added
                             labels = updateLabels(labels, currContour);
                             contourList.add(currContour);

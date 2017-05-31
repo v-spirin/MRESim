@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -42,8 +42,6 @@
  *     If not, see <http://www.gnu.org/licenses/>.
  */
 package config;
-//import java.io.*;
-//import environment.*;
 
 import environment.Environment;
 import java.io.BufferedReader;
@@ -60,7 +58,6 @@ import java.io.PrintWriter;
  */
 public class SimulatorConfig {
 
-// <editor-fold defaultstate="collapsed" desc="Variables and Constructor">
     private boolean logAgents;
     private String logAgentsFilename;
     private boolean logData;
@@ -80,15 +77,21 @@ public class SimulatorConfig {
     private Environment env;
 
     public static enum exptype {
-        BatchRun, RunFromLog, LeaderFollower, FrontierExploration, RoleBasedExploration, Testing
+        BatchRun, RunFromLog, LeaderFollower, FrontierExploration,
+        RoleBasedExploration, Testing, Random, WallFollow
     }
 
     public static enum frontiertype {
         RangeConstrained, PeriodicReturn, ReturnWhenComplete, UtilReturn
     }
+
+    public static enum relaytype {
+        KeyPoints, RangeBorder, Random
+    }
     public double TARGET_INFO_RATIO;
     private exptype expAlgorithm;
     private frontiertype frontierAlgorithm;
+    private relaytype relayAlgorithm;
     private boolean useImprovedRendezvous;
     private boolean allowReplanning;
     private boolean allowRoleSwitch;
@@ -123,6 +126,7 @@ public class SimulatorConfig {
             //set defaults
             expAlgorithm = exptype.RoleBasedExploration;
             frontierAlgorithm = frontiertype.PeriodicReturn;
+            relayAlgorithm = relaytype.Random;
             runFromLogFilename = null;
             commModel = commtype.DirectLine;
             logAgents = false;
@@ -154,7 +158,6 @@ public class SimulatorConfig {
             env = new Environment(Constants.MAX_ROWS, Constants.MAX_COLS);
         }
     }
-// </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
     public boolean useComStations() {
@@ -180,6 +183,7 @@ public class SimulatorConfig {
     public void setCommModel(int n) {
         commModel = commtype.values()[n];
     }
+
     public void setCommModel(commtype com) {
         commModel = com;
     }
@@ -190,6 +194,10 @@ public class SimulatorConfig {
 
     public frontiertype getFrontierAlgorithm() {
         return frontierAlgorithm;
+    }
+
+    public relaytype getRelayAlgorithm() {
+        return relayAlgorithm;
     }
 
     public String getRunFromLogFilename() {
@@ -224,6 +232,14 @@ public class SimulatorConfig {
         frontierAlgorithm = fType;
     }
 
+    public void setRelayAlgorithm(int n) {
+        relayAlgorithm = relaytype.values()[n];
+    }
+
+    public void setRelayAlgorithm(relaytype fType) {
+        relayAlgorithm = fType;
+    }
+
     public int getSimRate() {
         return simRate;
     }
@@ -232,7 +248,7 @@ public class SimulatorConfig {
         simRate = s;
     }
 
-    public Environment getEnv() {
+    public Environment getEnvironment() {
         return env;
     }
 
@@ -424,6 +440,7 @@ public class SimulatorConfig {
 
                 expAlgorithm = exptype.valueOf(inFile.readLine());
                 frontierAlgorithm = frontiertype.valueOf(inFile.readLine());
+                relayAlgorithm = relaytype.valueOf(inFile.readLine());
                 runFromLogFilename = String.valueOf(inFile.readLine());
                 commModel = commtype.valueOf(inFile.readLine());
                 logAgents = Boolean.parseBoolean(inFile.readLine());
@@ -527,13 +544,13 @@ public class SimulatorConfig {
         String oldConfigFilename = System.getProperty("user.dir") + "/config/lastEnvironment.png";
         File file = new File(oldConfigFilename);
         if (file.exists()) {
-            return loadWallConfig(oldConfigFilename);
+            return loadEnvironment(oldConfigFilename);
         } else {
             return false;
         }
     }
 
-    public boolean loadWallConfig(String fileName) {
+    public boolean loadEnvironment(String fileName) {
         env = EnvLoader.loadWallConfig(fileName);
 
         return env != null;
@@ -548,6 +565,7 @@ public class SimulatorConfig {
 
             outFile.println(expAlgorithm.toString());
             outFile.println(frontierAlgorithm.toString());
+            outFile.println(relayAlgorithm.toString());
             outFile.println(runFromLogFilename);
             outFile.println(commModel.toString());
             outFile.println(logAgents);
@@ -590,7 +608,6 @@ public class SimulatorConfig {
     }
 
 // </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Utility">
     @Override
     public String toString() {
         return ("[SimulatorConfig] expAlgorithm: " + expAlgorithm.toString()
@@ -620,6 +637,5 @@ public class SimulatorConfig {
                 + "\n relayExplore: " + relayExplore
                 + "\n exploreReplan: " + exploreReplan);
     }
-// </editor-fold>
 
 }

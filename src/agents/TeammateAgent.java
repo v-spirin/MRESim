@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -53,16 +53,15 @@ import exploration.rendezvous.RendezvousAgentData;
 import java.awt.Point;
 
 /**
- * The TeammateAgent class is used to store the knowledge of an agent about
- * their teammates. Fields in this class represent what the agent can know about
- * their teammates.
+ * The TeammateAgent class is used to store the knowledge of an agent about their teammates. Fields
+ * in this class represent what the agent can know about their teammates.
  *
  * @author julh
  */
 public class TeammateAgent extends Agent {
 
     int timeLastCentralCommand;
-    /* units of time elapsed since command 
+    /* units of time elapsed since command
                                      received from ComStation */
     int lastContactAreaKnown;
     private boolean inRange;
@@ -153,6 +152,10 @@ public class TeammateAgent extends Agent {
         return role.equals(roletype.Explorer);
     }
 
+    public boolean isRelay() {
+        return role.equals(roletype.RelayStation) || role.equals(roletype.BaseStation);
+    }
+
     public void setExplorer() {
         role = roletype.Explorer;
     }
@@ -223,7 +226,7 @@ public class TeammateAgent extends Agent {
 
     @Override
     public void flush() {
-        
+
     }
 
 }

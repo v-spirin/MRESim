@@ -42,7 +42,7 @@
  *     If not, see <http://www.gnu.org/licenses/>.
  */
 
-package exploration;
+package simulator;
 
 import agents.Agent;
 import agents.ComStation;
@@ -61,7 +61,6 @@ import environment.Environment.Status;
 import environment.Frontier;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.RendezvousAgentData;
-import gui.ExplorationImage;
 import gui.MainGUI;
 import java.awt.Point;
 import java.awt.Polygon;
@@ -73,7 +72,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.PriorityQueue;
 import java.util.Random;
 import java.util.Scanner;
 import javax.swing.ImageIcon;
@@ -89,7 +87,6 @@ import path.Path;
  */
 public class SimulationFramework implements ActionListener {
 
-// <editor-fold defaultstate="collapsed" desc="Class variables and Constructors">
     boolean pauseSimulation;                   // For stepping through simulation one step at a time
 
     boolean isBatch;                            // Are we running a batch file
@@ -139,7 +136,7 @@ public class SimulationFramework implements ActionListener {
         mainGUI = maingui;
         image = img;
         simConfig = newSimConfig;
-        env = simConfig.getEnv();
+        env = simConfig.getEnvironment();
         robotTeamConfig = newRobotTeamConfig;
 
         logging_agent = false;
@@ -149,12 +146,12 @@ public class SimulationFramework implements ActionListener {
 
     private void reset() {
         pauseSimulation = false;
-        env = simConfig.getEnv();
+        env = simConfig.getEnvironment();
 
         timeElapsed = 0;
         jointAreaKnown = 1;             // to prevent divide by 0
         pctAreaKnownTeam = 0;
-        totalArea = simConfig.getEnv().getTotalFreeSpace();
+        totalArea = simConfig.getEnvironment().getTotalFreeSpace();
         avgComStationKnowledge = 0;
         avgAgentKnowledge = 0;
         avgTimeLastCommand = 0;
@@ -215,7 +212,6 @@ public class SimulationFramework implements ActionListener {
         }
     }
 
-// </editor-fold>
     public int getTotalArea() {
         return totalArea;
     }
@@ -287,13 +283,13 @@ public class SimulationFramework implements ActionListener {
             // second role switch check (to avoid duplicate relays)
             for (int i = 1; i < numRobots; i++) {
                 for (int j = 1; j < numRobots; j++) {
-                    if (i != j && agent[i].getState() == Agent.ExploreState.ReturnToParent
+                    if (i != j && agent[i].getState() == Agent.AgentState.ReturnToParent
                             && !agent[i].isExplorer()
-                            && agent[j].getState() == Agent.ExploreState.ReturnToParent
+                            && agent[j].getState() == Agent.AgentState.ReturnToParent
                             && !agent[j].isExplorer()
                             && agent[i].getTeammate(agent[j].getID()).isInRange()
                             && agent[i].getPath().getLength() < agent[j].getPath().getLength()) {
-                        agent[i].setState(Agent.ExploreState.GoToChild);
+                        agent[i].setState(Agent.AgentState.GoToChild);
                         agent[i].setStateTimer(0);
                         agent[i].addDirtyCells(agent[i].getPath().getAllPathPixels());
                         if (Constants.DEBUG_OUTPUT) {
@@ -301,10 +297,9 @@ public class SimulationFramework implements ActionListener {
                                     + " and " + agent[j].getName() + "\n");
                         }
                         Path path = agent[i].calculatePath(agent[i].getLocation(),
-                                agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
+                                agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation(), false);
                         agent[i].setPath(path);
-                        agent[i].setCurrentGoal(
-                                agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation());
+
                     }
                 }
             }
@@ -465,7 +460,7 @@ public class SimulationFramework implements ActionListener {
             simConfig.setLogData(true);
             simConfig.setLogScreenshots(true);
 
-            simConfig.loadWallConfig(envDir + "\\" + map);
+            simConfig.loadEnvironment(envDir + "\\" + map);
             robotTeamConfig.loadConfig(envDir + "\\" + conf);
 
             if (Constants.DEBUG_OUTPUT) {
@@ -500,7 +495,7 @@ public class SimulationFramework implements ActionListener {
  /*int map = 2;
         if (runNumber == 1)
         {
-            simConfig.loadWallConfig(root + "maps\\" +  map + ".png");
+            simConfig.loadEnvironment(root + "maps\\" +  map + ".png");
             simConfig.setExpAlgorithm(exptype.RoleBasedExploration);
             simConfig.setRoleSwitchAllowed(true);
             simConfig.setReplanningAllowed(false);
@@ -533,7 +528,6 @@ public class SimulationFramework implements ActionListener {
             reset();
         }
         //simConfig.TARGET_INFO_RATIO = 0.90;
-        RandomWalk.generator.setSeed(Constants.RANDOM_SEED);
         if (Constants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Starting exploration!");
         }
@@ -984,10 +978,10 @@ public class SimulationFramework implements ActionListener {
         //agent1.setStateTimer(15);
         //agent2.setStateTimer(15);
         // exchange frontiers
-        PriorityQueue<Frontier> tempFrontiers = agent1.getFrontiers();
-        agent1.setFrontiers(agent2.getFrontiers());
-        agent2.setFrontiers(tempFrontiers);
-
+        //Should be the same!
+//        PriorityQueue<Frontier> tempFrontiers = agent1.getFrontiers();
+//        agent1.setFrontiers(agent2.getFrontiers());
+//        agent2.setFrontiers(tempFrontiers);
         // exchange childRV
         /*Rendezvous tempChildRV = agent1.getRendezvousAgentData().getChildRendezvous();
         agent1.getRendezvousAgentData().setChildRendezvous(agent2.getRendezvousAgentData().getChildRendezvous());
@@ -1007,7 +1001,7 @@ public class SimulationFramework implements ActionListener {
         agent2.setRendezvousAgentData(tempData);
 
         // exchange exploreState
-        Agent.ExploreState tempExploreState = agent1.getState();
+        Agent.AgentState tempExploreState = agent1.getState();
         agent1.setState(agent2.getState());
         agent2.setState(tempExploreState);
 
@@ -1033,11 +1027,6 @@ public class SimulationFramework implements ActionListener {
         RobotConfig.roletype tempRole = agent1.getRole();
         agent1.setRole(agent2.getRole());
         agent2.setRole(tempRole);
-
-        // exchange current goal (important!)
-        Point tempCurrGoal = agent1.getCurrentGoal();
-        agent1.setCurrentGoal(agent2.getCurrentGoal());
-        agent2.setCurrentGoal(tempCurrGoal);
 
         // set newly calculated path
         agent1.setPath(p1);
@@ -1088,14 +1077,14 @@ public class SimulationFramework implements ActionListener {
         RealAgent agent1 = agent[first];
         RealAgent agent2 = agent[second];
 
-        if ((agent1.getState() == Agent.ExploreState.GetInfoFromChild)
-                || (agent1.getState() == Agent.ExploreState.GiveParentInfo)
-                || (agent1.getState() == Agent.ExploreState.WaitForChild)
-                || (agent1.getState() == Agent.ExploreState.WaitForParent)
-                || (agent2.getState() == Agent.ExploreState.GetInfoFromChild)
-                || (agent2.getState() == Agent.ExploreState.GiveParentInfo)
-                || (agent2.getState() == Agent.ExploreState.WaitForChild)
-                || (agent2.getState() == Agent.ExploreState.WaitForParent)) {
+        if ((agent1.getState() == Agent.AgentState.GetInfoFromChild)
+                || (agent1.getState() == Agent.AgentState.GiveParentInfo)
+                || (agent1.getState() == Agent.AgentState.WaitForChild)
+                || (agent1.getState() == Agent.AgentState.WaitForParent)
+                || (agent2.getState() == Agent.AgentState.GetInfoFromChild)
+                || (agent2.getState() == Agent.AgentState.GiveParentInfo)
+                || (agent2.getState() == Agent.AgentState.WaitForChild)
+                || (agent2.getState() == Agent.AgentState.WaitForParent)) {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println("Not swapping roles, " + agent1 + " is in state " + agent1.getState() + ", " + agent2
                         + "is in state " + agent2.getState());
@@ -1109,10 +1098,10 @@ public class SimulationFramework implements ActionListener {
         }
 
         // Specific scenario which leads to oscillation must be avoided
-        /*if((agent1.isExplorer() && agent1.getState() == ExploreState.Explore &&
-           !agent2.isExplorer() && agent2.getState() == ExploreState.GoToChild) ||
-           (agent2.isExplorer() && agent2.getState() == ExploreState.Explore &&
-           !agent1.isExplorer() && agent1.getState() == ExploreState.GoToChild))
+        /*if((agent1.isExplorer() && agent1.getState() == AgentState.Explore &&
+           !agent2.isExplorer() && agent2.getState() == AgentState.GoToChild) ||
+           (agent2.isExplorer() && agent2.getState() == AgentState.Explore &&
+           !agent1.isExplorer() && agent1.getState() == AgentState.GoToChild))
              return false;*/
  /* path.Path path1 = new path.Path(agent1.getOccupancyGrid(), agent1.getLocation(), agent1.getCurrentGoal());
         path.Path path2 = new path.Path(agent2.getOccupancyGrid(), agent2.getLocation(), agent2.getCurrentGoal());
@@ -1125,10 +1114,10 @@ public class SimulationFramework implements ActionListener {
             return true;
         }*/
         try {
-            Path path_a1g2 = agent1.calculatePath(agent1.getLocation(), agent2.getCurrentGoal());
-            Path path_a2g1 = agent2.calculatePath(agent2.getLocation(), agent1.getCurrentGoal());
-            double agent1_goal1 = agent1.getPath().recalcLength();
-            double agent2_goal2 = agent2.getPath().recalcLength();
+            Path path_a1g2 = agent1.calculatePath(agent1.getLocation(), agent2.getCurrentGoal(), false);
+            Path path_a2g1 = agent2.calculatePath(agent2.getLocation(), agent1.getCurrentGoal(), false);
+            double agent1_goal1 = agent1.getPath().getLength();
+            double agent2_goal2 = agent2.getPath().getLength();
             double agent1_goal2 = path_a1g2.getLength();
             double agent2_goal1 = path_a2g1.getLength();
 
@@ -1147,18 +1136,18 @@ public class SimulationFramework implements ActionListener {
             if (simConfig.strictRoleSwitch()) {
 
                 // Case 1:  Two explorers both in state explore
-                if (agent1.isExplorer() && agent1.getState() == Agent.ExploreState.Explore
-                        && agent2.isExplorer() && agent2.getState() == Agent.ExploreState.Explore) {
+                if (agent1.isExplorer() && agent1.getState() == Agent.AgentState.Explore
+                        && agent2.isExplorer() && agent2.getState() == Agent.AgentState.Explore) {
 
                     Path rv1ToCS = agent1.calculatePath(agent1.getRendezvousAgentData().getParentRendezvous().getParentLocation(),
-                            agent1.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
+                            agent1.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), false);
                     Path rv2ToCS = agent2.calculatePath(agent2.getRendezvousAgentData().getParentRendezvous().getParentLocation(),
-                            agent2.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
+                            agent2.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), false);
 
                     Path a1ToRV2 = agent1.calculatePath(agent1.getLocation(),
-                            agent2.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+                            agent2.getRendezvousAgentData().getParentRendezvous().getChildLocation(), false);
                     Path a2ToRV1 = agent2.calculatePath(agent2.getLocation(),
-                            agent1.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+                            agent1.getRendezvousAgentData().getParentRendezvous().getChildLocation(), false);
 
                     double noRoleSwitch = Math.max(agent1.getRendezvousAgentData().getTimeUntilRendezvous() + rv1ToCS.getLength(),
                             agent2.getRendezvousAgentData().getTimeUntilRendezvous() + rv2ToCS.getLength());
@@ -1436,96 +1425,8 @@ public class SimulationFramework implements ActionListener {
     }
 // </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Utility">
     @Override
     public String toString() {
         return ("[Simulator] ");
     }
-// </editor-fold>
-
-// <editor-fold defaultstate="collapsed" desc="Debris">
-    private void simulateDebris() {
-        int debrisSize, currX, currY, nextX, nextY;
-
-        /* The below puts random debris anywhere
-        // according to constant NEW_DEBRIS_LIKELIHOOD, add debris
-        if(random.nextInt(100) < (int)(Constants.NEW_DEBRIS_LIKELIHOOD * 100)) {
-            debrisSize = random.nextInt(Constants.NEW_DEBRIS_MAX_SIZE) + 1;
-
-            System.out.println(this.toString() + "Adding random debris of size " + debrisSize + "!");
-
-            currX = random.nextInt(env.getColumns());
-            currY = random.nextInt(env.getRows());
-
-            for(int i=0; i<debrisSize; i++) {
-                env.setStatus(currY, currX, Status.obstacle);
-                do {
-                    nextX = currX + random.nextInt(3) - 1;
-                    nextY = currY + random.nextInt(3) - 1;
-                }
-                while(!env.locationExists(nextX, nextY));
-                currX = nextX;
-                currY = nextY;
-            }
-        } */
-
- /* The below is purely for the aisleRoom environment */
-        // Gate 1
-        /*if(debrisTimer[0] <= 0) {
-            if(random.nextInt(100) < 5) {
-                closeGate(46);
-                debrisTimer[0] = 10;
-            }
-        }
-        else if(debrisTimer[0] == 1) {
-            openGate(46);
-            debrisTimer[0] = 0;
-        }
-        else
-            debrisTimer[0]--;
-
-        if(debrisTimer[1] <= 0) {
-            if(random.nextInt(100) < 5) {
-                closeGate(121);
-                debrisTimer[0] = 10;
-            }
-        }
-        else if(debrisTimer[1] == 1) {
-            openGate(121);
-            debrisTimer[1] = 0;
-        }
-        else
-            debrisTimer[1]--;
-
-        if(debrisTimer[2] <= 0) {
-            if(random.nextInt(100) < 5) {
-                closeGate(196);
-                debrisTimer[0] = 10;
-            }
-        }
-        else if(debrisTimer[2] == 1) {
-            openGate(196);
-            debrisTimer[2] = 0;
-        }
-        else
-            debrisTimer[2]--;*/
-    }
-
-    private void closeGate(int yTop) {
-        for (int i = yTop; i < yTop + 67; i++) {
-            for (int j = 250; j < 258; j++) {
-                env.setStatus(j, i, Status.obstacle);
-            }
-        }
-    }
-
-    private void openGate(int yTop) {
-        for (int i = yTop; i < yTop + 67; i++) {
-            for (int j = 250; j < 258; j++) {
-                env.setStatus(j, i, Status.explored);
-            }
-        }
-    }
-
-// </editor-fold>
 }

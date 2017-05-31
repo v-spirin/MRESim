@@ -49,15 +49,16 @@ import agents.RealAgent;
 import config.Constants;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
-import exploration.SimulationFramework;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import simulator.ExplorationImage;
+import simulator.SimulationFramework;
 
 /**
  * Run simulation without GUI. Main-method, startable
  *
- * @author Christian
+ * @author Christian Clausen
  */
 public class MainConsole extends MainGUI implements Runnable {
 
@@ -68,7 +69,7 @@ public class MainConsole extends MainGUI implements Runnable {
     private boolean loaded = false;
 
     /**
-     * Start simulation
+     * Start simulation without GUI
      *
      * @param args none
      */
@@ -93,7 +94,7 @@ public class MainConsole extends MainGUI implements Runnable {
         this.threadName = name;
         robotTeamConfig = new RobotTeamConfig();
         simConfig = new SimulatorConfig();
-        explorationImage = new ExplorationImage(simConfig.getEnv());
+        explorationImage = new ExplorationImage(simConfig.getEnvironment());
         new File(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName).mkdir();
     }
 
@@ -139,10 +140,12 @@ public class MainConsole extends MainGUI implements Runnable {
     @Override
     public void runComplete(RealAgent[] agent, int timeElapsed, double pctAreaKnownTeam, int avgCycleTime) {
         simulation.logScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
-        System.out.format("%s\nCycle: %d\n"
-                + "AreaKnown: %d%%\n"
-                + "AvgTime/Cycle: %d",
-                new Object[]{Thread.currentThread().getName(), timeElapsed, Math.round(pctAreaKnownTeam), avgCycleTime});
+
+        System.out.format("%s\n"
+                + "\tCycle: %d\n"
+                + "\tAreaKnown: %d%%\n"
+                + "\tAvgTime/Cycle: %d\n\n",
+                new Object[]{threadName, timeElapsed, Math.round(pctAreaKnownTeam), avgCycleTime});
         LOGGER.log(Level.FINE, "{0} finished", this.threadName);
         this.exploreLog.writeLog(timeElapsed);
         if (!batch) {

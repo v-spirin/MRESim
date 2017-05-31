@@ -83,18 +83,18 @@ public class RoleBasedExploration extends FrontierExploration {
         // simulator isn't allowing him to go through.  Taking a random step might
         // help.
         // Update:  this state is never really reached but leave in just in case
-        if (agent.getEnvError() && (agent.getState() != Agent.ExploreState.GetInfoFromChild)
-                && (agent.getState() != Agent.ExploreState.GiveParentInfo)
-                && (agent.getState() != Agent.ExploreState.WaitForChild)
-                && (agent.getState() != Agent.ExploreState.WaitForParent)) {
+        if (agent.getEnvError() && (agent.getState() != Agent.AgentState.GetInfoFromChild)
+                && (agent.getState() != Agent.AgentState.GiveParentInfo)
+                && (agent.getState() != Agent.AgentState.WaitForChild)
+                && (agent.getState() != Agent.AgentState.WaitForParent)) {
             System.out.println(agent.toString()
                     + "!!!RoleBasedExploration: Env reports error, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.setEnvError(false);
             return nextStep;
         }
 
-        //Run correct takeStep function depending on agent state, set nextStep to output
+        //Run correct randomStep function depending on agent state, set nextStep to output
         switch (agent.getState()) {
             case Initial:
                 nextStep = takeStep_Initial();
@@ -127,7 +127,7 @@ public class RoleBasedExploration extends FrontierExploration {
         // this shouldn't happen, looks like one of takeSteps returned an error
         if (nextStep == null) {
             System.out.println(agent.toString() + "!!!RoleBasedExploration: nextStep is null, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
         }
 
         agent.setStateTimer(agent.getStateTimer() + 1);
@@ -142,20 +142,20 @@ public class RoleBasedExploration extends FrontierExploration {
         // <editor-fold defaultstate="collapsed" desc="First 3 steps? Explorers take 2 random steps while others wait, then everyone takes a random step">
         if (agent.getStateTimer() < 2) {
             if (agent.isExplorer()) {
-                return RandomWalk.takeStep(agent);
+                return RandomWalk.randomStep(agent);
             } else {
                 return (agent.getLocation());
             }
         } else if (agent.getStateTimer() < 3) {
-            return RandomWalk.takeStep(agent);
+            return RandomWalk.randomStep(agent);
         } // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="Otherwise? Explorers go into Explore state, others go into GoToChild state. Explorers replan using FrontierExploration, others do nothing.">
         else if (agent.isExplorer()) {
-            agent.setState(RealAgent.ExploreState.Explore);
+            agent.setState(RealAgent.AgentState.Explore);
             agent.getStats().setTimeSinceLastPlan(0);
             return replan(0);
         } else {
-            agent.setState(RealAgent.ExploreState.GoToChild);
+            agent.setState(RealAgent.AgentState.GoToChild);
             agent.setStateTimer(0);
             return (agent.getLocation());
         }
@@ -174,7 +174,7 @@ public class RoleBasedExploration extends FrontierExploration {
                     haveNewRVDetailsForParent || noRVAgreed) {
                 System.out.println(agent + "[" + agent.getID() + "]" + " is in range with parent " + agent.getParentTeammate()
                         + ", switching state to GiveParentInfo");
-                agent.setState(RealAgent.ExploreState.GiveParentInfo);
+                agent.setState(RealAgent.AgentState.GiveParentInfo);
                 agent.setStateTimer(0);
                 return (takeStep_GiveParentInfo());
             }
@@ -189,15 +189,15 @@ public class RoleBasedExploration extends FrontierExploration {
                     && //and we haven't been in GetInfoFromChild state with this child
                     //in the last MIN_TIME_IN_EXPLORE_STATE steps
                     agent.getTimeSinceGetChildInfo() > mintimeinexplorestate) /*&& !agent.getParentTeammate().isInRange()*/) {
-                agent.setState(RealAgent.ExploreState.GetInfoFromChild);
+                agent.setState(RealAgent.AgentState.GetInfoFromChild);
                 agent.setStateTimer(0);
 
                 return takeStep_GetInfoFromChild();
             }
             if ((agent.getStateTimer() % Constants.CHECK_INTERVAL_TIME_TO_RV) == (Constants.CHECK_INTERVAL_TIME_TO_RV - 1)) {
-                Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
+                Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation(), false);
                 if ((path.getLength() / Constants.DEFAULT_SPEED) + agent.getTimeElapsed() >= rvd.getChildRendezvous().getTimeMeeting()) {
-                    agent.setState(Agent.ExploreState.GoToChild);
+                    agent.setState(Agent.AgentState.GoToChild);
                     return takeStep_GoToChild();
                 }
             }
@@ -215,7 +215,7 @@ public class RoleBasedExploration extends FrontierExploration {
                 agent.getRendezvousStrategy().processExplorerCheckDueReturnToRV();
                 if (isDueToReturnToRV(outPathRef)) {
                     pathToParentRendezvous = outPathRef.get();
-                    agent.setState(RealAgent.ExploreState.ReturnToParent);
+                    agent.setState(RealAgent.AgentState.ReturnToParent);
 
                     agent.getRendezvousStrategy().processExplorerStartsHeadingToRV();
 
@@ -223,17 +223,16 @@ public class RoleBasedExploration extends FrontierExploration {
                         agent.addDirtyCells(agent.getPath().getAllPathPixels());
                     }
 
-                    if (agent.getState() == RealAgent.ExploreState.ReturnToParent) {
+                    if (agent.getState() == RealAgent.AgentState.ReturnToParent) {
                         if ((pathToParentRendezvous == null) || (!pathToParentRendezvous.found)
                                 || (pathToParentRendezvous.getPoints().isEmpty())) {
                             //take random step and try again
-                            agent.setState(Agent.ExploreState.Explore);
+                            agent.setState(Agent.AgentState.Explore);
                             agent.setStateTimer(Constants.CHECK_INTERVAL_TIME_TO_RV - 2);
-                            return RandomWalk.takeStep(agent);
+                            return RandomWalk.randomStep(agent);
                         } else {
                             agent.setPath(pathToParentRendezvous);
                             agent.setStateTimer(0);
-                            agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
                             return ((Point) agent.getPath().getPoints().remove(0));
                         }
                     }
@@ -248,11 +247,10 @@ public class RoleBasedExploration extends FrontierExploration {
                         agent.addDirtyCells(agent.getPath().getAllPathPixels());
                     }
                     agent.setPath(pathToParentRendezvous);
-                    agent.setState(RealAgent.ExploreState.ReturnToParent);
+                    agent.setState(RealAgent.AgentState.ReturnToParent);
                     agent.setStateTimer(0);
 
 
-                    agent.setCurrentGoal(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
                     return ((Point) agent.getPath().getPoints().remove(0));
                 }
             }*/
@@ -264,15 +262,14 @@ public class RoleBasedExploration extends FrontierExploration {
 
         //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
         if (timeElapsed > 100) { //prevent setting mission complete at the very start of the exploration
-            if ((agent.getFrontiers().isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
-                Path pathToParentRendezvous = agent.calculatePath(agent.getLocation(), agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());//rvd.getParentRendezvous().getChildLocation());
+            if ((frontiers.isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
+                Path pathToParentRendezvous = agent.calculatePath(agent.getLocation(), agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), false);//rvd.getParentRendezvous().getChildLocation());
                 agent.setPath(pathToParentRendezvous);
-                agent.setState(RealAgent.ExploreState.ReturnToParent);
+                agent.setState(RealAgent.AgentState.ReturnToParent);
                 System.out.println(agent + "RB Explore setting mission complete, returning to base");
                 agent.setMissionComplete(true);
                 agent.setStateTimer(0);
 
-                agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
                 return ((Point) agent.getPath().getPoints().remove(0));
                 /*
                 agent.setMissionComplete();
@@ -280,17 +277,15 @@ public class RoleBasedExploration extends FrontierExploration {
                 agent.addDirtyCells(agent.getPath().getAllPathPixels());
                 Path path = agent.calculatePath(agent.getLocation(), agent.getParentRendezvous().getChildLocation());
                 agent.setPath(path);
-                agent.setState(RealAgent.ExploreState.ReturnToParent);
+                agent.setState(RealAgent.AgentState.ReturnToParent);
                 agent.setStateTimer(0);
 
                 if(agent.getPath().getPoints() != null) {
-                    agent.setCurrentGoal(agent.getParentRendezvous().getChildLocation());
                     return((Point)agent.getPath().getPoints().remove(0));
                 }
                 else {
                     System.out.println(agent.toString() + "!!!Nothing left to explore, but cannot plan path to parent!!!");
-                    nextStep = RandomWalk.takeStep(agent);
-                    agent.setCurrentGoal(nextStep);
+                    nextStep = RandomWalk.randomStep(agent);
                     return(nextStep);
                 }*/
             }
@@ -303,7 +298,7 @@ public class RoleBasedExploration extends FrontierExploration {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="If parent is in range, GiveParentInfo">
         if (agent.getParentTeammate().isInRange()) {
-            agent.setState(RealAgent.ExploreState.GiveParentInfo);
+            agent.setState(RealAgent.AgentState.GiveParentInfo);
             agent.setStateTimer(0);
             return takeStep_GiveParentInfo();
         }
@@ -326,7 +321,7 @@ public class RoleBasedExploration extends FrontierExploration {
 
             agent.getRendezvousStrategy().processReturnToParentReplan();
 
-            Path path = agent.calculatePath(agent.getLocation(), rvd.getParentRendezvous().getChildLocation());
+            Path path = agent.calculatePath(agent.getLocation(), rvd.getParentRendezvous().getChildLocation(), false);
             //<editor-fold defaultstate="collapsed" desc="If path not found, try A*">
             if (!path.found) {
                 System.out.println(agent.toString() + "ERROR!  Could not find full path! Trying pure A*");
@@ -338,15 +333,12 @@ public class RoleBasedExploration extends FrontierExploration {
                 System.out.println(agent.toString() + "!!!ERROR!  Could not find full path!");
                 if ((existingPath != null) && (existingPath.getPoints().size() > 2)) {
                     agent.setPath(existingPath);
-                    agent.setCurrentGoal(existingPath.getGoalPoint());
                 } else {
-                    agent.setCurrentGoal(agent.getLocation());
-                    return RandomWalk.takeStep(agent);
+                    return RandomWalk.randomStep(agent);
                 }
             } //</editor-fold>
             else {
                 agent.setPath(path);
-                agent.setCurrentGoal(rvd.getParentRendezvous().getChildLocation());
                 // Must remove first point in path as this is robot's location.
                 agent.getPath().getPoints().remove(0);
             }
@@ -362,11 +354,11 @@ public class RoleBasedExploration extends FrontierExploration {
         // Just check to make sure we are though and if not take random step.
         if (agent.getLocation().distance(rvd.getParentRendezvous().getChildLocation()) > 2 * Constants.STEP_SIZE) {
             System.out.println(agent.toString() + "!!!ERROR! We should have reached parent RV, but we are too far from it! Taking random step");
-            return RandomWalk.takeStep(agent);
+            return RandomWalk.randomStep(agent);
         }
 
         // If we reach this point, we're at the rendezvous point and waiting.
-        agent.setState(RealAgent.ExploreState.WaitForParent);
+        agent.setState(RealAgent.AgentState.WaitForParent);
         agent.setStateTimer(0);
         return new Point(agent.getX(), agent.getY());
     }
@@ -375,7 +367,7 @@ public class RoleBasedExploration extends FrontierExploration {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="If parent is in range, GiveParentInfo">
         if (agent.getParentTeammate().isInRange()) {
-            agent.setState(RealAgent.ExploreState.GiveParentInfo);
+            agent.setState(RealAgent.AgentState.GiveParentInfo);
             agent.setStateTimer(0);
             return takeStep_GiveParentInfo();
         }
@@ -397,7 +389,7 @@ public class RoleBasedExploration extends FrontierExploration {
                 agent.getRendezvousAgentData().setParentBackupRendezvous(null);
             }
             System.out.println(agent + " has no backup RV, exploring.");
-            agent.setState(RealAgent.ExploreState.Explore);
+            agent.setState(RealAgent.AgentState.Explore);
             agent.setStateTimer(0);
             return takeStep_Explore();
         }
@@ -410,18 +402,16 @@ public class RoleBasedExploration extends FrontierExploration {
             agent.setParent(Constants.BASE_STATION_TEAMMATE_ID);
             agent.getRendezvousAgentData().setParentRendezvous(new Rendezvous(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation()));
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
-            Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
+            Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation(), false);
             agent.setPath(path);
             // must remove first point as this is agent's location
             agent.getPath().getPoints().remove(0); // TODO: can be null pointer exception here
-            agent.setState(RealAgent.ExploreState.ReturnToParent);
+            agent.setState(RealAgent.AgentState.ReturnToParent);
             agent.setStateTimer(0);
 
             if (agent.getPath().getPoints().size() > 0) {
-                agent.setCurrentGoal(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
                 return ((Point) agent.getPath().getPoints().remove(0));
             } else {
-                agent.setCurrentGoal(agent.getLocation());
                 return (agent.getLocation());
             }
         }
@@ -447,7 +437,7 @@ public class RoleBasedExploration extends FrontierExploration {
             if (agent.isExplorer()) {
                 agent.getRendezvousStrategy().processAfterGiveParentInfoExplorer(timeElapsed);
 
-                agent.setState(RealAgent.ExploreState.Explore);
+                agent.setState(RealAgent.AgentState.Explore);
                 agent.setStateTimer(0);
 
                 return takeStep_Explore();
@@ -456,7 +446,7 @@ public class RoleBasedExploration extends FrontierExploration {
                 //<editor-fold defaultstate="collapsed" desc="Relay - process & go to child">
                 //--the below section is for logging only
                 //---------------------------------------
-                Path pathToMeeting = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
+                Path pathToMeeting = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), false);
                 //Check if we have at least T=15 timesteps to spare.
                 int timeMeeting = agent.getRendezvousAgentData().getChildRendezvous().getTimeMeeting();
                 int spareTime = (int) Math.round((pathToMeeting.getLength() / Constants.DEFAULT_SPEED) + agent.getTimeElapsed() - timeMeeting);
@@ -465,23 +455,22 @@ public class RoleBasedExploration extends FrontierExploration {
                 //--end of section-----------------------
 
                 agent.getRendezvousStrategy().processAfterGiveParentInfoRelay();
-                if (agent.getState() == RealAgent.ExploreState.Explore) {
+                if (agent.getState() == RealAgent.AgentState.Explore) {
                     agent.setStateTimer(0);
                     return takeStep_Explore();
                 }
-                agent.setState(RealAgent.ExploreState.GoToChild);
+                agent.setState(RealAgent.AgentState.GoToChild);
                 agent.setStateTimer(0);
                 agent.addDirtyCells(agent.getPath().getAllPathPixels());
-                Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
+                Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), false);
                 agent.setPath(path);
-                agent.setCurrentGoal(agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
 
                 if (path.found) {
                     // stay in comm range with base, till it's time to go meet child
                     /*double estTimeToRV = (path.getLength() / Constants.DEFAULT_SPEED) + timeElapsed;
                     if (estTimeToRV < agent.getChildRendezvous().getTimeMeeting())
                     {
-                        agent.setState(RealAgent.ExploreState.GiveParentInfo);
+                        agent.setState(RealAgent.AgentState.GiveParentInfo);
                         agent.setStateTimer(0);
                         return agent.getLocation();
                     } else*/
@@ -494,12 +483,10 @@ public class RoleBasedExploration extends FrontierExploration {
                     //<editor-fold defaultstate="collapsed" desc="If path still not found, take random step">
                     if (!path.found) {
                         System.out.println(agent.toString() + "!!!ERROR!  Could not find full path! Taking random step");
-                        agent.setCurrentGoal(agent.getLocation());
-                        return RandomWalk.takeStep(agent);
+                        return RandomWalk.randomStep(agent);
                     } else {
                         System.out.println(agent.toString() + "Pure A* worked");
                         agent.setPath(path);
-                        agent.setCurrentGoal(agent.getRendezvousAgentData().getChildRendezvous().getParentLocation());
                         return ((Point) agent.getPath().getPoints().remove(0));
                     }
                     //</editor-fold>
@@ -512,7 +499,7 @@ public class RoleBasedExploration extends FrontierExploration {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //<editor-fold defaultstate="collapsed" desc="Check if we are in range of child. If yes, GetInfoFromChild">
         if ((agent.getChildTeammate().isInRange()) /*&& !agent.getParentTeammate().isInRange()*/) {
-            agent.setState(RealAgent.ExploreState.GetInfoFromChild);
+            agent.setState(RealAgent.AgentState.GetInfoFromChild);
             agent.setStateTimer(0);
 
             return takeStep_GetInfoFromChild();
@@ -529,7 +516,7 @@ public class RoleBasedExploration extends FrontierExploration {
             Path path = agent.getRendezvousStrategy().processGoToChildReplan();
 
             if (path == null) {
-                path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation());
+                path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation(), false);
             }
             //<editor-fold defaultstate="collapsed" desc="Could not find full path! Trying pure A*">
             if (!path.found) {
@@ -542,15 +529,12 @@ public class RoleBasedExploration extends FrontierExploration {
                 System.out.println(agent.toString() + "!!!ERROR!  Could not find full path!");
                 if ((existingPath != null) && (existingPath.getPoints().size() > 2)) {
                     agent.setPath(existingPath);
-                    agent.setCurrentGoal(existingPath.getGoalPoint());
                 } else {
-                    agent.setCurrentGoal(agent.getLocation());
-                    return RandomWalk.takeStep(agent);
+                    return RandomWalk.randomStep(agent);
                 }
                 //</editor-fold>
             } else {
                 agent.setPath(path);
-                agent.setCurrentGoal(rvd.getChildRendezvous().getParentLocation());
                 // Must remove first point in path as this is robot's location.
                 agent.getPath().getPoints().remove(0);
             }
@@ -568,11 +552,11 @@ public class RoleBasedExploration extends FrontierExploration {
                 && (agent.getLocation().distance(rvd.getChildRendezvous().getChildLocation()) > 2 * Constants.STEP_SIZE)) {
             System.out.println(agent.toString()
                     + "!!!ERROR! We should have reached child RV, but we are too far from it! Taking random step");
-            return RandomWalk.takeStep(agent);
+            return RandomWalk.randomStep(agent);
         }
 
         // If we reach this point, we're at the rendezvous point and waiting.
-        agent.setState(RealAgent.ExploreState.WaitForChild);
+        agent.setState(RealAgent.AgentState.WaitForChild);
         agent.setStateTimer(0);
 
         return new Point(agent.getX(), agent.getY());
@@ -581,7 +565,7 @@ public class RoleBasedExploration extends FrontierExploration {
     public Point takeStep_WaitForChild() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         if (agent.getChildTeammate().isInRange()) {
-            agent.setState(RealAgent.ExploreState.GetInfoFromChild);
+            agent.setState(RealAgent.AgentState.GetInfoFromChild);
             agent.setStateTimer(0);
             return takeStep_GetInfoFromChild();
         }
@@ -596,7 +580,7 @@ public class RoleBasedExploration extends FrontierExploration {
             if (rvd.getChildBackupRendezvous() != null) {
                 rvd.setChildRendezvous(rvd.getChildBackupRendezvous());
                 rvd.setChildBackupRendezvous(null);
-                agent.setState(RealAgent.ExploreState.GoToChild);
+                agent.setState(RealAgent.AgentState.GoToChild);
                 agent.setStateTimer(0);
                 return takeStep_GoToChild();
             } else {
@@ -610,19 +594,18 @@ public class RoleBasedExploration extends FrontierExploration {
 
         if (agent.getStateTimer() == 0) {
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
-            Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
-            /*if (agent.getChildTeammate().getState() == Agent.ExploreState.GiveParentInfo) {
+            Path path = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getParentRendezvous().getChildLocation(), false);
+            /*if (agent.getChildTeammate().getState() == Agent.AgentState.GiveParentInfo) {
                 agent.setTimeSinceGetChildInfo(0);
             }*/
             agent.setPath(path);
             agent.setStateTimer(1);
-            agent.setCurrentGoal(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
             return agent.getLocation();
         } else {
-            if (agent.getChildTeammate().getState() == Agent.ExploreState.GiveParentInfo) {
+            if (agent.getChildTeammate().getState() == Agent.AgentState.GiveParentInfo) {
                 agent.setTimeSinceGetChildInfo(0);
             }
-            agent.setState(RealAgent.ExploreState.ReturnToParent);
+            agent.setState(RealAgent.AgentState.ReturnToParent);
             return takeStep_ReturnToParent();
         }
     }
@@ -631,7 +614,7 @@ public class RoleBasedExploration extends FrontierExploration {
     private boolean isDueToReturnToRV(AtomicReference<Path> outPathToParentRendezvous) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         System.out.println(agent.toString() + "Checking if it's time to rendezvous ... ");
-        Path pathToParentRendezvous = agent.calculatePath(agent.getLocation(), rvd.getParentRendezvous().getChildLocation());
+        Path pathToParentRendezvous = agent.calculatePath(agent.getLocation(), rvd.getParentRendezvous().getChildLocation(), false);
         System.out.println(Constants.INDENT + "rendezvous is " + (int) pathToParentRendezvous.getLength()
                 + " away, time left is " + (rvd.getParentRendezvous().getTimeMeeting() - timeElapsed)
                 + " (meeting scheduled at " + rvd.getParentRendezvous().getTimeMeeting() + ")");

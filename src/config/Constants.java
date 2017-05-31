@@ -298,17 +298,31 @@ public class Constants {
      */
     public static final long MAX_TIME_DISTANCE_BY_SKELETON = 100;
 
+    /**
+     * Time an agent needs to drop a ComStation (including the current one).
+     */
+    public static int COM_STATION_DROP_TIME = 2;
+
     public static final boolean OUTPUT_PATH_ERROR = false;
     public static final String DEFAULT_PATH_LOG_DIRECTORY
             = Paths.get(System.getProperty("user.dir"), "patherror").toString() + File.separator;
     public static final String DEFAULT_LOG_DIRECTORY
             = Paths.get(System.getProperty("user.dir"), "logs").toString() + File.separator;
+    public static final String DEFAULT_ENV_DIRECTORY
+            = Paths.get(System.getProperty("user.dir"), "environments").toString() + File.separator;
+    public static String DEFAULT_CONF_DIRECTORY
+            = Paths.get(System.getProperty("user.dir"), "config").toString() + File.separator;
     public static final String DEFAULT_IMAGE_LOG_DIRECTORY
             = Paths.get(System.getProperty("user.dir"), "logs", "images").toString() + File.separator;
     public static int MAXIMUM_TIME = 3000;
     public static double HANDOVER_RANGE = 8;
     public static double FRONTIER_PERIODIC_RETURN = 50;
     public static boolean PROFILING = false;
+    /**
+     * Minimum distance from one KeyPoint to the next. Default: 20
+     */
+    public static double KEY_POINT_DISTANCE = 25;
+    public static double MIN_RELAY_DISTANCE = 50;
 
     /**
      * Colors to be used on map.

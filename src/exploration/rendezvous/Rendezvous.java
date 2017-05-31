@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -53,8 +53,8 @@ import java.util.LinkedList;
 import java.util.Objects;
 
 /**
- * Rendezvous describes a rendezvous location, and includes information about
- * where each agent should head to.
+ * Rendezvous describes a rendezvous location, and includes information about where each agent
+ * should head to.
  *
  * @author Victor
  */
@@ -123,13 +123,10 @@ public class Rendezvous {
         return hash;
     }
 
-    // find the second RV point in a pair (one agent goes to the first point, other goes to the second)
-    // The second point is found through wall, within comm range, that gives an advantage heading to the goal
-
-    /**  find the second RV point in a pair. 
-     * (one agent goes to the first point, other goes to the second)
-     * The second point is found through wall, within comm range, 
-     * that gives an advantage heading to the goal
+    /**
+     * find the second RV point in a pair. (one agent goes to the first point, other goes to the
+     * second) The second point is found through wall, within comm range, that gives an advantage
+     * heading to the goal
      *
      * @param agent
      * @param firstRV
@@ -146,10 +143,10 @@ public class Rendezvous {
 
         int pointSkip = 1;
 
-        /*Polygon commPoly = PropModel1.getRangeForRV(occGrid, 
-                new Agent(0, "", 0, firstRV.x, firstRV.y, 0, 0, 
-                        Math.min(agent.getCommRange(), 
-                                agent.getParentTeammate().getCommRange()), 0, 
+        /*Polygon commPoly = PropModel1.getRangeForRV(occGrid,
+                new Agent(0, "", 0, firstRV.x, firstRV.y, 0, 0,
+                        Math.min(agent.getCommRange(),
+                                agent.getParentTeammate().getCommRange()), 0,
                         RobotConfig.roletype.Relay, 0, 0, 0)
                 );*/
         Polygon commPoly = PropModel1.getRangeForRV(occGrid,
@@ -161,7 +158,7 @@ public class Rendezvous {
             Point p = new Point(commPoly.xpoints[i], commPoly.ypoints[i]);
             if (occGrid.freeSpaceAt(p.x, p.y) /*&& !env.directLinePossible(firstRV.x, firstRV.y, p.x, p.y)*/) {
                 if (counter % pointSkip == 0) {
-                    if (!occGrid.directLinePossible(firstRV.x, firstRV.y, p.x, p.y)) {
+                    if (!occGrid.directLinePossible(firstRV.x, firstRV.y, p.x, p.y, true, false)) {
                         candidatePoints.add(p);
                     } else {
 //                        directPoints.add(p);
@@ -177,10 +174,10 @@ public class Rendezvous {
         Point secondRV = firstRV;
 
         if (candidatePoints.size() > 0) {
-            double minDistance = agent.calculatePath(firstRV, goal).getLength();
+            double minDistance = agent.calculatePath(firstRV, goal, false).getLength();
 
             for (Point p : candidatePoints) {
-                double distance = agent.calculatePath(p, goal).getLength();
+                double distance = agent.calculatePath(p, goal, false).getLength();
                 if (distance < minDistance) {
                     minDistance = distance;
                     secondRV = p;
@@ -198,7 +195,7 @@ public class Rendezvous {
                     minDistanceDirect = distance;
                 }
             }*/
-            minDistanceDirect = agent.calculatePath(firstRV, goal).getLength() - (agent.getCommRange() / Constants.DEFAULT_SPEED);
+            minDistanceDirect = agent.calculatePath(firstRV, goal, false).getLength() - (agent.getCommRange() / Constants.DEFAULT_SPEED);
 
             //System.out.println("2, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
             //realtimeStart = System.currentTimeMillis();
@@ -240,7 +237,7 @@ public class Rendezvous {
     /*public void setMinTimeMeeting(int minTimeMeeting) {
         this.minTimeMeeting = minTimeMeeting;
     }
-    
+
     public int getMinTimeMeeting() {
         return minTimeMeeting;
     }*/

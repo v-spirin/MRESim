@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -190,7 +190,7 @@ public class OccupancyGrid {
                         }
                         if (partnerOccGrid.obstacleAt(i, j)) {
                             if (this.safeSpaceAt(i, j) && (!this.obstacleAt(i, j))) {
-                                //Both think it's safe space, partner thinks it's obstacle, we think it's free                                
+                                //Both think it's safe space, partner thinks it's obstacle, we think it's free
                             } else {
                                 this.setNoFreeSpaceAt(i, j);
                                 this.setObstacleAt(i, j);
@@ -218,7 +218,7 @@ public class OccupancyGrid {
                             }
                         }
                     }
-                    /*   
+                    /*
                     if (partnerOccGrid.freeSpaceAt(i, j) && (!this.obstacleAt(i, j))) {
                         this.setFreeSpaceAt(i, j);
                     }
@@ -251,7 +251,7 @@ public class OccupancyGrid {
 
     public boolean frontierCellAt(int xCoord, int yCoord) {
         return //(
-                //freeSpaceAt(xCoord, yCoord) && 
+                //freeSpaceAt(xCoord, yCoord) &&
                 //!safeSpaceAt(xCoord, yCoord) &&
                 //!obstacleAt(xCoord, yCoord)
                 //) ||
@@ -302,6 +302,10 @@ public class OccupancyGrid {
         return (!freeSpaceAt(xCoord, yCoord)
                 && //!safeSpaceAt(xCoord, yCoord) &&
                 !obstacleAt(xCoord, yCoord));
+    }
+
+    public boolean freeSpaceAt(Point p) {
+        return freeSpaceAt((int) p.getX(), (int) p.getY());
     }
 
     public boolean freeSpaceAt(int xCoord, int yCoord) {
@@ -478,6 +482,10 @@ public class OccupancyGrid {
         //setFreeSpaceAt(xCoord, yCoord);
     }
 
+    public boolean obstacleAt(Point p) {
+        return obstacleAt((int) p.getX(), (int) p.getY());
+    }
+
     public boolean obstacleAt(int xCoord, int yCoord) {
         return getBit(xCoord, yCoord, OccGridBit.Obstacle.ordinal()) == 1;
     }
@@ -547,8 +555,7 @@ public class OccupancyGrid {
                 return 0;
             }
         } catch (ArrayIndexOutOfBoundsException e) {
-            System.err.println("ERROR: Array index out of bounds at x=" + xCoord + ", y=" + yCoord + ".");
-            return 0;
+            throw new ArrayIndexOutOfBoundsException("ERROR: Array index out of bounds at x=" + xCoord + ", y=" + yCoord + ".");
         }
     }
 
@@ -569,14 +576,50 @@ public class OccupancyGrid {
         return (x < width && x >= 0 && y < height && y >= 0);
     }
 
-    // Checks if there is a line from source to dest that doesn't go through obstacles.
-    // Note:  by current implementation lines are possible through unknown space.  To change this
-    // only a slight tweak in second part of if statement needed, i.e. change to:
-    // && !freeSpaceAt(i,j)
-    public boolean directLinePossible(int sourceX, int sourceY, int destX, int destY) {
+    /**
+     * Checks if there is a line from source to dest that doesn't go through obstacles. Note: by
+     * current implementation lines are possible through unknown space. To change this only a slight
+     * tweak in second part of if statement needed, i.e. change to: && !freeSpaceAt(i,j)
+     *
+     * @param source Start
+     * @param dest Goal
+     * @param allowUnknown
+     * @return true if direct line possible considering the knowledge of the agent, false if not
+     */
+    public boolean directLinePossible(Point source, Point dest, boolean allowUnknown, boolean showErrors) {
+        return directLinePossible((int) source.getX(), (int) source.getY(), (int) dest.getX(), (int) dest.getY(), allowUnknown, showErrors);
+    }
+
+    /**
+     * Checks if there is a line from source to dest that doesn't go through obstacles. Note: by
+     * current implementation lines are possible through unknown space. To change this only a slight
+     * tweak in second part of if statement needed, i.e. change to: && !freeSpaceAt(i,j)
+     *
+     * @param sourceX Startpoint.x
+     * @param sourceY Startpoint.y
+     * @param destX Goalpoint.x
+     * @param destY Goalpoint.y
+     * @param allowUnknown
+     * @param showErrors display Errors as X on the ExplorationImage
+     * @return true if direct line possible considering the knowledge of the agent, false if not
+     */
+    public boolean directLinePossible(int sourceX, int sourceY, int destX, int destY, boolean allowUnknown, boolean showErrors) {
         for (int i = Math.min(sourceX, destX) + 1; i <= Math.max(sourceX, destX) - 1; i++) {
             for (int j = Math.min(sourceY, destY) + 1; j <= Math.max(sourceY, destY) - 1; j++) {
-                if ((distPointToLine(sourceX, sourceY, destX, destY, i, j) <= 0.5) && obstacleAt(i, j)) {
+                //if (showErrors && (distPointToLine(sourceX, sourceY, destX, destY, i, j) <= 0.5)) {
+                //simulator.ExplorationImage.addErrorMarker(new Point(i, j), null, false);
+                //}
+                if (allowUnknown) {
+                    if ((distPointToLine(sourceX, sourceY, destX, destY, i, j) <= 0.5) && obstacleAt(i, j)) {
+                        if (showErrors) {
+                            simulator.ExplorationImage.addErrorMarker(new Point(i, j), "obstacle", true);
+                        }
+                        return false;
+                    }
+                } else if ((distPointToLine(sourceX, sourceY, destX, destY, i, j) <= 0.5) && !freeSpaceAt(i, j)) {
+                    if (showErrors) {
+                        simulator.ExplorationImage.addErrorMarker(new Point(i, j), "unfree", true);
+                    }
                     return false;
                 }
             }
@@ -589,7 +632,17 @@ public class OccupancyGrid {
         return (Line2D.ptSegDist(endPoint1.x, endPoint1.y, endPoint2.x, endPoint2.y, checkPoint.x, checkPoint.y) < 1.0);
     }
 
-    // This function finds the shortest distance from P3 to the line between P1 and P2
+    /**
+     * This function finds the shortest distance from P3 to the line between P1 and P2
+     *
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @param x3
+     * @param y3
+     * @return
+     */
     public double distPointToLine(int x1, int y1, int x2, int y2, int x3, int y3) {
         if ((x3 == x1 && y3 == y1) || (x3 == x2 && y3 == y2)) {
             return 0;
@@ -721,12 +774,10 @@ public class OccupancyGrid {
             } else {
                 grid[xCoord][yCoord] += (byte) (Math.pow(2, bit));
             }
+        } else if (value == 1) {
+            return;
         } else {
-            if (value == 1) {
-                return;
-            } else {
-                grid[xCoord][yCoord] -= (byte) (Math.pow(2, bit));
-            }
+            grid[xCoord][yCoord] -= (byte) (Math.pow(2, bit));
         }
     }
 
@@ -745,7 +796,7 @@ public class OccupancyGrid {
     public void setTestTrueAt(int xCoord, int yCoord) {
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.Test, 1);
     }
-    
+
     // Sets test bit in all occupancy grids to 0 -- purely for testing purposes.
     public void initializeTestBits() {
         for(int i=0; i<grid.length; i++)

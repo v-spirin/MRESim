@@ -53,14 +53,14 @@ import path.Path;
  */
     public class FrontierUtility implements Comparable<FrontierUtility> {
 
-        public int ID;
+        public int agentID;
         public Point agentLocation;
         public Frontier frontier;
         public double utility;
         public Path path;
 
-        public FrontierUtility(int id, Point al, Frontier f, double u, Path p) {
-            ID = id;
+        public FrontierUtility(int agent_id, Point al, Frontier f, double u, Path p) {
+            agentID = agent_id;
             agentLocation = al;
             frontier = f;
             utility = u;
@@ -78,7 +78,7 @@ import path.Path;
 
         @Override
         public String toString() {
-            return "FrontierUtility ID: " + ID + ", agentLocation: (" + (int) agentLocation.getX() + "," + (int) agentLocation.getY() + "), frontier: " + frontier
+            return "FrontierUtility ID: " + agentID + ", agentLocation: (" + (int) agentLocation.getX() + "," + (int) agentLocation.getY() + "), frontier: " + frontier
                     + ", utility: " + utility;
         }
     }

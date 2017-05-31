@@ -44,13 +44,13 @@
 
 package exploration;
 
-import exploration.rendezvous.NearRVPoint;
 import agents.Agent;
 import agents.RealAgent;
 import communication.CommLink;
 import config.Constants;
 import config.SimulatorConfig;
 import exploration.rendezvous.MultiPointRendezvousStrategy;
+import exploration.rendezvous.NearRVPoint;
 import java.awt.Point;
 import java.util.List;
 import path.Path;
@@ -71,30 +71,25 @@ public class UtilityExploration extends FrontierExploration {
         this.simConfig = simConfig;
     }
 
-// <editor-fold defaultstate="collapsed" desc="Take Step">
     // Returns new X, Y of ExploreAgent
     @Override
     public Point takeStep(int timeElapsed) {
         long realtimeStart = System.currentTimeMillis();
-        //<editor-fold defaultstate="collapsed" desc="Assign local variables">
-
         Point nextStep = null;
-        //</editor-fold>
 
-        // <editor-fold defaultstate="collapsed" desc="Handle environment error - agent stuck next to a wall">
+        // Handle environment error - agent stuck next to a wall
         // if env reports error, agent may be stuck in front of a wall and the
         // simulator isn't allowing him to go through.  Taking a random step might
         // help.
         // Update:  this state is never really reached but leave in just in case
         if (agent.getEnvError()) {
             System.out.println(agent.toString() + "!!!UtilityExploration: Env reports error, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
             agent.setEnvError(false);
             return nextStep;
         }
-        // </editor-fold>
 
-        // <editor-fold defaultstate="collapsed" desc="Run correct takeStep function depending on agent state, set nextStep to output">
+        // Run correct randomStep function depending on agent state, set nextStep to output
         // Explore is normal exploration, ReturnToParent is relaying information to base
         switch (agent.getState()) {
             case Initial:
@@ -107,21 +102,18 @@ public class UtilityExploration extends FrontierExploration {
                 nextStep = takeStep_ReturnToParent(timeElapsed);
                 break;
             default:
-                break;
         }
 
         // this shouldn't happen, looks like one of takeSteps returned an error
         if (nextStep == null) {
             System.out.println(agent.toString() + "!!!UtilityExploration: nextStep is null, taking random step.");
-            nextStep = RandomWalk.takeStep(agent);
+            nextStep = RandomWalk.randomStep(agent);
         }
-        // </editor-fold>
 
-        // <editor-fold defaultstate="collapsed" desc="Increment state timers">
+        //Increment state timers
         agent.setStateTimer(agent.getStateTimer() + 1);
         //TODO: Should this be in UtilityExploration?
         agent.getRendezvousAgentData().setTimeSinceLastRoleSwitch(agent.getRendezvousAgentData().getTimeSinceLastRoleSwitch() + 1);
-        //</editor-fold>
         System.out.println(agent.toString() + " takeStep " + agent.getState() + ", took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
         return nextStep;
     }
@@ -129,31 +121,29 @@ public class UtilityExploration extends FrontierExploration {
     private Point takeStep_Initial(int timeElapsed) {
         System.out.println(agent + " takeStep_Initial timeInState: " + agent.getStateTimer());
         // Small number of random steps to get initial range data
-        // <editor-fold defaultstate="collapsed" desc="First 3 steps? Take random step">
-        if (agent.getStateTimer() < 3) //return RandomWalk.takeStep(agent);
+        // First 3 steps? Take random step
+        if (agent.getStateTimer() < 3) //return RandomWalk.randomStep(agent);
         {
             return agent.getLocation();
-        } // </editor-fold>
-        // <editor-fold defaultstate="collapsed" desc="Otherwise? Explorers go into Explore state, others go into GoToChild state. Explorers replan using FrontierExploration, others do nothing.">
-        else {
-            agent.setState(RealAgent.ExploreState.Explore);
+        } else {
+            // Otherwise? Explorers go into Explore state, others go into GoToChild state.
+            // Explorers replan using FrontierExploration, others do nothing.
+            agent.setState(RealAgent.AgentState.Explore);
             agent.getStats().setTimeSinceLastPlan(0);
             return takeStep_Explore(timeElapsed);
         }
-        // </editor-fold>
     }
 
     private Point takeStep_Explore(int timeElapsed) {
         System.out.println(agent + " takeStep_Explore timeInState: " + agent.getStateTimer());
         Point nextStep;
-        // <editor-fold defaultstate="collapsed" desc="Every CHECK_INTERVAL_TIME_TO_RV steps, check if we're due to change state to return">
+        // Every CHECK_INTERVAL_TIME_TO_RV steps, check if we're due to change state to return
         int totalNewInfo = agent.getStats().getNewInfo();
         //double infoRatio = (double)agent.getLastContactAreaKnown() /
         //        (double)(agent.getLastContactAreaKnown() + totalNewInfo);
         double infoRatio = (double) agent.getStats().getCurrentBaseKnowledgeBelief()
                 / (double) (agent.getStats().getCurrentBaseKnowledgeBelief() + totalNewInfo);
 
-        //double infoRatio = (double)totalNewInfo / (double)57600;
         System.out.println(agent.toString() + " in state Explore. infoRatio = "
                 + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO + ". newInfo = " + totalNewInfo
                 + ", baseInfo = " + agent.getStats().getCurrentBaseKnowledgeBelief());
@@ -162,16 +152,15 @@ public class UtilityExploration extends FrontierExploration {
         {
             System.out.println(agent.toString() + " Decided to return. infoRatio = "
                     + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO);
-            agent.setState(Agent.ExploreState.ReturnToParent);
+            agent.setState(Agent.AgentState.ReturnToParent);
             //agent.setRole(RobotConfig.roletype.Relay);
             agent.computePathToBaseStation(true);
             agent.setPathToBaseStation();
 
             if (agent.getPath() == null || agent.getPath().getPoints() == null || agent.getPath().getPoints().size() <= 1) {
                 System.out.println(agent.toString() + "Can't find my way home, taking random step.");
-                nextStep = RandomWalk.takeStep(agent);
+                nextStep = RandomWalk.randomStep(agent);
                 agent.getStats().setTimeSinceLastPlan(0);
-                agent.setCurrentGoal(nextStep);
                 return nextStep;
             }
 
@@ -184,10 +173,8 @@ public class UtilityExploration extends FrontierExploration {
             }
 
             agent.getStats().setTimeSinceLastPlan(0);
-            agent.setCurrentGoal(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation());
             return nextStep;
         }
-        // </editor-fold>
 
         //if we reach this point we continue exploring
         //make sure we replan, if we just entered Explore state
@@ -196,48 +183,42 @@ public class UtilityExploration extends FrontierExploration {
         }
         nextStep = takeStep(timeElapsed);
 
-        //<editor-fold defaultstate="collapsed" desc="If there are no frontiers to explore, we must be finished.  Return to ComStation.">
-        if ((agent.getFrontiers().isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
+        // If there are no frontiers to explore, we must be finished.  Return to ComStation.
+        if ((frontiers.isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
             System.out.println(agent + " setting mission complete");
             agent.setMissionComplete(true);
             Point baseLocation = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
-            Path path = agent.calculatePath(agent.getLocation(), baseLocation);
-            agent.setPath(path);
-            agent.setState(RealAgent.ExploreState.ReturnToParent);
+            agent.setPath(agent.calculatePath(agent.getLocation(), baseLocation, false));
+            agent.setState(RealAgent.AgentState.ReturnToParent);
             agent.setStateTimer(0);
 
             if (agent.getPath().getPoints() != null) {
-                agent.setCurrentGoal(baseLocation);
                 return ((Point) agent.getPath().getPoints().remove(0));
             } else {
                 System.out.println(agent.toString() + "!!!Nothing left to explore, but cannot plan path to parent!!!");
-                nextStep = RandomWalk.takeStep(agent);
-                agent.setCurrentGoal(nextStep);
+                nextStep = RandomWalk.randomStep(agent);
                 return (nextStep);
             }
         }
-        //</editor-fold>
         return nextStep;
     }
 
     private Point takeStep_ReturnToParent(int timeElapsed) {
         System.out.println(agent + " takeStep_ReturnToParent timeInState: " + agent.getStateTimer());
-        //<editor-fold defaultstate="collapsed" desc="If base is in range, go back to exploring">
+        // If base is in range, go back to exploring
         if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
-            agent.setState(RealAgent.ExploreState.Explore);
+            agent.setState(RealAgent.AgentState.Explore);
             agent.setStateTimer(0);
             return takeStep_Explore(timeElapsed);
         }
-        //</editor-fold>
 
-        //<editor-fold defaultstate="collapsed" desc="If mission complete and we have path, keep going">
+        // If mission complete and we have tpath, keep going
         if (agent.isMissionComplete() && !agent.getPath().getPoints().isEmpty()) {
             return ((Point) agent.getPath().getPoints().remove(0));
         }
-        //</editor-fold>
 
-        //<editor-fold defaultstate="collapsed" desc="If newInfo goes under ratio, go exploring (can happen if we meet a relay)">
+        //If newInfo goes under ratio, go exploring (can happen if we meet a relay)
         int totalNewInfo = agent.getStats().getNewInfo();
         //double infoRatio = (double)agent.getLastContactAreaKnown() /
         //        (double)(agent.getLastContactAreaKnown() + totalNewInfo);
@@ -247,7 +228,7 @@ public class UtilityExploration extends FrontierExploration {
         double infoRatio = (double) totalNewInfo / (double) 57600;
 
         if ((totalNewInfo == 0) && (infoRatio > simConfig.TARGET_INFO_RATIO)) { //just in case, to avoid returning with 0 new info
-            agent.setState(RealAgent.ExploreState.Explore);
+            agent.setState(RealAgent.AgentState.Explore);
             agent.setStateTimer(0);
             System.out.println(agent + " switching to takeStep_Explore. infoRatio = "
                     + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO);
@@ -256,19 +237,17 @@ public class UtilityExploration extends FrontierExploration {
             System.out.println(agent + " remained in ReturnToParent. infoRatio = "
                     + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO);
         }
-        //</editor-fold>
 
         Point baseLocation = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
-        //<editor-fold defaultstate="collapsed" desc="Recalculate path every PATH_RECALC_PARENT_INTERVAL steps, if fail try A*, if that fails try using existing path, if that fails take random step">
+        //Recalculate tpath every PATH_RECALC_PARENT_INTERVAL steps, if fail try A*, if that fails try using existing tpath, if that fails take random step
         Path existingPath = agent.getPath();
         if ((existingPath == null) || (agent.getStateTimer() == 0)
                 || (agent.getStateTimer() % Constants.PATH_RECALC_PARENT_INTERVAL) == (Constants.PATH_RECALC_PARENT_INTERVAL - 1)) {
             System.out.println(agent + " replanning path to Base");
-            //<editor-fold defaultstate="collapsed" desc="If path already exists, update dirty cells with that path">
+            //If tpath already exists, update dirty cells with that tpath
             if (existingPath != null) {
                 agent.addDirtyCells(existingPath.getAllPathPixels());
             }
-            //</editor-fold>
 
             if (simConfig.getBaseRange()) {
                 List<NearRVPoint> generatedPoints
@@ -282,45 +261,39 @@ public class UtilityExploration extends FrontierExploration {
             }
 
             agent.updateTopologicalMap(false);
-            Path path = agent.calculatePath(agent.getLocation(), baseLocation);
-            //<editor-fold defaultstate="collapsed" desc="If path not found, try A*">
-            if (!path.found) {
+            Path tpath = agent.calculatePath(agent.getLocation(), baseLocation, false);
+            //If tpath not found, try A*
+            if (!tpath.found) {
                 System.out.println(agent.toString() + "ERROR!  Could not find full path! Trying pure A*");
-                path = agent.calculatePath(agent.getLocation(), baseLocation, true);
+                tpath = agent.calculatePath(agent.getLocation(), baseLocation, true);
             }
-            //</editor-fold>
-            //<editor-fold defaultstate="collapsed" desc="If path still not found, try existing path. If existing path doesn't exist or exhausted, take random step">
-            if (!path.found) {
+            //If tpath still not found, try existing tpath. If existing tpath doesn't exist or exhausted, take random step
+            if (!tpath.found) {
                 System.out.println(agent.toString() + "!!!ERROR!  Could not find full path!");
                 if ((existingPath != null) && (existingPath.getPoints().size() > 2)) {
                     agent.setPath(existingPath);
-                    agent.setCurrentGoal(existingPath.getGoalPoint());
                 } else {
-                    agent.setCurrentGoal(agent.getLocation());
-                    return RandomWalk.takeStep(agent);
+                    return RandomWalk.randomStep(agent);
                 }
-            } //</editor-fold>
-            else {
+            } else {
                 System.out.println(agent + " path to Base found.");
-                agent.setPath(path);
-                agent.setCurrentGoal(baseLocation);
-                // Must remove first point in path as this is robot's location.
+                agent.setPath(tpath);
+                // Must remove first point in tpath as this is robot's location.
                 agent.getPath().getPoints().remove(0);
             }
         }
-        //</editor-fold>
 
         if (agent.getPath().found && !agent.getPath().getPoints().isEmpty()) {
             return ((Point) agent.getPath().getPoints().remove(0));
         }
 
         // If we reach this point, we are not in range of the base and the
-        // path is empty, so we must have the base.
+        // tpath is empty, so we must have the base.
         // Just check to make sure we are though and if not take random step.
         if (agent.getLocation().distance(baseLocation) > 2 * Constants.STEP_SIZE) {
             System.out.println(agent.toString() + "!!!ERROR! We should have reached parent RV, but we are too far from it! Taking random step");
             agent.setPath(null);
-            return RandomWalk.takeStep(agent);
+            return RandomWalk.randomStep(agent);
         }
         if (simConfig.getBaseRange()) {
             Point point1 = agent.getLocation();
@@ -337,16 +310,15 @@ public class UtilityExploration extends FrontierExploration {
         } else {
 
             // If we reach this point, we're at the base station; go back to exploring.
-            agent.setState(RealAgent.ExploreState.Explore);
+            agent.setState(RealAgent.AgentState.Explore);
             agent.setStateTimer(0);
             return takeStep_Explore(timeElapsed);
         }
     }
-    // </editor-fold>
 
     @Override
     public Point replan(int timeElapsed) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new UnsupportedOperationException("Not supported in this ExplorationType.");
     }
 
 }

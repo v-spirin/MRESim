@@ -61,12 +61,4 @@ public interface Exploration {
      */
     public Point takeStep(int timeElapsed);
 
-    /**
-     * Recalculates the current plan. Only need to call this after severe map-changes or similar
-     * situations. Will be called by takeStep if necessary.
-     *
-     * @param timeElapsed Cycle we are in currently
-     * @return Nothing ASAP! //TODO no return!
-     */
-    public Point replan(int timeElapsed);
 }

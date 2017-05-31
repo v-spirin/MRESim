@@ -46,48 +46,25 @@ package exploration;
 
 import agents.RealAgent;
 import java.awt.Point;
-import path.Path;
 
 /**
- * Class to inherit from to share some code for all Explorations. Do not use this as type, use
- * Interface 'Exploration' instead
  *
- * @author Christian Clausen
+ * @author Christian Clausen <christian.clausen@uni-bremen.de>
  */
-abstract class BasicExploration {
+public class RandomExploration extends BasicExploration implements Exploration {
 
-    /**
-     * The agent using this ExplorationStrategy.
-     */
-    RealAgent agent;
-
-    /**
-     * The planned path, null if no replan called.
-     */
-    Path path;
-
-    enum ExplorationState {
-        Initial, Exploring, BackToBase, Finished, SettingRelay
+    public RandomExploration(RealAgent agent) {
+        super(agent);
+        System.out.println("Start Wall");
     }
 
-    ExplorationState state = ExplorationState.Initial;
-
-    /**
-     * Just builds the object and initializes the agent.
-     *
-     * @param agent The agend using this ExplorationStrategy
-     */
-    public BasicExploration(RealAgent agent) {
-        this.agent = agent;
+    @Override
+    public Point takeStep(int timeElapsed) {
+        return RandomWalk.randomStep(agent);
     }
 
-    /**
-     * Recalculates the current plan. Only need to call this after severe map-changes or similar
-     * situations. Will be called by takeStep if necessary.
-     *
-     * @param timeElapsed Cycle we are in currently
-     * @return Nothing ASAP! //TODO no return!
-     */
-    abstract protected Point replan(int timeElapsed);
-
+    @Override
+    protected Point replan(int timeElapsed) {
+        throw new UnsupportedOperationException("Not supported, this does not need a plan.");
+    }
 }

@@ -88,12 +88,13 @@ public class ExplorationLogger {
     }
 
     public void writeLog(int timeElapsed) {
-        double total = simConfig.getEnv().getTotalFreeSpace();
+        double total = simConfig.getEnvironment().getTotalFreeSpace();
         PrintWriter exploration;
         try {
             exploration = new PrintWriter(Constants.DEFAULT_LOG_DIRECTORY + "exploration" + this.name + ".csv");
-            exploration.printf("Cycle,%s,%s,%s,ComStationsInUse,EnergyConsumption\n", agents[0].getName(), agents[1].getName(), agents[2].getName());
-            for (int i = 1; i <= timeElapsed; i++) {
+
+            exploration.printf("Cycle,%s,%s,%s,ComStationsInUse,EnergyConsumption,TotalCommunications\n", agents[0].getName(), agents[1].getName(), agents[2].getName());
+            for (int i = 1; i < timeElapsed; i++) {
                 long area1 = Math.round(100 * (double) this.log.get(agents[0]).get(i).getAreaKnown() / (double) total);
                 long area2 = Math.round(100 * (double) this.log.get(agents[1]).get(i).getAreaKnown() / (double) total);
                 long area3 = Math.round(100 * (double) this.log.get(agents[2]).get(i).getAreaKnown() / (double) total);
@@ -103,7 +104,11 @@ public class ExplorationLogger {
                 energy += log.get(agents[1]).get(i).getBatteryPower();
                 energy += log.get(agents[2]).get(i).getBatteryPower();
 
-                exploration.printf("%d,%d,%d,%d,%d,%d\n", i, area1, area2, area3, coms, energy);
+                int communications = log.get(agents[0]).get(i).getCommunications();
+                communications += log.get(agents[1]).get(i).getCommunications();
+                communications += log.get(agents[2]).get(i).getCommunications();
+
+                exploration.printf("%d,%d,%d,%d,%d,%d,%d\n", i, area1, area2, area3, coms, energy, communications);
 
             }
 //            exploration.flush();

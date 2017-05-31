@@ -44,7 +44,7 @@
 
 package exploration;
 
-import agents.Agent.ExploreState;
+import agents.Agent.AgentState;
 import config.RobotConfig;
 import java.awt.Point;
 import java.io.BufferedReader;
@@ -119,7 +119,7 @@ public class RunFromLog implements Exploration {
         return nextStep;
     }
 
-    public ExploreState getState(int time) {
+    public AgentState getState(int time) {
         Point nextStep = new Point(0, 0);
 
         File file = new File(fileName);
@@ -133,31 +133,31 @@ public class RunFromLog implements Exploration {
                 String tokens[] = inFile.readLine().split("\\s");
                 String state = tokens[(agentNo - 1) * 6 + 6];
                 if (state.equals("GetInfoFromChild")) {
-                    return ExploreState.GetInfoFromChild;
+                    return AgentState.GetInfoFromChild;
                 }
                 if (state.equals("Explore")) {
-                    return ExploreState.Explore;
+                    return AgentState.Explore;
                 }
                 if (state.equals("GiveParentInfo")) {
-                    return ExploreState.GiveParentInfo;
+                    return AgentState.GiveParentInfo;
                 }
                 if (state.equals("GoToChild")) {
-                    return ExploreState.GoToChild;
+                    return AgentState.GoToChild;
                 }
                 if (state.equals("Initial")) {
-                    return ExploreState.Initial;
+                    return AgentState.Initial;
                 }
                 if (state.equals("OutOfService")) {
-                    return ExploreState.OutOfService;
+                    return AgentState.OutOfService;
                 }
                 if (state.equals("ReturnToParent")) {
-                    return ExploreState.ReturnToParent;
+                    return AgentState.ReturnToParent;
                 }
                 if (state.equals("WaitForChild")) {
-                    return ExploreState.WaitForChild;
+                    return AgentState.WaitForChild;
                 }
                 if (state.equals("WaitForParent")) {
-                    return ExploreState.WaitForParent;
+                    return AgentState.WaitForParent;
                 }
             } catch (NullPointerException e) {
                 // No more data, run finished.
@@ -168,7 +168,7 @@ public class RunFromLog implements Exploration {
                 System.out.println("RunFromLog: Error -- incorrect data format in file " + fileName);
             }
         }
-        return ExploreState.Initial;
+        return AgentState.Initial;
     }
 
     public RobotConfig.roletype getRole(int time) {
@@ -205,9 +205,4 @@ public class RunFromLog implements Exploration {
         return RobotConfig.roletype.BaseStation;
     }
 
-    @Override
-    public Point replan(int timeElapsed) {
-        //Not useful in RunFromLog!
-        return null;
-    }
 }
