@@ -48,7 +48,10 @@ import config.Constants;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
 import gui.MainConsole;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -67,17 +70,22 @@ public class BatchExecution {
     //private List<SimulatorConfig> configs;
     private List<String[]> configFiles;
     //private RobotTeamConfig team;
-    int num_threads = 2;
     int num_sims = 1;
+    int num_threads = 2;
 
-    public BatchExecution() {
+    public BatchExecution(String batchfile) {
         configFiles = new ArrayList<>();
-        String[] co = {Constants.DEFAULT_SIMCONF_DIRECTORY + "frontierbased_periodicReturn",
-            Constants.DEFAULT_TEAMCONF_DIRECTORY + "frontierbased_1_maze1_100",
-            Constants.DEFAULT_ENV_DIRECTORY + "maze1.png"
-        };
-        configFiles.add(co);
-
+        if (batchfile != null) {
+            if (!loadBatchConfig(batchfile)) {
+                System.exit(1);
+            }
+        } else {
+            String[] co = {Constants.DEFAULT_SIMCONF_DIRECTORY + "frontierbased_periodicReturn",
+                Constants.DEFAULT_TEAMCONF_DIRECTORY + "frontierbased_1_maze1_100",
+                Constants.DEFAULT_ENV_DIRECTORY + "maze1.png"
+            };
+            configFiles.add(co);
+        }
     }
 
     public void run() {
@@ -126,8 +134,40 @@ public class BatchExecution {
     }
 
     public static void main(String args[]) {
-        BatchExecution batch = new BatchExecution();
+        System.out.println("MRESim GUI-less Execution");
+        String batchfile = null;
+        if (args.length >= 1) {
+            batchfile = args[0];
+            System.out.println(batchfile);
+        }
+        BatchExecution batch = new BatchExecution(batchfile);
         batch.run();
         System.exit(0);
     }
+
+    private boolean loadBatchConfig(String fileName) {
+        File file = new File(fileName);
+
+        if (file.exists()) {
+            try (BufferedReader inFile = new BufferedReader(new FileReader(file))) {
+
+                num_sims = Integer.parseInt(inFile.readLine());
+                num_threads = Integer.parseInt(inFile.readLine());
+                String line;
+                while (inFile.ready()) {
+                    String[] co = {Constants.DEFAULT_SIMCONF_DIRECTORY + String.valueOf(inFile.readLine()),
+                        Constants.DEFAULT_TEAMCONF_DIRECTORY + String.valueOf(inFile.readLine()),
+                        Constants.DEFAULT_ENV_DIRECTORY + String.valueOf(inFile.readLine())
+                    };
+                    configFiles.add(co);
+                }
+
+            } catch (IOException ex) {
+                Logger.getLogger(BatchExecution.class.getName()).log(Level.SEVERE, null, ex);
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
