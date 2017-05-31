@@ -119,7 +119,11 @@ public class FrontierExploration extends BasicExploration implements Exploration
         }
 
         agent.getStats().incrementTimeSinceLastPlan();
-
+        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
+            noReturnTimer = 0;
+        } else {
+            noReturnTimer++;
+        }
         return nextStep;
     }
 
@@ -128,6 +132,12 @@ public class FrontierExploration extends BasicExploration implements Exploration
         Point nextStep;
 
         agent.getStats().setTimeSinceLastPlan(0);
+
+        if (frontierExpType.equals(SimulatorConfig.frontiertype.PeriodicReturn) && noReturnTimer > Constants.FRONTIER_PERIODIC_RETURN) {
+            agent.setPathToBaseStation();
+            nextStep = agent.getNextPathPoint();
+            return nextStep;
+        }
 
         calculateFrontiers();
 
@@ -140,7 +150,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
             while ((nextStep != null) && (nextStep.equals(agent.getLocation()))) {
                 nextStep = agent.getNextPathPoint();
             }
-            agent.getStats().setTimeSinceLastPlan(0);
             return nextStep;
         }
 

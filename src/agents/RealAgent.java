@@ -88,9 +88,6 @@ public class RealAgent extends Agent {
     private boolean missionComplete; // true only when mission complete (env fully explored)
 
     int prevX, prevY;             // Previous position in environment
-    public int periodicReturnInterval;   // how long to wait until going back to BS
-    // bit of a hack: state of periodic return frontier exp robots (0=exploring; 1=returning)
-    public int frontierPeriodicState;
     int timeElapsed;
     boolean envError;             // set to true by env when RealAgent's step is not legal
     OccupancyGrid occGrid;
@@ -143,8 +140,6 @@ public class RealAgent extends Agent {
         prevX = x;
         prevY = y;
 
-        periodicReturnInterval = 10;
-        frontierPeriodicState = 0;
         envError = false;
         timeTopologicalMapUpdated = -1;
         timeElapsed = 0;

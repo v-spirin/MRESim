@@ -781,13 +781,6 @@ public class SimulationFramework implements ActionListener {
                                 + agent[j].getName() + " took "
                                 + (System.currentTimeMillis() - realtimeStart2) + "ms.");
                     }
-                    // For periodic return frontier exp
-                    if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration
-                            && simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.PeriodicReturn
-                            && i == 0 && agent[j].frontierPeriodicState == 1) {
-                        agent[j].frontierPeriodicState = 0;
-                        agent[j].periodicReturnInterval += 10;
-                    }
                 }
             }
         }
