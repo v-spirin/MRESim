@@ -93,22 +93,53 @@ public class ExplorationLogger {
         try {
             exploration = new PrintWriter(Constants.DEFAULT_LOG_DIRECTORY + "exploration" + this.name + ".csv");
 
-            exploration.printf("Cycle,%s,%s,%s,ComStationsInUse,EnergyConsumption,TotalCommunications\n", agents[0].getName(), agents[1].getName(), agents[2].getName());
+            //exploration.printf("Cycle,%s,%s,%s,ComStationsInUse,EnergyConsumption,TotalCommunications\n", agents[0].getName(), agents[1].getName(), agents[2].getName());
+            String header = "";
+            header += "Cycle" + ",";
+            for (RealAgent agt : agents) {
+                header += agt.getName() + ",";
+            }
+            header += "ComStationsInUse" + ",";
+            header += "EnergyConsumption" + ",";
+            header += "TotalCommunications";
+
+            exploration.println(header);
+
             for (int i = 1; i < timeElapsed; i++) {
-                long area1 = Math.round(100 * (double) this.log.get(agents[0]).get(i).getAreaKnown() / (double) total);
+                /*long area1 = Math.round(100 * (double) this.log.get(agents[0]).get(i).getAreaKnown() / (double) total);
                 long area2 = Math.round(100 * (double) this.log.get(agents[1]).get(i).getAreaKnown() / (double) total);
                 long area3 = Math.round(100 * (double) this.log.get(agents[2]).get(i).getAreaKnown() / (double) total);
                 int coms = this.log.get(agents[0]).get(i).getComStationsDropped();
-
-                int energy = log.get(agents[0]).get(i).getBatteryPower();
-                energy += log.get(agents[1]).get(i).getBatteryPower();
-                energy += log.get(agents[2]).get(i).getBatteryPower();
-
-                int communications = log.get(agents[0]).get(i).getCommunications();
-                communications += log.get(agents[1]).get(i).getCommunications();
-                communications += log.get(agents[2]).get(i).getCommunications();
-
-                exploration.printf("%d,%d,%d,%d,%d,%d,%d\n", i, area1, area2, area3, coms, energy, communications);
+                 */
+                //int energy = log.get(agents[0]).get(i).getBatteryPower();
+                //energy += log.get(agents[1]).get(i).getBatteryPower();
+                //energy += log.get(agents[2]).get(i).getBatteryPower();
+                //int communications = log.get(agents[0]).get(i).getCommunications();
+                //communications += log.get(agents[1]).get(i).getCommunications();
+                //communications += log.get(agents[2]).get(i).getCommunications();
+                //exploration.printf("%d,%d,%d,%d,%d,%d,%d\n", i, area1, area2, area3, coms, energy, communications);
+                String line = "";
+                //Cycle
+                line += i + ",";
+                //Agent agre known
+                for (RealAgent agt : agents) {
+                    line += Math.round(100 * (double) this.log.get(agt).get(i).getAreaKnown() / (double) total) + ",";
+                }
+                //ComStations
+                line += this.log.get(agents[0]).get(i).getComStationsDropped() + ",";
+                //EnergyUsage
+                int energy = 0;
+                for (RealAgent agt : agents) {
+                    energy += log.get(agt).get(i).getBatteryPower();
+                }
+                line += energy + ",";
+                //Communication
+                int communications = 0;
+                for (RealAgent agt : agents) {
+                    communications += log.get(agt).get(i).getCommunications();
+                }
+                line += communications;
+                exploration.println(line);
 
             }
 //            exploration.flush();
