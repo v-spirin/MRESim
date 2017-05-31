@@ -312,6 +312,10 @@ public class Constants {
             = Paths.get(System.getProperty("user.dir"), "environments").toString() + File.separator;
     public static String DEFAULT_CONF_DIRECTORY
             = Paths.get(System.getProperty("user.dir"), "config").toString() + File.separator;
+    public static String DEFAULT_TEAMCONF_DIRECTORY
+            = Paths.get(System.getProperty("user.dir"), "teamconfig").toString() + File.separator;
+    public static String DEFAULT_SIMCONF_DIRECTORY
+            = Paths.get(System.getProperty("user.dir"), "simconfig").toString() + File.separator;
     public static final String DEFAULT_IMAGE_LOG_DIRECTORY
             = Paths.get(System.getProperty("user.dir"), "logs", "images").toString() + File.separator;
     public static int MAXIMUM_TIME = 3000;

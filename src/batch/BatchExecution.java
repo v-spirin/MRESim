@@ -63,65 +63,49 @@ public class BatchExecution {
 
     private static final Logger LOGGER = Logger.getLogger(BatchExecution.class.getName());
 
-    private MainConsole console;
-    private List<SimulatorConfig> configs;
-    private RobotTeamConfig team;
+    //private MainConsole console;
+    //private List<SimulatorConfig> configs;
+    private List<String[]> configFiles;
+    //private RobotTeamConfig team;
     int num_threads = 2;
     int num_sims = 1;
 
     public BatchExecution() {
-        configs = new ArrayList<>();
-        SimulatorConfig config = new SimulatorConfig();
+        configFiles = new ArrayList<>();
+        String[] co = {Constants.DEFAULT_SIMCONF_DIRECTORY + "frontierbased_periodicReturn",
+            Constants.DEFAULT_TEAMCONF_DIRECTORY + "frontierbased_1_maze1_100",
+            Constants.DEFAULT_ENV_DIRECTORY + "maze1.png"
+        };
+        configFiles.add(co);
 
-        team = new RobotTeamConfig();
-
-        config.setExpAlgorithm(SimulatorConfig.exptype.LeaderFollower);
-        config.setCommModel(SimulatorConfig.commtype.StaticCircle);
-        team.loadConfig(Constants.DEFAULT_CONF_DIRECTORY + "leaderFollower_1-1_maze1_100");
-        boolean loaded = config.loadEnvironment(Constants.DEFAULT_ENV_DIRECTORY + "maze1.png");
-
-        //Fixed settings
-        /*config.setExpAlgorithm(SimulatorConfig.exptype.Testing);
-        config.setCommModel(SimulatorConfig.commtype.DirectLine);
-        config.setUseComStations(true);
-        config.setRelayAlgorithm(SimulatorConfig.relaytype.Random);
-        for (int i = 0; i < num_threads; i++) {
-            config.setComStationDropChance(0.1 + (0.1 * i));
-            configs.add(config);
-        }*/
-        //Team
-        //team.loadConfig("maze_hill_2robots_8relays");
-        //team.loadConfig("maze_hill_2robots");
-        //boolean loaded = config.loadEnvironment("maze_with_hill");
-        if (!loaded) {
-            System.err.println("Could not load env");
-        }
-        /*
-        team.loadConfig("maze1_2robots_8relays");
-        config.loadEnvironment("maze1");
-         */
-        for (int i = 0; i < num_sims; i++) {
-            configs.add(config);
-        }
     }
 
     public void run() {
         List<Thread> threads = new ArrayList<Thread>();
         int batch_counter = 0;
         int counter_threads = 0;
-        Iterator<SimulatorConfig> c_it = configs.iterator();
+        Iterator<String[]> c_it = configFiles.iterator();
         while (c_it.hasNext()) {
             while (c_it.hasNext() && counter_threads < num_threads) {
-                SimulatorConfig conf = c_it.next();
+                String[] confs = c_it.next();
                 String name = "Batch " + batch_counter;
-                new File(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + name).mkdir();
-                //console = new MainConsole(true, name);
-                console = new MainConsole(true, name);
-                if (team != null) {
-                    console.setRobotTeamConfig(team);
+
+                SimulatorConfig conf = new SimulatorConfig();
+                conf.loadSimulatorConfig(confs[0]);
+                RobotTeamConfig team = new RobotTeamConfig();
+                team.loadConfig(confs[1]);
+                boolean loaded = conf.loadEnvironment(confs[2]);
+                if (!loaded) {
+                    System.err.println(name + ": Could not load env: " + confs[2]);
+                    continue;
                 }
+
+                new File(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + name).mkdir();
+                MainConsole console = new MainConsole(true, name);
+                console.setRobotTeamConfig(team);
                 console.loadConfig(conf);
                 console.load();
+
                 Thread worker = new Thread(console, name);
                 worker.setName(name);
                 worker.start();
