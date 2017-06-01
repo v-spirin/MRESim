@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -43,12 +43,14 @@
  */
 package environment;
 
+import config.Constants;
 import config.EnvLoader;
 import environment.Environment.Status;
 import java.awt.Point;
+import java.io.File;
 import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Random;
+import org.j3d.texture.procedural.PerlinNoiseGenerator;
 
 /**
  *
@@ -56,7 +58,7 @@ import java.util.Random;
  */
 public class MapTools {
 
-    public static Environment generateRandomMap() {
+    public static Environment generateRandomGaussianMap() {
         Random generate = new Random();
         Environment env = new Environment(600, 800);
 
@@ -124,7 +126,7 @@ public class MapTools {
             }*/
 
         LinkedList open = new LinkedList();
-        Queue closed = new LinkedList();
+        //Queue closed = new LinkedList();
 
         Point start1 = new Point(400, 300);
         vals[400][300] = -10;
@@ -145,9 +147,9 @@ public class MapTools {
         Point curr, neighbour;
 
         while (!open.isEmpty()) {
-            System.out.println(open.size() + " " + closed.size());
+            //System.out.println(open.size() + " " + closed.size());
             curr = (Point) open.poll();
-            closed.add(curr);
+            //closed.add(curr);
             for (int x = curr.x - 1; x <= curr.x + 1; x++) {
                 for (int y = curr.y - 1; y <= curr.y + 1; y++) {
                     neighbour = new Point(x, y);
@@ -269,7 +271,8 @@ public class MapTools {
 
         for (int i = 1; i < 799; i++) {
             for (int j = 1; j < 599; j++) {
-                if (newVals[i][j] > 0) {
+//                if (newVals[i][j] > 0) {
+                if (vals[i][j] > 0) {
                     env.setStatus(i, j, Status.obstacle);
                 }
             }
@@ -292,7 +295,7 @@ public class MapTools {
         return env;
     }
 
-    public static Environment generateRandomMap2() {
+    public static Environment generateRandomChunkMap() {
         Random generate = new Random();
         Environment env = new Environment(600, 800);
 
@@ -336,6 +339,58 @@ public class MapTools {
             for (int j = 1; j < 599; j++) {
                 if (vals[i][j] > 0) {
                     env.setStatus(i, j, Status.obstacle);
+                }
+            }
+        }
+
+        return env;
+    }
+
+    /**
+     * Generates an environment using perlin noise.
+     *
+     * The factor is used like env[k][m] = noise.noise2(k * factor, m * factor);
+     *
+     * @param factor smoothing factor, 0.1 works quite fine, 1 is a flat surface at 0!
+     * @param offset -2f all flat to 2f only obstacles, default 0
+     * @return environment
+     */
+    public static Environment generateRandomPerlinNoiseMap(Float factor, Float offset) {
+        Environment env = new Environment(600, 800);
+
+        float[][] vals = new float[800][600];
+
+        // Create outer rim
+        for (int i = 0; i < 800; i++) {
+            vals[i][0] = 1;
+            vals[i][599] = 1;
+            env.setStatus(i, 0, Status.obstacle);
+            env.setStatus(i, 599, Status.obstacle);
+        }
+        for (int j = 0; j < 600; j++) {
+            vals[0][j] = 1;
+            vals[799][j] = 1;
+            env.setStatus(0, j, Status.obstacle);
+            env.setStatus(799, j, Status.obstacle);
+        }
+
+        //Use perlin noise to fill the map
+        PerlinNoiseGenerator noise = new PerlinNoiseGenerator(102);
+        for (int k = 1; k < 799; k++) {
+            for (int m = 1; m < 599; m++) {
+                vals[k][m] = noise.noise2(k * factor, m * factor);
+            }
+        }
+        for (int i = 1; i < 799; i++) {
+            for (int j = 1; j < 599; j++) {
+                if (vals[i][j] > 0.2) {
+                    env.setStatus(i, j, Status.obstacle);
+                } else if (vals[i][j] > 0) {
+                    env.setStatus(i, j, Status.hill);
+                } else if (vals[i][j] > -0.2) {
+                    env.setStatus(i, j, Status.slope);
+                } else {
+                    //automatically
                 }
             }
         }
@@ -419,6 +474,7 @@ public class MapTools {
     }
 
     public static void main(String args[]) {
+        System.out.println("MRESim: Runing random map generation");
 
         /* //String fileName = System.getProperty("user.dir") + "/config/lastWallConfig.txt";
         //String fileName = System.getProperty("user.dir") + "/environments/radish_vasche5.png";
@@ -437,8 +493,8 @@ public class MapTools {
         System.out.println(className() + "Map \"" + fileName + "\" has metric1: " + metric1 + ".");
         System.out.println(className() + "Map \"" + fileName + "\" has metric2: " + metric2 + ".");
          //*/
-        for (int i = 7; i < 10; i++) {
-            EnvLoader.saveWallConfig(generateRandomMap2(), System.getProperty("user.dir") + "/environments/random" + i + ".png");
+        for (int i = 20; i < 21; i++) {
+            EnvLoader.saveWallConfig(generateRandomPerlinNoiseMap(0.01f, 0f), Constants.DEFAULT_ENV_DIRECTORY + "random" + File.separator + "random" + i + ".png");
         }
     }
 
