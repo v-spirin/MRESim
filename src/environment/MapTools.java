@@ -390,7 +390,7 @@ public class MapTools {
                 } else if (vals[i][j] > -0.2) {
                     env.setStatus(i, j, Status.slope);
                 } else {
-                    //automatically
+                    //base-value - free space
                 }
             }
         }

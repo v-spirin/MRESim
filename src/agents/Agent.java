@@ -67,6 +67,7 @@ abstract public class Agent {
     int sensRange;          // Sensing range (radius)
     int commRange;          // Communication range (radius)
     int batteryPower;
+    int energyCunsumption;
     public int ability;
     public ArrayList<ComStation> comStations;
     private int comStationLimit;
@@ -243,6 +244,14 @@ abstract public class Agent {
         this.heading = newHeading;
     }
 
+    public int getEnergyCunsumption() {
+        return energyCunsumption;
+    }
+
+    public void setEnergyCunsumption(int energyCunsumption) {
+        this.energyCunsumption = energyCunsumption;
+    }
+
     public RobotConfig.roletype getExploreMode() {
         return this.role;
     }
@@ -357,16 +366,15 @@ abstract public class Agent {
                 this.child,
                 this.ability,
                 this.comStationLimit,
-                this.speed);
+                this.speed,
+                this.energyCunsumption);
         return robot;
     }
 // </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Abstract Functions">
     abstract public Point takeStep(int timeElapsed);
 
     abstract public void writeStep(Point nextLoc, double[] sensorData, boolean updateSensorData);
 
     abstract public void flush();
-//</editor-fold>
 }

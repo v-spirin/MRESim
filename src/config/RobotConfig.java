@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -50,7 +50,7 @@ package config;
 public class RobotConfig {
 
     // start x, y and heading count as a single field, comma delimited.
-    public static int NUMROBOTCONFIGFIELDS = 12;
+    public static int NUMROBOTCONFIGFIELDS = 13;
 
     private int robotNumber;
     private String name;
@@ -64,6 +64,7 @@ public class RobotConfig {
     private int ability;
     private int comStationLimit;
     private int speed;
+    private int energyConsumption;
 
     public static enum roletype {
         BaseStation, Relay, Explorer, RelayStation
@@ -88,9 +89,10 @@ public class RobotConfig {
         ability = 2;
         comStationLimit = 1;
         speed = 10;
+        energyConsumption = 1;
     }
 
-    public RobotConfig(int newRobotNo, String newName, int newStartX, int newStartY, double newStartHeading, int newSensingRange, int newCommRange, int newBatteryLife, String newRole, int newParent, int newChild, int newAbility, int newComStationLimit, int newSpeed) {
+    public RobotConfig(int newRobotNo, String newName, int newStartX, int newStartY, double newStartHeading, int newSensingRange, int newCommRange, int newBatteryLife, String newRole, int newParent, int newChild, int newAbility, int newComStationLimit, int newSpeed, int newEnergyConsumption) {
         robotNumber = newRobotNo;
         name = newName;
         startX = newStartX;
@@ -106,9 +108,10 @@ public class RobotConfig {
         ability = newAbility;
         comStationLimit = newComStationLimit;
         speed = newSpeed;
+        energyConsumption = newEnergyConsumption;
     }
 
-    public RobotConfig(String newRobotNumber, String newName, String start, String newSensingRange, String newCommRange, String newBatteryLife, String newRole, String newParent, String newChild, String newAbility, String newComStationLimit, String newSpeed) {
+    public RobotConfig(String newRobotNumber, String newName, String start, String newSensingRange, String newCommRange, String newBatteryLife, String newRole, String newParent, String newChild, String newAbility, String newComStationLimit, String newSpeed, String newEnergyConsumption) {
         robotNumber = Integer.parseInt(newRobotNumber);
         name = newName;
 
@@ -133,6 +136,7 @@ public class RobotConfig {
         ability = Integer.parseInt(newAbility);
         comStationLimit = Integer.parseInt(newComStationLimit);
         speed = Integer.parseInt(newSpeed);
+        energyConsumption = Integer.parseInt(newEnergyConsumption);
     }
 
     public int getSpeed() {
@@ -157,6 +161,14 @@ public class RobotConfig {
 
     public void setAbility(int ability) {
         this.ability = ability;
+    }
+
+    public int getEnergyConsumption() {
+        return energyConsumption;
+    }
+
+    public void setEnergyConsumption(int energyConsumption) {
+        this.energyConsumption = energyConsumption;
     }
 
     public void setLoggingState(boolean loggingState) {
@@ -226,6 +238,7 @@ public class RobotConfig {
                 + String.valueOf(child) + " "
                 + String.valueOf(ability) + " "
                 + String.valueOf(comStationLimit) + " "
+                + String.valueOf(speed) + " "
                 + String.valueOf(speed));
 
     }

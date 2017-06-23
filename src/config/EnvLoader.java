@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -63,7 +63,6 @@ import javax.swing.JOptionPane;
  */
 public class EnvLoader {
 
-// <editor-fold defaultstate="collapsed" desc="Save Environment">
     public static boolean saveWallConfig_ImageBased(Environment env, String fileName) {
         try {
             if (Constants.DEBUG_OUTPUT) {
@@ -151,8 +150,6 @@ public class EnvLoader {
         return saveWallConfig(env, System.getProperty("user.dir") + "/config/lastEnvironment.png");
     }
 
-// </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Load Environment">
     public static Environment loadWallConfig_TextBased(String fileName) {
         File file = new File(fileName);
 
@@ -321,8 +318,6 @@ public class EnvLoader {
         }
     }
 
-// </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Utility">
     private static boolean checkDimensions(int rows, int cols) {
         if (rows > Constants.MAX_ROWS) {
             JOptionPane.showMessageDialog(new JFrame(), "Input image height is too large!  Maximum height is " + Constants.MAX_ROWS + ".", "Input Image Error", JOptionPane.ERROR_MESSAGE);
@@ -340,6 +335,5 @@ public class EnvLoader {
     private static String className() {
         return ("[EnvLoader] ");
     }
-// </editor-fold>
 
 }

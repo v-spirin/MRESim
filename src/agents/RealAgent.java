@@ -457,7 +457,6 @@ public class RealAgent extends Agent {
         prevX = x;
         prevY = y;
         this.oldTimeElapsed = this.timeElapsed;
-        this.getStats().setBatteryPower(batteryPower);
 
         // Only for testing, uncommenting the line below leads to massive slow down
         //occGrid.initializeTestBits();
@@ -639,7 +638,8 @@ public class RealAgent extends Agent {
 
         // NEW METHOD FLOOD FILL
         //updateGrid(sensorData);
-        batteryPower--;
+        batteryPower -= energyCunsumption;
+        this.getStats().incrementEnergyConsumption(energyCunsumption);
 
         if (Constants.PROFILING) {
             System.out.println(this.toString() + "WriteStep complete, took "

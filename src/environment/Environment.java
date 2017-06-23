@@ -60,8 +60,8 @@ public class Environment {
         slope, // 2 ok to traverse
         hill, // 3 hard to traverse
         obstacle, // 4 not traversable but might change
-        barrier
-    }    // 5 not traversable
+        barrier // 5 not traversable
+    }
     private Status status[][];
 
     // Simple constructor for setup stage -- rows and columns only
@@ -101,7 +101,6 @@ public class Environment {
     }
 
 // </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Initialization">
     private void initCells() {
         status = new Status[columns][rows];
         for (int i = 0; i < rows; i++) {
@@ -110,9 +109,7 @@ public class Environment {
             }
         }
     }
-// </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Information of Interest">
     public boolean locationExists(int x, int y) {
         return (x < columns && x >= 0 && y < rows && y >= 0);
     }
@@ -233,7 +230,6 @@ public class Environment {
         return counter;
     }
 
-// </editor-fold>
     /**
      * Calculates the point from a source with a direction/angle. Not neccesaryly existant, probably
      * not free!

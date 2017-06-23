@@ -130,7 +130,7 @@ public class ExplorationLogger {
                 //EnergyUsage
                 int energy = 0;
                 for (RealAgent agt : agents) {
-                    energy += log.get(agt).get(i).getBatteryPower();
+                    energy += log.get(agt).get(i).getEnergyConsumption();
                 }
                 line += energy + ",";
                 //Communication

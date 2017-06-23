@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -43,8 +43,8 @@
  */
 package gui;
 
-import config.RobotTeamConfig;
 import config.RobotConfig;
+import config.RobotTeamConfig;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -98,7 +98,7 @@ public class RobotConfigDialog extends JDialog {
         initTable();
         initGUI();
     }
-// </editor-fold>     
+// </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Initialization">
     private void initModel() {
@@ -185,6 +185,11 @@ public class RobotConfigDialog extends JDialog {
                     column.setPreferredWidth(60);
                     column.setCellRenderer(editableNumberRenderer);
                     break;
+                case 12:
+                    column.setHeaderValue("Energy");
+                    column.setPreferredWidth(60);
+                    column.setCellRenderer(editableNumberRenderer);
+                    break;
             }
         }
 
@@ -240,7 +245,7 @@ public class RobotConfigDialog extends JDialog {
             return this;
         }
     }
-// </editor-fold> 
+// </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="GUI">
     private void initGUI() {
@@ -384,11 +389,12 @@ public class RobotConfigDialog extends JDialog {
             addLine[9] = String.valueOf(currRobot.getAbility());
             addLine[10] = String.valueOf(currRobot.getComStationLimit());
             addLine[11] = String.valueOf(currRobot.getSpeed());
+            addLine[12] = String.valueOf(currRobot.getEnergyConsumption());
 
             model.addRow(addLine);
         }
     }
-// </editor-fold> 
+// </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Load/save robot configuration">
     private void loadConfig(File filename) {
@@ -401,7 +407,7 @@ public class RobotConfigDialog extends JDialog {
         robotTeamConfig.updateFromGUI(model);
         robotTeamConfig.saveConfig(filename.getPath());
     }
-    // </editor-fold> 
+    // </editor-fold>
 
 // <editor-fold defaultstate="collapsed" desc="Buttons clicked">
     private void buttonLoadClicked() {
@@ -455,7 +461,7 @@ public class RobotConfigDialog extends JDialog {
         this.dispose();
     }
 
-    // </editor-fold> 
+    // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Helper functions">
     private void updateRanks() {
         for (int i = 0; i < table.getRowCount(); i++) {

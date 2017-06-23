@@ -67,7 +67,7 @@ public class RobotTeamConfig {
         if (!oldConfigFound) {
             numRobots = 1;
             robotTeam = new HashMap<Integer, RobotConfig>();
-            RobotConfig comStation = new RobotConfig("1", "ComStation", "1,1,0", "0", "100", "1000", "BaseStation", "1", "1", "2", "1", "10");
+            RobotConfig comStation = new RobotConfig("1", "ComStation", "1,1,0", "0", "100", "1000", "BaseStation", "1", "1", "2", "1", "10", "1");
             robotTeam.put(comStation.getRobotNumber(), comStation);
         }
     }
@@ -111,7 +111,8 @@ public class RobotTeamConfig {
                     (String) (model.getValueAt(i, 8)),
                     (String) (model.getValueAt(i, 9)),
                     (String) (model.getValueAt(i, 10)),
-                    (String) (model.getValueAt(i, 11)));
+                    (String) (model.getValueAt(i, 11)),
+                    (String) (model.getValueAt(i, 12)));
             robotTeam.put(currRobot.getRobotNumber(), currRobot);
         }
     }
@@ -183,7 +184,7 @@ public class RobotTeamConfig {
         String tokens[] = inputLine.split("\\s");
 
         if (tokens.length != (RobotConfig.NUMROBOTCONFIGFIELDS + 2)) {
-            System.err.println("Error: incorrect number of data for robot on line " + lineNum + " in file " + fileName);
+            System.err.println("Error: incorrect number (" + tokens.length + "/" + (RobotConfig.NUMROBOTCONFIGFIELDS + 2) + ") of data for robot on line " + lineNum + " in file " + fileName);
             return;
         }
 
@@ -202,7 +203,8 @@ public class RobotTeamConfig {
                     Integer.parseInt(tokens[10]),
                     Integer.parseInt(tokens[11]),
                     Integer.parseInt(tokens[12]),
-                    Integer.parseInt(tokens[13])
+                    Integer.parseInt(tokens[13]),
+                    Integer.parseInt(tokens[14])
             );
             numRobots++;
             robotTeam.put(currRobot.getRobotNumber(), currRobot);
@@ -231,7 +233,8 @@ public class RobotTeamConfig {
                     + currRobot.getChild() + " "
                     + currRobot.getAbility() + " "
                     + currRobot.getComStationLimit() + " "
-                    + currRobot.getSpeed() + "\n");
+                    + currRobot.getSpeed() + " "
+                    + currRobot.getEnergyConsumption() + "\n");
         }
         System.out.println("-------------------------------------------------------------");
     }

@@ -76,7 +76,7 @@ public class AgentStats {
     private int lastIncrementedTimeDoubleSensing;
     private final LinkedList<Integer> timeBaseMessageReceived;
     private int comStationsDropped;
-    private int batteryPower; //Just for logging!!!
+    private int energyConsumption;
     private int communications;
 
     public AgentStats() {
@@ -100,7 +100,7 @@ public class AgentStats {
         timeDoubleSensing = 0;
         timeBaseMessageReceived = new LinkedList<Integer>();
         comStationsDropped = 0;
-        batteryPower = 0;
+        energyConsumption = 0;
         communications = 0;
     }
 
@@ -125,7 +125,7 @@ public class AgentStats {
         timeDoubleSensing = agentStats.timeDoubleSensing;
         timeBaseMessageReceived = (LinkedList<Integer>) agentStats.timeBaseMessageReceived.clone();
         comStationsDropped = agentStats.comStationsDropped;
-        batteryPower = agentStats.batteryPower;
+        energyConsumption = agentStats.energyConsumption;
         communications = agentStats.communications;
     }
 
@@ -141,12 +141,16 @@ public class AgentStats {
         this.communications++;
     }
 
-    public int getBatteryPower() {
-        return batteryPower;
+    public int getEnergyConsumption() {
+        return energyConsumption;
     }
 
-    public void setBatteryPower(int batteryPower) {
-        this.batteryPower = batteryPower;
+    public void setEnergyConsumption(int energyConsumption) {
+        this.energyConsumption = energyConsumption;
+    }
+
+    public void incrementEnergyConsumption(int energyConsumption) {
+        this.energyConsumption += energyConsumption;
     }
 
     public int getTimeLastCentralCommand() {
