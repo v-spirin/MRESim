@@ -105,7 +105,7 @@ public class Environment {
         status = new Status[columns][rows];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < columns; j++) {
-                status[j][i] = Status.unexplored;
+                status[j][i] = Status.explored;
             }
         }
     }

@@ -254,9 +254,9 @@ public class SimulationFramework implements ActionListener {
 
         for (int i = 0; i < numRobots - 1; i++) {
             for (int j = i + 1; j < numRobots; j++) {
-                if (multihopCommTable[i][j] == 1) {
-                    agent[i].getTeammate(agent[j].getID()).setInRange(true);
-                    agent[j].getTeammate(agent[i].getID()).setInRange(true);
+                if (multihopCommTable[i][j] >= 1) {
+                    agent[i].getTeammate(agent[j].getID()).setCommunicationLink(true);
+                    agent[j].getTeammate(agent[i].getID()).setCommunicationLink(true);
                 }
             }
         }
@@ -287,7 +287,7 @@ public class SimulationFramework implements ActionListener {
                             && !agent[i].isExplorer()
                             && agent[j].getState() == Agent.AgentState.ReturnToParent
                             && !agent[j].isExplorer()
-                            && agent[i].getTeammate(agent[j].getID()).isInRange()
+                            && agent[i].getTeammate(agent[j].getID()).hasCommunicationLink()
                             && agent[i].getPath().getLength() < agent[j].getPath().getLength()) {
                         agent[i].setState(Agent.AgentState.GoToChild);
                         agent[i].setStateTimer(0);
@@ -767,7 +767,7 @@ public class SimulationFramework implements ActionListener {
         // Exchange data
         for (int i = 0; i < numRobots - 1; i++) {
             for (int j = i + 1; j < numRobots; j++) {
-                if (multihopCommTable[i][j] == 1) {
+                if (multihopCommTable[i][j] >= 1) {
                     long realtimeStart2 = System.currentTimeMillis();
                     DataMessage msgFromFirst = new DataMessage(agent[i], directCommTable[i][j]);
                     DataMessage msgFromSecond = new DataMessage(agent[j], directCommTable[i][j]);
@@ -791,108 +791,15 @@ public class SimulationFramework implements ActionListener {
             agent[q].updateAfterCommunication();
         }
 
-        //verifyNoInfoGotLost();
-        //System.out.println(Constants.INDENT + "updateAfterCommunication took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         //System.out.println(Constants.INDENT + "Communication complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
-    // <editor-fold defaultstate="collapsed" desc="DELETE">
-    /*private void verifyNoInfoGotLost()
-    {
-        //build common occgrid of all agents
-        int counter = 0;
-        OccupancyGrid commonGrid = new OccupancyGrid(agent[0].getOccupancyGrid().width, agent[0].getOccupancyGrid().height);
-        for (int j = 0; j < commonGrid.width; j++)
-        {
-            for (int k = 0; k < commonGrid.height; k++)
-            {
-                if (!agent[0].getOccupancyGrid().isKnownAtBase(j, k))
-                {
-                    commonGrid.setGotRelayed(j, k);
-                    for (int i = 1; i < numRobots; i++)
-                    {
-                        boolean isRelayed = commonGrid.isGotRelayed(j, k);
-                        commonGrid.setByte(j, k, (byte)(commonGrid.getByte(j,k) | agent[i].getOccupancyGrid().getByteNoRelay(j,k)));
-                        if (isRelayed != commonGrid.isGotRelayed(j, k))
-                            System.out.println("THIS SHOULD NEVER HAPPEN!");
-                        if (!agent[i].getOccupancyGrid().isGotRelayed(j, k))
-                            commonGrid.setGotUnrelayed(j, k);
-                    }
-                    //check that someone is relaying information known to agents but unknown at base
-                    if (commonGrid.freeSpaceAt(j, k) && !commonGrid.isKnownAtBase(j, k) && commonGrid.isGotRelayed(j, k))
-                        counter++;
-                }
-            }
-        }
-        if (counter > 0)
-        {
-            int res = verifyNoInfoGotLost2();
-            if (res > 0)
-            {
-                System.out.println("ERROR: INFORMATION LOST!! " + counter);
-                System.out.println("@@@@@@@@@@@@@@  DIFF = " + res + "     @@@@@@@@@@@@@@@@@");
-            }
-        }
-    }
-
-    public int verifyNoInfoGotLost2()
-    {
-        //build common occgrid of all agents
-        int counter_allagents = 0;
-        int counter_base = 0;
-        int newCell = 0;
-        OccupancyGrid commonGrid = new OccupancyGrid(agent[0].getOccupancyGrid().width, agent[0].getOccupancyGrid().height);
-        for (int j = 0; j < commonGrid.width; j++)
-        {
-            for (int k = 0; k < commonGrid.height; k++)
-            {
-                boolean newCellFound = false;
-                commonGrid.setBit(j, k, OccupancyGrid.OccGridBit.FreeSpace, 0);
-                for (int i = 0; i < numRobots; i++)
-                {
-                    if (agent[i].getOccupancyGrid().freeSpaceAt(j, k))
-                    {
-                        commonGrid.setFreeSpaceAt(j, k);
-                        break;
-                    }
-                }
-
-                for (int i = 1; i < numRobots; i++)
-                {
-                    if (agent[i].getOccupancyGrid().freeSpaceAt(j, k))
-                    {
-                        if ((!agent[i].getOccupancyGrid().isKnownAtBase(j, k)) &&
-                                (!agent[i].getOccupancyGrid().isGotRelayed(j, k)))
-                        {
-                            newCell++;
-                            newCellFound = true;
-                            break;
-                        }
-                    }
-                }
-
-                //if ((commonGrid.freeSpaceAt(j, k)) &&
-                //        !(agent[0].getOccupancyGrid().freeSpaceAt(j, k)) &&
-                //        !newCellFound)
-                //    System.out.println("~~~ CELL LOST: (" + j + ", " + k + ")");
-                //
-                //check that someone is relaying information known to agents but unknown at base
-                if (commonGrid.freeSpaceAt(j, k))
-                    counter_allagents++;
-                if (agent[0].getOccupancyGrid().freeSpaceAt(j, k))
-                    counter_base++;
-            }
-        }
-        int result = (counter_allagents - counter_base - newCell);
-        return result;
-    }*/
-    // </editor-fold>
     private static int[][] detectMultiHopLinks(int commTable[][]) {
         for (int i = 0; i < commTable.length; i++) {
             for (int j = 0; j < commTable[0].length; j++) {
-                if (commTable[i][j] == 1 || commTable[j][i] == 1) {
+                if (commTable[i][j] >= 1 || commTable[j][i] >= 1) {
                     for (int k = 0; k < commTable.length; k++) {
-                        if (commTable[k][i] == 1 || commTable[i][k] == 1) {
+                        if (commTable[k][i] >= 1 || commTable[i][k] >= 1) {
                             commTable[k][j] = 1;
                             commTable[j][k] = 1;
                         }
@@ -1191,7 +1098,7 @@ public class SimulationFramework implements ActionListener {
         if (timeElapsed > 5 && timeElapsed % 10 == 0) {
             for (int i = 1; i < numRobots - 1; i++) {
                 for (int j = i + 1; j < numRobots; j++) {
-                    if (agent[i].getTeammate(agent[j].getID()).isInRange() && checkRoleSwitch(i, j)) {
+                    if (agent[i].getTeammate(agent[j].getID()).hasCommunicationLink() && checkRoleSwitch(i, j)) {
                         // Only one role switch per time step allowed at the moment
                         // exit loops
                         numSwaps++;

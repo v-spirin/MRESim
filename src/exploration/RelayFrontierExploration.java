@@ -100,7 +100,7 @@ public class RelayFrontierExploration extends FrontierExploration {
         /* If base station is in range,
          * update timeLastDirectContactCS and lastContactAreaKnown and refill relayStations
          */
-        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
+        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
             //When in com-range, maybe even in handover-range?
             if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInHandoverRange(agent)
                     && (agent.comStations.size() < agent.getComStationLimit())) {

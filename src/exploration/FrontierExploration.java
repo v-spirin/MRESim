@@ -94,7 +94,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         Point nextStep;
 
-        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
+        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
             agent.getStats().setTimeLastDirectContactCS(1);
             agent.getStats().setLastContactAreaKnown(agent.getStats().getAreaKnown());
         } else {
@@ -119,7 +119,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         }
 
         agent.getStats().incrementTimeSinceLastPlan();
-        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
+        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
             noReturnTimer = 0;
         } else {
             noReturnTimer++;

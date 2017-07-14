@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -70,7 +70,7 @@ public class DataMessage implements IDataMessage {
     public int lastContactAreaKnown;
     public double pathLength;
     public boolean missionComplete;
-    public boolean directComm;
+    public int directComm;
     public AgentState state;
     public double distToBase;
     public int speed;
@@ -99,7 +99,7 @@ public class DataMessage implements IDataMessage {
         }
         missionComplete = agent.isMissionComplete();
         state = agent.getState();
-        directComm = (direct == 1);
+        directComm = direct;
         distToBase = agent.distanceToBase();
         speed = agent.getSpeed();
         relayID = agent.getID();
@@ -122,8 +122,8 @@ public class DataMessage implements IDataMessage {
 
     @Override
     public void receiveMessage(RealAgent agent, TeammateAgent teammate) {
-        teammate.setInRange(true);
-        teammate.setInDirectRange(directComm);
+        teammate.setCommunicationLink(true);
+        teammate.setDirectComLink(directComm);
         teammate.setX(x);
         teammate.setY(y);
         teammate.setOccupancyGrid(occGrid);

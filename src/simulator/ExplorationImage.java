@@ -625,7 +625,7 @@ public class ExplorationImage {
 
         //drawRange(env, agent, range, Constants.MapColor.comm());
         for (TeammateAgent teammate : agent.getAllTeammates().values()) {
-            if (teammate.isInRange()) {
+            if (teammate.hasCommunicationLink()) {
                 for (Point p : pointsAlongSegment(agent.getLocation(), teammate.getLocation())) {
                     for (int i = p.x - 1; i <= p.x + 1; i++) {
                         for (int j = p.y - 1; j <= p.y + 1; j++) {
@@ -845,7 +845,7 @@ public class ExplorationImage {
             for (RealAgent agent1 : agent) {
                 if (agent1.getID() == agent[i].getParent()) {
                     for (Point p : pointsAlongThickSegment(agent[i].getLocation(), agent1.getLocation())) {
-                        if (agent[i].getParentTeammate().isInRange()) {
+                        if (agent[i].getParentTeammate().hasCommunicationLink()) {
                             setPixel(p.x, p.y, Constants.MapColor.link());
                         } else {
                             setPixel(p.x, p.y, Constants.MapColor.hierarchy());

@@ -64,8 +64,8 @@ public class TeammateAgent extends Agent {
     /* units of time elapsed since command
                                      received from ComStation */
     int lastContactAreaKnown;
-    private boolean inRange;
-    private boolean inDirectRange;
+    private boolean communicationLink;
+    private int directComLink;
 
     private int timeSinceLastComm;
     OccupancyGrid occGrid;
@@ -81,7 +81,7 @@ public class TeammateAgent extends Agent {
     public TeammateAgent(RobotConfig robot) {
         super(robot);
 
-        inRange = false;
+        communicationLink = false;
         timeSinceLastComm = 0;
         pathLength = 0;
         rendezvousAgentData = new RendezvousAgentData(this);
@@ -113,27 +113,27 @@ public class TeammateAgent extends Agent {
         this.timeSinceLastComm = t;
     }
 
-    public boolean isInDirectRange() {
-        return inDirectRange;
+    public int getDirectComLink() {
+        return directComLink;
     }
 
-    public void setInDirectRange(boolean r) {
-        inDirectRange = r;
+    public void setDirectComLink(int r) {
+        directComLink = r;
     }
 
-    public boolean isInRange() {
-        if (inRange) {
+    public boolean hasCommunicationLink() {
+        if (communicationLink) {
             //System.out.println("I am " + this.getName() + "[" + this.getID() + "], in range with my teammate.");
         }
-        return inRange;
+        return communicationLink;
     }
 
     public boolean isInHandoverRange(Agent agent) {
         return (distanceTo(agent) < Constants.HANDOVER_RANGE);
     }
 
-    public void setInRange(boolean r) {
-        inRange = r;
+    public void setCommunicationLink(boolean r) {
+        communicationLink = r;
     }
 
     public OccupancyGrid getOccupancyGrid() {

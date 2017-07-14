@@ -148,7 +148,7 @@ public class UtilityExploration extends FrontierExploration {
                 + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO + ". newInfo = " + totalNewInfo
                 + ", baseInfo = " + agent.getStats().getCurrentBaseKnowledgeBelief());
 
-        if ((!agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) && (infoRatio < simConfig.TARGET_INFO_RATIO)) //if ((!agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) && (infoRatio >= simConfig.TARGET_INFO_RATIO))
+        if ((!agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) && (infoRatio < simConfig.TARGET_INFO_RATIO)) //if ((!agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) && (infoRatio >= simConfig.TARGET_INFO_RATIO))
         {
             System.out.println(agent.toString() + " Decided to return. infoRatio = "
                     + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO);
@@ -207,7 +207,7 @@ public class UtilityExploration extends FrontierExploration {
     private Point takeStep_ReturnToParent(int timeElapsed) {
         System.out.println(agent + " takeStep_ReturnToParent timeInState: " + agent.getStateTimer());
         // If base is in range, go back to exploring
-        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) {
+        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
             agent.setState(RealAgent.AgentState.Explore);
             agent.setStateTimer(0);
             return takeStep_Explore(timeElapsed);

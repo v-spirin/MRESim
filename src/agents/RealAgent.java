@@ -447,7 +447,7 @@ public class RealAgent extends Agent {
 // <editor-fold defaultstate="collapsed" desc="Flush, take step, write step">
     public void flushComms() {
         teammates.values().stream().forEach((teammate) -> {
-            teammate.setInRange(false);
+            teammate.setCommunicationLink(false);
         });
     }
 
@@ -1163,11 +1163,11 @@ public class RealAgent extends Agent {
     }
 
     public boolean isCommunicating() {
-        return teammates.values().stream().anyMatch((teammate) -> (teammate.isInRange()));
+        return teammates.values().stream().anyMatch((teammate) -> (teammate.hasCommunicationLink()));
     }
 
     public void updateAfterCommunication() {
-        teammates.values().stream().filter((teammate) -> (!teammate.isInRange())).forEach((teammate) -> {
+        teammates.values().stream().filter((teammate) -> (!teammate.hasCommunicationLink())).forEach((teammate) -> {
             teammate.setTimeSinceLastComm(teammate.getTimeSinceLastComm() + 1);
         }); //processRelayMarks();
     }

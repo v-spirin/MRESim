@@ -311,7 +311,7 @@ abstract public class Agent {
         return comStations;
     }
 
-// <editor-fold defaultstate="collapsed" desc="Utility Functions">
+// Utility Functions
     //Adds all points in list2 to list1 (no duplicates), returns merged list.
     public LinkedList<Point> mergeLists(LinkedList<Point> list1, LinkedList<Point> list2) {
         if (list2 == null) {
@@ -370,7 +370,6 @@ abstract public class Agent {
                 this.energyCunsumption);
         return robot;
     }
-// </editor-fold>
 
     abstract public Point takeStep(int timeElapsed);
 

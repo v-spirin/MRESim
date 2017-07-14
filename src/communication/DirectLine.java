@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -43,8 +43,9 @@
  */
 package communication;
 
-import environment.Environment;
 import agents.RealAgent;
+import environment.Environment;
+import static java.lang.Math.floor;
 
 /**
  *
@@ -57,16 +58,20 @@ public class DirectLine {
 
         for (int i = 0; i < agent.length - 1; i++) {
             for (int j = i + 1; j < agent.length; j++) {
-                commTable[i][j] = 0;
-            }
-        }
-
-        for (int i = 0; i < agent.length - 1; i++) {
-            for (int j = i + 1; j < agent.length; j++) {
-                if (agent[i].distanceTo(agent[j]) < (agent[i].getCommRange() + agent[j].getCommRange())
+                double distance = agent[i].distanceTo(agent[j]);
+                int smallRange;
+                if (agent[i].getCommRange() < agent[j].getCommRange()) {
+                    smallRange = agent[i].getCommRange();
+                } else {
+                    smallRange = agent[j].getCommRange();
+                }
+                if (distance < smallRange
                         && env.directLinePossible(agent[i].getX(), agent[i].getY(), agent[j].getX(), agent[j].getY(), 3)) {
-                    commTable[i][j] = 1;
-                    commTable[j][i] = 1;
+                    commTable[i][j] = (int) floor(1 - (distance / smallRange) * 100);
+                    commTable[j][i] = commTable[i][j];
+                } else {
+                    commTable[i][j] = 0;
+                    commTable[j][i] = 0;
                 }
             }
         }

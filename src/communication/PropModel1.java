@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -44,8 +44,8 @@
 package communication;
 
 import agents.Agent;
-import environment.Environment;
 import agents.RealAgent;
+import environment.Environment;
 import environment.OccupancyGrid;
 import java.awt.Point;
 import java.awt.Polygon;
@@ -120,7 +120,7 @@ public class PropModel1 {
                 currX = x + (int) (Math.cos(angle) * j);
                 currY = y + (int) (Math.sin(angle) * j);
                 if (!occGrid.locationExists(currX, currY)
-                        || signalStrength((int) (comRange * 0.5), occGrid, new Point(x,y), new Point(currX, currY)) < (CUTOFF)) {
+                        || signalStrength((int) (comRange * 0.5), occGrid, new Point(x, y), new Point(currX, currY)) < (CUTOFF)) {
                     range.addPoint(ssuperOldX, ssuperOldY);
                     break;
 
@@ -179,7 +179,6 @@ public class PropModel1 {
         return (signalStrength(agentRange, grid, p1, p2) >= CUTOFF);
     }
 
-    //<editor-fold defaultstate="collapsed" desc="Signal Strength">
     //For use by simulation
     private static double signalStrength(double agentRange, Environment env, Point p1, Point p2) {
         int numWalls = Math.min(MAX_WALLS, env.numObstaclesOnLine(p1.x, p1.y, p2.x, p2.y));
@@ -196,22 +195,19 @@ public class PropModel1 {
         return (REF_SIGNAL - (10 * PATHLOSS_FACTOR * Math.log10(distance / /*REF_DISTANCE*/ (agentRange
                 * (1 / AGENT_ESTIMATION_FACTOR)))) - numWalls * WALL_ATTENUATION_AGENT);
     }
-    //</editor-fold>
 
     public static int[][] detectCommunication(Environment env, RealAgent[] agent) {
         int commTable[][] = new int[agent.length][agent.length];
 
-        for (int i = 0; i < agent.length; i++) {
-            for (int j = 0; j < agent.length; j++) {
-                commTable[i][j] = 0;
-            }
-        }
-
         for (int i = 0; i < agent.length - 1; i++) {
             for (int j = i + 1; j < agent.length; j++) {
-                if (signalStrength(agent[i].getCommRange(), env, agent[i].getLocation(), agent[j].getLocation()) > CUTOFF) {
-                    commTable[i][j] = 1;
-                    commTable[j][i] = 1;
+                double signal = signalStrength(agent[i].getCommRange(), env, agent[i].getLocation(), agent[j].getLocation());
+                if (signal > CUTOFF) {
+                    commTable[i][j] = (int) signal;
+                    commTable[j][i] = (int) signal;
+                } else {
+                    commTable[i][j] = 0;
+                    commTable[j][i] = 0;
                 }
             }
         }
