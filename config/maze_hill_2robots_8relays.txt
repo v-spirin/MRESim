@@ -1,0 +1,13 @@
+1 BaseStation 100 400 0.0 200 100 1000 BaseStation 1 1 0 10 0 1
+2 A 80 400 4.6 200 100 1000 Explorer 1 4 3 0 15 5
+3 B 120 400 4.6 200 100 1000 Explorer 1 5 3 2 10 5
+4 Relay_1 100 400 0.0 200 100 1000 RelayStation 3 1 0 0 0 5
+5 Relay_2 100 400 0.0 200 100 1000 RelayStation 1 1 0 0 0 5
+6 Relay_3 100 400 0.0 200 100 1000 RelayStation 1 1 0 0 0 5
+7 Relay_4 100 400 0.0 200 100 1000 RelayStation 1 1 0 0 0 5
+8 Relay_5 100 400 0.0 200 100 1000 RelayStation 1 1 0 0 0 5
+9 Relay_6 100 400 0.0 200 100 1000 RelayStation 1 1 0 0 0 5
+10 Relay_7 100 400 0.0 200 100 1000 RelayStation 1 1 0 0 0 5
+11 Relay_8 100 400 0.0 200 100 1000 RelayStation 1 1 0 0 0 5
+12 test 1 1 1.0 1 1 1 RelayStation 1 1 0 0 0 5
+13 test 1 1 1.0 1 1 1 RelayStation 1 1 0 0 0 5
