@@ -67,7 +67,7 @@ public class DirectLine {
                 }
                 if (distance < smallRange
                         && env.directLinePossible(agent[i].getX(), agent[i].getY(), agent[j].getX(), agent[j].getY(), 3)) {
-                    commTable[i][j] = (int) floor(1 - (distance / smallRange) * 100);
+                    commTable[i][j] = (int) floor((1 - (distance / smallRange)) * 100);
                     commTable[j][i] = commTable[i][j];
                 } else {
                     commTable[i][j] = 0;

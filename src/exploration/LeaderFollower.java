@@ -58,8 +58,10 @@ import path.Path;
 public class LeaderFollower extends FrontierExploration implements Exploration {
 
     int TIME_BETWEEN_PLANS = 10;
-    Point prelast_com_point;
-    Point last_com_point;
+    int frontier_com_failure_counter = 0;
+    int frontier_wipe_counter = -1;
+    double last_percentage_known = 0;
+    boolean backtracking = false;
 
     public LeaderFollower(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, RealAgent baseStation) {
         super(agent, frontierExpType, baseStation);
@@ -88,12 +90,13 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         else if (agent.getRole().equals(roletype.Relay) && !agent.getParentTeammate().hasCommunicationLink()) {
             //System.out.println(agent.toString() + "LeaderFollower: Out of Comandcenter-range, go to last position.");
             agent.getStats().setTimeSinceLastPlan(0);
-            nextStep = last_com_point;
-            last_com_point = prelast_com_point;
+            nextStep = replanRelay();
+            //nextStep = last_com_point;
+            //last_com_point = prelast_com_point;
         } // CHECK 2
         // Agent isn't stuck.
         // Is it time to replan?
-        else if (agent.getStats().getTimeSinceLastPlan() > TIME_BETWEEN_PLANS) {
+        else if (agent.getStats().getTimeSinceLastPlan() > TIME_BETWEEN_PLANS || backtracking) {
             //System.out.println(agent.toString() + "LeaderFollower: Timed replanning.");
             if (agent.getRole().equals(roletype.Relay)) {
                 nextStep = replanRelay();
@@ -126,10 +129,6 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         } else {
             agent.getStats().incrementLastDirectContactCS();
         }
-        if (agent.getParentTeammate().hasCommunicationLink()) {
-            prelast_com_point = last_com_point;
-            last_com_point = agent.getLocation();
-        }
         agent.getStats().incrementTimeSinceLastPlan();
 
         if (nextStep == null) {
@@ -140,32 +139,57 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
     }
 
     public Point replanRelay() {
-        Path P2C = agent.calculatePath(agent.getLocation(), agent.getChildTeammate().getLocation(), false);
 
-        if (agent.getLocation().distance(agent.getParentTeammate().getLocation())
+        if (!agent.getParentTeammate().hasCommunicationLink()) {
+            Path P2P = agent.calculatePath(agent.getLocation(), agent.getParentTeammate().getLocation(), false);
+            agent.setPath(P2P);
+            backtracking = true;
+            return agent.getNextPathPoint();
+        } else {
+            Path P2C = agent.calculatePath(agent.getLocation(), agent.getChildTeammate().getLocation(), false);
+            agent.setPath(P2C);
+            backtracking = false;
+            return agent.getNextPathPoint();
+        }
+        /*if (agent.getLocation().distance(agent.getParentTeammate().getLocation())
                 < agent.getCommRange() - 1 * agent.getSpeed()) {
             agent.setPath(P2C);
             return agent.getNextPathPoint();
         } else {
             return (new Point(agent.getPrevX(), agent.getPrevY()));
-        }
+        }*/
     }
 
     public Point replanExplorer() {
         Point nextStep;
         if (!agent.getParentTeammate().hasCommunicationLink()) {
+            frontier_com_failure_counter++;
+            if (frontier_com_failure_counter > 5) {
+                frontier_com_failure_counter = 0;
+                frontiers.remove(agent.getLastFrontier());
+
+            }
             agent.getStats().setTimeSinceLastPlan(0);
             //System.out.println(agent.toString() + "UseComPoint: " + last_com_point + " now: " + agent.getLocation());
-            nextStep = last_com_point;
-            prelast_com_point = last_com_point;
-            return nextStep;
+            Path P2P = agent.calculatePath(agent.getLocation(), agent.getParentTeammate().getLocation(), false);
+            agent.setPath(P2P);
+            backtracking = true;
+            return agent.getNextPathPoint();
         }
+        backtracking = false;
 
         // Find frontiers
-        calculateFrontiers();
+        if (frontiers.isEmpty()) {
+            calculateFrontiers();
+            if (last_percentage_known != agent.getStats().getPercentageKnown()) {
+                frontier_wipe_counter = 0;
+            }
+            frontier_wipe_counter++;
+        }
+        last_percentage_known = agent.getStats().getPercentageKnown();
 
         // If no frontiers found, return to ComStation
-        if (frontiers.isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL)) {
+        if (frontiers.isEmpty() || frontier_wipe_counter > 5 || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL)) {
             //System.out.println(agent.toString() + "No frontiers found, returning home.");
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();

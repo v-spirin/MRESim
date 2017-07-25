@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -56,7 +56,6 @@ import java.util.Random;
  */
 public class Frontier implements Comparable<Frontier> {
 
-// <editor-fold defaultstate="collapsed" desc="Variables and Constructor">
     private Point centre;
     private double distanceToCentre;
     private Polygon areaPolygon;
@@ -81,8 +80,6 @@ public class Frontier implements Comparable<Frontier> {
         this.distanceToCentre = d2c;
     }
 
-// </editor-fold>     
-// <editor-fold defaultstate="collapsed" desc="Key functions copy, compareto">
     public Frontier copy() {
         return new Frontier(polygonOutline, areaPolygon, area, centre, distanceToCentre);
     }
@@ -118,8 +115,6 @@ public class Frontier implements Comparable<Frontier> {
         return hash;
     }
 
-// </editor-fold>     
-// <editor-fold defaultstate="collapsed" desc="Get and set">
     public Polygon getAreaPolygon() {
         return areaPolygon;
     }
@@ -140,8 +135,6 @@ public class Frontier implements Comparable<Frontier> {
         return polygonOutline;
     }
 
-// </editor-fold>     
-// <editor-fold defaultstate="collapsed" desc="Utility functions">
     public Point getClosestPoint(Point ref, OccupancyGrid grid) {
         //return getCentre();
 
@@ -306,5 +299,4 @@ public class Frontier implements Comparable<Frontier> {
                 + ", and centre (" + centre.x + "," + centre.y + ").";
     }
 
-// </editor-fold>     
 }

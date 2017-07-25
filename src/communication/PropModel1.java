@@ -66,7 +66,7 @@ public class PropModel1 {
     private static final double WALL_ATTENUATION_AGENT = WALL_ATTENUATION_SIM * AGENT_ESTIMATION_FACTOR; //this should probably be higher for agent than for simulator, as agents
     //don't know how thick the walls are generally.
     private static final int MAX_WALLS = 125; //maximum combined wall "thickness" after which attenuation stops making a difference
-    private static final double CUTOFF = -93;
+    private static final int CUTOFF = -93;
 
     public static Polygon getRange(Environment env, Agent agent) {
         double INCREMENT = Math.PI / 64;
@@ -203,8 +203,8 @@ public class PropModel1 {
             for (int j = i + 1; j < agent.length; j++) {
                 double signal = signalStrength(agent[i].getCommRange(), env, agent[i].getLocation(), agent[j].getLocation());
                 if (signal > CUTOFF) {
-                    commTable[i][j] = (int) signal;
-                    commTable[j][i] = (int) signal;
+                    commTable[i][j] = -CUTOFF + (int) signal;
+                    commTable[j][i] = -CUTOFF + (int) signal;
                 } else {
                     commTable[i][j] = 0;
                     commTable[j][i] = 0;
