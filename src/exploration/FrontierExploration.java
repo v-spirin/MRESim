@@ -76,6 +76,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
     Frontier lastFrontier;          // Keep track of last frontier of interest
     //Frontiers that are impossible to reach, so should be discarded
     HashMap<Frontier, Boolean> badFrontiers;
+    private double last_percentage_known = 0;
+    private int no_change_counter = 0;
 
     public FrontierExploration(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, RealAgent baseStation) {
         super(agent);
@@ -142,7 +144,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         calculateFrontiers();
 
         //If no frontiers found, or reached exploration goal, return to ComStation
-        if (((frontiers.isEmpty()) || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))
+        if (((frontiers.isEmpty()) || no_change_counter > 20 || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))
                 && timeElapsed > 100) {
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
@@ -151,6 +153,13 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 nextStep = agent.getNextPathPoint();
             }
             return nextStep;
+        } else {
+            if (last_percentage_known == agent.getStats().getPercentageKnown()) {
+                no_change_counter++;
+            } else {
+                no_change_counter = 0;
+            }
+            last_percentage_known = agent.getStats().getPercentageKnown();
         }
 
         long realtimeStart = System.currentTimeMillis();
@@ -487,7 +496,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
             } else //System.out.println("UtilityExact: " + best.utility);
             //System.out.println("UtilityExact: " + best.utility);
-             if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
+            {
+                if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
                     if (best.agentID == agent.getID()) {
                         if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
                             agent.setState(Agent.AgentState.GoToChild);
@@ -519,6 +529,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 } else {
                     utilities.add(best);
                 }
+            }
 
         }
 
@@ -582,7 +593,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 }
 
             } else //System.out.println("UtilityExact: " + best.utility);
-             if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
+            {
+                if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
                     if (best.agentID == agent.getID()) {
                         return best;
                     } else {
@@ -604,6 +616,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 } else {
                     utilities.add(best);
                 }
+            }
 
         }
 

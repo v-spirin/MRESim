@@ -575,9 +575,12 @@ public class SimulationFramework implements ActionListener {
         boolean allAgentsAtBase = true;
 
         for (int i = 1; i < agent.length; i++) {
-            if (!agent[0].getLocation().equals(agent[i].getLocation())) {
+            if (!agent[i].getTeammate(1).hasCommunicationLink() || !agent[i].isMissionComplete()) {
                 allAgentsAtBase = false;
             }
+            /*if (!agent[0].getLocation().equals(agent[i].getLocation())) {
+                allAgentsAtBase = false;
+            }*/
         }
 
         if (timeElapsed >= Constants.MAXIMUM_TIME || baseStationDone() || allAgentsAtBase) {
