@@ -82,7 +82,7 @@ public class SimulatorConfig {
     }
 
     public static enum frontiertype {
-        RangeConstrained, PeriodicReturn, ReturnWhenComplete, UtilReturn
+        PeriodicReturn, ReturnWhenComplete, UtilReturn
     }
 
     public static enum relaytype {

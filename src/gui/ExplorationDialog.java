@@ -156,7 +156,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
         radioLeaderFollower = new javax.swing.JRadioButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea2 = new javax.swing.JTextArea();
-        jLabel4 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         radioFrontier = new javax.swing.JRadioButton();
         jScrollPane4 = new javax.swing.JScrollPane();
@@ -167,7 +166,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
         jScrollPane5 = new javax.swing.JScrollPane();
         jTextArea5 = new javax.swing.JTextArea();
         jTextRatio = new javax.swing.JTextField();
-        radioFrontierType5 = new javax.swing.JRadioButton();
         jPanel3 = new javax.swing.JPanel();
         radioRole = new javax.swing.JRadioButton();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -311,8 +309,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
         jTextArea2.setOpaque(false);
         jScrollPane2.setViewportView(jTextArea2);
 
-        jLabel4.setText("Broken");
-
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -320,8 +316,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(radioLeaderFollower)
-                .addGap(89, 89, 89)
-                .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 379, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -332,9 +326,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(radioLeaderFollower)
-                        .addComponent(jLabel4)))
+                    .addComponent(radioLeaderFollower))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -375,7 +367,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
         subgroupFrontierBasedType.add(radioFrontierType2);
         radioFrontierType2.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         radioFrontierType2.setMnemonic('1');
-        radioFrontierType2.setText("Unconstrained, periodic return (broken)");
+        radioFrontierType2.setText("Periodic return");
         radioFrontierType2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 radioFrontierType2ActionPerformed(evt);
@@ -385,7 +377,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
         subgroupFrontierBasedType.add(radioFrontierType3);
         radioFrontierType3.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         radioFrontierType3.setMnemonic('2');
-        radioFrontierType3.setText("Unconstrained, return when done");
+        radioFrontierType3.setText("Return when done");
         radioFrontierType3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 radioFrontierType3ActionPerformed(evt);
@@ -422,16 +414,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
         jTextRatio.setText("0.9");
         jTextRatio.setToolTipText("");
 
-        subgroupFrontierBasedType.add(radioFrontierType5);
-        radioFrontierType5.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        radioFrontierType5.setMnemonic('0');
-        radioFrontierType5.setText("Range-constrained (broken)");
-        radioFrontierType5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                radioFrontierType5ActionPerformed(evt);
-            }
-        });
-
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -439,30 +421,26 @@ public class ExplorationDialog extends javax.swing.JDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(radioFrontier)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 235, Short.MAX_VALUE)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGap(12, 12, 12)
-                        .addComponent(radioFrontierType5, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(jPanel4Layout.createSequentialGroup()
-                                        .addGap(21, 21, 21)
-                                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addComponent(radioFrontierType3))
-                                .addContainerGap())
-                            .addGroup(jPanel4Layout.createSequentialGroup()
-                                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(radioFrontierType2, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(radioFrontierType4, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(jTextRatio, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(46, 46, 46)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 248, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                         .addGroup(jPanel4Layout.createSequentialGroup()
-                            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 413, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addContainerGap()))))
+                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGroup(jPanel4Layout.createSequentialGroup()
+                                    .addGap(21, 21, 21)
+                                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(radioFrontierType3))
+                            .addContainerGap())
+                        .addGroup(jPanel4Layout.createSequentialGroup()
+                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(radioFrontierType2, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(radioFrontierType4, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(jTextRatio, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(46, 46, 46)))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 413, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -473,9 +451,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
                         .addGap(0, 13, Short.MAX_VALUE)
                         .addComponent(radioFrontier))
                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(radioFrontierType5)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(36, 36, 36)
                 .addComponent(radioFrontierType2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(radioFrontierType3)
@@ -907,7 +883,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
         //Since developed in netbeans designer, this returns ASCII character, we want integers starting at 0.
         simConfig.setExpAlgorithm(groupExplorationAlgorithm.getSelection().getMnemonic() - 48);
         simConfig.setBatchFilename(batchFilename);
-        simConfig.setFrontierAlgorithm(subgroupFrontierBasedType.getSelection().getMnemonic() - 48);
+        simConfig.setFrontierAlgorithm(subgroupFrontierBasedType.getSelection().getMnemonic() - 48 - 1); // extra -1 because one option of frontierbased is gone and the nmonic starts at 1 now!
         simConfig.setRelayAlgorithm(subgroupRelay.getSelection().getMnemonic() - 48);
         simConfig.setRunFromLogFilename(logFilename);
         simConfig.setUseImprovedRendezvous(checkboxRendezvous.isSelected());
@@ -963,7 +939,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
 
     private void radioFrontierActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioFrontierActionPerformed
         if (radioFrontier.isSelected()) {
-            radioFrontierType5.setEnabled(true);
             radioFrontierType2.setEnabled(true);
             radioFrontierType3.setEnabled(true);
             radioFrontierType4.setEnabled(true);
@@ -971,7 +946,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
             radioRelay2.setEnabled(false);
             radioRelay3.setEnabled(false);
         } else if (radioTesting.isSelected()) {
-            radioFrontierType5.setEnabled(false);
             radioFrontierType2.setEnabled(false);
             radioFrontierType3.setEnabled(false);
             radioFrontierType4.setEnabled(false);
@@ -1033,10 +1007,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_radioRandomActionPerformed
 
-    private void radioFrontierType5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioFrontierType5ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_radioFrontierType5ActionPerformed
-
     private void radioRelay2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioRelay2ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_radioRelay2ActionPerformed
@@ -1068,7 +1038,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -1095,7 +1064,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
     private javax.swing.JRadioButton radioFrontierType2;
     private javax.swing.JRadioButton radioFrontierType3;
     private javax.swing.JRadioButton radioFrontierType4;
-    private javax.swing.JRadioButton radioFrontierType5;
     private javax.swing.JRadioButton radioLeaderFollower;
     private javax.swing.JRadioButton radioLog;
     private javax.swing.JRadioButton radioRandom;
