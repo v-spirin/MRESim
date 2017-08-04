@@ -80,8 +80,14 @@ abstract public class Agent {
         Initial, Explore, ReturnToBaseStation, WaitForParent, GiveParentInfo,
         GoToChild, WaitForChild, GetInfoFromChild, OutOfService, RELAY, INACTIVE, OCCUPIED, AKTIVE
     }
+
+    public static enum ExplorationState {
+        Initial, Explore, ReturnToBaseStation, WaitForParent, GiveParentInfo,
+        GoToChild, WaitForChild, GetInfoFromChild, OutOfService
+    }
     private AgentState state;
-    private AgentState prevExploreState;
+    private ExplorationState prevExploreState = ExplorationState.Initial;
+    private ExplorationState exploreState = ExplorationState.Initial;
 
     int parent;             // Should keep ID and NOT RobotNumber of the parent
     int child;              // Should keep ID and NOT RobotNumber of the child
@@ -177,15 +183,23 @@ abstract public class Agent {
         return state;
     }
 
-    public AgentState getPrevState() {
+    public void setState(AgentState state) {
+        this.state = state;
+    }
+
+    public ExplorationState getPrevExploreState() {
         return prevExploreState;
     }
 
-    public final void setState(AgentState s) {
-        if (this.state != s) {
-            prevExploreState = this.state;
+    public ExplorationState getExploreState() {
+        return exploreState;
+    }
+
+    public final void setExploreState(ExplorationState s) {
+        if (this.exploreState != s) {
+            prevExploreState = this.exploreState;
             this.setStateTimer(0);
-            this.state = s;
+            this.exploreState = s;
         }
     }
 
