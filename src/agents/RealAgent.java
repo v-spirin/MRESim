@@ -61,7 +61,6 @@ import exploration.RandomExploration;
 import exploration.RelayFrontierExploration;
 import exploration.RoleBasedExploration;
 import exploration.RunFromLog;
-import exploration.UtilityExploration;
 import exploration.WallFollowExploration;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.MultiPointRendezvousStrategy;
@@ -518,30 +517,30 @@ public class RealAgent extends Agent {
                         break;
 
                     case LeaderFollower:
-                        exploration = new LeaderFollower(this, simConfig.getFrontierAlgorithm(), baseStation);
+                        exploration = new LeaderFollower(this, simConfig, simConfig.getFrontierAlgorithm(), baseStation);
                         break;
                     case FrontierExploration:
-                        if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn)) {
-                            exploration = new UtilityExploration(this, simConfig, baseStation);
-                        } else {
-                            exploration = new FrontierExploration(this, simConfig.getFrontierAlgorithm(), baseStation);
-                        }
+                        //if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn)) {
+                        //    exploration = new UtilityExploration(this, simConfig, baseStation);
+                        //} else {
+                        exploration = new FrontierExploration(this, simConfig, simConfig.getFrontierAlgorithm(), baseStation);
+                        //}
                         break;
                     case RoleBasedExploration:
-                        exploration = new RoleBasedExploration(timeElapsed, this, this.getRendezvousStrategy(), baseStation);
+                        exploration = new RoleBasedExploration(timeElapsed, this, simConfig, this.getRendezvousStrategy(), baseStation);
                         break;
 
                     case Testing:
-                        exploration = new RelayFrontierExploration(this, simConfig.getFrontierAlgorithm(), simConfig.getRelayAlgorithm(), simConfig.useComStations(), simConfig.getComStationDropChance(), baseStation);
+                        exploration = new RelayFrontierExploration(this, simConfig, simConfig.getFrontierAlgorithm(), simConfig.getRelayAlgorithm(), simConfig.useComStations(), simConfig.getComStationDropChance(), baseStation);
                         break;
                     case Random:
-                        exploration = new RandomExploration(this);
+                        exploration = new RandomExploration(this, simConfig);
                         break;
                     case WallFollow:
-                        exploration = new WallFollowExploration(this, occGrid);
+                        exploration = new WallFollowExploration(this, simConfig, occGrid);
                         break;
                     default:
-                        exploration = new RandomExploration(this);
+                        exploration = new RandomExploration(this, simConfig);
                         break;
                 }
             }
@@ -808,9 +807,9 @@ public class RealAgent extends Agent {
 
             if ((simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)
                     && (simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.UtilReturn)) {
-                if (((getState() == AgentState.ReturnToParent) || ag.getState() == AgentState.ReturnToParent)
+                if (((getState() == AgentState.ReturnToBaseStation) || ag.getState() == AgentState.ReturnToBaseStation)
                         && (ag.getNewInfo() > 1 || stats.getNewInfo() > 1)) {
-                    setState(AgentState.ReturnToParent);
+                    setState(AgentState.ReturnToBaseStation);
                 } else {
                     setState(AgentState.Explore);
                 }
@@ -1039,7 +1038,7 @@ public class RealAgent extends Agent {
                 stats.incrementTimeDoubleSensing(timeElapsed);
             }
         }
-        if (getState().equals(AgentState.ReturnToParent)
+        if (getState().equals(AgentState.ReturnToBaseStation)
                 || getState().equals(AgentState.WaitForParent)
                 || getState().equals(AgentState.WaitForChild)
                 || //getState().equals(AgentState.GetInfoFromChild) ||

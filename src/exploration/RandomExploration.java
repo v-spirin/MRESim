@@ -45,6 +45,7 @@
 package exploration;
 
 import agents.RealAgent;
+import config.SimulatorConfig;
 import java.awt.Point;
 
 /**
@@ -53,8 +54,8 @@ import java.awt.Point;
  */
 public class RandomExploration extends BasicExploration implements Exploration {
 
-    public RandomExploration(RealAgent agent) {
-        super(agent);
+    public RandomExploration(RealAgent agent, SimulatorConfig simConfig) {
+        super(agent, simConfig);
         System.out.println("Start Wall");
     }
 

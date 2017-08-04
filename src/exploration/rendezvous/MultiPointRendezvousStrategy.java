@@ -220,7 +220,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
                     Path newPath = agent.calculatePath(point1, agent.getParentTeammate().getLocation(), false);
                     agent.setPath(newPath);
 
-                    agent.setState(Agent.AgentState.ReturnToParent);
+                    agent.setState(Agent.AgentState.ReturnToBaseStation);
                     return agent.getLocation();
                 }
             } else {

@@ -69,12 +69,12 @@ public class RelayFrontierExploration extends FrontierExploration {
     private Point currentGoal;
     private LinkedList<Point> keyPoints;
 
-    public RelayFrontierExploration(RealAgent agent,
+    public RelayFrontierExploration(RealAgent agent, SimulatorConfig simConfig,
             SimulatorConfig.frontiertype frontierExpType,
             SimulatorConfig.relaytype relayType,
             boolean useRelayStations, double dropChance,
             RealAgent baseStation) {
-        super(agent, frontierExpType, baseStation);
+        super(agent, simConfig, frontierExpType, baseStation);
         this.useRelayStations = useRelayStations;
         this.dropChance = dropChance;
         this.baseStation = baseStation;

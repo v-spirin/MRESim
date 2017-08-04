@@ -283,9 +283,9 @@ public class SimulationFramework implements ActionListener {
             // second role switch check (to avoid duplicate relays)
             for (int i = 1; i < numRobots; i++) {
                 for (int j = 1; j < numRobots; j++) {
-                    if (i != j && agent[i].getState() == Agent.AgentState.ReturnToParent
+                    if (i != j && agent[i].getState() == Agent.AgentState.ReturnToBaseStation
                             && !agent[i].isExplorer()
-                            && agent[j].getState() == Agent.AgentState.ReturnToParent
+                            && agent[j].getState() == Agent.AgentState.ReturnToBaseStation
                             && !agent[j].isExplorer()
                             && agent[i].getTeammate(agent[j].getID()).hasCommunicationLink()
                             && agent[i].getPath().getLength() < agent[j].getPath().getLength()) {

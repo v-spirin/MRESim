@@ -79,8 +79,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
     private double last_percentage_known = 0;
     private int no_change_counter = 0;
 
-    public FrontierExploration(RealAgent agent, SimulatorConfig.frontiertype frontierExpType, RealAgent baseStation) {
-        super(agent);
+    public FrontierExploration(RealAgent agent, SimulatorConfig simConfig, SimulatorConfig.frontiertype frontierExpType, RealAgent baseStation) {
+        super(agent, simConfig);
         this.agent = agent;
         this.frontierExpType = frontierExpType;
         this.baseStation = baseStation;
@@ -90,9 +90,9 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
     @Override
     public Point takeStep(int timeElapsed) {
-        if (frontierExpType == SimulatorConfig.frontiertype.UtilReturn) {
+        /*if (frontierExpType == SimulatorConfig.frontiertype.UtilReturn) {
             throw new IllegalArgumentException("Frontier-UtilReturn is implemented in UtilExploration.java");
-        }
+        }*/
 
         Point nextStep;
 
@@ -140,7 +140,19 @@ public class FrontierExploration extends BasicExploration implements Exploration
             nextStep = agent.getNextPathPoint();
             return nextStep;
         }
+        if (frontierExpType.equals(SimulatorConfig.frontiertype.UtilReturn)) {
+            double infoRatio = (double) agent.getStats().getCurrentBaseKnowledgeBelief()
+                    / (double) (agent.getStats().getCurrentBaseKnowledgeBelief() + agent.getStats().getNewInfo());
 
+            System.out.println(agent.toString() + " in state Explore. infoRatio = "
+                    + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO + ". newInfo = " + agent.getStats().getNewInfo()
+                    + ", baseInfo = " + agent.getStats().getCurrentBaseKnowledgeBelief());
+            if (infoRatio < simConfig.TARGET_INFO_RATIO) {
+                agent.setPathToBaseStation();
+                nextStep = agent.getNextPathPoint();
+                return nextStep;
+            }
+        }
         calculateFrontiers();
 
         //If no frontiers found, or reached exploration goal, return to ComStation
@@ -496,8 +508,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
             } else //System.out.println("UtilityExact: " + best.utility);
             //System.out.println("UtilityExact: " + best.utility);
-            {
-                if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
+             if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
                     if (best.agentID == agent.getID()) {
                         if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
                             agent.setState(Agent.AgentState.GoToChild);
@@ -529,7 +540,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 } else {
                     utilities.add(best);
                 }
-            }
 
         }
 
@@ -593,8 +603,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 }
 
             } else //System.out.println("UtilityExact: " + best.utility);
-            {
-                if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
+             if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
                     if (best.agentID == agent.getID()) {
                         return best;
                     } else {
@@ -616,7 +625,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 } else {
                     utilities.add(best);
                 }
-            }
 
         }
 

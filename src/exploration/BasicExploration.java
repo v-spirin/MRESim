@@ -45,6 +45,7 @@
 package exploration;
 
 import agents.RealAgent;
+import config.SimulatorConfig;
 import java.awt.Point;
 import path.Path;
 
@@ -72,13 +73,16 @@ abstract class BasicExploration {
 
     ExplorationState state = ExplorationState.Initial;
 
+    SimulatorConfig simConfig;
+
     /**
      * Just builds the object and initializes the agent.
      *
      * @param agent The agend using this ExplorationStrategy
      */
-    public BasicExploration(RealAgent agent) {
+    public BasicExploration(RealAgent agent, SimulatorConfig simConfig) {
         this.agent = agent;
+        this.simConfig = simConfig;
     }
 
     /**

@@ -151,7 +151,7 @@ public class RunFromLog implements Exploration {
                     return AgentState.OutOfService;
                 }
                 if (state.equals("ReturnToParent")) {
-                    return AgentState.ReturnToParent;
+                    return AgentState.ReturnToBaseStation;
                 }
                 if (state.equals("WaitForChild")) {
                     return AgentState.WaitForChild;

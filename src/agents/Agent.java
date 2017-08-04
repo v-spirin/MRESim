@@ -77,7 +77,7 @@ abstract public class Agent {
     RobotConfig.roletype role;
 
     public static enum AgentState {
-        Initial, Explore, ReturnToParent, WaitForParent, GiveParentInfo,
+        Initial, Explore, ReturnToBaseStation, WaitForParent, GiveParentInfo,
         GoToChild, WaitForChild, GetInfoFromChild, OutOfService, RELAY, INACTIVE, OCCUPIED, AKTIVE
     }
     private AgentState state;

@@ -63,12 +63,10 @@ public class UtilityExploration extends FrontierExploration {
 
     private final int TIME_BETWEEN_PLANS = 1;
     private final int TIME_BETWEEN_RECOMPUTE_PATHS = 10;
-    SimulatorConfig simConfig;
 
     public UtilityExploration(RealAgent agent, SimulatorConfig simConfig, RealAgent baseStation) {
-        super(agent, SimulatorConfig.frontiertype.ReturnWhenComplete, baseStation);
+        super(agent, simConfig, SimulatorConfig.frontiertype.ReturnWhenComplete, baseStation);
         this.agent = agent;
-        this.simConfig = simConfig;
     }
 
     // Returns new X, Y of ExploreAgent
@@ -90,7 +88,7 @@ public class UtilityExploration extends FrontierExploration {
         }
 
         // Run correct randomStep function depending on agent state, set nextStep to output
-        // Explore is normal exploration, ReturnToParent is relaying information to base
+        // Explore is normal exploration, ReturnToBaseStation is relaying information to base
         switch (agent.getState()) {
             case Initial:
                 nextStep = takeStep_Initial(timeElapsed);
@@ -98,7 +96,7 @@ public class UtilityExploration extends FrontierExploration {
             case Explore:
                 nextStep = takeStep_Explore(timeElapsed);
                 break;
-            case ReturnToParent:
+            case ReturnToBaseStation:
                 nextStep = takeStep_ReturnToParent(timeElapsed);
                 break;
             default:
@@ -137,22 +135,19 @@ public class UtilityExploration extends FrontierExploration {
     private Point takeStep_Explore(int timeElapsed) {
         System.out.println(agent + " takeStep_Explore timeInState: " + agent.getStateTimer());
         Point nextStep;
-        // Every CHECK_INTERVAL_TIME_TO_RV steps, check if we're due to change state to return
-        int totalNewInfo = agent.getStats().getNewInfo();
-        //double infoRatio = (double)agent.getLastContactAreaKnown() /
-        //        (double)(agent.getLastContactAreaKnown() + totalNewInfo);
+        // check if we're due to change state to return
         double infoRatio = (double) agent.getStats().getCurrentBaseKnowledgeBelief()
-                / (double) (agent.getStats().getCurrentBaseKnowledgeBelief() + totalNewInfo);
+                / (double) (agent.getStats().getCurrentBaseKnowledgeBelief() + agent.getStats().getNewInfo());
 
         System.out.println(agent.toString() + " in state Explore. infoRatio = "
-                + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO + ". newInfo = " + totalNewInfo
+                + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO + ". newInfo = " + agent.getStats().getNewInfo()
                 + ", baseInfo = " + agent.getStats().getCurrentBaseKnowledgeBelief());
 
         if ((!agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) && (infoRatio < simConfig.TARGET_INFO_RATIO)) //if ((!agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInRange()) && (infoRatio >= simConfig.TARGET_INFO_RATIO))
         {
             System.out.println(agent.toString() + " Decided to return. infoRatio = "
                     + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO);
-            agent.setState(Agent.AgentState.ReturnToParent);
+            agent.setState(Agent.AgentState.ReturnToBaseStation);
             //agent.setRole(RobotConfig.roletype.Relay);
             agent.computePathToBaseStation(true);
             agent.setPathToBaseStation();
@@ -190,7 +185,7 @@ public class UtilityExploration extends FrontierExploration {
             Point baseLocation = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
             agent.addDirtyCells(agent.getPath().getAllPathPixels());
             agent.setPath(agent.calculatePath(agent.getLocation(), baseLocation, false));
-            agent.setState(RealAgent.AgentState.ReturnToParent);
+            agent.setState(RealAgent.AgentState.ReturnToBaseStation);
             agent.setStateTimer(0);
 
             if (agent.getPath().getPoints() != null) {

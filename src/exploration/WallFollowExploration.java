@@ -45,6 +45,7 @@
 package exploration;
 
 import agents.RealAgent;
+import config.SimulatorConfig;
 import environment.OccupancyGrid;
 import java.awt.Point;
 import path.Path;
@@ -60,8 +61,8 @@ public class WallFollowExploration extends BasicExploration implements Explorati
     private int MEASURE_DISTANCE = 20;
     private int SENSING_DISTANCE = 30;
 
-    public WallFollowExploration(RealAgent agent, OccupancyGrid grid) {
-        super(agent);
+    public WallFollowExploration(RealAgent agent, SimulatorConfig simConfig, OccupancyGrid grid) {
+        super(agent, simConfig);
         System.out.println("Start Wall");
         this.grid = grid;
     }
