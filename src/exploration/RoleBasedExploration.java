@@ -237,7 +237,7 @@ public class RoleBasedExploration extends FrontierExploration {
         }
 
         //if we reach this point we continue exploring
-        Point nextStep = takeStep(timeElapsed);
+        Point nextStep = super.takeStep(timeElapsed);
 
         //If there are no frontiers to explore, we must be finished.  Return to ComStation.
         if (timeElapsed > 100) { //prevent setting mission complete at the very start of the exploration
@@ -402,7 +402,8 @@ public class RoleBasedExploration extends FrontierExploration {
             return agent.getLocation();
         } //else, we've recalculated rv, time to move on
         else //Explorer - process & go into Explore state">
-         if (agent.isExplorer()) {
+        {
+            if (agent.isExplorer()) {
                 agent.getRendezvousStrategy().processAfterGiveParentInfoExplorer(timeElapsed);
 
                 agent.setExploreState(RealAgent.ExplorationState.Explore);
@@ -457,6 +458,7 @@ public class RoleBasedExploration extends FrontierExploration {
                     }
                 }
             }
+        }
     }
 
     public Point takeStep_GoToChild() {
@@ -536,7 +538,8 @@ public class RoleBasedExploration extends FrontierExploration {
         if (canStillWait) {
             return agent.getRendezvousStrategy().processWaitForChild();
         } else //Go to backup RV if available. Otherwise do what the strategy requires us to do, e.g. become an explorer.
-         if (rvd.getChildBackupRendezvous() != null) {
+        {
+            if (rvd.getChildBackupRendezvous() != null) {
                 rvd.setChildRendezvous(rvd.getChildBackupRendezvous());
                 rvd.setChildBackupRendezvous(null);
                 agent.setExploreState(RealAgent.ExplorationState.GoToChild);
@@ -545,6 +548,7 @@ public class RoleBasedExploration extends FrontierExploration {
             } else {
                 return agent.getRendezvousStrategy().processWaitForChildTimeoutNoBackup();
             }
+        }
     }
 
     public Point takeStep_GetInfoFromChild() {

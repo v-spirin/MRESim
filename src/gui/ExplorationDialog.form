@@ -465,6 +465,7 @@
               <Font name="Arial" size="11" style="0"/>
             </Property>
             <Property name="mnemonic" type="int" value="49"/>
+            <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" value="Periodic return"/>
           </Properties>
           <Events>

@@ -8,14 +8,14 @@ false
 false
 /home/christian/MRESim/logs/defaultDataLog.txt
 false
-null
-false
+true
+true
 false
 false
 false
 2
 false
-false
+true
 0.7
 true
 false

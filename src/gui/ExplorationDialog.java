@@ -367,6 +367,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
         subgroupFrontierBasedType.add(radioFrontierType2);
         radioFrontierType2.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         radioFrontierType2.setMnemonic('1');
+        radioFrontierType2.setSelected(true);
         radioFrontierType2.setText("Periodic return");
         radioFrontierType2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
