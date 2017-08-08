@@ -1,5 +1,5 @@
-RoleBasedExploration
-PeriodicReturn
+FrontierExploration
+ReturnWhenComplete
 KeyPoints
 null
 StaticCircle

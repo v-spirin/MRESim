@@ -608,15 +608,14 @@ public class RealAgent extends Agent {
         Polygon newFreeSpace;//, newSafeSpace;
 
         //Points between our old location and new location are definitely safe, as we are moving through them now!
-        LinkedList<Point> safePoints = getOccupancyGrid().pointsAlongSegment(x, y, nextLoc.x, nextLoc.y);
+        /*LinkedList<Point> safePoints = getOccupancyGrid().pointsAlongSegment(x, y, nextLoc.x, nextLoc.y);
         for (Point p : safePoints) {
             getOccupancyGrid().setFreeSpaceAt(p.x, p.y);
             //getOccupancyGrid().setSafeSpaceAt(p.x, p.y);
             getOccupancyGrid().setNoObstacleAt(p.x, p.y);
-        }
-
-        x = nextLoc.x;
-        y = nextLoc.y;
+        }*/
+        this.x = nextLoc.x;
+        this.y = nextLoc.y;
 
         pathTaken.add(new Point(x, y));
 
@@ -1074,23 +1073,29 @@ public class RealAgent extends Agent {
                     for (int k = 0; k < Constants.WALL_THICKNESS; k++) {
                         int newX = currX + (int) (k * Math.cos(angleDepth));
                         int newY = currY + (int) (k * Math.sin(angleDepth));
+                        if (newX < 0) {
+                            newX = 0;
+                        }
+                        if (newY < 0) {
+                            newY = 0;
+                        }
                         //free space is final,
                         //otherwise, we can get inaccessible pockets of free space in our map that are actually
                         //accessible. This can lead to frontiers or RV points we cannot plan a path to, which can lead
                         //to all sorts of tricky problems.
-                        if (!occGrid.safeSpaceAt(newX, newY)) {
-                            occGrid.setObstacleAt(newX, newY);
-                            //mark obstacles that we know for sure are there
-                            //if (k == 0) occGrid.setSafeSpaceAt(newX, newY);
-                            dirtyCells.add(new Point(currX, currY));
-                        }
+//                        if (!occGrid.safeSpaceAt(newX, newY)) {
+                        occGrid.setObstacleAt(newX, newY);
+                        //mark obstacles that we know for sure are there
+                        //if (k == 0) occGrid.setSafeSpaceAt(newX, newY);
+                        dirtyCells.add(new Point(newX, newY));
+//                        }
                     }
                 }
             }
             if (first.distance(x, y) < (sensRange - 2)) {
                 if (!occGrid.safeSpaceAt(first.x, first.y)) {
                     occGrid.setObstacleAt(first.x, first.y);
-                    occGrid.setSafeSpaceAt(first.x, first.y);
+                    //occGrid.setSafeSpaceAt(first.x, first.y);
                     dirtyCells.add(new Point(first.x, first.y));
                 }
             }

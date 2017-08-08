@@ -175,7 +175,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
         checkboxReplanning = new javax.swing.JCheckBox();
         checkboxRoleswitchCriterion = new javax.swing.JCheckBox();
         checkboxRVThroughWalls = new javax.swing.JCheckBox();
-        jLabel3 = new javax.swing.JLabel();
         buttonCancel = new javax.swing.JButton();
         buttonOK = new javax.swing.JButton();
         jPanel5 = new javax.swing.JPanel();
@@ -388,7 +387,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
         subgroupFrontierBasedType.add(radioFrontierType4);
         radioFrontierType4.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         radioFrontierType4.setMnemonic('3');
-        radioFrontierType4.setText("Utility based return with ratio:  (broken)");
+        radioFrontierType4.setText("Utility based return with ratio:");
         radioFrontierType4.setToolTipText("");
         radioFrontierType4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -541,8 +540,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel3.setText("Broken");
-
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
@@ -550,8 +547,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(radioRole)
-                .addGap(81, 81, 81)
-                .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -565,16 +560,14 @@ public class ExplorationDialog extends javax.swing.JDialog {
                     .addComponent(checkboxRVThroughWalls)
                     .addComponent(checkboxRoleswitch)
                     .addComponent(checkboxRoleswitchCriterion))
-                .addGap(12, 47, Short.MAX_VALUE))
+                .addGap(12, 60, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(radioRole)
-                        .addComponent(jLabel3))
+                    .addComponent(radioRole)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -1038,7 +1031,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
     private javax.swing.ButtonGroup groupExplorationAlgorithm;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

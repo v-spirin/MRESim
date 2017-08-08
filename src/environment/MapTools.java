@@ -68,14 +68,14 @@ public class MapTools {
         for (int i = 0; i < 800; i++) {
             vals[i][0] = 1;
             vals[i][599] = 1;
-            env.setStatus(i, 0, Status.obstacle);
-            env.setStatus(i, 599, Status.obstacle);
+            env.setStatus(i, 0, Status.barrier);
+            env.setStatus(i, 599, Status.barrier);
         }
         for (int j = 0; j < 600; j++) {
             vals[0][j] = 1;
             vals[799][j] = 1;
-            env.setStatus(0, j, Status.obstacle);
-            env.setStatus(799, j, Status.obstacle);
+            env.setStatus(0, j, Status.barrier);
+            env.setStatus(799, j, Status.barrier);
         }
         for (int k = 1; k < 799; k++) {
             for (int m = 1; m < 599; m++) {
@@ -96,7 +96,7 @@ public class MapTools {
                 /*p = 20*numDarkNeighbours + generate.nextInt(20);
                 random = generate.nextInt(100);
                 if(random < p)
-                    env.setStatus(x, y, Status.obstacle);
+                    env.setStatus(x, y, Status.barrier);
                 if(numDarkNeighbours == 1)
                     p=90;
                 /*else if(numDarkNeighbours == 2)
@@ -108,7 +108,7 @@ public class MapTools {
                 p += generate.nextInt(10)-5;
                 random = generate.nextInt(100);
                 if(random < p)
-                    env.setStatus(x, y, Status.obstacle);
+                    env.setStatus(x, y, Status.barrier);
 
             }*/
 
@@ -122,7 +122,7 @@ public class MapTools {
                 if(avg>20) avg=25;
                 if(avg<-20) avg=-25;
                 vals[x][y]=avg;
-                if(avg>0) env.setStatus(x, y, Status.obstacle);
+                if(avg>0) env.setStatus(x, y, Status.barrier);
             }*/
 
         LinkedList open = new LinkedList();
@@ -273,23 +273,23 @@ public class MapTools {
             for (int j = 1; j < 599; j++) {
 //                if (newVals[i][j] > 0) {
                 if (vals[i][j] > 0) {
-                    env.setStatus(i, j, Status.obstacle);
+                    env.setStatus(i, j, Status.barrier);
                 }
             }
         }
 
         // Recreate outer rim
         for (int i = 0; i < 800; i++) {
-            env.setStatus(i, 0, Status.obstacle);
-            env.setStatus(i, 1, Status.obstacle);
-            env.setStatus(i, 598, Status.obstacle);
-            env.setStatus(i, 599, Status.obstacle);
+            env.setStatus(i, 0, Status.barrier);
+            env.setStatus(i, 1, Status.barrier);
+            env.setStatus(i, 598, Status.barrier);
+            env.setStatus(i, 599, Status.barrier);
         }
         for (int j = 0; j < 600; j++) {
-            env.setStatus(0, j, Status.obstacle);
-            env.setStatus(1, j, Status.obstacle);
-            env.setStatus(798, j, Status.obstacle);
-            env.setStatus(799, j, Status.obstacle);
+            env.setStatus(0, j, Status.barrier);
+            env.setStatus(1, j, Status.barrier);
+            env.setStatus(798, j, Status.barrier);
+            env.setStatus(799, j, Status.barrier);
         }
 
         return env;
@@ -305,14 +305,14 @@ public class MapTools {
         for (int i = 0; i < 800; i++) {
             vals[i][0] = 1;
             vals[i][599] = 1;
-            env.setStatus(i, 0, Status.obstacle);
-            env.setStatus(i, 599, Status.obstacle);
+            env.setStatus(i, 0, Status.barrier);
+            env.setStatus(i, 599, Status.barrier);
         }
         for (int j = 0; j < 600; j++) {
             vals[0][j] = 1;
             vals[799][j] = 1;
-            env.setStatus(0, j, Status.obstacle);
-            env.setStatus(799, j, Status.obstacle);
+            env.setStatus(0, j, Status.barrier);
+            env.setStatus(799, j, Status.barrier);
         }
         for (int k = 1; k < 799; k++) {
             for (int m = 1; m < 599; m++) {
@@ -338,7 +338,7 @@ public class MapTools {
         for (int i = 1; i < 799; i++) {
             for (int j = 1; j < 599; j++) {
                 if (vals[i][j] > 0) {
-                    env.setStatus(i, j, Status.obstacle);
+                    env.setStatus(i, j, Status.barrier);
                 }
             }
         }
@@ -364,14 +364,14 @@ public class MapTools {
         for (int i = 0; i < 800; i++) {
             vals[i][0] = 1;
             vals[i][599] = 1;
-            env.setStatus(i, 0, Status.obstacle);
-            env.setStatus(i, 599, Status.obstacle);
+            env.setStatus(i, 0, Status.barrier);
+            env.setStatus(i, 599, Status.barrier);
         }
         for (int j = 0; j < 600; j++) {
             vals[0][j] = 1;
             vals[799][j] = 1;
-            env.setStatus(0, j, Status.obstacle);
-            env.setStatus(799, j, Status.obstacle);
+            env.setStatus(0, j, Status.barrier);
+            env.setStatus(799, j, Status.barrier);
         }
 
         //Use perlin noise to fill the map
@@ -384,11 +384,12 @@ public class MapTools {
         for (int i = 1; i < 799; i++) {
             for (int j = 1; j < 599; j++) {
                 if (vals[i][j] > 0.2) {
-                    env.setStatus(i, j, Status.obstacle);
+                    env.setStatus(i, j, Status.barrier);
                 } else if (vals[i][j] > 0) {
-                    env.setStatus(i, j, Status.hill);
+                    env.setStatus(i, j, Status.barrier);
+                    //env.setStatus(i, j, Status.hill);
                 } else if (vals[i][j] > -0.2) {
-                    env.setStatus(i, j, Status.slope);
+                    //env.setStatus(i, j, Status.slope);
                 } else {
                     //base-value - free space
                 }
@@ -494,7 +495,7 @@ public class MapTools {
         System.out.println(className() + "Map \"" + fileName + "\" has metric2: " + metric2 + ".");
          //*/
         for (int i = 20; i < 21; i++) {
-            EnvLoader.saveWallConfig(generateRandomPerlinNoiseMap(0.01f, 0f), Constants.DEFAULT_ENV_DIRECTORY + "random" + File.separator + "random" + i + ".png");
+            EnvLoader.saveWallConfig(generateRandomPerlinNoiseMap(0.01f, 0f), Constants.DEFAULT_ENV_DIRECTORY + "random" + File.separator + "newrandom" + i + ".png");
         }
     }
 

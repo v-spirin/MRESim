@@ -274,38 +274,38 @@ public class SimulationFramework implements ActionListener {
         }
         time2 += (System.currentTimeMillis() - localTimer);
         //timer = System.currentTimeMillis();
-        if ((simConfig != null) && (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RoleBasedExploration)
-                && (simConfig.roleSwitchAllowed())) {
-            //Role switch should ideally be done by individual agents as they communicate, rather than here.
-            switchRoles();              // switch roles
-            //System.out.println(this.toString() + "switchRoles took " + (System.currentTimeMillis()-timer) + "ms.\n");
-            //timer = System.currentTimeMillis();
-            // second role switch check (to avoid duplicate relays)
-            for (int i = 1; i < numRobots; i++) {
-                for (int j = 1; j < numRobots; j++) {
-                    if (i != j && agent[i].getState() == Agent.AgentState.ReturnToBaseStation
-                            && !agent[i].isExplorer()
-                            && agent[j].getState() == Agent.AgentState.ReturnToBaseStation
-                            && !agent[j].isExplorer()
-                            && agent[i].getTeammate(agent[j].getID()).hasCommunicationLink()
-                            && agent[i].getPath().getLength() < agent[j].getPath().getLength()) {
-                        agent[i].setState(Agent.AgentState.GoToChild);
-                        agent[i].setStateTimer(0);
-                        agent[i].addDirtyCells(agent[i].getPath().getAllPathPixels());
-                        if (Constants.DEBUG_OUTPUT) {
-                            System.out.println("\nSecondary switch: " + agent[i].getName()
-                                    + " and " + agent[j].getName() + "\n");
-                        }
-                        Path path = agent[i].calculatePath(agent[i].getLocation(),
-                                agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation(), false);
-                        agent[i].setPath(path);
+//        if ((simConfig != null) && (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RoleBasedExploration)
+//                && (simConfig.roleSwitchAllowed())) {
+//            //Role switch should ideally be done by individual agents as they communicate, rather than here.
+//            switchRoles();              // switch roles
+//            //System.out.println(this.toString() + "switchRoles took " + (System.currentTimeMillis()-timer) + "ms.\n");
+//            //timer = System.currentTimeMillis();
+//            // second role switch check (to avoid duplicate relays)
+//            for (int i = 1; i < numRobots; i++) {
+//                for (int j = 1; j < numRobots; j++) {
+//                    if (i != j && agent[i].getState() == Agent.AgentState.ReturnToBaseStation
+//                            && !agent[i].isExplorer()
+//                            && agent[j].getState() == Agent.AgentState.ReturnToBaseStation
+//                            && !agent[j].isExplorer()
+//                            && agent[i].getTeammate(agent[j].getID()).hasCommunicationLink()
+//                            && agent[i].getPath().getLength() < agent[j].getPath().getLength()) {
+//                        agent[i].setState(Agent.AgentState.GoToChild);
+//                        agent[i].setStateTimer(0);
+//                        agent[i].addDirtyCells(agent[i].getPath().getAllPathPixels());
+//                        if (Constants.DEBUG_OUTPUT) {
+//                            System.out.println("\nSecondary switch: " + agent[i].getName()
+//                                    + " and " + agent[j].getName() + "\n");
+//                        }
+//                        Path path = agent[i].calculatePath(agent[i].getLocation(),
+//                                agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation(), false);
+//                        agent[i].setPath(path);
+//
+//                    }
+//                }
+//            }
+//            //System.out.println(this.toString() + "Second switch roles check took " + (System.currentTimeMillis()-timer) + "ms.\n");
 
-                    }
-                }
-            }
-            //System.out.println(this.toString() + "Second switch roles check took " + (System.currentTimeMillis()-timer) + "ms.\n");
-
-        }
+        //}
         //timer = System.currentTimeMillis();
         //simulateDebris();           // simulate dynamic environment
         //System.out.println(this.toString() + "simulateDebris took " + (System.currentTimeMillis()-timer) + "ms.\n");
@@ -616,7 +616,7 @@ public class SimulationFramework implements ActionListener {
     }
 // </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Agent Steps, Sensor Data">
+// Agent Steps, Sensor Data
     private void agentSteps() {
         //long realtimeStartAgentCycle;
         //Point nextStep = new Point(0,0);         // The next location that an agent wants to go to
@@ -634,62 +634,6 @@ public class SimulationFramework implements ActionListener {
             worker.setName(agent1.toString());
             worker.start();
             threads.add(worker);
-
-            // <editor-fold defaultstate="collapsed" desc="NoThreads">
-            /*
-            //realtimeStartAgentCycle = System.currentTimeMillis();
-            double distance_left = agent[i].getSpeed();
-            while (distance_left > 0) {
-                System.out.println(agent[i].toString() + " distance left: " + distance_left);
-                nextStep = agent[i].takeStep(timeElapsed, simConfig);
-                if (nextStep == null) {
-                    //mainGUI.runComplete();  // run complete
-                    //return;
-                    System.out.println("ERROR: agent " + i + " chose NULL step!");
-                    nextStep = agent[i].getLocation();
-                }
-                agent[i].flush();
-
-                // Check to make sure step is legal
-                if (env.directLinePossible(agent[i].getX(), agent[i].getY(), nextStep.x, nextStep.y)) {
-                    //check here we don't 'teleport'
-                    double dist = agent[i].getLocation().distance(nextStep);
-                    if (dist < 0.01) {
-                        break;
-                    }
-                    if (dist > 5) {
-                        System.out.println(agent[i].toString() + " !!!!! SOMETHING SERIOUSLY WRONG !!!!!");
-                        System.out.println(agent[i].toString() + " dist is " + dist);
-                        System.out.println(agent[i].toString() + " location is (" + agent[i].getX() + ", " + agent[i].getY() + ")");
-                        System.out.println(agent[i].toString() + " next step is " + nextStep);
-                        System.out.println(agent[i].toString() + " goal is " + agent[i].getCurrentGoal());
-                    }
-                    System.out.println(agent[i].toString() + " distance to next path point: " + dist);
-                    if (dist > distance_left) {
-                        System.out.println(agent[i].toString() + " exceeded speed. Distance left: " + distance_left + ", dist to next path point: " + dist);
-                        double ratio = distance_left / dist;
-                        nextStep.x = agent[i].getX() + (int) Math.round((nextStep.x - agent[i].getX()) * ratio);
-                        nextStep.y = agent[i].getY() + (int) Math.round((nextStep.y - agent[i].getY()) * ratio);
-                        if (!env.directLinePossible(agent[i].getX(), agent[i].getY(), nextStep.x, nextStep.y)) {
-                            nextStep.x = agent[i].getX();
-                            nextStep.y = agent[i].getY();
-                            System.out.println(agent[i].toString() + " directLinePossible returned wrong result!");
-                        }
-                        System.out.println(agent[i].toString() + " speed corrected. Now is: " + agent[i].getLocation().distance(nextStep));
-                        distance_left = 0;
-                    } else {
-                        distance_left = distance_left - dist;
-                    }
-                    sensorData = findSensorData(agent[i], nextStep);
-                    agent[i].writeStep(nextStep, sensorData);
-                } else {
-                    agent[i].setEnvError(true);
-                }
-
-                //System.out.println(agent[i].toString() + "Agent cycle complete, took " + (System.currentTimeMillis()-realtimeStartAgentCycle) + "ms.");
-            }
-             */
-            //</editor-fold>
         }
 
         for (int i = 0; i < threads.size(); i++) {
@@ -701,17 +645,19 @@ public class SimulationFramework implements ActionListener {
         }
     }
 
-    // Simulates data from laser range finder
+    /**
+     * Simulates data from laser range finder
+     *
+     * @param agent the agend sensing something
+     * @param nextLoc the location the given agent will be at the moment of sensing
+     * @return
+     */
     protected double[] findSensorData(RealAgent agent, Point nextLoc) {
         double currRayAngle, heading;
         int prevRayX, prevRayY;
         int currRayX, currRayY;
         double sensorData[] = new double[181];
 
-        // Quick check: if agent hasn't moved, no new sensor data
-        // 22.04.2010 Julian commented this out to make frontier exp work
-        // if(agent.getLocation().equals(nextLoc))
-        //    return null;
         if (agent.getLocation().equals(nextLoc)) {
             heading = agent.getHeading();
         } else {
@@ -725,7 +671,7 @@ public class SimulationFramework implements ActionListener {
 
             currRayAngle = heading - Math.PI / 2 + Math.PI / 180 * i;
 
-            for (double m = 1; m <= agent.getSenseRange(); m += 1) {
+            for (double m = 1; m <= agent.getSenseRange(); m++) {
                 currRayX = nextLoc.x + (int) (m * Math.cos(currRayAngle));
                 currRayY = nextLoc.y + (int) (m * Math.sin(currRayAngle));
 

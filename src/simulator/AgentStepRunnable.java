@@ -50,7 +50,6 @@ import config.Constants;
 import config.SimulatorConfig;
 import environment.Environment;
 import java.awt.Point;
-import java.util.LinkedList;
 
 /**
  *
@@ -81,7 +80,7 @@ public class AgentStepRunnable implements Runnable {
         //profiling
         long realtimeStartAgentCycle = System.currentTimeMillis();
 
-        //<editor-fold defaultstate="collapsed" desc="Continue along the path,">
+        //Continue along the path,
         //until we have exhausted agent 'speed' per cycle or run out of path
         while (distance_left > 0) {
             //<editor-fold defaultstate="collapsed" desc="Get next step">
@@ -101,7 +100,7 @@ public class AgentStepRunnable implements Runnable {
             }
             //</editor-fold>
 
-            //<editor-fold defaultstate="collapsed" desc="Check to make sure step is legal">
+            //Check to make sure step is legal
             if (env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y, agent.ability)) {
                 //check here we don't 'teleport'
                 double dist = agent.getLocation().distance(nextStep);
@@ -141,21 +140,20 @@ public class AgentStepRunnable implements Runnable {
                     //We are bordering next step, and because we cannot move there it must be an obstacle
                     agent.getOccupancyGrid().setObstacleAt(nextStep.x, nextStep.y);
                     agent.getOccupancyGrid().setNoFreeSpaceAt(nextStep.x, nextStep.y);
-                    agent.getOccupancyGrid().setSafeSpaceAt(nextStep.x, nextStep.y);
+//                    agent.getOccupancyGrid().setSafeSpaceAt(nextStep.x, nextStep.y);
                 } else {
                     //there are several points between us and nextStep, so we don't know which one exactly has obstacle
-                    LinkedList<Point> ptsNonSafe
-                            = agent.getOccupancyGrid().pointsAlongSegment(agent.getLocation().x, agent.getLocation().y,
-                                    nextStep.x, nextStep.y);
-                    ptsNonSafe.stream().filter((p) -> (!p.equals(agent.getLocation()))).forEach((p) -> {
-                        agent.getOccupancyGrid().setNoSafeSpaceAt(p.x, p.y);
-                    });
+//                    LinkedList<Point> ptsNonSafe
+//                            = agent.getOccupancyGrid().pointsAlongSegment(agent.getLocation().x, agent.getLocation().y,
+//                                    nextStep.x, nextStep.y);
+//                    ptsNonSafe.stream().filter((p) -> (!p.equals(agent.getLocation()))).forEach((p) -> {
+//                        agent.getOccupancyGrid().setNoSafeSpaceAt(p.x, p.y);
+//                    });
                 }
                 nextStep.x = agent.getX();
                 nextStep.y = agent.getY();
                 agent.setEnvError(true);
             }
-            //</editor-fold>
 
             //<editor-fold defaultstate="collapsed" desc="Conditions for breaking even if we have 'speed' left">
             boolean canContinueOnPath = (agent.getPath() != null) && (agent.getPath().getPoints() != null)
@@ -176,7 +174,6 @@ public class AgentStepRunnable implements Runnable {
             }
             //</editor-fold>
         }
-        //</editor-fold>
 
         /*if (simConfig.getExpAlgorithm() != SimulatorConfig.exptype.RunFromLog)
             agent.updateTrueAreaKnown(env);*/

@@ -602,29 +602,28 @@ public class FrontierExploration extends BasicExploration implements Exploration
                     agent.addBadFrontier(best.frontier); //only add bad frontiers if they are 'ours'
                 }
 
-            } else //System.out.println("UtilityExact: " + best.utility);
-             if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
-                    if (best.agentID == agent.getID()) {
-                        return best;
-                    } else {
-                        // This robot assigned, so remove all remaining associated utilities
-                        if (Constants.DEBUG_OUTPUT) {
-                            System.out.println(agent + "This robot assigned, so remove all remaining associated utilities");
-                        }
-                        removal = new LinkedList<FrontierUtility>();
-                        for (FrontierUtility u : utilities) {
-                            if (u.agentID == best.agentID
-                                    || u.frontier == best.frontier) {
-                                removal.add(u);
-                            }
-                        }
-                        for (FrontierUtility r : removal) {
-                            utilities.remove(r);
+            } else if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
+                if (best.agentID == agent.getID()) {
+                    return best;
+                } else {
+                    // This robot assigned, so remove all remaining associated utilities
+                    if (Constants.DEBUG_OUTPUT) {
+                        System.out.println(agent + "This robot assigned, so remove all remaining associated utilities");
+                    }
+                    removal = new LinkedList<FrontierUtility>();
+                    for (FrontierUtility u : utilities) {
+                        if (u.agentID == best.agentID
+                                || u.frontier == best.frontier) {
+                            removal.add(u);
                         }
                     }
-                } else {
-                    utilities.add(best);
+                    for (FrontierUtility r : removal) {
+                        utilities.remove(r);
+                    }
                 }
+            } else {
+                utilities.add(best);
+            }
 
         }
 
