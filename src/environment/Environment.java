@@ -46,6 +46,8 @@ package environment;
 import java.awt.Point;
 
 /**
+ *The Environment is the true map the simulation uses as ground truth. Agents never know this data,
+ * only the simulation uses it.
  *
  * @author julh
  */
@@ -64,7 +66,12 @@ public class Environment {
     }
     private Status status[][];
 
-    // Simple constructor for setup stage -- rows and columns only
+    /**
+     * Simple constructor for setup stage -- rows and columns only
+     *
+     * @param numrows height of the env
+     * @param numcolumns width of the env
+     */
     public Environment(int numrows, int numcolumns) {
         rows = numrows;
         columns = numcolumns;
@@ -101,6 +108,9 @@ public class Environment {
     }
 
 // </editor-fold>
+    /**
+     * Initializes the environment. Sets every cell to explored
+     */
     private void initCells() {
         status = new Status[columns][rows];
         for (int i = 0; i < rows; i++) {
@@ -110,10 +120,25 @@ public class Environment {
         }
     }
 
+    /**
+     * Checks if given Coordinates are inside the environment
+     *
+     * @param x
+     * @param y
+     * @return True if the Coordinates are valid
+     */
     public boolean locationExists(int x, int y) {
         return (x < columns && x >= 0 && y < rows && y >= 0);
     }
 
+    /**
+     * Tests if there are obstacles near the coordinates.
+     *
+     * @param x
+     * @param y
+     * @param minDistance
+     * @return true if there is no obstacle or invalid point in minDistance of the given coordinates
+     */
     public boolean obstacleWithinDistance(int x, int y, int minDistance) {
         for (int i = x - minDistance; i <= x + minDistance; i++) {
             for (int j = y - minDistance; j <= y + minDistance; j++) {
@@ -127,6 +152,11 @@ public class Environment {
         return false;
     }
 
+    /**
+     * Returns the number of free cells. Free is everything below obstacles
+     *
+     * @return int Number of cells
+     */
     public int getTotalFreeSpace() {
         int runningTotal = 0;
         for (int i = 0; i < rows; i++) {
@@ -140,10 +170,30 @@ public class Environment {
         return runningTotal;
     }
 
+    /**
+     * Checks if a given Line from Source to Destination only has free cells. This is a
+     * convinient-method using everything below hills (3) as free
+     *
+     * @param sourceX
+     * @param sourceY
+     * @param destX
+     * @param destY
+     * @return true if the line is free
+     */
     public boolean directLinePossible(int sourceX, int sourceY, int destX, int destY) {
         return directLinePossible(sourceX, sourceY, destX, destY, 2);
     }
 
+    /**
+     * Checks if a given Line from Source to Destination only has free cells.
+     *
+     * @param sourceX
+     * @param sourceY
+     * @param destX
+     * @param destY
+     * @param ability Default 2 This method lets you specify the ground the agent can traverse
+     * @return true if the line is free (depending on the given ability
+     */
     public boolean directLinePossible(int sourceX, int sourceY, int destX, int destY, int ability) {
         if (!locationExists(sourceX, sourceY) || !locationExists(destX, destY)) {
             return false;
@@ -189,7 +239,16 @@ public class Environment {
 
     }
 
-    // This function finds the shortest distance from P3 to the line between P1 and P2
+    /**
+     * This function finds the shortest distance from P3 to the line between P1 and P2.
+     * @param x1
+     * @param y1
+     * @param x2
+     * @param y2
+     * @param x3
+     * @param y3
+     * @return
+     */
     public double distPointToLine(int x1, int y1, int x2, int y2, int x3, int y3) {
         if ((x3 == x1 && y3 == y1) || (x3 == x2 && y3 == y2)) {
             return 0;
@@ -245,8 +304,9 @@ public class Environment {
         return new Point(x, y);
     }
 
-    private void simulateDebris() {
-        int debrisSize, currX, currY, nextX, nextY;
+    // <editor-fold defaultstate="collapsed" desc="commented out because unused und unfinished">
+    //private void simulateDebris() {
+    //    int debrisSize, currX, currY, nextX, nextY;
 
         /* The below puts random debris anywhere
         // according to constant NEW_DEBRIS_LIKELIHOOD, add debris
@@ -310,9 +370,9 @@ public class Environment {
         }
         else
             debrisTimer[2]--;*/
-    }
+    //}
 
-    private void closeGate(int yTop) {
+    /*private void closeGate(int yTop) {
         for (int i = yTop; i < yTop + 67; i++) {
             for (int j = 250; j < 258; j++) {
                 setStatus(j, i, Status.obstacle);
@@ -326,5 +386,6 @@ public class Environment {
                 setStatus(j, i, Status.explored);
             }
         }
-    }
+    }*/
+    // </editor-fold>
 }

@@ -30,7 +30,7 @@
  *
  *     MRESim is free software: you can redistribute it and/or modify
  *     it under the terms of the GNU General Public License as published by
- *     the Free Software Foundation, either version 3 of the License, or
+ *     the FreeSpace Software Foundation, either version 3 of the License, or
  *     (at your option) any later version.
  *
  *     MRESim is distributed in the hope that it will be useful,
@@ -62,12 +62,19 @@ import javax.imageio.ImageIO;
  */
 public class OccupancyGrid {
 
+    /**
+     * FreeSpace means something traversable where communication would work and agents might be
+     * Plane means no slope or hill or obstacle Slope means not traversable for every agent Hill
+     * means not traversable for most of the agents Obstacle means not traversable (here this is
+     * obstacle and barrier as the agent does not differenciate between that) SafeSpace ??
+     * KnownAtBAse is set if the information about the cell if known at basestation GotRelayed ??
+     * FinalTopologicalMap flag is set, that means that we will no longer consider this cell when
+     * rebuilding a topological map - we will just reuse the partial topological map we already
+     * have.
+     */
     public enum OccGridBit {
-        FreeSpace, SafeSpace, Obstacle, KnownAtBase, GotRelayed, FinalTopologicalMap
-    } // which bit does what
-    // if the FinalTopologicalMap flag is set, that means that we will no longer consider this cell when rebuilding
-    // a topological map - we will just reuse the partial topological map we already have.
-
+        FreeSpace, Plane, Slope, Hill, Obstacle, SafeSpace, KnownAtBase, GotRelayed, FinalTopologicalMap
+    }
     private byte[][] grid;
     public int height;
     public int width;
@@ -76,13 +83,18 @@ public class OccupancyGrid {
     private int cellsMarkedAsFreeAndRelayedAndNotKnownAtBase;
     private int cellsMarkedAsFreeAndKnownAtBase;
     private int cellsMarkedAsFree;
-    // List of cells that are free, not known at base and are not being relayed
-    // these are the cells that we are currently "responsible" for delivering to base
+    /**
+     * List of cells that are free, not known at base and are not being relayed these are the cells
+     * that we are currently "responsible" for delivering to base
+     */
     private HashMap<Point, Integer> cellsFreeNotKnownAtBaseNotRelayed;
+    // log the changes so we don't have to process every caell each time we merge grids
+    private HashMap<Point, Integer> cellsChanged;
 
     //this is a flag that can be used to check if occupancy grid has changed since it was last set to 'false'
     //used primarily to decide if we need to rebuild topological map
     private int mapCellsChanged;
+    private int hashCode = 0;
 
     public OccupancyGrid(int newWidth, int newHeight) {
         width = newWidth;
@@ -99,6 +111,7 @@ public class OccupancyGrid {
         cellsMarkedAsFree = 0;
 
         cellsFreeNotKnownAtBaseNotRelayed = new HashMap<Point, Integer>();
+        cellsChanged = new HashMap<Point, Integer>();
 
         mapCellsChanged = Constants.MAP_CHANGED_THRESHOLD + 1;
     }
@@ -117,7 +130,8 @@ public class OccupancyGrid {
         copyGrid.cellsFreeNotKnownAtBaseNotRelayed = (HashMap<Point, Integer>) cellsFreeNotKnownAtBaseNotRelayed.clone();
 
         copyGrid.mapCellsChanged = mapCellsChanged;
-
+        copyGrid.cellsChanged = (HashMap<Point, Integer>) cellsChanged.clone();
+        copyGrid.hashCode = hashCode();
         return copyGrid;
     }
 
@@ -134,6 +148,17 @@ public class OccupancyGrid {
         }
 
         return Arrays.equals(grid, ((OccupancyGrid) obj).grid);
+    }
+
+    @Override
+    public int hashCode() {
+        if (this.hashCode != 0) {
+            return this.hashCode;
+        } else {
+            int hash = 5;
+            hash = 73 * hash + Arrays.deepHashCode(this.grid);
+            return hash;
+        }
     }
 
     public void saveToPNG(String filename) {
@@ -153,13 +178,17 @@ public class OccupancyGrid {
             File outputfile = new File(filename);
             ImageIO.write(bi, "png", outputfile);
         } catch (IOException e) {
-
+            System.err.println(e);
         }
     }
 
     //TODO: should be able to make this more efficient
     public LinkedList<Point> mergeGrid(OccupancyGrid partnerOccGrid, boolean withBaseStation) {
         LinkedList<Point> cellsUpdated = new LinkedList();
+        if (this.hashCode() == partnerOccGrid.hashCode()) {
+            return cellsUpdated;
+        }
+        this.hashCode = 0;
         int totalCellsTransferred = 0;
         int cellsSetKnownAtBase = 0;
         for (int i = 0; i < this.width; i++) {
@@ -415,7 +444,7 @@ public class OccupancyGrid {
 
     public void setFreeSpaceAt(int xCoord, int yCoord) {
         boolean wasObstacle = obstacleAt(xCoord, yCoord);
-        if (!wasObstacle) {
+        if (!wasObstacle) { //Why?
             if (!freeSpaceAt(xCoord, yCoord)) {
 
                 if (!wasObstacle) {
@@ -584,6 +613,7 @@ public class OccupancyGrid {
      * @param source Start
      * @param dest Goal
      * @param allowUnknown
+     * @param showErrors
      * @return true if direct line possible considering the knowledge of the agent, false if not
      */
     public boolean directLinePossible(Point source, Point dest, boolean allowUnknown, boolean showErrors) {
@@ -767,6 +797,7 @@ public class OccupancyGrid {
     }
 
     private void setBit(int xCoord, int yCoord, int bit, int value) {
+        hashCode = 0; // something changed, so delete hashcode
         int bitValue = grid[xCoord][yCoord] & (byte) (Math.pow(2, bit));
         if (bitValue == 0) {
             if (value == 0) {
@@ -782,27 +813,7 @@ public class OccupancyGrid {
     }
 
     private void setByte(int x, int y, byte value) {
+        hashCode = 0; // something changed, so delete hashcode
         grid[x][y] = value;
     }
-
-    //<editor-fold defaultstate="collapsed" desc="DELETE">
-    /*public boolean testTrueAt(int xCoord, int yCoord) {
-        if(getBit(xCoord, yCoord, OccGridBit.Test.ordinal()) == 1)
-            return true;
-        else
-            return false;
-    }
-
-    public void setTestTrueAt(int xCoord, int yCoord) {
-        setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.Test, 1);
-    }
-
-    // Sets test bit in all occupancy grids to 0 -- purely for testing purposes.
-    public void initializeTestBits() {
-        for(int i=0; i<grid.length; i++)
-            for(int j=0; j<grid[0].length; j++)
-                setBit(i,j,OccGridBit.Test.ordinal(),0);
-    }
-     */
-    //</editor-fold>
 }

@@ -183,7 +183,7 @@ abstract public class Agent {
         return state;
     }
 
-    public void setState(AgentState state) {
+    final public void setState(AgentState state) {
         this.state = state;
     }
 

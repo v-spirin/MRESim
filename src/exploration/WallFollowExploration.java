@@ -81,7 +81,7 @@ public class WallFollowExploration extends BasicExploration implements Explorati
             nextPoint = environment.Environment.getPointFromDirection(agent.getLocation(), moveDirection - TURN_HEADING, agent.getSpeed());
             /*while (grid.freeSpaceAt(nextPoint)) {
                     heading -= TURN_HEADING;
-                    nextPoint = environment.Environment.getPointFromDirection(agent.getLocation(), moveDirection - TURN_HEADING, agent.getSpeed());
+                    nextPoint = environment.getPointFromDirection(agent.getLocation(), moveDirection - TURN_HEADING, agent.getSpeed());
                 }*/
         } else if (!grid.directLinePossible(nearPoint, farPoint, true, true)) {
             //wall beginns between meassurepoints, keep going

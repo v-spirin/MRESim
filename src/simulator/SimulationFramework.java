@@ -95,7 +95,7 @@ public class SimulationFramework implements ActionListener {
 
     MainGUI mainGUI;                            // Allows simulator to change image, data
     ExplorationImage image;                     // Image of environment
-    Environment env;                            // The environment (walls, obstacles)
+    private Environment env;                            // The environment (walls, obstacles)
     RealAgent[] agent;                           // The agents
     int numRobots;
 

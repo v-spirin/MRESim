@@ -197,7 +197,6 @@ public class ExplorationImage {
     }
 // </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Dirt">
     private void addDirtyAgentCells(RealAgent agent) {
         // Erase old relay triangle
         for (int i = agent.getX() - 2 * Constants.AGENT_RADIUS; i <= agent.getX() + 2 * Constants.AGENT_RADIUS; i++) {
@@ -247,8 +246,6 @@ public class ExplorationImage {
         }
     }
 
-// </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Update Dirty and Full">
     public void dirtyUpdate(ShowSettings settings, ShowSettingsAgent[] agentSettings,
             Environment env, RealAgent[] agent, Polygon[] agentRange) {
         Update(settings, agentSettings, env, agent, agentRange, true);
@@ -289,7 +286,6 @@ public class ExplorationImage {
         setPixel(startpoint.x, startpoint.y, Color.GREEN);
         setPixel(endpoint.x, endpoint.y, Color.RED);
     }
-    //</editor-fold>
     //draw RV generation process
 /*public void fullUpdateRVPoints(OccupancyGrid agentGrid, PriorityQueue<NearRVPoint> rvPoints,
             LinkedList<NearRVPoint> generatedPoints, Point frontierCenter,
@@ -339,14 +335,13 @@ public class ExplorationImage {
     public void fullUpdatePath(OccupancyGrid agentGrid, TopologicalMap tMap, Point startpoint, Point endpoint, ShowSettingsAgent agentSettings) {
         setG2D();
 
-        //<editor-fold defaultstate="collapsed" desc="Draw agent grid according nearPoint agentSettings">
+        //Draw agent grid according nearPoint agentSettings
         for (int i = 0; i < agentGrid.width; i++) {
             for (int j = 0; j < agentGrid.height; j++) {
                 setPixel(i, j, Constants.MapColor.background());
                 updatePixelAgent(agentSettings, agentGrid, i, j);
             }
         }
-        //</editor-fold>
 
         drawKeyAreas(tMap);
 
@@ -616,8 +611,8 @@ public class ExplorationImage {
 
         /*        if (agent != null) {
             //draw debug Wall stuff
-            Point nearPoint = environment.Environment.getPointFromDirection(new Point(xLoc, yLoc), head + (Math.PI / 2), 30);
-            Point farPoint = environment.Environment.getPointFromDirection(nearPoint, head + (Math.PI / 2), 20);
+            Point nearPoint = environment.getPointFromDirection(new Point(xLoc, yLoc), head + (Math.PI / 2), 30);
+            Point farPoint = environment.getPointFromDirection(nearPoint, head + (Math.PI / 2), 20);
             g2D.drawLine(xLoc, yLoc, (int) nearPoint.getX(), (int) nearPoint.getY());
             g2D.setPaint(Color.GREEN);
             g2D.drawLine((int) nearPoint.getX(), (int) nearPoint.getY(), (int) farPoint.getX(), (int) farPoint.getY());
