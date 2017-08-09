@@ -45,6 +45,7 @@
 package exploration;
 
 import agents.RealAgent;
+import agents.TeammateAgent;
 import config.Constants;
 import config.SimulatorConfig;
 import environment.OccupancyGrid;
@@ -95,6 +96,20 @@ public class RandomExploration extends BasicExploration implements Exploration {
                 }
                 break;
             case RangeBorder:
+                boolean useful = false;
+                for (TeammateAgent mate : agent.getAllTeammates().values()) {
+                    if (mate.isRelay()) {
+                        if (mate.getDirectComLink() != 0 && mate.getDirectComLink() < 20) {
+                            useful = true;
+                        } else if (mate.getDirectComLink() > 20) {
+                            useful = false;
+                            break;
+                        }
+                    }
+                }
+                if (useful) {
+                    state = ExplorationState.SettingRelay;
+                }
                 break;
             case None:
             default:

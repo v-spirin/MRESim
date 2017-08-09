@@ -743,21 +743,22 @@ public class SimulationFramework implements ActionListener {
         //System.out.println(Constants.INDENT + "Communication complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
-    private static int[][] detectMultiHopLinks(int commTable[][]) {
-        for (int i = 0; i < commTable.length; i++) {
-            for (int j = 0; j < commTable[0].length; j++) {
-                if (commTable[i][j] >= 1 || commTable[j][i] >= 1) {
-                    for (int k = 0; k < commTable.length; k++) {
-                        if (commTable[k][i] >= 1 || commTable[i][k] >= 1) {
-                            commTable[k][j] = 1;
-                            commTable[j][k] = 1;
+    private void detectMultiHopLinks() {
+        for (int i = 0; i < directCommTable.length; i++) {
+            System.arraycopy(directCommTable[i], 0, multihopCommTable[i], 0, directCommTable.length);
+        }
+        for (int i = 0; i < multihopCommTable.length; i++) {
+            for (int j = 0; j < multihopCommTable[0].length; j++) {
+                if (multihopCommTable[i][j] >= 1 || multihopCommTable[j][i] >= 1) {
+                    for (int k = 0; k < multihopCommTable.length; k++) {
+                        if (multihopCommTable[k][i] >= 1 || multihopCommTable[i][k] >= 1) {
+                            multihopCommTable[k][j] = 1;
+                            multihopCommTable[j][k] = 1;
                         }
                     }
                 }
             }
         }
-
-        return commTable;
     }
 
     private void detectCommunication() {
@@ -794,8 +795,7 @@ public class SimulationFramework implements ActionListener {
             default:
                 break;
         }
-
-        multihopCommTable = detectMultiHopLinks(directCommTable);
+        detectMultiHopLinks();
     }
 
     // </editor-fold>
