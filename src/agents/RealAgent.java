@@ -989,7 +989,7 @@ public class RealAgent extends Agent {
         boolean sensedNew = false;
         boolean doubleSensed = false;
         for (int i = newFreeSpace.getBounds().x; i <= newFreeSpace.getBounds().x + newFreeSpace.getBounds().width; i++) {
-            innerloop:
+            //innerloop:
             for (int j = newFreeSpace.getBounds().y; j <= newFreeSpace.getBounds().y + newFreeSpace.getBounds().height; j++) {
                 if (occGrid.locationExists(i, j)) {
                     if (newFreeSpace.contains(i, j) && !occGrid.freeSpaceAt(i, j)) {
@@ -1005,7 +1005,7 @@ public class RealAgent extends Agent {
                             dirtyCells.add(new Point(i, j));
                         }
                     }
-                    if (newSafeSpace != null && newSafeSpace.contains(i, j)) {
+                    /*if (newSafeSpace != null && newSafeSpace.contains(i, j)) {
                         // double for loop to prevent empty-safe boundary (which
                         // would not qualify as a frontier)
                         for (int m = i - 1; m <= i + 1; m++) {
@@ -1020,7 +1020,7 @@ public class RealAgent extends Agent {
                             occGrid.setNoObstacleAt(i, j);
                             dirtyCells.add(new Point(i, j));
                         }
-                    }
+                    }*/
                 }
             }
         }

@@ -214,7 +214,7 @@ public class Skeleton {
         return numChanges;
     }
 
-    public static int[][] skeletonize(int[][] grid) {
+    private static int[][] skeletonize(int[][] grid) {
         return skeletonize(grid, Integer.MAX_VALUE);
     }
 
@@ -267,10 +267,12 @@ public class Skeleton {
         int u2[][] = new int[width][height];
 
         for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
+            System.arraycopy(grid[i], 0, u1[i], 0, height);
+            System.arraycopy(grid[i], 0, u2[i], 0, height);
+            /*for (int j = 0; j < height; j++) {
                 u1[i][j] = grid[i][j];
                 u2[i][j] = grid[i][j];
-            }
+            }*/
         }
 
         boolean found = true;
@@ -349,7 +351,7 @@ public class Skeleton {
         return true;
     }
 
-    //<editor-fold defaultstate="collapsed" desc="Find Skeleton">
+    //Find Skeleton
     public static int[][] findSkeleton(OccupancyGrid grid) {
         return findSkeleton(grid, true, false);
     }
@@ -413,7 +415,6 @@ public class Skeleton {
         int[][] skeleton = skeletonize(freeSpaceGrid, max);
         return skeleton;
     }
-    //</editor-fold>
 
     public static LinkedList<Point> findJunctionPoints(int[][] skeleton, OccupancyGrid occGrid) {
         LinkedList<Point> junctions = new LinkedList<Point>();

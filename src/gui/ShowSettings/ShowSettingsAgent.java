@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -57,11 +57,12 @@ public class ShowSettingsAgent {
     public boolean showTopologicalMap;
     public boolean showRendezvous;
     public boolean showFreeSpace;
-    public boolean showBaseSpace;
+    public boolean baseStation;
     public boolean showSafeSpace;
     public boolean showTestSpace;
     public boolean showBorderSkel;
     public boolean showRVWalls;
+    public boolean hasMapInfo;
 
     public ShowSettingsAgent() {
         showAgent = false;
@@ -72,10 +73,11 @@ public class ShowSettingsAgent {
         showTopologicalMap = false;
         showRendezvous = false;
         showFreeSpace = false;
-        showBaseSpace = true;
+        baseStation = false;
         showSafeSpace = false;
         showTestSpace = false;
         showBorderSkel = false;
         showRVWalls = false;
+        hasMapInfo = false;
     }
 }

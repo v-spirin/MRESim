@@ -77,6 +77,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 import javax.imageio.ImageIO;
@@ -99,6 +100,7 @@ public class ExplorationImage {
     Graphics2D g2D;
 
     private BufferedImage image;
+    HashSet gridHashBuffer;
 
     public ExplorationImage(Environment env) {
         width = env.getColumns();
@@ -131,9 +133,6 @@ public class ExplorationImage {
     }
 
     public void setPixel(int row, int column, int color) {
-        if ((row < 0) || (column < 0)) {
-            return;
-        }
         try {
             image.setRGB(row, column, color);
         } catch (ArrayIndexOutOfBoundsException e) {
@@ -273,14 +272,13 @@ public class ExplorationImage {
     public void fullUpdatePath(OccupancyGrid agentGrid, Point startpoint, Point endpoint, ShowSettingsAgent agentSettings) {
         setG2D();
 
-        //<editor-fold defaultstate="collapsed" desc="Draw agent grid according nearPoint agentSettings">
+        //Draw agent grid according nearPoint agentSettings
         for (int i = 0; i < agentGrid.width; i++) {
             for (int j = 0; j < agentGrid.height; j++) {
                 setPixel(i, j, Constants.MapColor.background());
                 updatePixelAgent(agentSettings, agentGrid, i, j);
             }
         }
-        //</editor-fold>
 
         //drawLine(startpoint, endpoint, Color.yellow);
         setPixel(startpoint.x, startpoint.y, Color.GREEN);
@@ -354,6 +352,17 @@ public class ExplorationImage {
             Environment env, RealAgent[] agents, Polygon[] agentRange, boolean dirtOnly) {
         setG2D();
 
+        gridHashBuffer = new HashSet();
+        for (int i = 0; i <= agents.length - 1; i++) {
+            //setting base-info on base-settings, do this just once instead of every pixel on every agent :-/
+            if (agents[i].getRole() == RobotConfig.roletype.BaseStation) {
+                agentSettings[i].baseStation = true;
+                agentSettings[i].hasMapInfo = true;
+            } else if (gridHashBuffer.add(agents[i].getOccupancyGrid().hashCode())) {
+                //is new
+                agentSettings[i].hasMapInfo = true;
+            }
+        }
         //if(settings.showEnv)
         //    drawEnvironment(env.getFullStatus());
         if (!dirtOnly) {
@@ -361,9 +370,13 @@ public class ExplorationImage {
                 drawEnvironment(env.getFullStatus());
             }
 
-            for (int i = 0; i < width; i++) {
-                for (int j = 0; j < height; j++) {
-                    updatePixel(agentSettings, agents, i, j);
+            for (int a = agents.length - 1; a >= 0; a--) {
+                if (agentSettings[a].hasMapInfo) {
+                    for (int i = 0; i < width; i++) {
+                        for (int j = 0; j < height; j++) {
+                            updatePixelAgent(agentSettings[a], agents[a].getOccupancyGrid(), i, j);
+                        }
+                    }
                 }
             }
         } else {
@@ -373,10 +386,15 @@ public class ExplorationImage {
                 drawEnvironment(env.getFullStatus(), allDirt);
             }
 
-            allDirt.parallelStream().forEach((currCell) -> {
-                updatePixel(agentSettings, agents, currCell.x, currCell.y);
-            });
-
+            for (int i = agents.length - 1; i >= 0; i--) {
+                if (agentSettings[i].hasMapInfo) {
+                    final OccupancyGrid grid = agents[i].getOccupancyGrid();
+                    ShowSettingsAgent asettings = agentSettings[i];
+                    allDirt.parallelStream().forEach((currCell) -> {
+                        updatePixelAgent(asettings, grid, currCell.x, currCell.y);
+                    });
+                }
+            }
             setPixel(1, 1, Color.MAGENTA);
             setPixel(1, 2, Color.MAGENTA);
             setPixel(2, 1, Color.MAGENTA);
@@ -448,6 +466,9 @@ public class ExplorationImage {
 
         drawErrors();
         resetErrors();
+        for (int i = 0; i <= agents.length - 1; i++) {
+            agentSettings[i].hasMapInfo = false;
+        }
     }
 
 // </editor-fold>
@@ -483,39 +504,38 @@ public class ExplorationImage {
      * @param yCoord
      */
     private void updatePixel(ShowSettingsAgent[] agentsSettings, RealAgent[] agents, int xCoord, int yCoord) {
-        if ((xCoord < 0) || (yCoord < 0)) {
-            return;
-        }
+//        if ((xCoord < 0) || (yCoord < 0)) {
+//            return;
+//        }
         //setPixel(xCoord, yCoord, Constants.MapColor.background());
 
+        //Do this backwards so the basestation sets last his knowledge
         for (int i = agents.length - 1; i >= 0; i--) {
-            agentsSettings[i].showBaseSpace = (agents[i].getRole() == RobotConfig.roletype.BaseStation) && agentsSettings[i].showFreeSpace;
+            //agentsSettings[i].baseStation = (agents[i].getRole() == RobotConfig.roletype.BaseStation) && agentsSettings[i].showFreeSpace;
             updatePixelAgent(agentsSettings[i], agents[i].getOccupancyGrid(), xCoord, yCoord);
         }
     }
 
     private void updatePixelAgent(ShowSettingsAgent agentSettings, OccupancyGrid agentGrid, int xCoord, int yCoord) {
+        if (agentGrid.freeSpaceAt(xCoord, yCoord)) {
+            if (agentSettings.baseStation) {
+                setPixel(xCoord, yCoord, Constants.MapColor.explored_base());
+            } else if (agentSettings.showFreeSpace) {
+                setPixel(xCoord, yCoord, Constants.MapColor.explored());
 
-        if ((xCoord < 0) || (yCoord < 0)) {
-            return;
-        }
-        if (agentSettings.showFreeSpace && agentGrid.freeSpaceAt(xCoord, yCoord)) {
-            setPixel(xCoord, yCoord, Constants.MapColor.explored());
-        }
+            }
 
-        if (agentSettings.showBaseSpace && agentGrid.freeSpaceAt(xCoord, yCoord)) {
-            setPixel(xCoord, yCoord, Constants.MapColor.explored_base());
-        }
-
-        //Update safe space
+        } else //Update safe space
         //if (agentSettings.showSafeSpace
         //        && agentGrid.safeSpaceAt(xCoord, yCoord)) {
         //    setPixel(xCoord, yCoord, Constants.MapColor.safe());
         //}
         // Update obstacles
-        if (agentSettings.showFreeSpace
-                && agentGrid.obstacleAt(xCoord, yCoord)) {
-            setPixel(xCoord, yCoord, Constants.MapColor.obstacle());
+        {
+            if (agentSettings.showFreeSpace
+                    && agentGrid.obstacleAt(xCoord, yCoord)) {
+                setPixel(xCoord, yCoord, Constants.MapColor.agent_obstacle());
+            }
         }
     }
 

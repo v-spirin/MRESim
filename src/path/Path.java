@@ -1076,7 +1076,7 @@ public class Path {
                 ShowSettingsAgent agentSettings = new ShowSettingsAgent();
                 agentSettings.showFreeSpace = true;
                 if (tMap == null) {
-                    agentSettings.showBaseSpace = false;
+                    agentSettings.baseStation = false;
                     img.fullUpdatePath(grid, start, goal, agentSettings);
                 } else {
                     agentSettings.showTopologicalMap = true;

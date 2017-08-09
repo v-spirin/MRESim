@@ -89,7 +89,8 @@ public class TopologicalMap {
 
     public void generateSkeleton() {
         long realtimeStart = System.currentTimeMillis();
-        skeletonGrid = Skeleton.skeletonize(Skeleton.findSkeleton(occGrid));
+        //skeletonGrid = Skeleton.skeletonize(Skeleton.findSkeleton(occGrid));
+        skeletonGrid = Skeleton.findSkeleton(occGrid);
         if (Constants.DEBUG_OUTPUT) {
             System.out.println("Skeletonize & findSkeleton took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
         }
@@ -254,7 +255,7 @@ public class TopologicalMap {
 
     //<editor-fold defaultstate="collapsed" desc="RV through walls stuff">
     public void generateSkeletonNearBorders() {
-        skeletonGridBorder = Skeleton.skeletonize(Skeleton.findSkeletonNearBorders(occGrid));
+        skeletonGridBorder = Skeleton.findSkeletonNearBorders(occGrid);
         skeletonPointsBorder = Skeleton.gridToList(skeletonGridBorder);
     }
 

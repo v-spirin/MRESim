@@ -380,6 +380,10 @@ public class Constants {
             return Color.RED;
         }
 
+        public static final Color agent_obstacle() {
+            return Color.BLUE;
+        }
+
         public static final Color barrier() {
             return Color.BLACK;
         }
