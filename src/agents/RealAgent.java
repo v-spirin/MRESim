@@ -517,21 +517,17 @@ public class RealAgent extends Agent {
                         break;
 
                     case LeaderFollower:
-                        exploration = new LeaderFollower(this, simConfig, simConfig.getFrontierAlgorithm(), baseStation);
+                        exploration = new LeaderFollower(this, simConfig, baseStation);
                         break;
                     case FrontierExploration:
-                        //if (simConfig.getFrontierAlgorithm().equals(SimulatorConfig.frontiertype.UtilReturn)) {
-                        //    exploration = new UtilityExploration(this, simConfig, baseStation);
-                        //} else {
-                        exploration = new FrontierExploration(this, simConfig, simConfig.getFrontierAlgorithm(), baseStation);
-                        //}
+                        exploration = new FrontierExploration(this, simConfig, baseStation);
                         break;
                     case RoleBasedExploration:
                         exploration = new RoleBasedExploration(timeElapsed, this, simConfig, this.getRendezvousStrategy(), baseStation);
                         break;
 
                     case Testing:
-                        exploration = new RelayFrontierExploration(this, simConfig, simConfig.getFrontierAlgorithm(), simConfig.getRelayAlgorithm(), simConfig.useComStations(), simConfig.getComStationDropChance(), baseStation);
+                        exploration = new RelayFrontierExploration(this, simConfig, baseStation);
                         break;
                     case Random:
                         exploration = new RandomExploration(this, simConfig);

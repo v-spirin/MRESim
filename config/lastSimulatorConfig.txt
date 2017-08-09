@@ -1,5 +1,5 @@
-FrontierExploration
-ReturnWhenComplete
+Random
+PeriodicReturn
 KeyPoints
 null
 StaticCircle

@@ -327,6 +327,8 @@ public class Constants {
      */
     public static double KEY_POINT_DISTANCE = 25;
     public static double MIN_RELAY_DISTANCE = 50;
+    public static double KEY_POINT_RELAY_DISTANCE = 10;
+    public static double KEY_POINT_PLAN_RELAY_DISTANCE = 100;
 
     /**
      * Colors to be used on map.

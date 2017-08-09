@@ -65,7 +65,7 @@ public class UtilityExploration extends FrontierExploration {
     private final int TIME_BETWEEN_RECOMPUTE_PATHS = 10;
 
     public UtilityExploration(RealAgent agent, SimulatorConfig simConfig, RealAgent baseStation) {
-        super(agent, simConfig, SimulatorConfig.frontiertype.ReturnWhenComplete, baseStation);
+        super(agent, simConfig, baseStation, SimulatorConfig.frontiertype.ReturnWhenComplete);
         this.agent = agent;
     }
 

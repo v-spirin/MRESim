@@ -79,10 +79,27 @@ public class FrontierExploration extends BasicExploration implements Exploration
     private double last_percentage_known = 0;
     private int no_change_counter = 0;
 
-    public FrontierExploration(RealAgent agent, SimulatorConfig simConfig, SimulatorConfig.frontiertype frontierExpType, RealAgent baseStation) {
+    public FrontierExploration(RealAgent agent, SimulatorConfig simConfig, RealAgent baseStation) {
         super(agent, simConfig);
         this.agent = agent;
-        this.frontierExpType = frontierExpType;
+        this.frontierExpType = simConfig.getFrontierAlgorithm();
+        this.baseStation = baseStation;
+        this.noReturnTimer = 0;
+        this.frontiers = new PriorityQueue<>();
+    }
+
+    /**
+     * Constructor for Explorations using a specific frontier-type
+     *
+     * @param agent
+     * @param simConfig
+     * @param baseStation
+     * @param frontierType
+     */
+    public FrontierExploration(RealAgent agent, SimulatorConfig simConfig, RealAgent baseStation, SimulatorConfig.frontiertype frontierType) {
+        super(agent, simConfig);
+        this.agent = agent;
+        this.frontierExpType = frontierType;
         this.baseStation = baseStation;
         this.noReturnTimer = 0;
         this.frontiers = new PriorityQueue<>();

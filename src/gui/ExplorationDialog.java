@@ -683,6 +683,11 @@ public class ExplorationDialog extends javax.swing.JDialog {
         radioTesting.setText("Testing");
 
         checkBoxUseComStations.setText("Use ComStations");
+        checkBoxUseComStations.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkBoxUseComStationsActionPerformed(evt);
+            }
+        });
 
         comStationDropChanceField.setText("0.02");
         comStationDropChanceField.addActionListener(new java.awt.event.ActionListener() {
@@ -936,17 +941,12 @@ public class ExplorationDialog extends javax.swing.JDialog {
             radioFrontierType2.setEnabled(true);
             radioFrontierType3.setEnabled(true);
             radioFrontierType4.setEnabled(true);
-            radioRelay1.setEnabled(false);
-            radioRelay2.setEnabled(false);
-            radioRelay3.setEnabled(false);
-        } else if (radioTesting.isSelected()) {
+            jTextRatio.setEnabled(true);
+        } else {
             radioFrontierType2.setEnabled(false);
             radioFrontierType3.setEnabled(false);
             radioFrontierType4.setEnabled(false);
-            radioRelay1.setEnabled(true);
-            radioRelay2.setEnabled(true);
-            radioRelay3.setEnabled(true);
-        } else {
+            jTextRatio.setEnabled(false);
         }
 }//GEN-LAST:event_radioFrontierActionPerformed
 
@@ -1008,6 +1008,20 @@ public class ExplorationDialog extends javax.swing.JDialog {
     private void radioRelay3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioRelay3ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_radioRelay3ActionPerformed
+
+    private void checkBoxUseComStationsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxUseComStationsActionPerformed
+        if (checkBoxUseComStations.isSelected()) {
+            radioRelay1.setEnabled(true);
+            radioRelay2.setEnabled(true);
+            radioRelay3.setEnabled(true);
+            comStationDropChanceField.setEnabled(true);
+        } else {
+            radioRelay1.setEnabled(false);
+            radioRelay2.setEnabled(false);
+            radioRelay3.setEnabled(false);
+            comStationDropChanceField.setEnabled(false);
+        }
+    }//GEN-LAST:event_checkBoxUseComStationsActionPerformed
 
     WindowListener windowListener = new WindowAdapter() {
         @Override

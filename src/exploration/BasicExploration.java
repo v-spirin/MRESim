@@ -45,6 +45,8 @@
 package exploration;
 
 import agents.RealAgent;
+import agents.TeammateAgent;
+import config.Constants;
 import config.SimulatorConfig;
 import java.awt.Point;
 import path.Path;
@@ -93,5 +95,25 @@ abstract class BasicExploration {
      * @return Nothing ASAP! //TODO no return!
      */
     abstract protected Point replan(int timeElapsed);
+
+    protected boolean noRelay(Point p) {
+
+        for (TeammateAgent agt : agent.getAllTeammates().values()) {
+            if (agt.isRelay() && agt.getLocation().equals(p)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected boolean noNearRelay(Point p) {
+
+        for (TeammateAgent agt : agent.getAllTeammates().values()) {
+            if (agt.isRelay() && (agt.getLocation().distance(p) < Constants.MIN_RELAY_DISTANCE)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
 }

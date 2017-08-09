@@ -63,8 +63,8 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
     double last_percentage_known = 0;
     boolean backtracking = false;
 
-    public LeaderFollower(RealAgent agent, SimulatorConfig simConfig, SimulatorConfig.frontiertype frontierExpType, RealAgent baseStation) {
-        super(agent, simConfig, frontierExpType, baseStation);
+    public LeaderFollower(RealAgent agent, SimulatorConfig simConfig, RealAgent baseStation) {
+        super(agent, simConfig, baseStation);
     }
 
     @Override

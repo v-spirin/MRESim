@@ -479,8 +479,14 @@ public class ExplorationImage {
     }
 
 // </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Update functions">
-    //<editor-fold defaultstate="collapsed" desc="updatePixel">
+// Update functions
+    /**
+     *
+     * @param agentsSettings
+     * @param agents
+     * @param xCoord
+     * @param yCoord
+     */
     private void updatePixel(ShowSettingsAgent[] agentsSettings, RealAgent[] agents, int xCoord, int yCoord) {
         if ((xCoord < 0) || (yCoord < 0)) {
             return;
@@ -507,18 +513,16 @@ public class ExplorationImage {
         }
 
         //Update safe space
-        if (agentSettings.showSafeSpace
-                && agentGrid.safeSpaceAt(xCoord, yCoord)) {
-            setPixel(xCoord, yCoord, Constants.MapColor.safe());
-        }
-
+        //if (agentSettings.showSafeSpace
+        //        && agentGrid.safeSpaceAt(xCoord, yCoord)) {
+        //    setPixel(xCoord, yCoord, Constants.MapColor.safe());
+        //}
         // Update obstacles
         if (agentSettings.showFreeSpace
                 && agentGrid.obstacleAt(xCoord, yCoord)) {
             setPixel(xCoord, yCoord, Constants.MapColor.obstacle());
         }
     }
-    //</editor-fold>
 
     public void redrawEnvAndAgents(MainGUI mainGUI, RobotTeamConfig rtc, SimulatorConfig simConfig) {
         if (mainGUI.showEnv()) {

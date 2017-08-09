@@ -66,7 +66,7 @@ public class RoleBasedExploration extends FrontierExploration {
     IRendezvousStrategy rendezvousStrategy;
 
     public RoleBasedExploration(int timeElapsed, RealAgent agent, SimulatorConfig simConfig, IRendezvousStrategy rendezvousStrategy, RealAgent baseStation) {
-        super(agent, simConfig, SimulatorConfig.frontiertype.ReturnWhenComplete, baseStation);
+        super(agent, simConfig, baseStation, SimulatorConfig.frontiertype.ReturnWhenComplete);
         this.timeElapsed = timeElapsed;
         this.rendezvousStrategy = rendezvousStrategy;
     }
@@ -420,8 +420,7 @@ public class RoleBasedExploration extends FrontierExploration {
             return agent.getLocation();
         } //else, we've recalculated rv, time to move on
         else //Explorer - process & go into Explore state">
-        {
-            if (agent.isExplorer()) {
+         if (agent.isExplorer()) {
                 agent.getRendezvousStrategy().processAfterGiveParentInfoExplorer(timeElapsed);
 
                 agent.setExploreState(RealAgent.ExplorationState.Explore);
@@ -482,7 +481,6 @@ public class RoleBasedExploration extends FrontierExploration {
                     }
                 }
             }
-        }
     }
 
     public Point takeStep_GoToChild() {
@@ -568,8 +566,7 @@ public class RoleBasedExploration extends FrontierExploration {
         if (canStillWait) {
             return agent.getRendezvousStrategy().processWaitForChild();
         } else //Go to backup RV if available. Otherwise do what the strategy requires us to do, e.g. become an explorer.
-        {
-            if (rvd.getChildBackupRendezvous() != null) {
+         if (rvd.getChildBackupRendezvous() != null) {
                 rvd.setChildRendezvous(rvd.getChildBackupRendezvous());
                 rvd.setChildBackupRendezvous(null);
                 agent.setExploreState(RealAgent.ExplorationState.GoToChild);
@@ -578,7 +575,6 @@ public class RoleBasedExploration extends FrontierExploration {
             } else {
                 return agent.getRendezvousStrategy().processWaitForChildTimeoutNoBackup();
             }
-        }
     }
 
     public Point takeStep_GetInfoFromChild() {

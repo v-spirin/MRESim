@@ -86,8 +86,9 @@ public class SimulatorConfig {
     }
 
     public static enum relaytype {
-        KeyPoints, RangeBorder, Random
+        KeyPoints, RangeBorder, Random, None
     }
+
     public double TARGET_INFO_RATIO;
     private exptype expAlgorithm;
     private frontiertype frontierAlgorithm;

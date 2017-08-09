@@ -45,7 +45,10 @@
 package exploration;
 
 import agents.RealAgent;
+import config.Constants;
 import config.SimulatorConfig;
+import environment.OccupancyGrid;
+import environment.TopologicalMap;
 import java.awt.Point;
 
 /**
@@ -54,18 +57,60 @@ import java.awt.Point;
  */
 public class RandomExploration extends BasicExploration implements Exploration {
 
+    SimulatorConfig.relaytype relayType = SimulatorConfig.relaytype.None;
+    private final OccupancyGrid occGrid;
+
     public RandomExploration(RealAgent agent, SimulatorConfig simConfig) {
         super(agent, simConfig);
-        System.out.println("Start Wall");
+        this.relayType = simConfig.getRelayAlgorithm();
+        this.occGrid = agent.getOccupancyGrid();
+        state = ExplorationState.Exploring;
     }
 
     @Override
     public Point takeStep(int timeElapsed) {
+        switch (relayType) {
+            case Random:
+                if ((Math.random() < simConfig.getComStationDropChance() * agent.getSpeed())) {
+                    agent.dropComStation();
+                    System.out.println("Random: Would drop!");
+                }
+                break;
+            case KeyPoints:
+                if (!agent.comStations.isEmpty()) {
+
+                    TopologicalMap tmap = new TopologicalMap(occGrid);
+                    tmap.generateSkeleton();
+                    for (Point p : tmap.getJunctionPoints()) {
+                        simulator.ExplorationImage.addErrorMarker(p, "", true);
+                        if (agent.getLocation().distance(p) < Constants.KEY_POINT_RELAY_DISTANCE) {
+                            if (noRelay(p) && noNearRelay(p)) {
+                                state = ExplorationState.SettingRelay;
+                                break;
+                            }
+                        }
+
+                    }
+                }
+                break;
+            case RangeBorder:
+                break;
+            case None:
+            default:
+            //Nothing
+        }
+
+        if (state == ExplorationState.SettingRelay) {
+            agent.dropComStation();
+            System.out.println("Precise: Would drop!");
+            state = ExplorationState.Exploring;
+        }
         return RandomWalk.randomStep(agent);
     }
 
     @Override
-    protected Point replan(int timeElapsed) {
+    protected Point replan(int timeElapsed
+    ) {
         throw new UnsupportedOperationException("Not supported, this does not need a plan.");
     }
 }
