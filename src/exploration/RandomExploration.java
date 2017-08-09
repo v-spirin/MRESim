@@ -59,12 +59,14 @@ public class RandomExploration extends BasicExploration implements Exploration {
 
     SimulatorConfig.relaytype relayType = SimulatorConfig.relaytype.None;
     private final OccupancyGrid occGrid;
+    TopologicalMap tmap;
 
     public RandomExploration(RealAgent agent, SimulatorConfig simConfig) {
         super(agent, simConfig);
         this.relayType = simConfig.getRelayAlgorithm();
         this.occGrid = agent.getOccupancyGrid();
         state = ExplorationState.Exploring;
+        tmap = new TopologicalMap(occGrid);
     }
 
     @Override
@@ -73,14 +75,13 @@ public class RandomExploration extends BasicExploration implements Exploration {
             case Random:
                 if ((Math.random() < simConfig.getComStationDropChance() * agent.getSpeed())) {
                     agent.dropComStation();
-                    System.out.println("Random: Would drop!");
                 }
                 break;
             case KeyPoints:
                 if (!agent.comStations.isEmpty()) {
-
-                    TopologicalMap tmap = new TopologicalMap(occGrid);
-                    tmap.generateSkeleton();
+                    if (timeElapsed % 5 == 0) {
+                        tmap.generateSkeleton();
+                    }
                     for (Point p : tmap.getJunctionPoints()) {
                         simulator.ExplorationImage.addErrorMarker(p, "", true);
                         if (agent.getLocation().distance(p) < Constants.KEY_POINT_RELAY_DISTANCE) {
@@ -102,7 +103,6 @@ public class RandomExploration extends BasicExploration implements Exploration {
 
         if (state == ExplorationState.SettingRelay) {
             agent.dropComStation();
-            System.out.println("Precise: Would drop!");
             state = ExplorationState.Exploring;
         }
         return RandomWalk.randomStep(agent);

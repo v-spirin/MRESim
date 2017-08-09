@@ -71,12 +71,14 @@ public class TopologicalMap {
     private LinkedList<Point> skeletonPointsBorder;
     private LinkedList<Point> keyPointsBorder;
     private LinkedList<Point> secondKeyPointsBorder;
+    private int occGridHash;
 
     //cached paths between nodes; first param is two points, start and finish
     private static HashMap<Rectangle, Path> pathCache = new HashMap<Rectangle, Path>();
 
     public TopologicalMap(OccupancyGrid occGrid) {
         setGrid(occGrid);
+        occGridHash = occGrid.hashCode();
     }
 
     public final void setGrid(OccupancyGrid occGrid) {
@@ -88,6 +90,9 @@ public class TopologicalMap {
     }
 
     public void generateSkeleton() {
+        if (occGridHash == occGrid.hashCode() && skeletonPoints != null && skeletonGrid != null) {
+            return;
+        }
         long realtimeStart = System.currentTimeMillis();
         //skeletonGrid = Skeleton.skeletonize(Skeleton.findSkeleton(occGrid));
         skeletonGrid = Skeleton.findSkeleton(occGrid);
@@ -106,6 +111,9 @@ public class TopologicalMap {
      * generateSkeleton first!
      */
     public void findKeyPoints() {
+        if (occGridHash == occGrid.hashCode() && keyPoints != null) {
+            return;
+        }
         keyPoints = Skeleton.findKeyPoints(skeletonGrid, occGrid);
     }
 
@@ -148,6 +156,9 @@ public class TopologicalMap {
         // declare topological nodes (we will define relations between them later)
         // each node has one keypoint which is rougly in the center of the node region
         // this keypoint is used to pre-calculate occupancy grid paths between nodes.
+        if (occGridHash == occGrid.hashCode() && areaGrid != null) {
+            return;
+        }
         topologicalNodes = new HashMap<Integer, TopologicalNode>();
 
         int index = 0;
@@ -253,17 +264,26 @@ public class TopologicalMap {
         return secondKeyPointsBorder;
     }
 
-    //<editor-fold defaultstate="collapsed" desc="RV through walls stuff">
+    //RV through walls stuff
     public void generateSkeletonNearBorders() {
+        if (occGridHash == occGrid.hashCode() && skeletonGridBorder != null && skeletonPointsBorder != null) {
+            return;
+        }
         skeletonGridBorder = Skeleton.findSkeletonNearBorders(occGrid);
         skeletonPointsBorder = Skeleton.gridToList(skeletonGridBorder);
     }
 
     public void findKeyPointsBorder() {
+        if (occGridHash == occGrid.hashCode() && keyPointsBorder != null) {
+            return;
+        }
         keyPointsBorder = Skeleton.findBorderRVPoints(skeletonGridBorder, occGrid);
     }
 
     public void findSecondKeyPointsBorder(Point goal, RealAgent agent) {
+        if (occGridHash == occGrid.hashCode() && secondKeyPointsBorder != null) {
+            return;
+        }
         secondKeyPointsBorder = Skeleton.findSecondBorderRVPoints(keyPointsBorder, agent, goal);
     }
 
@@ -493,5 +513,4 @@ public class TopologicalMap {
 //
 //        return result;
 //    }
-    //</editor-fold>
 }

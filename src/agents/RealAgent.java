@@ -146,7 +146,7 @@ public class RealAgent extends Agent {
         totalSpareTime = 0;
 
         occGrid = new OccupancyGrid(envWidth, envHeight);
-        topologicalMap = new TopologicalMap(null);
+        topologicalMap = new TopologicalMap(occGrid);
         dirtyCells = new LinkedList<Point>();
         pathTaken = new LinkedList<Point>();
         badFrontiers = new HashMap<Frontier, Boolean>();

@@ -360,7 +360,7 @@ public class Skeleton {
         return findSkeleton(grid, false, true);
     }
 
-    public static int[][] findSkeleton(OccupancyGrid grid, boolean treatWideOpenSpaceAsObstacle,
+    private static int[][] findSkeleton(OccupancyGrid grid, boolean treatWideOpenSpaceAsObstacle,
             boolean skeletonNearBorders) {
         long realtimeStart = System.currentTimeMillis();
         int[][] freeSpaceGrid = new int[grid.width][grid.height];
@@ -368,14 +368,18 @@ public class Skeleton {
         for (int i = 0; i < grid.width; i++) {
             for (int j = 0; j < grid.height; j++) {
                 if (grid.freeSpaceAt(i, j) && (!skeletonNearBorders || (!obstacleWithinDistance(grid, i, j, 5)))) {
-                    freeSpaceGrid[i][j] = 1;
+                    if (treatWideOpenSpaceAsObstacle && inWideOpenSpace(freeSpaceGrid, i, j)) {
+                        freeSpaceGrid[i][j] = 0;
+                    } else {
+                        freeSpaceGrid[i][j] = 1;
+                    }
                 } else {
                     freeSpaceGrid[i][j] = 0;
                 }
             }
         }
 
-        if (treatWideOpenSpaceAsObstacle) {
+        /*if (treatWideOpenSpaceAsObstacle) {
             for (int i = 0; i < grid.width; i++) {
                 for (int j = 0; j < grid.height; j++) {
                     if (freeSpaceGrid[i][j] == 1 && inWideOpenSpace(freeSpaceGrid, i, j)) {
@@ -383,8 +387,7 @@ public class Skeleton {
                     }
                 }
             }
-        }
-
+        }*/
         //skeleton = distanceTransform(skeleton);
         int[][] skeleton;
         if (!skeletonNearBorders) {
