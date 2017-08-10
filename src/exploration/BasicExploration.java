@@ -82,9 +82,10 @@ abstract class BasicExploration {
      *
      * @param agent The agend using this ExplorationStrategy
      */
-    public BasicExploration(RealAgent agent, SimulatorConfig simConfig) {
+    public BasicExploration(RealAgent agent, SimulatorConfig simConfig, ExplorationState initialState) {
         this.agent = agent;
         this.simConfig = simConfig;
+        this.state = initialState;
     }
 
     /**

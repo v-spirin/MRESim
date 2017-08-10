@@ -123,6 +123,7 @@ public class RealAgent extends Agent {
     // Used only for logging - direct reference to other agents. DO NOT use this for anything else
     private SimulationFramework simFramework;
     private int oldTimeElapsed;
+    private boolean stepFinished;
 
     /**
      * Indicates that the agend did something using occupied cycles (cycles left until available
@@ -140,6 +141,7 @@ public class RealAgent extends Agent {
         prevY = y;
 
         envError = false;
+        stepFinished = false;
         timeTopologicalMapUpdated = -1;
         timeElapsed = 0;
 
@@ -377,6 +379,14 @@ public class RealAgent extends Agent {
 
     public HashMap<Integer, TeammateAgent> getAllTeammates() {
         return teammates;
+    }
+
+    public boolean isStepFinished() {
+        return stepFinished;
+    }
+
+    public void setStepFinished(boolean stepFinished) {
+        this.stepFinished = stepFinished;
     }
 
 // </editor-fold>

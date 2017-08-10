@@ -63,18 +63,47 @@ public class RandomExploration extends BasicExploration implements Exploration {
     TopologicalMap tmap;
 
     public RandomExploration(RealAgent agent, SimulatorConfig simConfig) {
-        super(agent, simConfig);
+        super(agent, simConfig, ExplorationState.Exploring);
         this.relayType = simConfig.getRelayAlgorithm();
         this.occGrid = agent.getOccupancyGrid();
-        state = ExplorationState.Exploring;
         tmap = new TopologicalMap(occGrid);
     }
 
     @Override
     public Point takeStep(int timeElapsed) {
+        Point nextStep;
+        switch (state) {
+            case Exploring:
+                nextStep = takeStep_explore(timeElapsed);
+                break;
+            case SettingRelay:
+                if (state == ExplorationState.SettingRelay) {
+                    agent.dropComStation();
+                    state = ExplorationState.Exploring;
+                }
+                nextStep = agent.getLocation();
+                break;
+            case Initial:
+            case BackToBase:
+            case Finished:
+            default:
+                nextStep = RandomWalk.randomStep(agent);
+
+        }
+
+        return nextStep;
+    }
+
+    @Override
+    protected Point replan(int timeElapsed
+    ) {
+        throw new UnsupportedOperationException("Not supported, this does not need a plan.");
+    }
+
+    private Point takeStep_explore(int timeElapsed) {
         switch (relayType) {
             case Random:
-                if ((Math.random() < simConfig.getComStationDropChance() * agent.getSpeed())) {
+                if (!agent.comStations.isEmpty() && (Math.random() < simConfig.getComStationDropChance() * agent.getSpeed())) {
                     agent.dropComStation();
                 }
                 break;
@@ -96,36 +125,35 @@ public class RandomExploration extends BasicExploration implements Exploration {
                 }
                 break;
             case RangeBorder:
-                boolean useful = false;
-                for (TeammateAgent mate : agent.getAllTeammates().values()) {
-                    if (mate.isRelay()) {
-                        if (mate.getDirectComLink() != 0 && mate.getDirectComLink() < 20) {
-                            useful = true;
-                        } else if (mate.getDirectComLink() > 20) {
-                            useful = false;
-                            break;
+                if (!agent.comStations.isEmpty()) {
+                    boolean useful = false;
+                    for (TeammateAgent mate : agent.getAllTeammates().values()) {
+                        //System.out.println(mate.getName());
+                        if (mate.isRelay()) {
+                            //System.out.println(mate.getName() + ": " + mate.getDirectComLink());
+                            if (mate.getDirectComLink() != 0 && mate.getDirectComLink() < agent.getSpeed() + 1) {
+                                useful = true;
+                            } else if (mate.getDirectComLink() != 0) {
+                                useful = false;
+                                break;
+                            }
                         }
                     }
-                }
-                if (useful) {
-                    state = ExplorationState.SettingRelay;
+                    if (useful) {
+                        state = ExplorationState.SettingRelay;
+                    }
                 }
                 break;
             case None:
             default:
-            //Nothing
         }
 
-        if (state == ExplorationState.SettingRelay) {
-            agent.dropComStation();
-            state = ExplorationState.Exploring;
+        //If the stati stil is exploring, we explore, if it changed we stay still (state must be setting relay)
+        if (state == ExplorationState.Exploring) {
+            return RandomWalk.randomStep(agent);
+        } else {
+            agent.setStepFinished(true);
+            return agent.getLocation();
         }
-        return RandomWalk.randomStep(agent);
-    }
-
-    @Override
-    protected Point replan(int timeElapsed
-    ) {
-        throw new UnsupportedOperationException("Not supported, this does not need a plan.");
     }
 }

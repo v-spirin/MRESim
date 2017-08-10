@@ -203,8 +203,15 @@ public class PropModel1 {
             for (int j = i + 1; j < agent.length; j++) {
                 double signal = signalStrength(agent[i].getCommRange(), env, agent[i].getLocation(), agent[j].getLocation());
                 if (signal > CUTOFF) {
-                    commTable[i][j] = -CUTOFF + (int) signal;
-                    commTable[j][i] = -CUTOFF + (int) signal;
+                    double strength;
+                    if (signal > 1000) {
+                        strength = 100;
+                    } else {
+                        strength = (-CUTOFF + (int) signal) * 3;
+                    }
+
+                    commTable[i][j] = (int) strength;
+                    commTable[j][i] = commTable[i][j];
                 } else {
                     commTable[i][j] = 0;
                     commTable[j][i] = 0;

@@ -85,6 +85,7 @@ public class TeammateAgent extends Agent {
         timeSinceLastComm = 0;
         pathLength = 0;
         rendezvousAgentData = new RendezvousAgentData(this);
+        directComLink = 0;
     }
 
     public TeammateAgent(TeammateAgent toCopy) {

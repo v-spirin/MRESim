@@ -62,7 +62,7 @@ public class WallFollowExploration extends BasicExploration implements Explorati
     private int SENSING_DISTANCE = 30;
 
     public WallFollowExploration(RealAgent agent, SimulatorConfig simConfig, OccupancyGrid grid) {
-        super(agent, simConfig);
+        super(agent, simConfig, ExplorationState.Exploring);
         System.out.println("Start Wall");
         this.grid = grid;
     }

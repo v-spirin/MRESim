@@ -155,7 +155,7 @@ public class AgentStepRunnable implements Runnable {
                 agent.setEnvError(true);
             }
 
-            //<editor-fold defaultstate="collapsed" desc="Conditions for breaking even if we have 'speed' left">
+            //Conditions for breaking even if we have 'speed' left
             boolean canContinueOnPath = (agent.getPath() != null) && (agent.getPath().getPoints() != null)
                     && (agent.getPath().getPoints().size() > 0) && (!agent.getEnvError());
             if (!canContinueOnPath) {
@@ -172,7 +172,10 @@ public class AgentStepRunnable implements Runnable {
             if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
                 break;
             }
-            //</editor-fold>
+            if (agent.isStepFinished()) {
+                agent.setStepFinished(false);
+                break;
+            }
         }
 
         /*if (simConfig.getExpAlgorithm() != SimulatorConfig.exptype.RunFromLog)

@@ -80,7 +80,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
     private int no_change_counter = 0;
 
     public FrontierExploration(RealAgent agent, SimulatorConfig simConfig, RealAgent baseStation) {
-        super(agent, simConfig);
+        super(agent, simConfig, ExplorationState.Initial);
         this.agent = agent;
         this.frontierExpType = simConfig.getFrontierAlgorithm();
         this.baseStation = baseStation;
@@ -97,7 +97,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
      * @param frontierType
      */
     public FrontierExploration(RealAgent agent, SimulatorConfig simConfig, RealAgent baseStation, SimulatorConfig.frontiertype frontierType) {
-        super(agent, simConfig);
+        super(agent, simConfig, ExplorationState.Initial);
         this.agent = agent;
         this.frontierExpType = frontierType;
         this.baseStation = baseStation;
