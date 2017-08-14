@@ -48,7 +48,6 @@ import agents.RealAgent;
 import config.Constants;
 import java.awt.Point;
 import java.util.Random;
-import path.Path;
 
 /**
  *
@@ -160,8 +159,6 @@ public class RandomWalk {
             newY = 0;
         }
         Point newPoint = new Point(newX, newY);
-        Path path = new Path(agent.getOccupancyGrid(), agent.getLocation(), newPoint, true, true);
-        agent.setPath(path);
-        return (new Point(newX, newY));
+        return newPoint;
     }
 }

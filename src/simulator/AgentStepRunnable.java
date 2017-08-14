@@ -83,7 +83,7 @@ public class AgentStepRunnable implements Runnable {
         //Continue along the path,
         //until we have exhausted agent 'speed' per cycle or run out of path
         while (distance_left > 0) {
-            //<editor-fold defaultstate="collapsed" desc="Get next step">
+            //Get next step
             nextStep = agent.takeStep(timeElapsed);
             if (nextStep == null) {
                 nextStep = agent.getLocation();
@@ -98,13 +98,12 @@ public class AgentStepRunnable implements Runnable {
                         + nextStep.y + ") took "
                         + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
             }
-            //</editor-fold>
 
             //Check to make sure step is legal
             if (env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y, agent.ability)) {
                 //check here we don't 'teleport'
                 double dist = agent.getLocation().distance(nextStep);
-                //<editor-fold defaultstate="collapsed" desc="If we don't have enough 'speed'">
+                //If we don't have enough 'speed'
                 // left to reach nextPoint, go as far as we can and keep nextPoint in the path
                 if (dist > distance_left) {
                     //System.out.println(agent.toString() + " exceeded speed. Distance left: " + distance_left + ", dist to next path point: " + dist);
@@ -124,7 +123,6 @@ public class AgentStepRunnable implements Runnable {
                     }
                     //System.out.println(agent.toString() + " speed corrected. Now is: " + agent.getLocation().distance(nextStep));
                     distance_left = 0;
-                    //</editor-fold>
                 } else {
                     distance_left = distance_left - dist;
                 }

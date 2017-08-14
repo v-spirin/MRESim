@@ -70,7 +70,7 @@ abstract class BasicExploration {
     Path path;
 
     enum ExplorationState {
-        Initial, Exploring, BackToBase, Finished, SettingRelay
+        Initial, Exploring, BackToBase, Finished, SettingRelay, TakingRelay, EnvError
     }
 
     ExplorationState state = ExplorationState.Initial;
