@@ -685,7 +685,7 @@ public class RealAgent extends Agent {
             }
             tpath = new Path(occGrid, startPoint, goalPoint, false, pureAStar);
             if (!tpath.found) {
-                System.err.println("!!!! CATASTROPHIC FAILURE !!!!!");
+                System.err.println(this + "!!!! CATASTROPHIC FAILURE !!!!! No path from " + startPoint + " to " + goalPoint);
             }
         }
         return tpath;

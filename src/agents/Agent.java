@@ -196,6 +196,7 @@ abstract public class Agent {
     }
 
     public final void setExploreState(ExplorationState s) {
+        setStateTimer(0);
         if (this.exploreState != s) {
             prevExploreState = this.exploreState;
             this.setStateTimer(0);

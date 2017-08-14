@@ -456,44 +456,24 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
     @Override
     public void processJustGotIntoParentRange(int timeElapsed) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
-        //<editor-fold defaultstate="collapsed" desc="Case 1: Explorer">
+        //Case 1: Explorer
         if (agent.isExplorer()) {
             // Second, calculate rendezvous, but stick around for one time step to communicate
             if (settings.useImprovedRendezvous) {
                 calculateRendezvousExplorerWithRelay(timeElapsed);
-                /*if (rvThroughWalls) {
-                    if (rvd.getTimeSinceLastRVCalc() == 0)
-                        rvd.setTimeSinceLastRVCalc(100);
-                    rvd.setParentBackupRendezvous(rvd.getParentRendezvous());
-                    //calculateRVThroughWalls(agent);
-                    calculateRendezvousRandomSampling(agent);
-                }*/
             } else {
-                //calculateRendezvous();
                 //set RV to next destination
                 //if we have a current goal that is not right next to where we are
                 if (agent.getCurrentGoal().distance(agent.getLocation()) > 25) {
                     rvd.setChildRendezvous(new Rendezvous(agent.getCurrentGoal()));
                 }
                 rvd.setParentRendezvous(rvd.getChildRendezvous());
-                /*if (rvThroughWalls && timeElapsed > 100) {
-                    if (rvd.getTimeSinceLastRVCalc() == 0)
-                        rvd.setTimeSinceLastRVCalc(100);
-                    rvd.setParentBackupRendezvous(rvd.getParentRendezvous());
-                    calculateRVThroughWalls(agent);
-                }*/
             }
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="Case 2: Relay with another relay as parent">
+        } //Case 2: Relay with another relay as parent
         else if (agent.getParent() != Constants.BASE_STATION_TEAMMATE_ID) {
             calculateRendezvousRelayWithRelay();
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="Case 3: Relay with base station as parent, no need to recalculate rv">
-        else {
-
         }
-        //</editor-fold>
-
+        //Case 3: Relay with base station as parent, no need to recalculate rv
     }
 
     @Override

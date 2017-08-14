@@ -191,8 +191,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         calculateFrontiers();
 
         //If no frontiers found, or reached exploration goal, return to ComStation
-        if (((frontiers.isEmpty()) || no_change_counter > 20 || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))
-                && timeElapsed > 100) {
+        if (((frontiers.isEmpty()) || no_change_counter > 20 || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
             nextStep = agent.getNextPathPoint();
@@ -233,7 +232,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         }
 
         //If no frontier could be assigned, then go back to base.">
-        if (!foundFrontier && timeElapsed > 100) {
+        if (!foundFrontier) {
             // mission complete
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent.toString() + " could not find frontier, proceeding to BaseStation (Mission Complete).");

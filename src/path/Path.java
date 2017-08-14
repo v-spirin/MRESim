@@ -102,6 +102,7 @@ public class Path {
         this.goal = endpoint;
         this.tMap = tMap;
         this.grid = agentGrid;
+        this.pathPoints = new LinkedList<Point>();
         TopologicalNode startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
         TopologicalNode goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
 
