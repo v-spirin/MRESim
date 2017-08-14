@@ -2,6 +2,12 @@
 
 **A simulator for testing the behaviour of multiple robots exploring unknown environments.**
 
+* Build MRESim:
+Build with clean environment
+> ant -f /home/christian/MRESim -Dnb.internal.action.name=rebuild clean jar
+Build normally
+> ant -f /home/christian/MRESim -Dnb.internal.action.name=build jar
+
 * Start in GUI-Mode:
 > java -jar dist/MRESim.jar
 * Start in Headless Mode (Batch):
