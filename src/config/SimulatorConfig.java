@@ -68,6 +68,7 @@ public class SimulatorConfig {
     private String batchFilename;
     private boolean useComStations;
     private double comStationDropChance;
+    private double comStationTakeChance;
 
     public static enum commtype {
         StaticCircle, DirectLine, PropModel1
@@ -90,6 +91,7 @@ public class SimulatorConfig {
     }
 
     public double TARGET_INFO_RATIO;
+    public int PERIODIC_RETURN_PERIOD;
     private exptype expAlgorithm;
     private frontiertype frontierAlgorithm;
     private relaytype relayAlgorithm;
@@ -152,6 +154,7 @@ public class SimulatorConfig {
             useSingleMeetingTime = false;
             comStationDropChance = 0;
             useComStations = false;
+            comStationTakeChance = 0;
         }
 
         boolean oldWallConfigFound = loadOldWallConfig();
@@ -175,6 +178,14 @@ public class SimulatorConfig {
 
     public void setComStationDropChance(double parseDouble) {
         this.comStationDropChance = parseDouble;
+    }
+
+    public void setComStationTakeChance(double parseDouble) {
+        this.comStationTakeChance = parseDouble;
+    }
+
+    public double getComStationTakeChance() {
+        return comStationTakeChance;
     }
 
     public commtype getCommModel() {
@@ -422,7 +433,6 @@ public class SimulatorConfig {
     }
 // </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Load and Save">
     private boolean loadOldSimulatorConfig() {
         String oldConfigFilename = System.getProperty("user.dir") + "/config/lastSimulatorConfig.txt";
         File file = new File(oldConfigFilename);
@@ -530,6 +540,16 @@ public class SimulatorConfig {
                 } catch (IOException | NumberFormatException e) {
                     comStationDropChance = 0.02;
                 }
+                try {
+                    comStationTakeChance = Double.parseDouble(inFile.readLine());
+                } catch (IOException | NumberFormatException e) {
+                    comStationTakeChance = 0.5;
+                }
+                try {
+                    PERIODIC_RETURN_PERIOD = Integer.parseInt(inFile.readLine());
+                } catch (IOException | NumberFormatException e) {
+                    PERIODIC_RETURN_PERIOD = 100;
+                }
 
             } catch (IOException e) {
                 System.err.println(this.toString() + "Error: could not read data from " + fileName);
@@ -595,6 +615,8 @@ public class SimulatorConfig {
             outFile.println(useSingleMeetingTime);
             outFile.println(useComStations);
             outFile.println(comStationDropChance);
+            outFile.println(comStationTakeChance);
+            outFile.println(PERIODIC_RETURN_PERIOD);
 
         } catch (IOException e) {
             System.err.println(this.toString() + "Error writing to file " + fileName);
@@ -608,7 +630,6 @@ public class SimulatorConfig {
         return EnvLoader.saveWallConfig(env);
     }
 
-// </editor-fold>
     @Override
     public String toString() {
         return ("[SimulatorConfig] expAlgorithm: " + expAlgorithm.toString()
@@ -636,7 +657,10 @@ public class SimulatorConfig {
                 + "\n baseRange: " + baseRange
                 + "\n samplingDensity: " + samplingDensity
                 + "\n relayExplore: " + relayExplore
-                + "\n exploreReplan: " + exploreReplan);
+                + "\n exploreReplan: " + exploreReplan
+                + "\n ComStationDropChance: " + comStationDropChance
+                + "\n ComStationTakeChance: " + comStationTakeChance
+                + "\n PeriodicReturnPeriode: " + PERIODIC_RETURN_PERIOD);
     }
 
 }

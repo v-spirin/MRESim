@@ -1,8 +1,8 @@
-Random
+FrontierExploration
 PeriodicReturn
-KeyPoints
+RangeBorder
 null
-StaticCircle
+PropModel1
 false
 /home/christian/MRESim/logs/defaultAgentLog.txt
 false
@@ -29,3 +29,5 @@ false
 false
 true
 0.02
+0.5
+100

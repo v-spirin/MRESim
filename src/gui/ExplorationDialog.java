@@ -49,9 +49,7 @@ import java.awt.Toolkit;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-import java.io.File;
 import java.util.Enumeration;
-import javax.swing.JFileChooser;
 import javax.swing.JRadioButton;
 
 /**
@@ -104,9 +102,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
 
         logFilename = simConfig.getRunFromLogFilename();
         batchFilename = simConfig.getBatchFilename();
-        labelLog.setText(logFilename);
-        labelBatch.setText(batchFilename);
-        radioLogActionPerformed(null);
 
         radioLeaderFollowerActionPerformed(null);
 
@@ -120,11 +115,11 @@ public class ExplorationDialog extends javax.swing.JDialog {
         checkboxRVThroughWalls.setSelected(simConfig.RVThroughWallsEnabled());
         checkBoxUseComStations.setSelected(simConfig.useComStations());
         jTextRatio.setText(String.valueOf(simConfig.TARGET_INFO_RATIO));
+        jTextPeriod.setText(String.valueOf(simConfig.PERIODIC_RETURN_PERIOD));
         radioRoleActionPerformed(null);
 
         // Let window X being clicked be handled by windowClosing method
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
-
         // center on screen
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (dim.width - getSize().width) / 2;
@@ -146,12 +141,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
         subgroupFrontierBasedType = new javax.swing.ButtonGroup();
         subgroupRelay = new javax.swing.ButtonGroup();
         jLabel1 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        radioLog = new javax.swing.JRadioButton();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        jTextArea3 = new javax.swing.JTextArea();
-        buttonLog = new javax.swing.JButton();
-        labelLog = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         radioLeaderFollower = new javax.swing.JRadioButton();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -166,6 +155,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
         jScrollPane5 = new javax.swing.JScrollPane();
         jTextArea5 = new javax.swing.JTextArea();
         jTextRatio = new javax.swing.JTextField();
+        jTextPeriod = new javax.swing.JTextField();
         jPanel3 = new javax.swing.JPanel();
         radioRole = new javax.swing.JRadioButton();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -177,12 +167,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
         checkboxRVThroughWalls = new javax.swing.JCheckBox();
         buttonCancel = new javax.swing.JButton();
         buttonOK = new javax.swing.JButton();
-        jPanel5 = new javax.swing.JPanel();
-        radioBatch = new javax.swing.JRadioButton();
-        jScrollPane6 = new javax.swing.JScrollPane();
-        jTextArea6 = new javax.swing.JTextArea();
-        buttonBatch = new javax.swing.JButton();
-        labelBatch = new javax.swing.JLabel();
         jPanel6 = new javax.swing.JPanel();
         radioTesting = new javax.swing.JRadioButton();
         checkBoxUseComStations = new javax.swing.JCheckBox();
@@ -193,6 +177,8 @@ public class ExplorationDialog extends javax.swing.JDialog {
         radioRelay1 = new javax.swing.JRadioButton();
         radioRelay2 = new javax.swing.JRadioButton();
         radioRelay3 = new javax.swing.JRadioButton();
+        comStationTakeChanceField = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Exploration");
@@ -200,84 +186,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
         jLabel1.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         jLabel1.setText("Please choose the exploration algorithm:");
         jLabel1.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-
-        jPanel1.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        groupExplorationAlgorithm.add(radioLog);
-        radioLog.setFont(new java.awt.Font("Arial", 1, 11)); // NOI18N
-        radioLog.setMnemonic('1');
-        radioLog.setText("Run From Log");
-        radioLog.setFocusable(false);
-        radioLog.setNextFocusableComponent(buttonOK);
-        radioLog.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                radioLogStateChanged(evt);
-            }
-        });
-        radioLog.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                radioLogActionPerformed(evt);
-            }
-        });
-
-        jScrollPane3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jScrollPane3.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane3.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane3.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-
-        jTextArea3.setEditable(false);
-        jTextArea3.setColumns(20);
-        jTextArea3.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        jTextArea3.setLineWrap(true);
-        jTextArea3.setRows(5);
-        jTextArea3.setText("Repeats a previous run.");
-        jTextArea3.setWrapStyleWord(true);
-        jTextArea3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jTextArea3.setOpaque(false);
-        jScrollPane3.setViewportView(jTextArea3);
-
-        buttonLog.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        buttonLog.setText("Change");
-        buttonLog.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonLogActionPerformed(evt);
-            }
-        });
-
-        labelLog.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        labelLog.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        labelLog.setText("Filename");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(radioLog)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(labelLog, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(buttonLog)))
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(radioLog)
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(buttonLog)
-                    .addComponent(labelLog))
-                .addContainerGap())
-        );
 
         jPanel2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
@@ -414,6 +322,9 @@ public class ExplorationDialog extends javax.swing.JDialog {
         jTextRatio.setText("0.9");
         jTextRatio.setToolTipText("");
 
+        jTextPeriod.setText("100");
+        jTextPeriod.setToolTipText("number cycles to return");
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -436,7 +347,9 @@ public class ExplorationDialog extends javax.swing.JDialog {
                                 .addComponent(radioFrontierType2, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(radioFrontierType4, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jTextRatio, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(jTextRatio, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jTextPeriod, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGap(46, 46, 46)))
                     .addGroup(jPanel4Layout.createSequentialGroup()
                         .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 413, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -451,8 +364,10 @@ public class ExplorationDialog extends javax.swing.JDialog {
                         .addGap(0, 13, Short.MAX_VALUE)
                         .addComponent(radioFrontier))
                     .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
-                .addGap(36, 36, 36)
-                .addComponent(radioFrontierType2)
+                .addGap(33, 33, 33)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(radioFrontierType2)
+                    .addComponent(jTextPeriod, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(radioFrontierType3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -598,84 +513,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
             }
         });
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createEtchedBorder());
-
-        groupExplorationAlgorithm.add(radioBatch);
-        radioBatch.setFont(new java.awt.Font("Arial", 1, 11)); // NOI18N
-        radioBatch.setMnemonic('0');
-        radioBatch.setText("Run batch");
-        radioBatch.setFocusable(false);
-        radioBatch.setNextFocusableComponent(buttonOK);
-        radioBatch.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                radioBatchStateChanged(evt);
-            }
-        });
-        radioBatch.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                radioBatchActionPerformed(evt);
-            }
-        });
-
-        jScrollPane6.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jScrollPane6.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        jScrollPane6.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-        jScrollPane6.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-
-        jTextArea6.setEditable(false);
-        jTextArea6.setColumns(20);
-        jTextArea6.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        jTextArea6.setLineWrap(true);
-        jTextArea6.setRows(5);
-        jTextArea6.setText("Runs a JSON batch script");
-        jTextArea6.setWrapStyleWord(true);
-        jTextArea6.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jTextArea6.setOpaque(false);
-        jScrollPane6.setViewportView(jTextArea6);
-
-        buttonBatch.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        buttonBatch.setText("Change");
-        buttonBatch.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonBatchActionPerformed(evt);
-            }
-        });
-
-        labelBatch.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
-        labelBatch.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        labelBatch.setText("Filename");
-
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(radioBatch)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 380, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
-                        .addComponent(labelBatch, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(buttonBatch)))
-                .addContainerGap())
-        );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(radioBatch)
-                    .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(buttonBatch)
-                    .addComponent(labelBatch))
-                .addContainerGap())
-        );
-
         jPanel6.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
         groupExplorationAlgorithm.add(radioTesting);
@@ -734,12 +571,21 @@ public class ExplorationDialog extends javax.swing.JDialog {
         subgroupRelay.add(radioRelay3);
         radioRelay3.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         radioRelay3.setMnemonic('2');
-        radioRelay3.setText("Random");
+        radioRelay3.setText("Random Drop:");
         radioRelay3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 radioRelay3ActionPerformed(evt);
             }
         });
+
+        comStationTakeChanceField.setText("0.5");
+        comStationTakeChanceField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                comStationTakeChanceFieldActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("Take:");
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
@@ -756,15 +602,20 @@ public class ExplorationDialog extends javax.swing.JDialog {
                     .addComponent(checkBoxUseComStations)
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addGap(23, 23, 23)
-                        .addComponent(jLabel2)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comStationDropChanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 123, Short.MAX_VALUE)
+                        .addComponent(jLabel2)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 94, Short.MAX_VALUE)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(radioRelay1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(radioRelay2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(radioRelay3, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(24, 24, 24))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(radioRelay3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(comStationDropChanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(comStationTakeChanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(73, 73, 73))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -777,12 +628,14 @@ public class ExplorationDialog extends javax.swing.JDialog {
                             .addComponent(radioRelay1))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(comStationDropChanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel2))
+                            .addComponent(jLabel2)
                             .addComponent(radioRelay2))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(radioRelay3))
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(radioRelay3)
+                            .addComponent(comStationDropChanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(comStationTakeChanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3)))
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addComponent(radioTesting)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -802,7 +655,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
                     .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(312, 312, 312)
@@ -812,20 +664,13 @@ public class ExplorationDialog extends javax.swing.JDialog {
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addContainerGap()))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 97, Short.MAX_VALUE)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -838,25 +683,10 @@ public class ExplorationDialog extends javax.swing.JDialog {
                     .addComponent(buttonCancel)
                     .addComponent(buttonOK))
                 .addContainerGap())
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(32, 32, 32)
-                    .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(640, Short.MAX_VALUE)))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void radioLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioLogActionPerformed
-        if (radioLog.isSelected()) {
-            labelLog.setEnabled(true);
-            buttonLog.setEnabled(true);
-        } else {
-            labelLog.setEnabled(false);
-            buttonLog.setEnabled(false);
-        }
-}//GEN-LAST:event_radioLogActionPerformed
 
     private void radioLeaderFollowerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioLeaderFollowerActionPerformed
 
@@ -891,26 +721,17 @@ public class ExplorationDialog extends javax.swing.JDialog {
         simConfig.setStrictRoleSwitch(checkboxRoleswitchCriterion.isSelected());
         simConfig.setUseComStations(checkBoxUseComStations.isSelected());
         simConfig.setComStationDropChance(Double.parseDouble(comStationDropChanceField.getText()));
+        simConfig.setComStationTakeChance(Double.parseDouble(comStationTakeChanceField.getText()));
         //simConfig.setRVCommRangeEnabled(checkboxRVCommRange.isSelected());
         simConfig.setRVThroughWallsEnabled(checkboxRVThroughWalls.isSelected());
         simConfig.TARGET_INFO_RATIO = Double.parseDouble(jTextRatio.getText());
+        simConfig.PERIODIC_RETURN_PERIOD = Integer.parseInt(jTextPeriod.getText());
         this.dispose();
 }//GEN-LAST:event_buttonOKActionPerformed
 
     private void buttonCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonCancelActionPerformed
         this.dispose();
 }//GEN-LAST:event_buttonCancelActionPerformed
-
-    private void buttonLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonLogActionPerformed
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir") + "/logs/"));
-        int returnVal = fileChooser.showOpenDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            logFilename = file.getPath();
-            labelLog.setText(logFilename);
-        }
-}//GEN-LAST:event_buttonLogActionPerformed
 
     private void checkboxRoleswitchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkboxRoleswitchActionPerformed
 
@@ -919,10 +740,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
     private void radioRoleStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_radioRoleStateChanged
         radioRoleActionPerformed(null);
     }//GEN-LAST:event_radioRoleStateChanged
-
-    private void radioLogStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_radioLogStateChanged
-        radioLogActionPerformed(null);
-    }//GEN-LAST:event_radioLogStateChanged
 
     private void checkboxRendezvousActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkboxRendezvousActionPerformed
         // TODO add your handling code here:
@@ -942,11 +759,13 @@ public class ExplorationDialog extends javax.swing.JDialog {
             radioFrontierType3.setEnabled(true);
             radioFrontierType4.setEnabled(true);
             jTextRatio.setEnabled(true);
+            jTextPeriod.setEnabled(true);
         } else {
             radioFrontierType2.setEnabled(false);
             radioFrontierType3.setEnabled(false);
             radioFrontierType4.setEnabled(false);
             jTextRatio.setEnabled(false);
+            jTextPeriod.setEnabled(false);
         }
 }//GEN-LAST:event_radioFrontierActionPerformed
 
@@ -974,25 +793,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
         // TODO add your handling code here:
     }//GEN-LAST:event_checkboxRVThroughWallsActionPerformed
 
-    private void radioBatchStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_radioBatchStateChanged
-        // TODO add your handling code here:
-    }//GEN-LAST:event_radioBatchStateChanged
-
-    private void radioBatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioBatchActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_radioBatchActionPerformed
-
-    private void buttonBatchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonBatchActionPerformed
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(new File(System.getProperty("user.dir") + "/scripts/"));
-        int returnVal = fileChooser.showOpenDialog(this);
-        if (returnVal == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
-            batchFilename = file.getPath();
-            labelBatch.setText(batchFilename);
-        }
-    }//GEN-LAST:event_buttonBatchActionPerformed
-
     private void comStationDropChanceFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comStationDropChanceFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_comStationDropChanceFieldActionPerformed
@@ -1015,13 +815,19 @@ public class ExplorationDialog extends javax.swing.JDialog {
             radioRelay2.setEnabled(true);
             radioRelay3.setEnabled(true);
             comStationDropChanceField.setEnabled(true);
+            comStationTakeChanceField.setEnabled(true);
         } else {
             radioRelay1.setEnabled(false);
             radioRelay2.setEnabled(false);
             radioRelay3.setEnabled(false);
             comStationDropChanceField.setEnabled(false);
+            comStationTakeChanceField.setEnabled(false);
         }
     }//GEN-LAST:event_checkBoxUseComStationsActionPerformed
+
+    private void comStationTakeChanceFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comStationTakeChanceFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_comStationTakeChanceFieldActionPerformed
 
     WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -1031,9 +837,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
     };
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton buttonBatch;
     private javax.swing.JButton buttonCancel;
-    private javax.swing.JButton buttonLog;
     private javax.swing.JButton buttonOK;
     private javax.swing.JCheckBox checkBoxUseComStations;
     private javax.swing.JCheckBox checkboxRVThroughWalls;
@@ -1042,37 +846,30 @@ public class ExplorationDialog extends javax.swing.JDialog {
     private javax.swing.JCheckBox checkboxRoleswitch;
     private javax.swing.JCheckBox checkboxRoleswitchCriterion;
     private javax.swing.JTextField comStationDropChanceField;
+    private javax.swing.JTextField comStationTakeChanceField;
     private javax.swing.ButtonGroup groupExplorationAlgorithm;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
-    private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextArea jTextArea2;
-    private javax.swing.JTextArea jTextArea3;
     private javax.swing.JTextArea jTextArea4;
     private javax.swing.JTextArea jTextArea5;
-    private javax.swing.JTextArea jTextArea6;
+    private javax.swing.JTextField jTextPeriod;
     private javax.swing.JTextField jTextRatio;
-    private javax.swing.JLabel labelBatch;
-    private javax.swing.JLabel labelLog;
-    private javax.swing.JRadioButton radioBatch;
     private javax.swing.JRadioButton radioFrontier;
     private javax.swing.JRadioButton radioFrontierType2;
     private javax.swing.JRadioButton radioFrontierType3;
     private javax.swing.JRadioButton radioFrontierType4;
     private javax.swing.JRadioButton radioLeaderFollower;
-    private javax.swing.JRadioButton radioLog;
     private javax.swing.JRadioButton radioRandom;
     private javax.swing.JRadioButton radioRelay1;
     private javax.swing.JRadioButton radioRelay2;
