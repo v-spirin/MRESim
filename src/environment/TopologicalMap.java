@@ -71,14 +71,33 @@ public class TopologicalMap {
     private LinkedList<Point> skeletonPointsBorder;
     private LinkedList<Point> keyPointsBorder;
     private LinkedList<Point> secondKeyPointsBorder;
-    private int occGridHash;
 
     //cached paths between nodes; first param is two points, start and finish
     private static HashMap<Rectangle, Path> pathCache = new HashMap<Rectangle, Path>();
+    private LinkedList<Point> junctionPoints;
 
     public TopologicalMap(OccupancyGrid occGrid) {
         setGrid(occGrid);
-        occGridHash = occGrid.hashCode();
+        update(true);
+    }
+
+    public final void update(boolean force) {
+        if (!force && occGrid.getMapCellsChanged() < Constants.MAP_CHANGED_THRESHOLD) {
+            return;
+        }
+        skeletonGrid = null;
+        skeletonPoints = null;
+        keyPoints = null;
+        borderPoints = null;
+        areaGrid = null;
+        topologicalNodes = null;
+
+        skeletonGridBorder = null;
+        skeletonPointsBorder = null;
+        keyPointsBorder = null;
+        secondKeyPointsBorder = null;
+        junctionPoints = null;
+
     }
 
     public final void setGrid(OccupancyGrid occGrid) {
@@ -89,56 +108,60 @@ public class TopologicalMap {
         return this.occGrid;
     }
 
-    public void generateSkeleton() {
-        if (occGridHash == occGrid.hashCode() && skeletonPoints != null && skeletonGrid != null) {
-            return;
-        }
-        long realtimeStart = System.currentTimeMillis();
-        //skeletonGrid = Skeleton.skeletonize(Skeleton.findSkeleton(occGrid));
+    private void generateSkeleton() {
         skeletonGrid = Skeleton.findSkeleton(occGrid);
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println("Skeletonize & findSkeleton took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
-        realtimeStart = System.currentTimeMillis();
         skeletonPoints = Skeleton.gridToList(skeletonGrid);
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println("Skeletonize gridToList took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
     }
 
     /**
      * Calculates the keyPoints of this map. KeyPoints are basically nodes of the skeleton. Call
      * generateSkeleton first!
      */
-    public void findKeyPoints() {
-        if (occGridHash == occGrid.hashCode() && keyPoints != null) {
-            return;
-        }
-        keyPoints = Skeleton.findKeyPoints(skeletonGrid, occGrid);
+    private void findKeyPoints() {
+        keyPoints = Skeleton.findKeyPoints(getSkeletonGrid(), occGrid);
     }
 
     public LinkedList<Point> getJunctionPoints() {
-        return Skeleton.findJunctionPoints(skeletonGrid, occGrid);
+        if (junctionPoints == null) {
+            findJunctionPoints();
+        }
+        return junctionPoints;
+    }
+
+    private void findJunctionPoints() {
+        junctionPoints = Skeleton.findJunctionPoints(getSkeletonGrid(), occGrid);
     }
 
     public LinkedList<Point> getSkeletonPoints() {
+        if (skeletonPoints == null) {
+            generateSkeleton();
+        }
         return skeletonPoints;
     }
 
     public LinkedList<Point> getSkeletonPointsBorder() {
+        if (skeletonPointsBorder == null) {
+            generateSkeletonNearBorders();
+        }
         return skeletonPointsBorder;
     }
 
     public LinkedList<Point> getKeyPoints() {
+        if (keyPoints == null) {
+            findKeyPoints();
+        }
         return keyPoints;
     }
 
     public HashMap<Integer, TopologicalNode> getTopologicalNodes() {
+        if (topologicalNodes == null) {
+            generateKeyAreas();
+        }
         return topologicalNodes;
     }
 
-    public void generateBorderPoints() {
-        borderPoints = Skeleton.findKeyAreaBorders(areaGrid);
+    private void generateBorderPoints() {
+        borderPoints = Skeleton.findKeyAreaBorders(getAreaGrid());
     }
 
     public LinkedList<Point> getBorderPoints() {
@@ -149,41 +172,31 @@ public class TopologicalMap {
     }
 
     public int[][] getSkeletonGrid() {
+        if (skeletonGrid == null) {
+            generateSkeleton();
+        }
         return skeletonGrid;
     }
 
-    public void generateKeyAreas() {
+    private void generateKeyAreas() {
         // declare topological nodes (we will define relations between them later)
         // each node has one keypoint which is rougly in the center of the node region
         // this keypoint is used to pre-calculate occupancy grid paths between nodes.
-        if (occGridHash == occGrid.hashCode() && areaGrid != null) {
-            return;
-        }
         topologicalNodes = new HashMap<Integer, TopologicalNode>();
 
         int index = 0;
-        for (Point p : keyPoints) {
+        for (Point p : getKeyPoints()) {
             index++;
             topologicalNodes.put(index, new TopologicalNode(index, p));
         }
         topologicalNodes.put(Constants.UNEXPLORED_NODE_ID, new TopologicalNode(Constants.UNEXPLORED_NODE_ID, new Point(-1, -1)));
 
         // calculate the areas for each node
-        long realtimeStart = System.currentTimeMillis();
-        areaGrid = Skeleton.fillKeyAreas(occGrid, keyPoints, topologicalNodes);
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println("FillKeyAreas took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
+        areaGrid = Skeleton.fillKeyAreas(occGrid, getKeyPoints(), topologicalNodes);
         //find node neighbours
-        realtimeStart = System.currentTimeMillis();
-        //System.out.println("Generating node neighbour relationships...");
         generateBorderPoints();
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println("GenerateBorderPoints took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
 
-        long timeSpentOnPaths = 0;
-        for (Point p : getBorderPoints()) {
+        for (Point p : borderPoints) {
             if (areaGrid[p.x][p.y] > 0) {
                 int curCell = areaGrid[p.x][p.y];
                 TopologicalNode node = topologicalNodes.get(curCell);
@@ -194,7 +207,6 @@ public class TopologicalMap {
                             if (!node.getListOfNeighbours().contains(neighbourNode)) {
                                 if ((curCell != Constants.UNEXPLORED_NODE_ID)
                                         && (areaGrid[p.x + i][p.y + j] != Constants.UNEXPLORED_NODE_ID)) {
-                                    realtimeStart = System.currentTimeMillis();
                                     Path pathToNode;
                                     //check path cache
                                     Rectangle pathCoords = new Rectangle(node.getPosition().x, node.getPosition().y,
@@ -223,7 +235,6 @@ public class TopologicalMap {
                                         pathCache.put(reversePathCoords, reversePath);
                                     }
                                     //pathToNode.calculateJumpPath(occGrid, node.getPosition(), neighbourNode.getPosition(), false);
-                                    timeSpentOnPaths += (System.currentTimeMillis() - realtimeStart);
                                     node.addNeighbour(neighbourNode, pathToNode);
                                     neighbourNode.addNeighbour(node, pathToNode.getReversePath());
                                 } else {
@@ -246,271 +257,41 @@ public class TopologicalMap {
                 }
             }
         }
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println("Time spent calculating paths between regions: " + timeSpentOnPaths + "ms.");
-        }
 
     }
 
     public int[][] getAreaGrid() {
+        if (areaGrid == null) {
+            generateKeyAreas();
+        }
         return areaGrid;
     }
 
     public LinkedList<Point> getKeyPointsBorder() {
+        if (keyPointsBorder == null) {
+            findKeyPointsBorder();
+        }
         return keyPointsBorder;
     }
 
-    public LinkedList<Point> getSecondKeyPointsBorder() {
+    public LinkedList<Point> getSecondKeyPointsBorder(Point goal, RealAgent agent) {
+        if (secondKeyPointsBorder == null) {
+            findSecondKeyPointsBorder(goal, agent);
+        }
         return secondKeyPointsBorder;
     }
 
     //RV through walls stuff
-    public void generateSkeletonNearBorders() {
-        if (occGridHash == occGrid.hashCode() && skeletonGridBorder != null && skeletonPointsBorder != null) {
-            return;
-        }
+    private void generateSkeletonNearBorders() {
         skeletonGridBorder = Skeleton.findSkeletonNearBorders(occGrid);
         skeletonPointsBorder = Skeleton.gridToList(skeletonGridBorder);
     }
 
-    public void findKeyPointsBorder() {
-        if (occGridHash == occGrid.hashCode() && keyPointsBorder != null) {
-            return;
-        }
+    private void findKeyPointsBorder() {
         keyPointsBorder = Skeleton.findBorderRVPoints(skeletonGridBorder, occGrid);
     }
 
-    public void findSecondKeyPointsBorder(Point goal, RealAgent agent) {
-        if (occGridHash == occGrid.hashCode() && secondKeyPointsBorder != null) {
-            return;
-        }
+    private void findSecondKeyPointsBorder(Point goal, RealAgent agent) {
         secondKeyPointsBorder = Skeleton.findSecondBorderRVPoints(keyPointsBorder, agent, goal);
     }
-
-//    public Rendezvous findNearestBorderKeyPoint(Point otherPoint, RealAgent agent) {
-//        Rendezvous result = new Rendezvous(otherPoint);
-//
-//        double minDistance = 10000;
-//        int minElement = -1;
-//
-//        for (int i = 1; i < keyPointsBorder.size(); i++) {
-//            if (!keyPointsBorder.get(i).equals(secondKeyPointsBorder.get(i))) {
-//                double newDistance = agent.calculatePath(keyPointsBorder.get(i), otherPoint).getLength();
-//                if ((minElement == -1) || (newDistance < minDistance)) {
-//                    minElement = i;
-//                    minDistance = newDistance;
-//                }
-//            }
-//        }
-//
-//        if (minElement != -1) {
-//            if (Constants.DEBUG_OUTPUT) {
-//                System.out.println(agent.toString() + " evaluating " + keyPointsBorder.get(minElement) + " - " + secondKeyPointsBorder.get(minElement));
-//            }
-//            result.setChildLocation(keyPointsBorder.get(minElement));
-//            result.setParentLocation(secondKeyPointsBorder.get(minElement));
-//
-//            //strict rule - too strict?
-//            /*
-//            Path Base2OldRV = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_ID).getLocation(),
-//                    agent.getParentRendezvous().getParentLocation());
-//
-//            Path Base2NewRV = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_ID).getLocation(),
-//                    result.getParentLocation());
-//
-//            if (!Base2OldRV.found || !Base2NewRV.found || (Base2OldRV.getLength() < Base2NewRV.getLength()))
-//            {
-//                result.setChildLocation(agent.getParentRendezvous().getChildLocation());
-//                result.setParentLocation(agent.getParentRendezvous().getParentLocation());
-//                return result;
-//            }
-//
-//            Point frontierCentre = null;
-//            if(agent.getLastFrontier() != null)
-//                frontierCentre = agent.getLastFrontier().getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
-//            else
-//                frontierCentre = agent.getLocation();
-//            if (frontierCentre != null)
-//            {
-//                Path Front2OldRV = agent.calculatePath(frontierCentre, agent.getParentRendezvous().getChildLocation());
-//                Path Front2NewRV = agent.calculatePath(frontierCentre, result.getChildLocation());
-//
-//                if (!Front2NewRV.found || !Front2NewRV.found || (Front2OldRV.getLength() < Front2NewRV.getLength()))
-//                {
-//                    result.setChildLocation(agent.getParentRendezvous().getChildLocation());
-//                    result.setParentLocation(agent.getParentRendezvous().getParentLocation());
-//                    return result;
-//                }
-//            } else
-//            {
-//                result.setChildLocation(agent.getParentRendezvous().getChildLocation());
-//                result.setParentLocation(agent.getParentRendezvous().getParentLocation());
-//                return result;
-//            }
-//
-//            return result;*/
-//            double relayPathLengthOld;
-//            double relayPathLengthNew;
-//            double explorerPathLengthOld;
-//            double explorerPathLengthNew;
-//
-//            //<editor-fold defaultstate="collapsed" desc="let's find the point, where RV will actually communicate with base">
-//            Point baseLoc = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
-//            Point relayLoc = agent.getParentTeammate().getLocation();
-//            Point baseComm = baseLoc;
-//
-//            Polygon commPoly = PropModel1.getRangeForRV(occGrid,
-//                    new Agent(0, "", 0, baseLoc.x, baseLoc.y, 0, 0, 400, 0,
-//                            RobotConfig.roletype.Relay, 0, 0, 0, 2, 1)
-//            );
-//
-//            LinkedList<Point> candidatePoints = new LinkedList<Point>();
-//            //for(Point p : ExplorationImage.polygonPoints(commPoly))
-//            for (int i = 0; i < commPoly.npoints; i++) {
-//                Point p = new Point(commPoly.xpoints[i], commPoly.ypoints[i]);
-//                if (occGrid.freeSpaceAt(p.x, p.y) /*&& !env.directLinePossible(firstRV.x, firstRV.y, p.x, p.y)*/) {
-//                    if (occGrid.directLinePossible(baseLoc.x, baseLoc.y, p.x, p.y)) {
-//                        candidatePoints.add(p);
-//                    }
-//                }
-//            }
-//
-//            double minBaseRelayDistance = agent.calculatePath(baseLoc, relayLoc).getLength();
-//
-//            for (Point p : candidatePoints) {
-//                double distance = agent.calculatePath(p, relayLoc).getLength();
-//                if (distance < minBaseRelayDistance) {
-//                    minBaseRelayDistance = distance;
-//                    baseComm = p;
-//                }
-//            }
-//            //</editor-fold>
-//
-//            //<editor-fold defaultstate="collapsed" desc="let's find the point, where RV will actually communicate with explorer">
-//            Point oldRV = agent.getRendezvousAgentData().getParentRendezvous().getParentLocation();
-//            Point oldComm = oldRV;
-//
-//            /*commPoly = PropModel1.getRangeForRV(occGrid,
-//                    new Agent(0, "", 0, oldRV.x, oldRV.y, 0, 0, 400, 0,
-//                            RobotConfig.roletype.Relay, 0, 0, 0)
-//            );
-//
-//            LinkedList<Point> candidatePoints2 = new LinkedList<Point>();
-//            //for(Point p : ExplorationImage.polygonPoints(commPoly))
-//            for (int i = 0; i < commPoly.npoints; i++)
-//            {
-//                Point p = new Point(commPoly.xpoints[i], commPoly.ypoints[i]);
-//                if (occGrid.freeSpaceAt(p.x, p.y))
-//                {
-//                    if (occGrid.directLinePossible(oldRV.x, oldRV.y, p.x, p.y))
-//                        candidatePoints2.add(p);
-//                }
-//            }
-//
-//            double minRVRelayDistance = agent.calculatePath(baseLoc, oldComm).getLength();
-//
-//            for (Point p: candidatePoints2)
-//            {
-//                double distance = agent.calculatePath(p, baseLoc).getLength();
-//                if (distance < minRVRelayDistance)
-//                {
-//                    minRVRelayDistance = distance;
-//                    oldComm = p;
-//                }
-//            }*/
-//            //</editor-fold>
-//            Path Relay2Base = agent.calculatePath(agent.getParentTeammate().getLocation(), baseComm);
-//
-//            Path Base2OldRV = agent.calculatePath(baseComm, oldComm);
-//            if (Constants.DEBUG_OUTPUT) {
-//                System.out.println(agent.toString() + " baseComm: " + baseComm + ", oldComm: " + oldComm
-//                        + ", baseLoc: " + baseLoc + ", baseRV: " + oldRV);
-//            }
-//
-//            if (!Base2OldRV.found) {
-//                if (Constants.DEBUG_OUTPUT) {
-//                    System.out.println(agent.toString() + " !!!! Base2OldRv not found, baseComm: " + baseComm + ", oldComm: " + oldComm);
-//                }
-//                Base2OldRV = agent.calculatePath(baseLoc, oldRV);
-//            }
-//
-//            Path Base2NewRV = agent.calculatePath(baseComm,
-//                    result.getParentLocation());
-//
-//            if (!Relay2Base.found || !Base2OldRV.found || !Base2NewRV.found) {
-//                result.setChildLocation(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
-//                result.setParentLocation(agent.getRendezvousAgentData().getParentRendezvous().getParentLocation());
-//                if (Constants.DEBUG_OUTPUT) {
-//                    System.out.println(agent.toString() + " using conventional RV point !!!!! Relay1Base.found is " + Relay2Base.found + " Base2OldRV.found is " + Base2OldRV.found + " Base2NewRV.found is " + Base2NewRV.found);
-//                    System.out.println(agent.toString() + " baseComm: " + baseComm + ", oldComm: " + oldComm);
-//                }
-//                return result;
-//            }
-//
-//            relayPathLengthOld = Relay2Base.getLength() + Base2OldRV.getLength();
-//            relayPathLengthNew = Relay2Base.getLength() + Base2NewRV.getLength();
-//
-//            //<editor-fold defaultstate="collapsed" desc="Check time for explorer to reach frontier, to make sure he has time to explore before returning">
-//            Point frontierCentre;
-//            if (agent.getLastFrontier() != null) {
-//                frontierCentre = agent.getLastFrontier().getCentre();//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
-//            } else {
-//                if (Constants.DEBUG_OUTPUT) {
-//                    System.out.println(agent + " setting frontierCentre to agentLoc");
-//                }
-//                frontierCentre = agent.getLocation();
-//            }
-//            if (frontierCentre != null) {
-//                Path Explorer2Frontier = agent.calculatePath(agent.getLocation(), frontierCentre);
-//                Path Front2OldRV = agent.calculatePath(frontierCentre, agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
-//                Path Front2NewRV = agent.calculatePath(frontierCentre, result.getChildLocation());
-//
-//                if (!Explorer2Frontier.found || !Front2NewRV.found || !Front2NewRV.found) {
-//                    if (Constants.DEBUG_OUTPUT) {
-//                        System.out.println(agent.toString() + " using conventional RV point !!!!! Explorer2Frontier.found is " + Explorer2Frontier.found + " Front2NewRV.found is " + Front2NewRV.found + " Front2NewRV.found is " + Front2NewRV.found);
-//                    }
-//                    result.setChildLocation(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
-//                    result.setParentLocation(agent.getRendezvousAgentData().getParentRendezvous().getParentLocation());
-//                    return result;
-//                }
-//
-//                explorerPathLengthOld = Explorer2Frontier.getLength() + Front2OldRV.getLength()
-//                        + Constants.FRONTIER_MIN_EXPLORE_TIME * Constants.DEFAULT_SPEED;
-//                explorerPathLengthNew = Explorer2Frontier.getLength() + Front2NewRV.getLength()
-//                        + Constants.FRONTIER_MIN_EXPLORE_TIME * Constants.DEFAULT_SPEED;
-//                if (Constants.DEBUG_OUTPUT) {
-//                    System.out.println(agent.toString() + " frontierCentre: " + frontierCentre + ", agentLocation: " + agent.getLocation() + ", Exp2Front: " + Explorer2Frontier.getLength() + ", Front2OldRV: " + Front2OldRV.getLength() + ", Front2NewRV: " + Front2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew + ", minExploreTime = " + Constants.FRONTIER_MIN_EXPLORE_TIME);
-//                }
-//            } else {
-//                result.setChildLocation(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
-//                result.setParentLocation(agent.getRendezvousAgentData().getParentRendezvous().getParentLocation());
-//                if (Constants.DEBUG_OUTPUT) {
-//                    System.out.println(agent.toString() + " using conventional RV point !!!!! frontierCenter is null");
-//                }
-//                return result;
-//                //explorerPathLengthOld = agent.calculatePath(agent.getLocation(), agent.getParentRendezvous().getChildLocation()).getLength();
-//                //explorerPathLengthNew = agent.calculatePath(agent.getLocation(), result.getChildLocation()).getLength();
-//            }
-//            //</editor-fold>
-//
-//            double overallTimeOld = Math.max(explorerPathLengthOld, relayPathLengthOld);
-//            double overallTimeNew = Math.max(explorerPathLengthNew, relayPathLengthNew);
-//
-//            if (overallTimeNew > overallTimeOld * Constants.MIN_RV_THROUGH_WALL_ACCEPT_RATIO) {
-//                if (Constants.DEBUG_OUTPUT) {
-//                    System.out.println(agent.toString() + " using conventional RV point");
-//                    System.out.println(agent.toString() + " overallTimeNew: " + overallTimeNew + ", overallTimeOld: " + overallTimeOld + ", relay2Base: " + Relay2Base.getLength() + ", Base2OldRV: " + Base2OldRV.getLength() + ", Base2NewRV: " + Base2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew);
-//                }
-//                result.setChildLocation(agent.getRendezvousAgentData().getParentRendezvous().getChildLocation());
-//                result.setParentLocation(agent.getRendezvousAgentData().getParentRendezvous().getParentLocation());
-//            } else if (Constants.DEBUG_OUTPUT) {
-//                System.out.println(agent.toString() + " is meeting the relay through the wall!!");
-//                System.out.println(agent.toString() + " overallTimeNew: " + overallTimeNew + ", overallTimeOld: " + overallTimeOld + ", relay2Base: " + Relay2Base.getLength() + ", Base2OldRV: " + Base2OldRV.getLength() + ", Base2NewRV: " + Base2NewRV.getLength() + ", explorerPathLengthOld: " + explorerPathLengthOld + ", explorerPathLengthNew: " + explorerPathLengthNew);
-//            }
-//        } else if (Constants.DEBUG_OUTPUT) {
-//            System.out.println(agent.toString() + " !!!!! no rvpairs found?!");
-//        }
-//
-//        return result;
-//    }
 }

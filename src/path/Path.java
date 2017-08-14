@@ -89,12 +89,14 @@ public class Path {
             calculateAStarPath();
         } else {
             calculateJumpPath();
+            if (!found) {
+                calculateAStarPath();
+            }
         }
     }
 
     public Path(OccupancyGrid agentGrid, TopologicalMap tMap,
-            Point startpoint, Point endpoint, boolean limit) {
-        //System.out.println("PLANNING PATH FROM " + startpoint + " TO " + endpoint);
+            Point startpoint, Point endpoint) {
         int[][] areaGrid = tMap.getAreaGrid();
         HashMap<Integer, TopologicalNode> topologicalNodes = tMap.getTopologicalNodes();
 
@@ -109,9 +111,9 @@ public class Path {
         if ((startNode == null) || (goalNode == null)) //Something wrong with building topological map
         {
             if (startNode == null) {
-                if (agentGrid.obstacleAt(startpoint.x, startpoint.y)) {
+                if (agentGrid.obstacleAt(startpoint)) {
                     // there cannot be an obstacle here, as we are planning a path from this point!
-                    agentGrid.setNoObstacleAt(startpoint.x, startpoint.y);
+                    agentGrid.setNoObstacleAt(startpoint);
                     if (Constants.DEBUG_OUTPUT) {
                         System.out.println("There was an obstacle at startpoint! Aborting.");
                     }
@@ -122,7 +124,7 @@ public class Path {
                 }
             }
             if (goalNode == null) {
-                if (agentGrid.obstacleAt(endpoint.x, endpoint.y)) {
+                if (agentGrid.obstacleAt(endpoint)) {
                     if (Constants.DEBUG_OUTPUT) {
                         System.out.println("There was an obstacle at goalpoint! Aborting.");
                     }
@@ -190,7 +192,6 @@ public class Path {
                 System.out.println("Start point " + startpoint + " in unexplored space!");
             }
             findNearestExploredNode(areaGrid, topologicalNodes);
-            List<Point> pathToExploredPoints = pathPoints;
             if (pathPoints.isEmpty()) {
                 return;
             }
@@ -210,7 +211,6 @@ public class Path {
                 System.out.println("Goal point " + endpoint + " in unexplored space!");
             }
             findNearestExploredNode(areaGrid, topologicalNodes);
-            List<Point> pathToExploredPoints = pathPoints;
             if (pathPoints.isEmpty()) {
                 return;
             }
@@ -336,7 +336,7 @@ public class Path {
         //System.out.println("Path length is " + this.getLength());
     }
 
-    public void calculateAStarPath(TopologicalNode startNode, TopologicalNode goalNode) {
+    final public void calculateAStarPath(TopologicalNode startNode, TopologicalNode goalNode) {
         found = false;
         pathNodesReverse = new LinkedList<TopologicalNode>();
         pathNodes = new LinkedList<TopologicalNode>();
@@ -398,7 +398,7 @@ public class Path {
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
-    public boolean calculateAStarPath() {
+    final public boolean calculateAStarPath() {
         found = false;
         pathPoints = new LinkedList<Point>();
         reversePathPoints = new LinkedList<Point>();
@@ -479,7 +479,7 @@ public class Path {
         //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
-    public boolean calculateJumpPath() {
+    final public boolean calculateJumpPath() {
         found = false;
         pathPoints = new LinkedList<Point>();
         reversePathPoints = new LinkedList<Point>();
@@ -821,8 +821,7 @@ public class Path {
     private void reconstructJumpPath(HashMap<Point, Point> came_from, Point current_node) {
         while (came_from.containsKey(current_node) && (came_from.get(current_node) != current_node)) {
             if (!pathPoints.isEmpty()) {
-                LinkedList<Point> pts = pointsAlongSegment(pathPoints.get(pathPoints.size() - 1).x, pathPoints.get(pathPoints.size() - 1).y,
-                        current_node.x, current_node.y);
+                LinkedList<Point> pts = pointsAlongSegment(pathPoints.get(pathPoints.size() - 1), current_node);
 
                 if (pts.get(0).distance(current_node) < pts.get(pts.size() - 1).distance(current_node)) //points are in reverse
                 {
@@ -848,8 +847,7 @@ public class Path {
             current_node = came_from.get(current_node);
         }
         if (!pathPoints.isEmpty()) {
-            LinkedList<Point> pts = pointsAlongSegment(pathPoints.get(pathPoints.size() - 1).x, pathPoints.get(pathPoints.size() - 1).y,
-                    current_node.x, current_node.y);
+            LinkedList<Point> pts = pointsAlongSegment(pathPoints.get(pathPoints.size() - 1), current_node);
 
             if (pts.get(0).distance(current_node) < pts.get(pts.size() - 1).distance(current_node)) //points are in reverse
             {
@@ -927,7 +925,7 @@ public class Path {
         Point curr, prev = start;
         while (i.hasNext()) {
             curr = i.next();
-            allPathPixels = mergeLists(allPathPixels, pointsAlongSegment(prev.x, prev.y, curr.x, curr.y));
+            allPathPixels = mergeLists(allPathPixels, pointsAlongSegment(prev, curr));
             prev = curr;
         }
         return allPathPixels;
@@ -991,7 +989,7 @@ public class Path {
                 }
 
                 // Check 3: is location reachable
-                if (!grid.directLinePossible(pt.x, pt.y, neighbourX, neighbourY, true, false)) {
+                if (!grid.directLinePossible(pt, new Point(neighbourX, neighbourY), true, false)) {
                     continue;
                 }
 
@@ -1037,7 +1035,9 @@ public class Path {
         return validNeighbours;
     }
 
-    //Adds all points in list2 to list1 (no duplicates), returns merged list.
+    /**
+     * Adds all points in list2 to list1 (no duplicates), returns merged list.
+     */
     private LinkedList<Point> mergeLists(LinkedList<Point> list1, LinkedList<Point> list2) {
         list2.stream().filter((p) -> (!list1.contains(p))).forEach((p) -> {
             list1.add(p);
@@ -1046,13 +1046,16 @@ public class Path {
         return list1;
     }
 
-    // This can and should be improved, no need to check entire box, function also defined elsewhere
-    private LinkedList<Point> pointsAlongSegment(int x1, int y1, int x2, int y2) {
+    /**
+     * .
+     * This can and should be improved, no need to check entire box, function also defined elsewhere
+     */
+    private LinkedList<Point> pointsAlongSegment(Point a, Point b) {
         LinkedList<Point> pts = new LinkedList<Point>();
 
-        for (int i = Math.min(x1, x2); i <= Math.max(x1, x2); i++) {
-            for (int j = Math.min(y1, y2); j <= Math.max(y1, y2); j++) {
-                if (grid.distPointToLine(x1, y1, x2, y2, i, j) < 0.5) {
+        for (int i = Math.min(a.x, b.x); i <= Math.max(a.x, b.x); i++) {
+            for (int j = Math.min(a.y, b.y); j <= Math.max(a.y, b.y); j++) {
+                if (grid.distPointToLine(a, b, new Point(i, j)) < 0.5) {
                     pts.add(new Point(i, j));
                 }
             }
@@ -1084,9 +1087,8 @@ public class Path {
                     img.fullUpdatePath(grid, tMap, start, goal, agentSettings);
                 }
                 img.saveScreenshot(Constants.DEFAULT_PATH_LOG_DIRECTORY);
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println("Outputting path debug screens to: " + Constants.DEFAULT_PATH_LOG_DIRECTORY);
-                }
+                System.out.println("Outputting path debug screens to: " + Constants.DEFAULT_PATH_LOG_DIRECTORY);
+
             } catch (Exception e) {
                 System.err.println("Couldn't save path error screenshot, reason: " + e.getMessage());
             }
@@ -1094,7 +1096,7 @@ public class Path {
     }
 
     /**
-     * New method to use paths: create path and walk throug it by itetator nextPoint.
+     * New method to use paths: create path and walk through it by itetator nextPoint.
      *
      * @return next Point to go to
      */

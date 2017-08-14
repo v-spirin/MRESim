@@ -101,7 +101,6 @@ public class RealAgent extends Agent {
     HashMap<Frontier, Boolean> badFrontiers;
     public int totalSpareTime; //total time this agent was not used for exploration
 
-    // Path
     Path path;
     Path pathToBase;
     //location in range of base station that is nearest to us
@@ -288,10 +287,7 @@ public class RealAgent extends Agent {
     }
 
     public Path getPathToBaseStation() {
-        if ((pathToBase != null) && ((pathToBase.getPoints() == null) || pathToBase.getPoints().isEmpty())) {
-            pathToBase = null;
-        }
-        if ((pathToBase == null) || (pathToBase.getStartPoint().distance(this.getLocation()) > (Constants.DEFAULT_SPEED * 2))) {
+        if ((pathToBase == null)) {
             computePathToBaseStation(true);
         }
         return pathToBase;
@@ -429,28 +425,17 @@ public class RealAgent extends Agent {
      *
      * @param force update even if 'occGrid.hasMapChanged()' is false
      */
-    public void updateTopologicalMap(boolean force) {
+    final public void updateTopologicalMap(boolean force) {
         if (occGrid.hasMapChanged() || force) {
             //System.out.println(this + " Updating topological map");
-            long timeStart = System.currentTimeMillis();
             topologicalMap.setGrid(occGrid);
-            //System.out.println(toString() + "setGrid, " + (System.currentTimeMillis()-timeStart) + "ms.");
-            topologicalMap.generateSkeleton();
-            //System.out.println(toString() + "generateSkeleton, " + (System.currentTimeMillis()-timeStart) + "ms.");
-            topologicalMap.findKeyPoints();
-            //System.out.println(toString() + "findKeyPoints, " + (System.currentTimeMillis()-timeStart) + "ms.");
-            topologicalMap.generateKeyAreas();
+            topologicalMap.update(force);
             timeTopologicalMapUpdated = timeElapsed;
-            if (Constants.DEBUG_OUTPUT || Constants.PROFILING) {
-                System.out.println(toString() + "generated topological map, " + (System.currentTimeMillis() - timeStart) + "ms.");
-            }
             occGrid.setMapHasChangedToFalse();
-        } else if (Constants.DEBUG_OUTPUT) {
-            System.out.println(this + " Occupancy Grid not changed since last update, skipping topological map update");
         }
     }
 
-// <editor-fold defaultstate="collapsed" desc="Flush, take step, write step">
+// Flush, take step, write step
     public void flushComms() {
         teammates.values().stream().forEach((teammate) -> {
             teammate.setCommunicationLink(false);
@@ -648,35 +633,27 @@ public class RealAgent extends Agent {
         }
     }
 
-// </editor-fold>
     public Path calculatePath(Point startPoint, Point goalPoint, boolean pureAStar) {
 
-        if (timeTopologicalMapUpdated < 0) {
-            timeTopologicalMapUpdated
-                    = timeElapsed - Constants.MUST_REBUILD_TOPOLOGICAL_MAP_INTERVAL;
-        }
         if (timeElapsed - timeTopologicalMapUpdated >= Constants.REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
-            updateTopologicalMap(false);
+            if (timeElapsed - timeTopologicalMapUpdated >= Constants.MUST_REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
+                updateTopologicalMap(true);
+            } else {
+                updateTopologicalMap(false);
+            }
         }
-        if (timeElapsed - timeTopologicalMapUpdated >= Constants.MUST_REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
-            updateTopologicalMap(true);
-        }
-        boolean topologicalMapUpdated = (timeTopologicalMapUpdated == timeElapsed);
-        Path tpath = new Path(occGrid, topologicalMap, startPoint, goalPoint, pureAStar);
+        Path tpath = new Path(occGrid, topologicalMap, startPoint, goalPoint);
+
         if (!pureAStar) {
-            if (!tpath.found && !topologicalMapUpdated) {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(this + "Trying to rebuild topological map and replan path "
-                            + startPoint + " to " + goalPoint);
-                }
-                timeTopologicalMapUpdated = -1;
+            if (!tpath.found && !(timeTopologicalMapUpdated == timeElapsed)) {
+                //Update topological map and retry
+                updateTopologicalMap(true);
                 return calculatePath(startPoint, goalPoint, false);
             } else if (!tpath.found) {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(this + "at location (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") failed to plan path (" + (int) startPoint.getX() + "," + (int) startPoint.getY() + ") to (" + (int) goalPoint.getX() + "," + (int) goalPoint.getY() + "), not retrying; "
-                            + "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed
-                            + ", mapCellsChanged: " + occGrid.getMapCellsChanged() + "/" + Constants.MAP_CHANGED_THRESHOLD);
-                }
+                System.out.println(this + "at location (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") failed to plan path (" + (int) startPoint.getX() + "," + (int) startPoint.getY() + ") to (" + (int) goalPoint.getX() + "," + (int) goalPoint.getY() + "), not retrying; "
+                        + "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed
+                        + ", mapCellsChanged: " + occGrid.getMapCellsChanged() + "/" + Constants.MAP_CHANGED_THRESHOLD);
+
             }
         } else {
             if (Constants.DEBUG_OUTPUT) {
@@ -1226,7 +1203,7 @@ public class RealAgent extends Agent {
      */
     public TeammateAgent findNearComStation(int distance) {
         for (TeammateAgent mate : teammates.values()) {
-            if (mate.isRelay() && mate.getRole() == roletype.RelayStation && occGrid.distP2P(this.getLocation(), mate.getLocation()) < distance) {
+            if (mate.isRelay() && mate.getRole() == roletype.RelayStation && this.getLocation().distance(mate.getLocation()) < distance) {
                 return mate; //This works as ComStations are nearly only Agents
             }
         }

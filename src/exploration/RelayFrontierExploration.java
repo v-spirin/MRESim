@@ -179,7 +179,6 @@ public class RelayFrontierExploration extends FrontierExploration {
                 if (!agent.comStations.isEmpty()) {
 
                     TopologicalMap tmap = new TopologicalMap(occGrid);
-                    tmap.generateSkeleton();
                     for (Point p : tmap.getJunctionPoints()) {
                         simulator.ExplorationImage.addErrorMarker(p, "", true);
                         if (agent.getLocation().distance(p) < Constants.KEY_POINT_RELAY_DISTANCE) {

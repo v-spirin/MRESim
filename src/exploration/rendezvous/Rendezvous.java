@@ -158,7 +158,7 @@ public class Rendezvous {
             Point p = new Point(commPoly.xpoints[i], commPoly.ypoints[i]);
             if (occGrid.freeSpaceAt(p.x, p.y) /*&& !env.directLinePossible(firstRV.x, firstRV.y, p.x, p.y)*/) {
                 if (counter % pointSkip == 0) {
-                    if (!occGrid.directLinePossible(firstRV.x, firstRV.y, p.x, p.y, true, false)) {
+                    if (!occGrid.directLinePossible(firstRV, p, true, false)) {
                         candidatePoints.add(p);
                     } else {
 //                        directPoints.add(p);

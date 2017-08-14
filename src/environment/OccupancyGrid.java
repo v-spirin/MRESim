@@ -485,6 +485,10 @@ public class OccupancyGrid {
         setBit(xCoord, yCoord, OccupancyGrid.OccGridBit.FreeSpace, 0);
     }
 
+    public void setNoObstacleAt(Point coord) {
+        setNoObstacleAt(coord.x, coord.y);
+    }
+
     public void setNoObstacleAt(int xCoord, int yCoord) {
         try {
             //if (obstacleAt(xCoord, yCoord)) mapCellsChanged++;
@@ -548,12 +552,12 @@ public class OccupancyGrid {
         return counter;
     }
 
-    public LinkedList<Point> pointsAlongSegment(int x1, int y1, int x2, int y2) {
+    public LinkedList<Point> pointsAlongSegment(Point a, Point b) {
         LinkedList<Point> pts = new LinkedList<Point>();
 
-        for (int i = Math.min(x1, x2); i <= Math.max(x1, x2); i++) {
-            for (int j = Math.min(y1, y2); j <= Math.max(y1, y2); j++) {
-                if (distPointToLine(x1, y1, x2, y2, i, j) < 0.5) {
+        for (int i = Math.min(a.x, b.x); i <= Math.max(a.x, b.x); i++) {
+            for (int j = Math.min(a.y, b.y); j <= Math.max(a.y, b.y); j++) {
+                if (distPointToLine(a, b, new Point(i, j)) < 0.5) {
                     pts.add(new Point(i, j));
                 }
             }
@@ -613,40 +617,23 @@ public class OccupancyGrid {
      * @param source Start
      * @param dest Goal
      * @param allowUnknown
-     * @param showErrors
-     * @return true if direct line possible considering the knowledge of the agent, false if not
-     */
-    public boolean directLinePossible(Point source, Point dest, boolean allowUnknown, boolean showErrors) {
-        return directLinePossible((int) source.getX(), (int) source.getY(), (int) dest.getX(), (int) dest.getY(), allowUnknown, showErrors);
-    }
-
-    /**
-     * Checks if there is a line from source to dest that doesn't go through obstacles. Note: by
-     * current implementation lines are possible through unknown space. To change this only a slight
-     * tweak in second part of if statement needed, i.e. change to: && !freeSpaceAt(i,j)
-     *
-     * @param sourceX Startpoint.x
-     * @param sourceY Startpoint.y
-     * @param destX Goalpoint.x
-     * @param destY Goalpoint.y
-     * @param allowUnknown
      * @param showErrors display Errors as X on the ExplorationImage
      * @return true if direct line possible considering the knowledge of the agent, false if not
      */
-    public boolean directLinePossible(int sourceX, int sourceY, int destX, int destY, boolean allowUnknown, boolean showErrors) {
-        for (int i = Math.min(sourceX, destX) + 1; i <= Math.max(sourceX, destX) - 1; i++) {
-            for (int j = Math.min(sourceY, destY) + 1; j <= Math.max(sourceY, destY) - 1; j++) {
+    public boolean directLinePossible(Point source, Point dest, boolean allowUnknown, boolean showErrors) {
+        for (int i = Math.min(source.x, dest.x) + 1; i <= Math.max(source.x, dest.x) - 1; i++) {
+            for (int j = Math.min(source.y, dest.y) + 1; j <= Math.max(source.y, dest.y) - 1; j++) {
                 //if (showErrors && (distPointToLine(sourceX, sourceY, destX, destY, i, j) <= 0.5)) {
                 //simulator.ExplorationImage.addErrorMarker(new Point(i, j), null, false);
                 //}
                 if (allowUnknown) {
-                    if ((distPointToLine(sourceX, sourceY, destX, destY, i, j) <= 0.5) && obstacleAt(i, j)) {
+                    if ((distPointToLine(source, dest, new Point(i, j)) <= 0.5) && obstacleAt(i, j)) {
                         if (showErrors) {
                             simulator.ExplorationImage.addErrorMarker(new Point(i, j), "obstacle", true);
                         }
                         return false;
                     }
-                } else if ((distPointToLine(sourceX, sourceY, destX, destY, i, j) <= 0.5) && !freeSpaceAt(i, j)) {
+                } else if ((distPointToLine(source, dest, new Point(i, j)) <= 0.5) && !freeSpaceAt(i, j)) {
                     if (showErrors) {
                         simulator.ExplorationImage.addErrorMarker(new Point(i, j), "unfree", true);
                     }
@@ -665,39 +652,25 @@ public class OccupancyGrid {
     /**
      * This function finds the shortest distance from P3 to the line between P1 and P2
      *
-     * @param x1
-     * @param y1
-     * @param x2
-     * @param y2
-     * @param x3
-     * @param y3
-     * @return
+     * @param a Line Point A
+     * @param b Line Point B
+     * @param c Point
+     * @return Distance from c to the line a-b
      */
-    public double distPointToLine(int x1, int y1, int x2, int y2, int x3, int y3) {
-        if ((x3 == x1 && y3 == y1) || (x3 == x2 && y3 == y2)) {
+    public double distPointToLine(Point a, Point b, Point c) {
+        if (c == a || c == b) {
             return 0;
         }
 
-        double dist = Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
-        double slope = ((x3 - x1) * (x2 - x1) + (y3 - y1) * (y2 - y1)) / Math.pow(dist, 2);
+        double dist = Math.sqrt(Math.pow(b.y - a.y, 2) + Math.pow(b.x - a.x, 2));
+        double slope = ((c.x - a.x) * (b.x - a.x) + (c.y - a.y) * (b.y - a.y)) / Math.pow(dist, 2);
 
-        double xIntersection = x1 + slope * (x2 - x1);
-        double yIntersection = y1 + slope * (y2 - y1);
+        double xIntersection = a.x + slope * (b.x - a.x);
+        double yIntersection = a.y + slope * (b.y - a.y);
 
-        double shortestDist = Math.sqrt(Math.pow(x3 - xIntersection, 2) + Math.pow(y3 - yIntersection, 2));
+        double shortestDist = Math.sqrt(Math.pow(c.x - xIntersection, 2) + Math.pow(c.y - yIntersection, 2));
 
         return shortestDist;
-    }
-
-    /**
-     * This function calculates the distance between P1 and P2
-     *
-     * @param a First point
-     * @param b Second point
-     * @return Distance as double
-     */
-    public double distP2P(Point a, Point b) {
-        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
 
     // Returns distance to nearest wall, up to a maximum distance

@@ -723,7 +723,6 @@ public class ExplorationImage {
     public void drawKeyAreas(TopologicalMap tMap) {
         try {
             int[][] areaGrid = tMap.getAreaGrid();
-            tMap.generateBorderPoints();
             LinkedList<Point> borderPoints = tMap.getBorderPoints();
 
             for (int i = 0; i < areaGrid.length; i++) {
@@ -900,9 +899,9 @@ public class ExplorationImage {
     }
 
     public void drawRVWalls(RealAgent agent) {
-        try {
+        /*try {
             LinkedList<Point> keyPoints1 = agent.getTopologicalMap().getKeyPointsBorder();
-            LinkedList<Point> keyPoints2 = agent.getTopologicalMap().getSecondKeyPointsBorder();
+            LinkedList<Point> keyPoints2 = agent.getTopologicalMap().getSecondKeyPointsBorder(goal, agent);
             LinkedList<Point> newDirt = new LinkedList<Point>();
             if ((keyPoints1 != null) && (keyPoints2 != null)) {
                 //int counter = 0;
@@ -919,7 +918,7 @@ public class ExplorationImage {
                 //System.out.println("Total points drawn: " + counter);
             }
         } catch (java.lang.NullPointerException e) {
-        }
+        }*/
     }
 
     public void drawConnections(RealAgent[] agent) {

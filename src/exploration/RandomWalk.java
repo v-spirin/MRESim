@@ -99,7 +99,7 @@ public class RandomWalk {
             newY = agent.getY() + Math.round((float) (speed * Math.sin(agent.getHeading())));
 
             if (agent.getOccupancyGrid().locationExists(newX, newY)
-                    && agent.getOccupancyGrid().directLinePossible(agent.getX(), agent.getY(), newX, newY, true, false)
+                    && agent.getOccupancyGrid().directLinePossible(agent.getLocation(), new Point(newX, newY), true, false)
                     && !agent.getOccupancyGrid().obstacleWithinDistance(newX, newY, acceptableDistanceToWall)) {
                 found = true;
             }
@@ -141,7 +141,7 @@ public class RandomWalk {
                 newY = 0;
             }
             if (agent.getOccupancyGrid().locationExists(newX, newY)
-                    && agent.getOccupancyGrid().directLinePossible(agent.getX(), agent.getY(), newX, newY, true, false)
+                    && agent.getOccupancyGrid().directLinePossible(agent.getLocation(), new Point(newX, newY), true, false)
                     && !agent.getOccupancyGrid().obstacleWithinDistance(newX, newY, 1)) {
                 found = true;
             }

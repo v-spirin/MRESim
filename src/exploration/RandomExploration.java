@@ -121,7 +121,6 @@ public class RandomExploration extends BasicExploration implements Exploration {
             case KeyPoints:
                 if (!agent.comStations.isEmpty()) {
                     if (timeElapsed % 5 == 0) {
-                        tmap.generateSkeleton();
                     }
                     for (Point p : tmap.getJunctionPoints()) {
                         simulator.ExplorationImage.addErrorMarker(p, "", true);

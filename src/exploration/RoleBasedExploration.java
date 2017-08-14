@@ -57,7 +57,7 @@ import path.Path;
 
 /**
  *
- * @author julh, vspirin
+ * @author julh, vspirin, Christian Clausen
  */
 public class RoleBasedExploration extends FrontierExploration {
 
@@ -91,7 +91,7 @@ public class RoleBasedExploration extends FrontierExploration {
                 nextStep = takeStep_Explore();
                 break;
             case ReturnToBaseStation:
-                nextStep = takeStep_ReturnToParent();
+                nextStep = takeStep_ReturnToBaseStation();
                 break;
             case WaitForParent:
                 nextStep = takeStep_WaitForParent();
@@ -201,7 +201,6 @@ public class RoleBasedExploration extends FrontierExploration {
 
         //If there are no frontiers to explore, we must be finished.  Return to ComStation.
         if ((frontiers.isEmpty() || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
-            Path pathToParentRendezvous = agent.calculatePath(agent.getLocation(), agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), false);//rvd.getParentRendezvous().getChildLocation());
             agent.setPath(agent.calculatePath(agent.getLocation(), agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(), false));
             agent.setExploreState(RealAgent.ExplorationState.ReturnToBaseStation);
             agent.setMissionComplete(true);
@@ -212,7 +211,7 @@ public class RoleBasedExploration extends FrontierExploration {
         return nextStep;
     }
 
-    public Point takeStep_ReturnToParent() {
+    public Point takeStep_ReturnToBaseStation() {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         //If parent is in range, GiveParentInfo
         if (agent.getParentTeammate().hasCommunicationLink()) {
@@ -226,25 +225,12 @@ public class RoleBasedExploration extends FrontierExploration {
         }
 
         //Recalculate tpath every PATH_RECALC_PARENT_INTERVAL steps, if fail try A*, if that fails try using existing tpath, if that fails take random step
-        Path existingPath = agent.getPath();
         if ((agent.getStateTimer() % Constants.PATH_RECALC_PARENT_INTERVAL) == (Constants.PATH_RECALC_PARENT_INTERVAL - 1)) {
             rendezvousStrategy.processReturnToParentReplan();
 
             Path tpath = agent.calculatePath(agent.getLocation(), rvd.getParentRendezvous().getChildLocation(), false);
-            //If tpath not found, try A*
-            if (!tpath.found) {
-                tpath = agent.calculatePath(agent.getLocation(), rvd.getParentRendezvous().getChildLocation(), true);
-            }
             //If tpath still not found, try existing tpath. If existing tpath doesn't exist or exhausted, take random step
-            if (!tpath.found) {
-                if ((existingPath != null) && (existingPath.getPoints().size() > 2)) {
-                    agent.setPath(existingPath);
-                } else {
-                    return RandomWalk.randomStep(agent);
-                }
-            } else {
-                agent.setPath(tpath);
-            }
+            agent.setPath(tpath);
         }
 
         if (agent.getPath().found && !agent.getPath().getPoints().isEmpty()) {
@@ -271,8 +257,7 @@ public class RoleBasedExploration extends FrontierExploration {
             return takeStep_GiveParentInfo();
         }
 
-        boolean canStillWait = (timeElapsed
-                <= (rvd.getParentRendezvous().getTimeMeeting() + rvd.getParentRendezvous().getTimeWait()));
+        boolean canStillWait = (timeElapsed <= (rvd.getParentRendezvous().getTimeMeeting() + rvd.getParentRendezvous().getTimeWait()));
 
         if (canStillWait) {
             return rendezvousStrategy.processWaitForParent();
@@ -325,21 +310,8 @@ public class RoleBasedExploration extends FrontierExploration {
             agent.setExploreState(RealAgent.ExplorationState.GoToChild);
             Path tpath = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), false);
             agent.setPath(tpath);
-
-            if (tpath.found) {
-                // stay in comm range with base, till it's time to go meet child
-                return agent.getNextPathPoint();
-            } else {
-                //If tpath not found, try A*
-                tpath = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), true);
-                //If tpath still not found, take random step
-                if (!tpath.found) {
-                    return RandomWalk.randomStep(agent);
-                } else {
-                    agent.setPath(tpath);
-                    return agent.getNextPathPoint();
-                }
-            }
+            // stay in comm range with base, till it's time to go meet child
+            return agent.getNextPathPoint();
         }
     }
 
@@ -360,16 +332,7 @@ public class RoleBasedExploration extends FrontierExploration {
             if (tpath == null) {
                 tpath = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation(), false);
             }
-            //Could not find full tpath! Trying pure A*
-            if (!tpath.found) {
-                tpath = agent.calculatePath(agent.getLocation(), agent.getRendezvousAgentData().getChildRendezvous().getParentLocation(), true);
-            }
-            //Still couldn't find tpath, trying existing tpath or if that fails, taking random step
-            if (!tpath.found) {
-                return RandomWalk.randomStep(agent);
-            } else {
-                agent.setPath(tpath);
-            }
+            agent.setPath(tpath);
         }
 
         if (agent.getPath().found && !agent.getPath().getPoints().isEmpty()) {
@@ -389,14 +352,12 @@ public class RoleBasedExploration extends FrontierExploration {
             return takeStep_GetInfoFromChild();
         }
 
-        boolean canStillWait = (timeElapsed
-                <= (rvd.getChildRendezvous().getTimeMeeting() + rvd.getChildRendezvous().getTimeWait()));
+        boolean canStillWait = (timeElapsed <= (rvd.getChildRendezvous().getTimeMeeting() + rvd.getChildRendezvous().getTimeWait()));
 
         if (canStillWait) {
             return rendezvousStrategy.processWaitForChild();
         } else //Go to backup RV if available. Otherwise do what the strategy requires us to do, e.g. become an explorer.
-        {
-            if (rvd.getChildBackupRendezvous() != null) {
+         if (rvd.getChildBackupRendezvous() != null) {
                 rvd.setChildRendezvous(rvd.getChildBackupRendezvous());
                 rvd.setChildBackupRendezvous(null);
                 agent.setExploreState(RealAgent.ExplorationState.GoToChild);
@@ -404,7 +365,6 @@ public class RoleBasedExploration extends FrontierExploration {
             } else {
                 return rendezvousStrategy.processWaitForChildTimeoutNoBackup();
             }
-        }
     }
 
     public Point takeStep_GetInfoFromChild() {
@@ -419,7 +379,7 @@ public class RoleBasedExploration extends FrontierExploration {
                 agent.setTimeSinceGetChildInfo(0);
             }
             agent.setExploreState(RealAgent.ExplorationState.ReturnToBaseStation);
-            return takeStep_ReturnToParent();
+            return takeStep_ReturnToBaseStation();
         }
     }
 
