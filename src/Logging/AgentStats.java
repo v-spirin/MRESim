@@ -344,6 +344,10 @@ public class AgentStats {
         this.comStationsDropped += 1;
     }
 
+    public void decrementDroppedComStations() {
+        this.comStationsDropped -= 1;
+    }
+
     public int getComStationsDropped() {
         return this.comStationsDropped;
     }

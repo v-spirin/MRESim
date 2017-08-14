@@ -77,6 +77,7 @@ public class TeammateAgent extends Agent {
     private int newInfo;
 
     private RendezvousAgentData rendezvousAgentData;
+    private ComStation reference;
 
     public TeammateAgent(RobotConfig robot) {
         super(robot);
@@ -95,7 +96,7 @@ public class TeammateAgent extends Agent {
         this.timeLastCentralCommand = toCopy.timeLastCentralCommand;
         this.lastContactAreaKnown = toCopy.lastContactAreaKnown;
         this.rendezvousAgentData = new RendezvousAgentData(toCopy.rendezvousAgentData);
-
+        this.reference = toCopy.reference;
     }
 
     public int getTimeLastCentralCommand() {
@@ -228,6 +229,25 @@ public class TeammateAgent extends Agent {
     @Override
     public void flush() {
 
+    }
+
+    /**
+     * Returns the reference to the real COmStation, DO NOT USE FOR ANYTHING BUT LIFTING
+     * COMSTATIONS! This Method breaks the information-gap!
+     *
+     * @return the COmStation this Teammate represents
+     */
+    public ComStation getReference() {
+        return this.reference;
+    }
+
+    /**
+     * Sets the reference to the real agent
+     *
+     * @param reference
+     */
+    public void setReference(ComStation reference) {
+        this.reference = reference;
     }
 
 }

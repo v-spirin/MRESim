@@ -77,15 +77,19 @@ public class RandomExploration extends BasicExploration implements Exploration {
                 nextStep = takeStep_explore(timeElapsed);
                 break;
             case SettingRelay:
-                if (state == ExplorationState.SettingRelay) {
-                    agent.dropComStation();
-                    state = ExplorationState.Exploring;
-                }
+                agent.dropComStation();
+                state = ExplorationState.Exploring;
+                nextStep = agent.getLocation();
+                break;
+            case TakingRelay:
+                agent.liftComStation();
+                state = ExplorationState.Exploring;
                 nextStep = agent.getLocation();
                 break;
             case Initial:
             case BackToBase:
             case Finished:
+            case EnvError:
             default:
                 nextStep = RandomWalk.randomStep(agent);
 
@@ -101,10 +105,17 @@ public class RandomExploration extends BasicExploration implements Exploration {
     }
 
     private Point takeStep_explore(int timeElapsed) {
+        Point nextStep = null;
         switch (relayType) {
             case Random:
-                if (!agent.comStations.isEmpty() && (Math.random() < simConfig.getComStationDropChance() * agent.getSpeed())) {
-                    agent.dropComStation();
+                if (!agent.comStations.isEmpty() && (Math.random() < simConfig.getComStationDropChance())) {
+                    state = ExplorationState.SettingRelay;
+                }
+                TeammateAgent relay = agent.findNearComStation(agent.getSpeed());
+
+                if (agent.comStations.size() < agent.getComStationLimit() && relay != null && Math.random() < simConfig.getComStationTakeChance()) {
+                    nextStep = relay.getLocation();
+                    state = ExplorationState.TakingRelay;
                 }
                 break;
             case KeyPoints:
@@ -153,7 +164,11 @@ public class RandomExploration extends BasicExploration implements Exploration {
             return RandomWalk.randomStep(agent);
         } else {
             agent.setStepFinished(true);
-            return agent.getLocation();
+            if (nextStep == null) {
+                return agent.getLocation();
+            } else {
+                return nextStep;
+            }
         }
     }
 }

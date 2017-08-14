@@ -244,9 +244,6 @@ public class RealAgent extends Agent {
         }
     }
 
-    /*public void setFrontiers(PriorityQueue<Frontier> newFrontierList) {
-        this.frontiers = newFrontierList;
-    }*/
     public Frontier getLastFrontier() {
         return this.lastFrontier;
     }
@@ -1192,5 +1189,47 @@ public class RealAgent extends Agent {
             baseStation.getStats().incrementDroppedComStations();
             occupied = Constants.COM_STATION_DROP_TIME; // use X cycles to drop ComStation (including current one
         }
+    }
+
+    /**
+     * takes the first ComStation found in the range of an agent in one step (agent.speed). Not
+     * nececcary the nearest one!
+     *
+     * @return Point of the ComStation
+     */
+    public boolean liftComStation() {
+        ComStation comStation;
+        if (comStations.size() < getComStationLimit()) {
+            TeammateAgent mate = findNearComStation(2);
+            if (mate == null) {
+                return false;
+            }
+            comStation = mate.getReference();
+            this.comStations.add(comStation);
+            comStation.setState(AgentState.INACTIVE);
+            comStation.setX(1);
+            comStation.setY(1);
+            this.getStats().incrementDroppedComStations();
+            this.getStats().decrementDroppedComStations();
+            baseStation.getStats().decrementDroppedComStations();
+            occupied = Constants.COM_STATION_LIFT_TIME; // use X cycles to drop ComStation (including current one
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * REturns the first comstation found in the given distance, not nececcary the nearest!
+     *
+     * @param distance
+     * @return ComStation
+     */
+    public TeammateAgent findNearComStation(int distance) {
+        for (TeammateAgent mate : teammates.values()) {
+            if (mate.isRelay() && mate.getRole() == roletype.RelayStation && occGrid.distP2P(this.getLocation(), mate.getLocation()) < distance) {
+                return mate; //This works as ComStations are nearly only Agents
+            }
+        }
+        return null;
     }
 }

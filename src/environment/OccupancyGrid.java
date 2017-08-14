@@ -689,6 +689,17 @@ public class OccupancyGrid {
         return shortestDist;
     }
 
+    /**
+     * This function calculates the distance between P1 and P2
+     *
+     * @param a First point
+     * @param b Second point
+     * @return Distance as double
+     */
+    public double distP2P(Point a, Point b) {
+        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
+    }
+
     // Returns distance to nearest wall, up to a maximum distance
     public boolean obstacleWithinDistance(int x, int y, int minDistance) {
         for (int i = x - minDistance; i <= x + minDistance; i++) {

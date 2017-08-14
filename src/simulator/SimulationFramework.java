@@ -196,6 +196,9 @@ public class SimulationFramework implements ActionListener {
             }
             agentRange[i] = null;
             teammate[i] = new TeammateAgent(robotTeamConfig.getRobotTeam().get(i + 1));
+            if (teammate[i].getRole() == RobotConfig.roletype.RelayStation) {
+                teammate[i].setReference((ComStation) agent[i]);
+            }
         }
 
         for (int i = 1; i < numRobots; i++) {
