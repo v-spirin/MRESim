@@ -183,7 +183,6 @@ public class UtilityExploration extends FrontierExploration {
             System.out.println(agent + " setting mission complete");
             agent.setMissionComplete(true);
             Point baseLocation = agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation();
-            agent.addDirtyCells(agent.getPath().getAllPathPixels());
             agent.setPath(agent.calculatePath(agent.getLocation(), baseLocation, false));
             agent.setState(RealAgent.AgentState.ReturnToBaseStation);
             agent.setStateTimer(0);
@@ -239,10 +238,6 @@ public class UtilityExploration extends FrontierExploration {
         if ((existingPath == null) || (agent.getStateTimer() == 0)
                 || (agent.getStateTimer() % Constants.PATH_RECALC_PARENT_INTERVAL) == (Constants.PATH_RECALC_PARENT_INTERVAL - 1)) {
             System.out.println(agent + " replanning path to Base");
-            //If tpath already exists, update dirty cells with that tpath
-            if (existingPath != null) {
-                agent.addDirtyCells(existingPath.getAllPathPixels());
-            }
 
             if (simConfig.getBaseRange()) {
                 List<NearRVPoint> generatedPoints

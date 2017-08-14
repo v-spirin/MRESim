@@ -552,9 +552,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
                         return null;
                     }
                     agent.setLastFrontier(best.frontier);
-                    if (agent.getPath() != null) {
-                        agent.addDirtyCells(agent.getPath().getAllPathPixels());
-                    }
                     agent.setPath(best.path);
                     return null;
                 } else {
