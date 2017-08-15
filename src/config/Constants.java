@@ -329,6 +329,7 @@ public class Constants {
     public static double KEY_POINT_RELAY_DISTANCE = 10;
     public static double KEY_POINT_PLAN_RELAY_DISTANCE = 100;
     public static int COM_STATION_LIFT_TIME = 5;
+    public static int WIDE_OPEN_SPACE_VALUE = 50;
 
     /**
      * Colors to be used on map.

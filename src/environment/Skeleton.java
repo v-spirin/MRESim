@@ -47,13 +47,17 @@ import agents.RealAgent;
 import config.Constants;
 import config.SimulatorConfig;
 import exploration.rendezvous.Rendezvous;
+import java.awt.Color;
 import java.awt.Point;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import javax.imageio.ImageIO;
 import path.TopologicalNode;
 
 /**
@@ -64,95 +68,14 @@ import path.TopologicalNode;
  */
 public class Skeleton {
 
-    private static int[][] distanceTransform(int[][] inputGrid) {
-        int width = inputGrid.length;
-        int height = inputGrid[0].length;
-        int temp;
-
-        //0 means white,1 means black
-        // Initialize matrix
-        int matrix[][] = new int[width][height];
-        /*        for(int i=0; i<width; i++)
-            for(int j=0; j<height; j++)
-                if(grid.freeSpaceAt(i, j))
-                    matrix[i][j] = 0;
-                else
-                    matrix[i][j] = 1;
-         */
-        for (int i = 0; i < width; i++) {
-            System.arraycopy(inputGrid[i], 0, matrix[i], 0, height);
-        }
-
-        // Forward pass
-        for (int j = 0; j < height; j++) {
-            for (int i = 0; i < width; i++) {
-                // if this is an obstacle, set to 0
-                if (matrix[i][j] == 1) {
-                    continue;
-                }
-
-                if ((j == 0) || (j == height - 1)) {
-                    matrix[i][j] = 1;
-                    continue;
-                }
-
-                if ((i == 0) || (i == width - 1)) {
-                    matrix[i][j] = 1;
-                    continue;
-                }
-
-                //temp = findmin(matrix[i-1][j], matrix[i-1][j-1], matrix[i][j-1], matrix[i+1][j-1]);
-                temp = findmin(matrix[i - 1][j], matrix[i][j - 1]);
-                matrix[i][j] = temp + 1;
-
-            }
-        }
-
-        // Backward pass
-        for (int j = height - 1; j >= 0; j--) {
-            for (int i = width - 1; i >= 0; i--) {
-                if (matrix[i][j] == 1) {
-                    continue;
-                }
-
-                if ((j == 0) || (j == height - 1)) {
-                    matrix[i][j] = 1;
-                    continue;
-                }
-
-                if ((i == 0) || (i == width - 1)) {
-                    matrix[i][j] = 1;
-                    continue;
-                }
-
-                //temp=findmin(matrix[i-1][j+1],matrix[i][j+1],matrix[i+1][j+1],matrix[i+1][j]);
-                temp = findmin(matrix[i][j + 1], matrix[i + 1][j]);
-
-                if (temp > (matrix[i][j] - 1)) {
-                    temp = matrix[i][j] - 1;
-                }
-
-                matrix[i][j] = temp + 1;
-            }
-        }
-
-        return matrix;
-    }
-
-    private static int findmin(int num1, int num2)//,int num3,int num4)
-    {
-        int min = 4000;
-        if (min > num1) {
-            min = num1;
-        }
-        if (min > num2) {
-            min = num2;
-        }
-        //if(min>num3)min=num3;
-        //if(min>num4)min=num4;
-        return (min);
-    }
-
+    /**
+     * Counts the neighbors of a pixel which are not 0
+     *
+     * @param grid of monochrome pixels (int[][])
+     * @param x Point.x
+     * @param y Point.y
+     * @return 0-8 nonzeros
+     */
     public static int numNonzeroNeighbors(int[][] grid, int x, int y) {
         int num = 0;
         if (grid[x][y - 1] != 0) {
@@ -183,9 +106,16 @@ public class Skeleton {
         return num;
     }
 
+    /**
+     * Counts the changes of pixel-values of the neighbors from 0 to 1 (black to white)
+     *
+     * @param grid of monochrome pixels (int[][])
+     * @param x Point.x
+     * @param y Point.y
+     * @return 0-8 changes
+     */
     public static int neighborTraversal(int[][] grid, int x, int y) {
         int numChanges = 0;
-
         if (grid[x][y - 1] == 0 && grid[x + 1][y - 1] != 0) {
             numChanges++;
         }
@@ -214,15 +144,19 @@ public class Skeleton {
         return numChanges;
     }
 
-    private static int[][] skeletonize(int[][] grid) {
-        return skeletonize(grid, Integer.MAX_VALUE);
-    }
-
+    /**
+     * Finds the free space as skeleton
+     *
+     * @param grid
+     * @return
+     */
     private static int[][] findCSpace(int[][] grid) {
         return skeletonize(grid, 0);
     }
 
-    // this method finds the points that are within a margin of the obstacles
+    /**
+     * this method finds the points that are within a margin of the obstacles
+     */
     private static int[][] skeletonizeNearBorders(int[][] grid) {
         int[][] cspace = findCSpace(grid);
 
@@ -245,21 +179,15 @@ public class Skeleton {
         return skeleton;
     }
 
-    public static boolean obstacleWithinDistance(OccupancyGrid grid, int x, int y, int minDistance) {
-        for (int i = x - minDistance; i <= x + minDistance; i++) {
-            for (int j = y - minDistance; j <= y + minDistance; j++) {
-                if (i >= 0 && j >= 0 && i < grid.width && j < grid.height
-                        && new Point(x, y).distance(i, j) <= minDistance
-                        && grid.obstacleAt(i, j)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
+    /**
+     * SKeletonizes the given int[][] max times
+     *
+     * @param grid the given grid
+     * @param max the 'factor' 0 gives the free space of the given grid, Integer.Max_Value should
+     * give a 1px-thick skeleton, 70 will leave out some space in big areas
+     * @return the skeletonized grid
+     */
     private static int[][] skeletonize(int[][] grid, int max) {
-        long realtimeStart = System.currentTimeMillis();
         int width = grid.length;
         int height = grid[0].length;
 
@@ -269,10 +197,6 @@ public class Skeleton {
         for (int i = 0; i < width; i++) {
             System.arraycopy(grid[i], 0, u1[i], 0, height);
             System.arraycopy(grid[i], 0, u2[i], 0, height);
-            /*for (int j = 0; j < height; j++) {
-                u1[i][j] = grid[i][j];
-                u2[i][j] = grid[i][j];
-            }*/
         }
 
         boolean found = true;
@@ -297,9 +221,6 @@ public class Skeleton {
                 }
             }
             if (!found || counter == max) {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println("skeletonize method took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
-                }
                 return u2;
             }
             for (int i = 2; i < width - 2; i++) {
@@ -308,13 +229,16 @@ public class Skeleton {
 
             counter++;
         }
-
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println("skeletonize method took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
         return null;
     }
 
+    /**
+     * gives a list of Points !0 of the given grid (in a skeleton this will be a list of
+     * skeletonpoints)
+     *
+     * @param grid
+     * @return
+     */
     public static LinkedList<Point> gridToList(int[][] grid) {
         LinkedList<Point> sk = new LinkedList<Point>();
 
@@ -328,6 +252,11 @@ public class Skeleton {
         return sk;
     }
 
+    /**
+     * Debugging method
+     *
+     * @param mat
+     */
     private static void printMatrix(int[][] mat) {
         for (int j = 0; j < mat[0].length; j++) {
             for (int[] mat1 : mat) {
@@ -339,9 +268,17 @@ public class Skeleton {
         System.out.println();
     }
 
+    /**
+     * CHecks if the box 2*Constants.WIDE_OPEN_SPACE_VALUE (currently 2*50) around the given Point
+     *
+     * @param grid
+     * @param x Point.x
+     * @param y Point.y
+     * @return true if the point is in open space
+     */
     private static boolean inWideOpenSpace(int[][] grid, int x, int y) {
-        for (int i = Math.max(0, x - 50); i <= Math.min(grid.length - 1, x + 50); i++) {
-            for (int j = Math.max(0, y - 50); j <= Math.min(grid[0].length - 1, y + 50); j++) {
+        for (int i = Math.max(0, x - Constants.WIDE_OPEN_SPACE_VALUE); i <= Math.min(grid.length - 1, x + Constants.WIDE_OPEN_SPACE_VALUE); i++) {
+            for (int j = Math.max(0, y - Constants.WIDE_OPEN_SPACE_VALUE); j <= Math.min(grid[0].length - 1, y + Constants.WIDE_OPEN_SPACE_VALUE); j++) {
                 if (grid[i][j] == 0) {
                     return false;
                 }
@@ -351,62 +288,41 @@ public class Skeleton {
         return true;
     }
 
-    //Find Skeleton
+    /**
+     * Find Skeleton, wide open spaces will be an obstacle (currently 100x100)
+     *
+     * @param grid
+     * @return
+     */
     public static int[][] findSkeleton(OccupancyGrid grid) {
         return findSkeleton(grid, true, false);
     }
 
+    /**
+     * Find Skeleton, wide open spaces will be an obstacle (currently 100x100)
+     *
+     * @param grid
+     * @return
+     */
     public static int[][] findSkeletonNearBorders(OccupancyGrid grid) {
         return findSkeleton(grid, false, true);
     }
 
+    /**
+     * Generates the skeleton of the given grid
+     *
+     * @param grid
+     * @param treatWideOpenSpaceAsObstacle
+     * @param skeletonNearBorders
+     * @return
+     */
     private static int[][] findSkeleton(OccupancyGrid grid, boolean treatWideOpenSpaceAsObstacle,
             boolean skeletonNearBorders) {
-        long realtimeStart = System.currentTimeMillis();
         int[][] freeSpaceGrid = new int[grid.width][grid.height];
 
         for (int i = 0; i < grid.width; i++) {
             for (int j = 0; j < grid.height; j++) {
-                if (grid.freeSpaceAt(i, j) && (!skeletonNearBorders || (!obstacleWithinDistance(grid, i, j, 5)))) {
-                    if (treatWideOpenSpaceAsObstacle && inWideOpenSpace(freeSpaceGrid, i, j)) {
-                        freeSpaceGrid[i][j] = 0;
-                    } else {
-                        freeSpaceGrid[i][j] = 1;
-                    }
-                } else {
-                    freeSpaceGrid[i][j] = 0;
-                }
-            }
-        }
-
-        /*if (treatWideOpenSpaceAsObstacle) {
-            for (int i = 0; i < grid.width; i++) {
-                for (int j = 0; j < grid.height; j++) {
-                    if (freeSpaceGrid[i][j] == 1 && inWideOpenSpace(freeSpaceGrid, i, j)) {
-                        freeSpaceGrid[i][j] = 0;
-                    }
-                }
-            }
-        }*/
-        //skeleton = distanceTransform(skeleton);
-        int[][] skeleton;
-        if (!skeletonNearBorders) {
-            skeleton = skeletonize(freeSpaceGrid);
-        } else {
-            skeleton = skeletonizeNearBorders(freeSpaceGrid);
-        }
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println("findSkeleton took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
-        return skeleton;
-    }
-
-    public static int[][] findSkeleton(Environment.Status[][] status, int max) {
-        int[][] freeSpaceGrid = new int[status.length][status[0].length];
-
-        for (int i = 0; i < status.length; i++) {
-            for (int j = 0; j < status[0].length; j++) {
-                if (status[i][j] == Environment.Status.unexplored) {
+                if (grid.freeSpaceAt(i, j)) {//&& (!skeletonNearBorders || (!obstacleWithinDistance(grid, i, j, 5)))) {
                     freeSpaceGrid[i][j] = 1;
                 } else {
                     freeSpaceGrid[i][j] = 0;
@@ -414,22 +330,98 @@ public class Skeleton {
             }
         }
 
+        if (treatWideOpenSpaceAsObstacle) {
+            for (int i = 0; i < grid.width; i++) {
+                for (int j = 0; j < grid.height; j++) {
+                    if (freeSpaceGrid[i][j] == 1 && inWideOpenSpace(freeSpaceGrid, i, j)) {
+                        //Only one pixel is not threated as an obstacle
+                        freeSpaceGrid[i][j] = 0;
+                        freeSpaceGrid[i - 1][j] = 0;
+                        freeSpaceGrid[i + 1][j] = 0;
+                        freeSpaceGrid[i][j + 1] = 0;
+                        freeSpaceGrid[i][j - 1] = 0;
+                    }
+                }
+            }
+        }
         //skeleton = distanceTransform(skeleton);
-        int[][] skeleton = skeletonize(freeSpaceGrid, max);
+        int[][] skeleton;
+        if (!skeletonNearBorders) {
+            skeleton = skeletonize(freeSpaceGrid, Integer.MAX_VALUE);
+        } else {
+            skeleton = skeletonizeNearBorders(freeSpaceGrid);
+        }
         return skeleton;
     }
 
-    public static LinkedList<Point> findJunctionPoints(int[][] skeleton, OccupancyGrid occGrid) {
+    /**
+     *
+     * @param status given grid as Environment
+     * @param treatWideOpenSpaceAsObstacle
+     * @param skeletonNearBorders
+     * @param max
+     * @return int[][]
+     */
+    public static int[][] findSkeleton(Environment status, boolean treatWideOpenSpaceAsObstacle,
+            boolean skeletonNearBorders, int max) {
+        Environment.Status[][] statusG = status.getFullStatus();
+        int[][] freeSpaceGrid = new int[statusG.length][statusG[0].length];
+
+        for (int i = 0; i < statusG.length; i++) {
+            for (int j = 0; j < statusG[0].length; j++) {
+                if (statusG[i][j] == Environment.Status.unexplored) {//&& (!skeletonNearBorders || (!status.obstacleWithinDistance(j, j, 5)))) {
+                    freeSpaceGrid[i][j] = 1;
+                } else {
+                    freeSpaceGrid[i][j] = 0;
+                }
+            }
+        }
+
+        if (treatWideOpenSpaceAsObstacle) {
+            for (int i = 0; i < statusG.length; i++) {
+                for (int j = 0; j < statusG[0].length; j++) {
+                    if (freeSpaceGrid[i][j] == 1 && inWideOpenSpace(freeSpaceGrid, i, j)) {
+                        //Only one pixel is not threated as an obstacle
+                        freeSpaceGrid[i][j] = 0;
+                        freeSpaceGrid[i - 1][j] = 0;
+                        freeSpaceGrid[i + 1][j] = 0;
+                        freeSpaceGrid[i][j + 1] = 0;
+                        freeSpaceGrid[i][j - 1] = 0;
+                    }
+                }
+            }
+        }
+
+        //skeleton = distanceTransform(skeleton);
+        int[][] skeleton;
+        if (!skeletonNearBorders) {
+            skeleton = skeletonize(freeSpaceGrid, max);
+        } else {
+            skeleton = skeletonizeNearBorders(freeSpaceGrid);
+        }
+        return skeleton;
+    }
+
+    /**
+     * Gives a list of Points at the junctions of the skeleton
+     *
+     * @param skeleton
+     * @param grid
+     * @param endPoints use ends as junctions too
+     * @return
+     */
+    public static LinkedList<Point> findJunctionPoints(int[][] skeleton, IntGrid grid, boolean endPoints) {
         LinkedList<Point> junctions = new LinkedList<Point>();
 
         // Pass 1:  find key points (junctions)
         for (int i = 2; i < skeleton.length - 2; i++) {
             for (int j = 2; j < skeleton[0].length - 2; j++) {
-                if (numNonzeroNeighbors(skeleton, i, j) >= 3 && neighborTraversal(skeleton, i, j) >= 3 && skeleton[i][j] != 0) {
+                if (skeleton[i][j] != 0 && numNonzeroNeighbors(skeleton, i, j) >= 3 && neighborTraversal(skeleton, i, j) >= 3) {
                     junctions.add(new Point(i, j));
                 }
-                //if (numNonzeroNeighbors(skeleton, i, j) == 1 && skeleton[i][j] != 0)
-                //    junctions.add(new Point(i,j));
+                if (endPoints && skeleton[i][j] != 0 && numNonzeroNeighbors(skeleton, i, j) == 1) {
+                    junctions.add(new Point(i, j));
+                }
             }
         }
 
@@ -437,12 +429,12 @@ public class Skeleton {
         Point p;
         for (int i = junctions.size() - 1; i >= 0; i--) {
             p = junctions.get(i);
-            if (occGrid.obstacleWithinDistance(p.x, p.y, Constants.WALL_DISTANCE)) {
+            if (grid.obstacleWithinDistance(p.x, p.y, Constants.WALL_DISTANCE)) {
                 junctions.remove(i);
                 continue;
             }
             for (int j = junctions.size() - 1; j >= 0; j--) {
-                if (p.distance(junctions.get(j)) < Constants.KEY_POINT_DISTANCE && i != j) {
+                if (i != j && p.distance(junctions.get(j)) < Constants.KEY_POINT_DISTANCE) {
                     junctions.remove(i);
                     break;
                 }
@@ -452,11 +444,21 @@ public class Skeleton {
         return junctions;
     }
 
-    public static LinkedList<Point> findKeyPoints(int[][] skeleton, OccupancyGrid occGrid) {
+    /**
+     * Gives a list of Points with all JunctionPoints with points in between these junctions with
+     * distances around 'distance' on the skeleton
+     *
+     * @param skeleton
+     * @param grid
+     * @param endpoints use ends of skeleton as keypoints too?
+     * @param distance distance between keypoints
+     * @return
+     */
+    public static LinkedList<Point> findKeyPoints(int[][] skeleton, IntGrid grid, boolean endpoints, int distance) {
         LinkedList<Point> rvPts = new LinkedList<Point>();
 
         // Pass 1:  find key points (junctions)
-        rvPts.addAll(findJunctionPoints(skeleton, occGrid));
+        rvPts.addAll(findJunctionPoints(skeleton, grid, endpoints));
 
         // Pass 2:  fill in gaps
         LinkedList<Point> pts = gridToList(skeleton);
@@ -471,7 +473,7 @@ public class Skeleton {
             // Second check if it's far away from all other rv points
             addToRVlist = true;
             for (Point q : rvPts) {
-                if (p.distance(q) < 40) {
+                if (p.distance(q) < distance) {
                     addToRVlist = false;
                     break;
                 }
@@ -486,7 +488,7 @@ public class Skeleton {
         // Pass 3:  prune points too close to another rv point or too close to an obstacle
         for (int i = rvPts.size() - 1; i >= 0; i--) {
             p = rvPts.get(i);
-            if (occGrid.obstacleWithinDistance(p.x, p.y, Constants.WALL_DISTANCE)) {
+            if (grid.obstacleWithinDistance(p.x, p.y, Constants.WALL_DISTANCE)) {
                 rvPts.remove(i);
                 continue;
             }
@@ -1051,49 +1053,128 @@ public class Skeleton {
 
     }
 
+    public static void writeToImg(int[][] grid, LinkedList<Point> points, String filename) {
+        BufferedImage image = new BufferedImage(grid.length, grid[0].length, BufferedImage.TYPE_INT_RGB);
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[0].length; j++) {
+                if (grid[i][j] == 1) {
+                    image.setRGB(i, j, Color.white.getRGB());
+                } else {
+                    image.setRGB(i, j, Color.black.getRGB());
+                }
+            }
+        }
+        if (points != null) {
+            for (Point p : points) {
+                image.setRGB(p.x, p.y, Color.MAGENTA.getRGB());
+            }
+        }
+        try {
+            ImageIO.write(image, "png", new File(filename + ".png"));
+        } catch (IOException ex) {
+            System.err.println("Could not write file");
+        }
+    }
+
     public static void main(String args[]) {
 
         SimulatorConfig tempSimConfig = new SimulatorConfig();
+        tempSimConfig.loadEnvironment(Constants.DEFAULT_ENV_DIRECTORY + "maze1.png");
 
-        int[][] update = findSkeleton(tempSimConfig.getEnvironment().getFullStatus(), 70);
-        writeToFile(update);
+        int[][] skel = findSkeleton(tempSimConfig.getEnvironment(), false, false, Integer.MAX_VALUE);
+        LinkedList<Point> junc = findKeyPoints(skel, tempSimConfig.getEnvironment(), true, 40);
+        System.out.println(junc.size());
+        writeToImg(skel, junc, "1");
 
+        tempSimConfig.loadEnvironment(Constants.DEFAULT_ENV_DIRECTORY + "corridor.png");
+        skel = findSkeleton(tempSimConfig.getEnvironment(), false, false, Integer.MAX_VALUE);
+        junc = findKeyPoints(skel, tempSimConfig.getEnvironment(), true, 40);
+        System.out.println(junc.size());
+        writeToImg(skel, junc, "2");
+        tempSimConfig.loadEnvironment(Constants.DEFAULT_ENV_DIRECTORY + "library.png");
+        skel = findSkeleton(tempSimConfig.getEnvironment(), false, false, Integer.MAX_VALUE);
+        junc = findKeyPoints(skel, tempSimConfig.getEnvironment(), true, 40);
+        System.out.println(junc.size());
+        writeToImg(skel, junc, "3");
+        /*update = findSkeleton(tempSimConfig.getEnvironment(), true, false, 50);
+        writeToImg(update, "2");
+        update = findSkeleton(tempSimConfig.getEnvironment(), false, true, 50);
+        writeToImg(update, "3");
+        update = findSkeleton(tempSimConfig.getEnvironment(), true, true, 50);
+        writeToImg(update, "4");*/
 
-        /*
-        int[][] transform, grid = new int[20][10];
+    }
 
-        for(int i=0; i<20; i++)
-            for(int j=0; j<10; j++)
-                grid[i][j] = 1;
+    private static int[][] distanceTransform(int[][] inputGrid) {
+        int width = inputGrid.length;
+        int height = inputGrid[0].length;
+        int temp;
 
-        for(int i=0; i<10; i++) {
-            grid[0][i] = 0;
-            grid[1][i] = 0;
-            grid[18][i] = 0;
-            grid[19][i] = 0;
-        }
-
-        for(int i=0; i<20; i++) {
-            grid[i][0] = 0;
-            grid[i][1] = 0;
-            grid[i][7] = 0;
-            grid[i][8] = 0;
-            grid[i][9] = 0;
-        }
-
-        /*grid[13][1] = 0;
-        grid[14][2] = 0;
-        grid[15][3] = 0;
-        grid[16][4] = 0;
-        grid[17][5] = 0;
-        grid[18][6] = 0;
-        grid[19][7] = 0;*/
- /*
-        printMatrix(grid);
-        //transform = distanceTransform(grid);
-        //printMatrix(transform);
-        transform = skeletonize(grid);
-        printMatrix(transform);
+        //0 means white,1 means black
+        // Initialize matrix
+        int matrix[][] = new int[width][height];
+        /*        for(int i=0; i<width; i++)
+            for(int j=0; j<height; j++)
+                if(grid.freeSpaceAt(i, j))
+                    matrix[i][j] = 0;
+                else
+                    matrix[i][j] = 1;
          */
+        for (int i = 0; i < width; i++) {
+            System.arraycopy(inputGrid[i], 0, matrix[i], 0, height);
+        }
+
+        // Forward pass
+        for (int j = 0; j < height; j++) {
+            for (int i = 0; i < width; i++) {
+                // if this is an obstacle, set to 0
+                if (matrix[i][j] == 1) {
+                    continue;
+                }
+
+                if ((j == 0) || (j == height - 1)) {
+                    matrix[i][j] = 1;
+                    continue;
+                }
+
+                if ((i == 0) || (i == width - 1)) {
+                    matrix[i][j] = 1;
+                    continue;
+                }
+
+                temp = Math.min(matrix[i - 1][j], matrix[i][j - 1]);
+                matrix[i][j] = temp + 1;
+
+            }
+        }
+
+        // Backward pass
+        for (int j = height - 1; j >= 0; j--) {
+            for (int i = width - 1; i >= 0; i--) {
+                if (matrix[i][j] == 1) {
+                    continue;
+                }
+
+                if ((j == 0) || (j == height - 1)) {
+                    matrix[i][j] = 1;
+                    continue;
+                }
+
+                if ((i == 0) || (i == width - 1)) {
+                    matrix[i][j] = 1;
+                    continue;
+                }
+
+                temp = Math.min(matrix[i][j + 1], matrix[i + 1][j]);
+
+                if (temp > (matrix[i][j] - 1)) {
+                    temp = matrix[i][j] - 1;
+                }
+
+                matrix[i][j] = temp + 1;
+            }
+        }
+
+        return matrix;
     }
 }

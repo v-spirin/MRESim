@@ -51,7 +51,7 @@ import java.awt.Point;
  *
  * @author julh
  */
-public class Environment {
+public class Environment implements IntGrid{
 
     private int rows;           // The environment's size
     private int columns;
@@ -107,6 +107,24 @@ public class Environment {
         return status;
     }
 
+    /**
+     * get grid as Int[][] for debugging
+     * @return
+     */
+    @Override
+    public int[][] getIntGrid() {
+        int[][] intGrid= new int[columns][rows];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < columns; j++) {
+                if(status[i][j] == Status.unexplored){
+                    intGrid[j][i] = 1;
+                } else {
+                    intGrid[j][i] = 0;
+                }
+            }
+        }
+        return intGrid;
+    }
 // </editor-fold>
     /**
      * Initializes the environment. Sets every cell to explored
@@ -139,6 +157,7 @@ public class Environment {
      * @param minDistance
      * @return true if there is no obstacle or invalid point in minDistance of the given coordinates
      */
+    @Override
     public boolean obstacleWithinDistance(int x, int y, int minDistance) {
         for (int i = x - minDistance; i <= x + minDistance; i++) {
             for (int j = y - minDistance; j <= y + minDistance; j++) {

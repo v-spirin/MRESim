@@ -60,7 +60,7 @@ import javax.imageio.ImageIO;
  *
  * @author julh
  */
-public class OccupancyGrid {
+public class OccupancyGrid implements IntGrid {
 
     /**
      * FreeSpace means something traversable where communication would work and agents might be
@@ -674,6 +674,7 @@ public class OccupancyGrid {
     }
 
     // Returns distance to nearest wall, up to a maximum distance
+    @Override
     public boolean obstacleWithinDistance(int x, int y, int minDistance) {
         for (int i = x - minDistance; i <= x + minDistance; i++) {
             for (int j = y - minDistance; j <= y + minDistance; j++) {
@@ -799,5 +800,20 @@ public class OccupancyGrid {
     private void setByte(int x, int y, byte value) {
         hashCode = 0; // something changed, so delete hashcode
         grid[x][y] = value;
+    }
+
+    @Override
+    public int[][] getIntGrid() {
+        int[][] intGrid = new int[width][height];
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                if (freeSpaceAt(i, j)) {
+                    intGrid[j][i] = 1;
+                } else {
+                    intGrid[j][i] = 0;
+                }
+            }
+        }
+        return intGrid;
     }
 }
