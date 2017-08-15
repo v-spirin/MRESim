@@ -153,8 +153,8 @@ public class TopologicalMap {
         return keyPoints;
     }
 
-    public HashMap<Integer, TopologicalNode> getTopologicalNodes() {
-        if (topologicalNodes == null) {
+    public HashMap<Integer, TopologicalNode> getTopologicalNodes(boolean update) {
+        if (topologicalNodes == null || update) {
             generateKeyAreas();
         }
         return topologicalNodes;
@@ -187,6 +187,9 @@ public class TopologicalMap {
         int index = 0;
         for (Point p : getKeyPoints()) {
             index++;
+            if (index == Constants.UNEXPLORED_NODE_ID) {
+                index++;
+            }
             topologicalNodes.put(index, new TopologicalNode(index, p));
         }
         topologicalNodes.put(Constants.UNEXPLORED_NODE_ID, new TopologicalNode(Constants.UNEXPLORED_NODE_ID, new Point(-1, -1)));
@@ -231,7 +234,8 @@ public class TopologicalMap {
 
                                     node.addNeighbour(neighbourNode, null);
                                     neighbourNode.addNeighbour(node, null);
-                                    if (areaGrid[p.x + i][p.y + j] == Constants.UNEXPLORED_NODE_ID) {
+                                    //Should not be neccessary!
+                                    /*if (areaGrid[p.x + i][p.y + j] == Constants.UNEXPLORED_NODE_ID) {
                                         node.getCellList().stream().forEach((nodeCell) -> {
                                             occGrid.unsetFinalTopologicalMapCell(nodeCell.x, nodeCell.y);
                                         });
@@ -239,7 +243,7 @@ public class TopologicalMap {
                                         neighbourNode.getCellList().stream().forEach((nodeCell) -> {
                                             occGrid.unsetFinalTopologicalMapCell(nodeCell.x, nodeCell.y);
                                         });
-                                    }
+                                    }*/
                                 }
                             }
                         }

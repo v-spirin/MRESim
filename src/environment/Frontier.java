@@ -48,7 +48,6 @@ import config.Constants;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.util.LinkedList;
-import java.util.Random;
 
 /**
  *
@@ -72,7 +71,7 @@ public class Frontier implements Comparable<Frontier> {
     }
 
     // This constructor used by copy() function
-    public Frontier(LinkedList<Point> po, Polygon ap, double a, Point c, double d2c) {
+    private Frontier(LinkedList<Point> po, Polygon ap, double a, Point c, double d2c) {
         this.polygonOutline = po;
         this.areaPolygon = ap;
         this.area = a;
@@ -287,10 +286,9 @@ public class Frontier implements Comparable<Frontier> {
                                       //anyway, as the center is most likely close enough to the frontier
         if (area < area_crescent_limit)
             return temp;*/
-        //otherwise, return a random polygon point
-        Random rnd = new Random(Constants.RANDOM_SEED);
-        int index = rnd.nextInt(areaPolygon.npoints);
-        return new Point(areaPolygon.xpoints[index], areaPolygon.ypoints[index]);
+        //otherwise, return a random polygon-outline point
+        int index = this.polygonOutline.size() / 2;
+        return new Point(this.polygonOutline.get(index));
     }
 
     @Override

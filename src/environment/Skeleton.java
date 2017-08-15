@@ -55,7 +55,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import javax.imageio.ImageIO;
 import path.TopologicalNode;
@@ -503,14 +502,23 @@ public class Skeleton {
         return rvPts;
     }
 
+    /**
+     * Fill a grid with the id of the next topological node (on key-points) by expanding around the
+     * nodes simultaniously
+     *
+     * @param occGrid
+     * @param keyPoints
+     * @param nodes
+     * @return
+     */
     public static int[][] fillKeyAreas(OccupancyGrid occGrid, LinkedList<Point> keyPoints, HashMap<Integer, TopologicalNode> nodes) {
         int[][] areaGrid = new int[occGrid.width][occGrid.height];
-        LinkedHashMap<Point, Boolean> pointsOfInterest = new LinkedHashMap<Point, Boolean>();
+        LinkedList<Point> pointsOfInterest = new LinkedList<Point>();
 
         //Initialize areaGrid - set unexplored areas to UNEXPLORED_NODE_ID, obstacles to -1, free space to 0.
         for (int i = 0; i < areaGrid.length; i++) {
             for (int j = 0; j < areaGrid[0].length; j++) {
-                if ((occGrid.obstacleAt(i, j)) /*|| ((!occGrid.obstacleAt(i, j)) && (!occGrid.freeSpaceAt(i, j)))*/ || (i == 0) || (j == 0) || (i == (areaGrid.length - 1)) || (j == (areaGrid[0].length - 1))) {
+                if ((occGrid.obstacleAt(i, j)) || (i == 0) || (j == 0) || (i == (areaGrid.length - 1)) || (j == (areaGrid[0].length - 1))) {
                     areaGrid[i][j] = -1;
                 } else if ((!occGrid.obstacleAt(i, j)) && (!occGrid.freeSpaceAt(i, j))) {
                     areaGrid[i][j] = Constants.UNEXPLORED_NODE_ID; //unexplored space
@@ -521,34 +529,36 @@ public class Skeleton {
         }
 
         // initialize the keypoint of each Node to the node's ID; add the immediate neighbour cells to "points of interest" list
-        int index = 0;
-        for (Point p : keyPoints) {
-            index++;
+        for (TopologicalNode t : nodes.values()) {
+            if (t.getID() == Constants.UNEXPLORED_NODE_ID) {
+                continue;
+            }
+            Point p = t.getPosition();
             if ((areaGrid[p.x][p.y] >= 0) && (areaGrid[p.x][p.y] < Constants.UNEXPLORED_NODE_ID)) {
-                areaGrid[p.x][p.y] = index;
+                areaGrid[p.x][p.y] = t.getID();
                 if (areaGrid[p.x - 1][p.y] == 0) {
-                    pointsOfInterest.put(new Point(p.x - 1, p.y), true);
+                    pointsOfInterest.add(new Point(p.x - 1, p.y));
                 }
                 if (areaGrid[p.x + 1][p.y] == 0) {
-                    pointsOfInterest.put(new Point(p.x + 1, p.y), true);
+                    pointsOfInterest.add(new Point(p.x + 1, p.y));
                 }
                 if (areaGrid[p.x][p.y - 1] == 0) {
-                    pointsOfInterest.put(new Point(p.x, p.y - 1), true);
+                    pointsOfInterest.add(new Point(p.x, p.y - 1));
                 }
                 if (areaGrid[p.x][p.y + 1] == 0) {
-                    pointsOfInterest.put(new Point(p.x, p.y + 1), true);
+                    pointsOfInterest.add(new Point(p.x, p.y + 1));
                 }
                 if (areaGrid[p.x - 1][p.y - 1] == 0) {
-                    pointsOfInterest.put(new Point(p.x - 1, p.y - 1), true);
+                    pointsOfInterest.add(new Point(p.x - 1, p.y - 1));
                 }
                 if (areaGrid[p.x - 1][p.y + 1] == 0) {
-                    pointsOfInterest.put(new Point(p.x - 1, p.y + 1), true);
+                    pointsOfInterest.add(new Point(p.x - 1, p.y + 1));
                 }
                 if (areaGrid[p.x + 1][p.y + 1] == 0) {
-                    pointsOfInterest.put(new Point(p.x + 1, p.y + 1), true);
+                    pointsOfInterest.add(new Point(p.x + 1, p.y + 1));
                 }
                 if (areaGrid[p.x + 1][p.y - 1] == 0) {
-                    pointsOfInterest.put(new Point(p.x + 1, p.y - 1), true);
+                    pointsOfInterest.add(new Point(p.x + 1, p.y - 1));
                 }
             }
         }
@@ -559,9 +569,9 @@ public class Skeleton {
             if (pointsOfInterest.size() > maxQueueSize) {
                 maxQueueSize = pointsOfInterest.size();
             }
-            Point p = pointsOfInterest.keySet().iterator().next();
+            Point p = pointsOfInterest.iterator().next();
             pointsOfInterest.remove(p);
-            if (areaGrid[p.x][p.y] == 0) //cell unassigned to any node
+            if (areaGrid[p.x][p.y] == 0) //cell unassigned to any node and freeSpace
             {
                 // calculate what area most surrounding cells belong to
                 int nw = 0;
@@ -574,6 +584,8 @@ public class Skeleton {
                 int se = 0;
 
                 if ((areaGrid[p.x - 1][p.y - 1] > 0) && (areaGrid[p.x - 1][p.y - 1] < Constants.UNEXPLORED_NODE_ID)) {
+                    //nw has a node
+                    //If any other neighbor of p is the same node, nw++
                     if (areaGrid[p.x][p.y - 1] == areaGrid[p.x - 1][p.y - 1]) {
                         nw++;
                     }
@@ -596,7 +608,8 @@ public class Skeleton {
                         nw++;
                     }
                 } else {
-                    nw = -1;
+                    // if p is obstacle, unexploredNode nw--
+                    nw--;
                 }
                 if ((areaGrid[p.x][p.y - 1] > 0) && (areaGrid[p.x][p.y - 1] < Constants.UNEXPLORED_NODE_ID)) {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x][p.y - 1]) {
@@ -621,7 +634,7 @@ public class Skeleton {
                         n++;
                     }
                 } else {
-                    n = -1;
+                    n--;
                 }
                 if ((areaGrid[p.x + 1][p.y - 1] > 0) && (areaGrid[p.x + 1][p.y - 1] < Constants.UNEXPLORED_NODE_ID)) {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x + 1][p.y - 1]) {
@@ -646,7 +659,7 @@ public class Skeleton {
                         ne++;
                     }
                 } else {
-                    ne = -1;
+                    ne--;
                 }
                 if ((areaGrid[p.x - 1][p.y] > 0) && (areaGrid[p.x - 1][p.y] < Constants.UNEXPLORED_NODE_ID)) {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x - 1][p.y]) {
@@ -671,7 +684,7 @@ public class Skeleton {
                         w++;
                     }
                 } else {
-                    w = -1;
+                    w--;
                 }
                 if ((areaGrid[p.x + 1][p.y] > 0) && (areaGrid[p.x + 1][p.y] < Constants.UNEXPLORED_NODE_ID)) {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x + 1][p.y]) {
@@ -696,7 +709,7 @@ public class Skeleton {
                         e++;
                     }
                 } else {
-                    e = -1;
+                    e--;
                 }
                 if ((areaGrid[p.x - 1][p.y + 1] > 0) && (areaGrid[p.x - 1][p.y + 1] < Constants.UNEXPLORED_NODE_ID)) {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x - 1][p.y + 1]) {
@@ -721,7 +734,7 @@ public class Skeleton {
                         sw++;
                     }
                 } else {
-                    sw = -1;
+                    sw--;
                 }
 
                 if ((areaGrid[p.x][p.y + 1] > 0) && (areaGrid[p.x][p.y + 1] < Constants.UNEXPLORED_NODE_ID)) {
@@ -747,7 +760,7 @@ public class Skeleton {
                         s++;
                     }
                 } else {
-                    s = -1;
+                    s--;
                 }
 
                 if ((areaGrid[p.x + 1][p.y + 1] > 0) && (areaGrid[p.x + 1][p.y + 1] < Constants.UNEXPLORED_NODE_ID)) {
@@ -773,9 +786,10 @@ public class Skeleton {
                         se++;
                     }
                 } else {
-                    se = -1;
+                    se--;
                 }
 
+                //The direction with the most occurences wins and may give the cell his nodeID
                 if (nw >= n && nw >= ne && nw >= w && nw >= e && nw >= sw && nw >= s && nw >= se) {
                     areaGrid[p.x][p.y] = areaGrid[p.x - 1][p.y - 1];
                 } else if (n >= nw && n >= ne && n >= w && n >= e && n >= sw && n >= s && n >= se) {
@@ -794,6 +808,7 @@ public class Skeleton {
                     areaGrid[p.x][p.y] = areaGrid[p.x + 1][p.y + 1];
                 }
                 if (areaGrid[p.x][p.y] == -1) {
+                    //unexplored won the competition... not useful!
                     areaGrid[p.x][p.y] = 0;
                 } else if ((areaGrid[p.x][p.y] > 0) && (areaGrid[p.x][p.y] < Constants.UNEXPLORED_NODE_ID)) {
                     occGrid.setFinalTopologicalMapCell(p.x, p.y);
@@ -810,30 +825,30 @@ public class Skeleton {
                             pointsOfInterest.remove(pnt);
                     }
                 }*/
-                if (pointsOfInterest.size() < 10000000) {
+                if (pointsOfInterest.size() < Math.max(10000000, (areaGrid.length * areaGrid[0].length) * 10)) {
                     if (areaGrid[p.x - 1][p.y] == 0) {
-                        pointsOfInterest.put(new Point(p.x - 1, p.y), true);
+                        pointsOfInterest.add(new Point(p.x - 1, p.y));
                     }
                     if (areaGrid[p.x + 1][p.y] == 0) {
-                        pointsOfInterest.put(new Point(p.x + 1, p.y), true);
+                        pointsOfInterest.add(new Point(p.x + 1, p.y));
                     }
                     if (areaGrid[p.x][p.y - 1] == 0) {
-                        pointsOfInterest.put(new Point(p.x, p.y - 1), true);
+                        pointsOfInterest.add(new Point(p.x, p.y - 1));
                     }
                     if (areaGrid[p.x][p.y + 1] == 0) {
-                        pointsOfInterest.put(new Point(p.x, p.y + 1), true);
+                        pointsOfInterest.add(new Point(p.x, p.y + 1));
                     }
                     if (areaGrid[p.x - 1][p.y - 1] == 0) {
-                        pointsOfInterest.put(new Point(p.x - 1, p.y - 1), true);
+                        pointsOfInterest.add(new Point(p.x - 1, p.y - 1));
                     }
                     if (areaGrid[p.x - 1][p.y + 1] == 0) {
-                        pointsOfInterest.put(new Point(p.x - 1, p.y + 1), true);
+                        pointsOfInterest.add(new Point(p.x - 1, p.y + 1));
                     }
                     if (areaGrid[p.x + 1][p.y - 1] == 0) {
-                        pointsOfInterest.put(new Point(p.x + 1, p.y - 1), true);
+                        pointsOfInterest.add(new Point(p.x + 1, p.y - 1));
                     }
                     if (areaGrid[p.x + 1][p.y + 1] == 0) {
-                        pointsOfInterest.put(new Point(p.x + 1, p.y + 1), true);
+                        pointsOfInterest.add(new Point(p.x + 1, p.y + 1));
                     }
                 } else {
                     System.err.println("!!!!TOPOLOGICAL map might contain errors, pointsofinterest queue exhausted!");
@@ -845,39 +860,38 @@ public class Skeleton {
         }
 
         //Are there some areas we haven't assigned to a node yet?
-        /*for (int i = 1; i < areaGrid.length-1; i++)
-            for (int j = 1; j < areaGrid[0].length-1; j++)
-            {
-                if (areaGrid[i][j] == 0)
-                {
-                    if ((areaGrid[i - 1][j] > 0)
-                        || (areaGrid[i + 1][j] > 0)
-                        || (areaGrid[i][j - 1] > 0)
-                        || (areaGrid[i][j + 1] > 0)
-                        || (areaGrid[i - 1][j + 1] > 0)
-                        || (areaGrid[i - 1][j - 1] > 0)
-                        || (areaGrid[i + 1][j - 1] > 0)
-                        || (areaGrid[i + 1][j + 1] > 0))
-                        pointsOfInterest.add(new Point(i, j));
+        //Fill with unexplored to avoid holes in the map
+        /*for (int i = 1; i < areaGrid.length - 1; i++) {
+            for (int j = 1; j < areaGrid[0].length - 1; j++) {
+                if (areaGrid[i][j] == 0) {
+                    areaGrid[i][j] = Constants.UNEXPLORED_NODE_ID;
                 }
-            }*/
+            }
+        }*/
         return areaGrid;
     }
 
-    public static LinkedList<Point> findKeyAreaBorders(int[][] keyAreas) {
+    /**
+     * test every cell if one surrounding cell has another id (not obstacle or freeSpace). Add these
+     * cells to the returned List
+     *
+     * @param areaGrid
+     * @return
+     */
+    public static LinkedList<Point> findKeyAreaBorders(int[][] areaGrid) {
         LinkedList<Point> borderPts = new LinkedList<Point>();
-        for (int i = 0; i < keyAreas.length; i++) {
-            for (int j = 0; j < keyAreas[0].length; j++) {
-                if (keyAreas[i][j] > 0) {
-                    int curCell = keyAreas[i][j];
-                    if (keyAreas[i + 1][j] != curCell
-                            || keyAreas[i - 1][j] != curCell
-                            || keyAreas[i][j - 1] != curCell
-                            || keyAreas[i][j + 1] != curCell
-                            || keyAreas[i - 1][j - 1] != curCell
-                            || keyAreas[i - 1][j + 1] != curCell
-                            || keyAreas[i + 1][j - 1] != curCell
-                            || keyAreas[i + 1][j + 1] != curCell) {
+        for (int i = 0; i < areaGrid.length; i++) {
+            for (int j = 0; j < areaGrid[0].length; j++) {
+                if (areaGrid[i][j] > 0) {
+                    int curCell = areaGrid[i][j];
+                    if (areaGrid[i + 1][j] != curCell
+                            || areaGrid[i - 1][j] != curCell
+                            || areaGrid[i][j - 1] != curCell
+                            || areaGrid[i][j + 1] != curCell
+                            || areaGrid[i - 1][j - 1] != curCell
+                            || areaGrid[i - 1][j + 1] != curCell
+                            || areaGrid[i + 1][j - 1] != curCell
+                            || areaGrid[i + 1][j + 1] != curCell) {
                         borderPts.add(new Point(i, j));
                     }
 

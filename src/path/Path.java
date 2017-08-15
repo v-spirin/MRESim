@@ -63,10 +63,9 @@ import simulator.ExplorationImage;
 public class Path {
 
     public boolean found;
-    private Point start;
-    private Point goal;
+    private Point startPoint;
+    private Point goalPoint;
     private OccupancyGrid grid;
-    private boolean jump_allowed;
     private boolean limit;
 
     List<Point> reversePathPoints;
@@ -80,270 +79,130 @@ public class Path {
     private boolean jump;
 
     public Path(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit, boolean jump) {
-        this.start = startpoint;
-        this.goal = endpoint;
+        this.startPoint = startpoint;
+        this.goalPoint = endpoint;
         this.limit = limit;
         this.grid = agentGrid;
         this.jump = jump;
+        this.tMap = null;
+        this.pathPoints = new LinkedList<Point>();
+        this.reversePathPoints = null;
+        this.length = 0;
+        this.found = false;
+        this.allPathPixels = null;
         if (!jump) {
-            calculateAStarPath();
+            this.found = calculateAStarPath();
         } else {
-            calculateJumpPath();
-            if (!found) {
-                calculateAStarPath();
+            this.found = calculateJumpPath();
+            if (!this.found) {
+                this.found = calculateAStarPath();
             }
         }
     }
 
     public Path(OccupancyGrid agentGrid, TopologicalMap tMap,
-            Point startpoint, Point endpoint) {
-        int[][] areaGrid = tMap.getAreaGrid();
-        HashMap<Integer, TopologicalNode> topologicalNodes = tMap.getTopologicalNodes();
-
-        this.start = startpoint;
-        this.goal = endpoint;
+            Point startpoint, Point endpoint, boolean limit, boolean jump) {
+        this.startPoint = startpoint;
+        this.goalPoint = endpoint;
         this.tMap = tMap;
         this.grid = agentGrid;
         this.pathPoints = new LinkedList<Point>();
+        this.pathNodes = new LinkedList<TopologicalNode>();
+        this.pathNodesReverse = new LinkedList<TopologicalNode>();
+
+        this.limit = false;
+        this.jump = true;
+        this.found = false;
+        this.reversePathPoints = null;
+        this.allPathPixels = null;
+        this.length = 0;
+
+        //Find which area the agent starts from/want to go to
+        int[][] areaGrid = tMap.getAreaGrid();
+        HashMap<Integer, TopologicalNode> topologicalNodes = tMap.getTopologicalNodes(false);
         TopologicalNode startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
         TopologicalNode goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
 
-        if ((startNode == null) || (goalNode == null)) //Something wrong with building topological map
-        {
-            if (startNode == null) {
-                if (agentGrid.obstacleAt(startpoint)) {
-                    // there cannot be an obstacle here, as we are planning a path from this point!
-                    agentGrid.setNoObstacleAt(startpoint);
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println("There was an obstacle at startpoint! Aborting.");
-                    }
-                    return;
-                }
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println("startNode is null: " + startpoint + ", aborting");
-                }
+        if ((startNode == null) || (goalNode == null)) {
+            topologicalNodes = tMap.getTopologicalNodes(true);
+            areaGrid = tMap.getAreaGrid();
+            startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
+            goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
+            if ((startNode == null) || (goalNode == null)) {
+                System.err.println(this + "Error: startNode: " + startNode + " , goalNode: " + goalNode);
+                return;
             }
-            if (goalNode == null) {
-                if (agentGrid.obstacleAt(endpoint)) {
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println("There was an obstacle at goalpoint! Aborting.");
-                    }
-                    return;
-                }
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println("goalNode is null: " + endpoint + ", aborting");
-                }
-            }
-            return;
         }
-
-        // not sure why this can happen, but consider those nodes unexplored as workaround
-        if (!startNode.equals(goalNode) && (startNode.getListOfNeighbours().isEmpty())) {
-            for (int[] areaGrid1 : areaGrid) {
-                for (int j = 0; j < areaGrid[0].length; j++) {
-                    if (areaGrid1[j] == startNode.getID()) {
-                        areaGrid1[j] = Constants.UNEXPLORED_NODE_ID;
-                    }
-                }
+        if (startNode.getID() == Constants.UNEXPLORED_NODE_ID || goalNode.getID() == Constants.UNEXPLORED_NODE_ID) {
+            topologicalNodes = tMap.getTopologicalNodes(true);
+            areaGrid = tMap.getAreaGrid();
+            startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
+            goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
+            if (startNode.getID() == Constants.UNEXPLORED_NODE_ID || goalNode.getID() == Constants.UNEXPLORED_NODE_ID) {
+                System.err.println(this + "Error after TopoNodesUpdate: startNode: " + startNode + " , goalNode: " + goalNode);
+                return;
             }
-            startNode.setID(Constants.UNEXPLORED_NODE_ID);
+        }
+        if (!startNode.equals(goalNode) && (startNode.getListOfNeighbours().isEmpty())) {
+            System.err.println(this + "Error: startNode: " + startNode + " has no neighbors, but is not the only node");
+            return;
         }
 
         if (!startNode.equals(goalNode) && (goalNode.getListOfNeighbours().isEmpty())) {
-            for (int[] areaGrid1 : areaGrid) {
-                for (int j = 0; j < areaGrid[0].length; j++) {
-                    if (areaGrid1[j] == goalNode.getID()) {
-                        areaGrid1[j] = Constants.UNEXPLORED_NODE_ID;
-                    }
-                }
-            }
-            goalNode.setID(Constants.UNEXPLORED_NODE_ID);
+            System.err.println(this + "Error: goalNode: " + goalNode + " has no neighbors, but is not the only node");
+            return;
         }
 
-        if (startNode.equals(goalNode)
-                || (startNode.getListOfNeighbours().contains(goalNode) && (goalNode.getID() != Constants.UNEXPLORED_NODE_ID))
-                || ((startNode.getID() == Constants.UNEXPLORED_NODE_ID) && (goalNode.getID() == Constants.UNEXPLORED_NODE_ID))) {
-            boolean pathFound = false; //getJumpPath(agentGrid, startpoint, endpoint, limit);
-            if (!pathFound) {
-                pathFound = calculateAStarPath();
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println("Jump path did not work either... trying A* path");
-                }
-                if (!pathFound) {
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println("Cannot use topological map, startpoint is " + startpoint.toString()
-                                + ", endpoint is " + endpoint.toString() + ", trying A*...");
-                    }
-                    outputPathError();
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println("A* and JumpPath did not work either... :(");
-                    }
-                    outputPathError();
+        if (startNode.equals(goalNode)) {
+            if (startpoint.equals(goalPoint)) {
+                this.pathPoints.add(endpoint);
+                this.length = 1;
+                this.found = true;
+            }
+            //Path inside an area, normal planning
+            if (!jump) {
+                this.found = calculateAStarPath();
+            } else {
+                this.found = calculateJumpPath();
+                if (!this.found) {
+                    this.found = calculateAStarPath();
                 }
             }
             return;
         }
 
-        Path p0 = null;
-        Path p3 = null;
-
-        if (startNode.getID() == Constants.UNEXPLORED_NODE_ID) {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println("Start point " + startpoint + " in unexplored space!");
-            }
-            findNearestExploredNode(areaGrid, topologicalNodes);
-            if (pathPoints.isEmpty()) {
-                return;
-            }
-            Point lastPoint = pathPoints.get(pathPoints.size() - 1);
-            //System.out.println("New start point is " + lastPoint);
-            startNode = topologicalNodes.get(areaGrid[lastPoint.x][lastPoint.y]);
-            p0 = new Path(agentGrid, startpoint, lastPoint, false, false);
-            if (!p0.found) {
-                found = false;
-                outputPathError();
-                return;
-            }
-            startpoint = lastPoint;
-        }
-        if (goalNode.getID() == Constants.UNEXPLORED_NODE_ID) {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println("Goal point " + endpoint + " in unexplored space!");
-            }
-            findNearestExploredNode(areaGrid, topologicalNodes);
-            if (pathPoints.isEmpty()) {
-                return;
-            }
-            Point lastPoint = pathPoints.get(pathPoints.size() - 1);
-            //System.out.println("New goal point is " + lastPoint);
-            goalNode = topologicalNodes.get(areaGrid[lastPoint.x][lastPoint.y]);
-            p3 = new Path(agentGrid, lastPoint, endpoint, false, false);
-            if (!p3.found) {
-                found = false;
-                p3.outputPathError();
-                return;
-            }
-            endpoint = lastPoint;
-        }
-
-        if ((startNode == null) || (goalNode == null) || startNode.equals(goalNode) || startNode.getListOfNeighbours().contains(goalNode)
-                || ((startNode.getID() == Constants.UNEXPLORED_NODE_ID) && (goalNode.getID() == Constants.UNEXPLORED_NODE_ID))) {
-            Path p1 = new Path(agentGrid, startpoint, endpoint, false, true);
-            if (!p1.found) {
-                found = false;
-                outputPathError();
-                return;
-            }
-            pathPoints = new LinkedList<Point>();
-            if (p0 != null) {
-                for (Point p : p0.getPoints()) {
-                    pathPoints.add(p);
+        // This is the standard-case:
+        boolean foundNodePath = calculateAStarNodePath(startNode, goalNode);
+        if (!foundNodePath) {
+            //Again normal planning as there was no path found using nodes
+            if (!jump) {
+                this.found = calculateAStarPath();
+            } else {
+                this.found = calculateJumpPath();
+                if (!this.found) {
+                    this.found = calculateAStarPath();
                 }
             }
-            p1.getPoints().stream().forEach((p) -> {
-                pathPoints.add(p);
-            });
-            if (p3 != null) {
-                for (Point p : p3.getPoints()) {
-                    pathPoints.add(p);
-                }
+        } else {
+            //First find path from startPoint to startNode
+            Path startPath = new Path(agentGrid, startPoint, startNode.getPosition(), limit, jump);
+            this.pathPoints.addAll(startPath.getPoints());
+            //Second add path from StartNode to goalNode, this is just adding precomputed pathes
+            for (int i = 0; i < pathNodes.size() - 1; i++) {
+                Path tempPath = pathNodes.get(i).getPathToNeighbour(pathNodes.get(i + 1));
+                this.pathPoints.addAll(tempPath.getPoints());
             }
-            return;
-        }
-
-        calculateAStarPath(startNode, goalNode);
-        if (pathNodes.isEmpty()) //No path found
-        {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println("Could not find topological path, startpoint is " + startpoint.toString()
-                        + ", endpoint is " + endpoint.toString() + ", trying A*...");
-            }
-            outputPathError();
-            boolean pathFound = calculateAStarPath();
-            if (!pathFound) {
-                pathFound = calculateJumpPath();
-                if (!pathFound) {
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println("A* and JumpPath did not work either... :(");
-                    }
-                    outputPathError();
-                }
-            } else if (Constants.DEBUG_OUTPUT) {
-                System.out.println("A* worked! Successfully recovered full path");
-            }
-            return;
-        }
-        Path p1 = new Path(agentGrid, startpoint, (Point) pathNodes.get(1).getPosition().clone(), false, true);
-        Path p2 = new Path(agentGrid, (Point) pathNodes.get(pathNodes.size() - 2).getPosition().clone(), endpoint, false, true);
-
-        if (!p1.found) {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println("Could not find p1! From " + startpoint + " to " + (Point) pathNodes.get(1).getPosition());
-            }
-            p1.outputPathError();
-            found = false;
-            return;
-        }
-
-        if (!p2.found) {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println("Could not find p2! From " + (Point) pathNodes.get(pathNodes.size() - 2).getPosition()
-                        + " to " + endpoint);
-            }
-            p2.outputPathError();
-            found = false;
-            return;
-        }
-
-        pathPoints = new LinkedList<Point>();
-        int index = 0;
-        if (p0 != null) {
-            for (Point p : p0.getPoints()) {
-                pathPoints.add(p);
+            //Third find path from goalNode to goalPoint
+            Path goalPath = new Path(agentGrid, goalNode.getPosition(), goalPoint, limit, jump);
+            this.pathPoints.addAll(goalPath.getPoints());
+            if (startPath.found && goalPath.found) {
+                this.found = true;
             }
         }
-        for (TopologicalNode n : pathNodes) {
-            //node only
-            //pathPoints.add(n.getPosition());
 
-            if (n.equals(startNode)) {
-                p1.getPoints().stream().forEach((p) -> {
-                    pathPoints.add(p);
-                });
-            }
-
-            if (!n.equals(startNode) && !n.equals(goalNode) && !pathNodes.get(index + 1).equals(goalNode)) {
-                for (Point p : n.getPathToNeighbour(pathNodes.get(index + 1)).getPoints()) {
-                    pathPoints.add((Point) p.clone());
-                }
-            }
-
-            if (n.equals(goalNode)) {
-                p2.getPoints().stream().forEach((p) -> {
-                    pathPoints.add(p);
-                });
-            }
-
-            index++;
-        }
-        if (p3 != null) {
-            for (Point p : p3.getPoints()) {
-                pathPoints.add(p);
-            }
-        }
-        recalcLength();
-
-        //System.out.println("Path length is " + this.getLength());
     }
 
-    final public void calculateAStarPath(TopologicalNode startNode, TopologicalNode goalNode) {
-        found = false;
-        pathNodesReverse = new LinkedList<TopologicalNode>();
-        pathNodes = new LinkedList<TopologicalNode>();
-
-        long realtimeStart = System.currentTimeMillis();
-        //System.out.print(Constants.INDENT + "Planning path from " + startNode.getID() + " to " + goalNode.getID() + ". ");
-
+    final public boolean calculateAStarNodePath(TopologicalNode startNode, TopologicalNode goalNode) {
         //implementing http://en.wikipedia.org/wiki/A*#Pseudocode
         List<TopologicalNode> closedSet = new LinkedList<TopologicalNode>();
         List<TopologicalNode> openSet = new LinkedList<TopologicalNode>();
@@ -360,61 +219,65 @@ public class Path {
         f_score.put(startNode, g_score.get(startNode) + heuristicCostEstimate(startNode, goalNode));
 
         while (!openSet.isEmpty()) {
-            long time_elapsed = System.currentTimeMillis() - realtimeStart;
-
             int current_index = getLowestScoreInList(openSet, f_score);
             current = openSet.get(current_index);
             if (current.equals(goalNode)) {
-                //came_from.put(goalNode, current);
-                //System.out.println("Found topological node path, reconstructing...");
-                reconstructPath(came_from, goalNode);
-                break;
+                reconstructNodePath(came_from, goalNode);
+                return true;
             }
 
             openSet.remove(current_index);
             closedSet.add(current);
 
             for (TopologicalNode neighbour : current.getListOfNeighbours()) {
-                if (neighbour.getID() != Constants.UNEXPLORED_NODE_ID) {
-                    if (closedSet.contains(neighbour)) {
-                        continue;
-                    }
-                    tentative_g_score = g_score.get(current) + current.getPathToNeighbour(neighbour).getLength();
+                if (neighbour.getID() == Constants.UNEXPLORED_NODE_ID || closedSet.contains(neighbour)) {
+                    continue;
+                }
+                tentative_g_score = g_score.get(current) + current.getPathToNeighbour(neighbour).getLength();
 
-                    if (!openSet.contains(neighbour) || !g_score.containsKey(neighbour) || (tentative_g_score < g_score.get(neighbour))) {
-                        if (!openSet.contains(neighbour)) {
-                            openSet.add(neighbour);
-                        }
-                        if (!current.equals(neighbour)) {
-                            came_from.put(neighbour, current);
-                        }
-                        g_score.put(neighbour, tentative_g_score);
-                        f_score.put(neighbour, g_score.get(neighbour) + heuristicCostEstimate(neighbour, goalNode));
+                if (!openSet.contains(neighbour) || !g_score.containsKey(neighbour) || (tentative_g_score < g_score.get(neighbour))) {
+                    if (!openSet.contains(neighbour)) {
+                        openSet.add(neighbour);
                     }
+                    if (!current.equals(neighbour)) {
+                        came_from.put(neighbour, current);
+                    } else {
+                        System.err.println("How can this be??");
+                    }
+                    g_score.put(neighbour, tentative_g_score);
+                    f_score.put(neighbour, g_score.get(neighbour) + heuristicCostEstimate(neighbour, goalNode));
                 }
             }
-        }
 
-        //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        }
+        return false;
+    }
+
+    private void reconstructNodePath(HashMap<TopologicalNode, TopologicalNode> came_from, TopologicalNode current_node) {
+        while (came_from.containsKey(current_node) && (came_from.get(current_node) != current_node)) {
+            pathNodesReverse.add(current_node);
+            current_node = came_from.get(current_node);
+        }
+        pathNodesReverse.add(current_node);
+        for (int i = pathNodesReverse.size() - 1; i >= 0; i--) {
+            pathNodes.add(pathNodesReverse.get(i));
+        }
     }
 
     final public boolean calculateAStarPath() {
-        found = false;
         pathPoints = new LinkedList<Point>();
         reversePathPoints = new LinkedList<Point>();
 
-        /*if (start == goal)
+        /*if (startPoint == goalPoint)
         {
-            pathPoints.add(goal);
+            pathPoints.add(goalPoint);
             found = true;
             length = 0;
             return;
         }*/
         long realtimeStart = System.currentTimeMillis();
-        //System.out.print(Constants.INDENT + "Planning path from " + start.x + "," + start.y + " to " + goal.x + "," + goal.y + ". ");
-        if ((goal.x == 0) && (goal.y == 0)) //something went really wrong and it takes forever to calculate/fail
+        if ((goalPoint.x == 0) && (goalPoint.y == 0)) //something went really wrong and it takes forever to calculate/fail
         {
-            //System.out.print("Goal is (0, 0), something went wrong, aborting path planning...");
             return false;
         }
 
@@ -422,7 +285,7 @@ public class Path {
         List<Point> closedSet = new LinkedList<Point>();
         List<Point> openSet = new LinkedList<Point>();
 
-        openSet.add(start);
+        openSet.add(startPoint);
 
         HashMap<Point, Point> came_from = new HashMap<Point, Point>();
         HashMap<Point, Double> g_score = new HashMap<Point, Double>();
@@ -430,27 +293,26 @@ public class Path {
         Point current;
         double tentative_g_score;
 
-        g_score.put(start, 0.0);
-        f_score.put(start, g_score.get(start) + heuristicCostEstimate(start, goal));
+        g_score.put(startPoint, 0.0);
+        f_score.put(startPoint, g_score.get(startPoint) + heuristicCostEstimate(startPoint, goalPoint));
 
         boolean limit_hit = false;
 
         while (!openSet.isEmpty()) {
             long time_elapsed = System.currentTimeMillis() - realtimeStart;
             if ((time_elapsed > Constants.MAX_PATH_SEARCH_TIME) /*&& (limit)*/) {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println("Took too long (A*), startpoint is " + start.toString()
-                            + ", endpoint is " + goal.toString() + "time elapsed: " + time_elapsed + "ms.");
-                }
+                System.err.println("Took too long (A*), startpoint is " + startPoint.toString()
+                        + ", endpoint is " + goalPoint.toString() + "time elapsed: " + time_elapsed + "ms.");
+
                 outputPathError();
                 limit_hit = true;
                 break;
             }
             int current_index = getLowestScoreInList(openSet, f_score);
             current = openSet.get(current_index);
-            if (current.distance(goal) < Constants.STEP_SIZE * 2) {
-                came_from.put(goal, current);
-                reconstructPath(came_from, goal);
+            if (current.distance(goalPoint) < Constants.STEP_SIZE * 2) {
+                came_from.put(goalPoint, current);
+                reconstructPath(came_from, goalPoint);
                 break;
             }
 
@@ -469,33 +331,44 @@ public class Path {
                     }
                     came_from.put(neighbour, current);
                     g_score.put(neighbour, tentative_g_score);
-                    f_score.put(neighbour, g_score.get(neighbour) + heuristicCostEstimate(neighbour, goal));
+                    f_score.put(neighbour, g_score.get(neighbour) + heuristicCostEstimate(neighbour, goalPoint));
                 }
             }
         }
         recalcLength();
 
         return !limit_hit;
-        //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+    }
+
+    private void reconstructPath(HashMap<Point, Point> came_from, Point current_node) {
+        while (came_from.containsKey(current_node) && (came_from.get(current_node) != current_node)) {
+            pathPoints.add(current_node);
+            current_node = came_from.get(current_node);
+        }
+        pathPoints.add(current_node);
+        for (int i = pathPoints.size() - 1; i >= 0; i--) {
+            reversePathPoints.add(pathPoints.get(i));
+        }
+        reverse();
+        found = true;
+        recalcLength();
     }
 
     final public boolean calculateJumpPath() {
-        found = false;
         pathPoints = new LinkedList<Point>();
         reversePathPoints = new LinkedList<Point>();
 
-        /*if (start == goal)
+        /*if (startPoint == goalPoint)
         {
-            pathPoints.add(goal);
+            pathPoints.add(goalPoint);
             found = true;
             length = 0;
             return;
         }*/
         long realtimeStart = System.currentTimeMillis();
-        //System.out.print(Constants.INDENT + "Planning jump path from " + start.x + "," + start.y + " to " + goal.x + "," + goal.y + ". ");
-        if ((goal.x == 0) && (goal.y == 0)) //something went really wrong and it takes forever to calculate/fail
+        if ((goalPoint.x == 0) && (goalPoint.y == 0)) //something went really wrong and it takes forever to calculate/fail
         {
-            System.out.print("Goal is (0, 0), something went wrong, aborting path planning...");
+            System.err.print("Goal is (0, 0), something went wrong, aborting path planning...");
             return false;
         }
 
@@ -503,7 +376,7 @@ public class Path {
         List<Point> closedSet = new LinkedList<Point>();
         List<Point> openSet = new LinkedList<Point>();
 
-        openSet.add(start);
+        openSet.add(startPoint);
 
         HashMap<Point, Point> came_from = new HashMap<Point, Point>();
         HashMap<Point, Double> g_score = new HashMap<Point, Double>();
@@ -511,25 +384,23 @@ public class Path {
         Point current;
         double tentative_g_score;
 
-        g_score.put(start, 0.0);
-        f_score.put(start, g_score.get(start) + heuristicCostEstimate(start, goal));
+        g_score.put(startPoint, 0.0);
+        f_score.put(startPoint, g_score.get(startPoint) + heuristicCostEstimate(startPoint, goalPoint));
 
         boolean limit_hit = false;
 
         while (!openSet.isEmpty()) {
             long time_elapsed = System.currentTimeMillis() - realtimeStart;
             if ((time_elapsed > Constants.MAX_PATH_SEARCH_TIME) && (limit)) {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println("Took too long, time elapsed: " + time_elapsed + "ms.");
-                }
+                System.err.println("Took too long, time elapsed: " + time_elapsed + "ms.");
                 limit_hit = true;
                 break;
             }
             int current_index = getLowestScoreInList(openSet, f_score);
             current = openSet.get(current_index);
-            if (current.distance(goal) <= 2 * Constants.STEP_SIZE) {
-                came_from.put(goal, current);
-                reconstructJumpPath(came_from, goal);
+            if (current.distance(goalPoint) <= 2 * Constants.STEP_SIZE) {
+                came_from.put(goalPoint, current);
+                reconstructJumpPath(came_from, goalPoint);
                 break;
             }
 
@@ -552,15 +423,65 @@ public class Path {
                         }
                         came_from.put(jumpPoint, current);
                         g_score.put(jumpPoint, tentative_g_score);
-                        f_score.put(jumpPoint, g_score.get(jumpPoint) + heuristicCostEstimate(jumpPoint, goal));
+                        f_score.put(jumpPoint, g_score.get(jumpPoint) + heuristicCostEstimate(jumpPoint, goalPoint));
                     }
                 }
             }
         }
         recalcLength();
 
-        //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         return !limit_hit;
+    }
+
+    private void reconstructJumpPath(HashMap<Point, Point> came_from, Point current_node) {
+        while (came_from.containsKey(current_node) && (came_from.get(current_node) != current_node)) {
+            if (!pathPoints.isEmpty()) {
+                LinkedList<Point> pts = pointsAlongSegment(pathPoints.get(pathPoints.size() - 1), current_node);
+
+                if (pts.get(0).distance(current_node) < pts.get(pts.size() - 1).distance(current_node)) //points are in reverse
+                {
+                    for (int i = pts.size() - 2; i >= 0; i--) {
+                        //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0)
+                        //        && (pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) <= 2))
+                        pathPoints.add(pts.get(i));
+                    }
+                } else {
+                    for (int i = 1; i < pts.size(); i++) {
+                        //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0)
+                        //        && (pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) <= 2))
+                        pathPoints.add(pts.get(i));
+                    }
+                }
+            } else {
+                pathPoints.add(current_node);
+            }
+            current_node = came_from.get(current_node);
+        }
+        if (!pathPoints.isEmpty() && pathPoints.size() != 1) {
+            LinkedList<Point> pts = pointsAlongSegment(pathPoints.get(pathPoints.size() - 1), current_node);
+
+            if (pts.get(0).distance(current_node) < pts.get(pts.size() - 1).distance(current_node)) //points are in reverse
+            {
+                for (int i = pts.size() - 2; i >= 0; i--) {
+                    //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0)
+                    //        && (pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) <= 2))
+                    pathPoints.add(pts.get(i));
+                }
+            } else {
+                for (int i = 1; i < pts.size(); i++) {
+                    //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0)
+                    //        && (pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) <= 2))
+                    pathPoints.add(pts.get(i));
+                }
+            }
+        } else {
+            pathPoints.add(current_node);
+        }
+        for (int i = pathPoints.size() - 1; i >= 0; i--) {
+            reversePathPoints.add(pathPoints.get(i));
+        }
+        reverse();
+        recalcLength();
     }
 
     /**
@@ -581,7 +502,7 @@ public class Path {
 
         if (!(grid.locationExists(x, y) && grid.freeSpaceAt(x, y))) {
             return null;
-        } else if (neighbour.distance(goal) <= 1) {
+        } else if (neighbour.distance(goalPoint) <= 1) {
             return new Point(x, y);
         }
 
@@ -715,85 +636,12 @@ public class Path {
         return validNeighbours;
     }
 
-    private void findNearestExploredNode(int[][] areaGrid, HashMap<Integer, TopologicalNode> topologicalNodes) {
-        found = false;
-        pathPoints = new LinkedList<Point>();
-        reversePathPoints = new LinkedList<Point>();
-
-        /*if (start == goal)
-        {
-            pathPoints.add(goal);
-            found = true;
-            length = 0;
-            return;
-        }*/
-        long realtimeStart = System.currentTimeMillis();
-        //System.out.print(Constants.INDENT + "Planning path from " + start.x + "," + start.y + " to " + goal.x + "," + goal.y + ". ");
-        if ((goal.x == 0) && (goal.y == 0)) //something went really wrong and it takes forever to calculate/fail
-        {
-            //System.out.print("Goal is (0, 0), something went wrong, aborting path planning...");
-            return;
-        }
-
-        //implementing http://en.wikipedia.org/wiki/A*#Pseudocode
-        List<Point> closedSet = new LinkedList<Point>();
-        List<Point> openSet = new LinkedList<Point>();
-
-        openSet.add(start);
-
-        HashMap<Point, Point> came_from = new HashMap<Point, Point>();
-        HashMap<Point, Double> g_score = new HashMap<Point, Double>();
-        HashMap<Point, Double> f_score = new HashMap<Point, Double>();
-        Point current;
-        double tentative_g_score;
-
-        g_score.put(start, 0.0);
-        f_score.put(start, g_score.get(start) + heuristicCostEstimate(start, goal));
-
-        while (!openSet.isEmpty()) {
-            long time_elapsed = System.currentTimeMillis() - realtimeStart;
-            if (time_elapsed > Constants.MAX_PATH_SEARCH_TIME) {
-                //System.out.println("Took too long, time elapsed: " + time_elapsed + "ms.");
-                break;
-            }
-            int current_index = getLowestScoreInList(openSet, f_score);
-            current = openSet.get(current_index);
-            if ((areaGrid[current.x][current.y] != Constants.UNEXPLORED_NODE_ID) && (topologicalNodes.get(areaGrid[current.x][current.y]) != null)
-                    && (!topologicalNodes.get(areaGrid[current.x][current.y]).getListOfNeighbours().isEmpty())) {
-                //came_from.put(goal, current);
-                reconstructPath(came_from, current);
-                break;
-            }
-
-            openSet.remove(current_index);
-            closedSet.add(current);
-
-            for (Point neighbour : neighbours(current)) {
-                if (closedSet.contains(neighbour)) {
-                    continue;
-                }
-                tentative_g_score = g_score.get(current) + current.distance(neighbour);
-
-                if (!openSet.contains(neighbour) || !g_score.containsKey(neighbour) || (tentative_g_score < g_score.get(neighbour))) {
-                    if (!openSet.contains(neighbour)) {
-                        openSet.add(neighbour);
-                    }
-                    came_from.put(neighbour, current);
-                    g_score.put(neighbour, tentative_g_score);
-                    f_score.put(neighbour, g_score.get(neighbour) + heuristicCostEstimate(neighbour, goal));
-                }
-            }
-        }
-
-        //System.out.println("Took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-    }
-
     public Point getStartPoint() {
-        return start;
+        return startPoint;
     }
 
     public Point getGoalPoint() {
-        return goal;
+        return goalPoint;
     }
 
     private double heuristicCostEstimate(Point start, Point goal) {
@@ -802,92 +650,6 @@ public class Path {
 
     private double heuristicCostEstimate(TopologicalNode startNode, TopologicalNode goalNode) {
         return startNode.getPosition().distance(goalNode.getPosition());
-    }
-
-    private void reconstructPath(HashMap<Point, Point> came_from, Point current_node) {
-        while (came_from.containsKey(current_node) && (came_from.get(current_node) != current_node)) {
-            pathPoints.add(current_node);
-            current_node = came_from.get(current_node);
-        }
-        pathPoints.add(current_node);
-        for (int i = pathPoints.size() - 1; i >= 0; i--) {
-            reversePathPoints.add(pathPoints.get(i));
-        }
-        reverse();
-        found = true;
-        recalcLength();
-    }
-
-    private void reconstructJumpPath(HashMap<Point, Point> came_from, Point current_node) {
-        while (came_from.containsKey(current_node) && (came_from.get(current_node) != current_node)) {
-            if (!pathPoints.isEmpty()) {
-                LinkedList<Point> pts = pointsAlongSegment(pathPoints.get(pathPoints.size() - 1), current_node);
-
-                if (pts.get(0).distance(current_node) < pts.get(pts.size() - 1).distance(current_node)) //points are in reverse
-                {
-                    for (int i = pts.size() - 2; i >= 0; i--) {
-                        //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0)
-                        //        && (pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) <= 2))
-                        pathPoints.add(pts.get(i));
-                        //else
-                        //    System.out.println("Point discarded.");
-                    }
-                } else {
-                    for (int i = 1; i < pts.size(); i++) {
-                        //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0)
-                        //        && (pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) <= 2))
-                        pathPoints.add(pts.get(i));
-                        //else
-                        //    System.out.println("Point discarded.");
-                    }
-                }
-            } else {
-                pathPoints.add(current_node);
-            }
-            current_node = came_from.get(current_node);
-        }
-        if (!pathPoints.isEmpty()) {
-            LinkedList<Point> pts = pointsAlongSegment(pathPoints.get(pathPoints.size() - 1), current_node);
-
-            if (pts.get(0).distance(current_node) < pts.get(pts.size() - 1).distance(current_node)) //points are in reverse
-            {
-                for (int i = pts.size() - 2; i >= 0; i--) {
-                    //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0)
-                    //        && (pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) <= 2))
-                    pathPoints.add(pts.get(i));
-                    //else
-                    //    System.out.println("Point discarded.");
-                }
-            } else {
-                for (int i = 1; i < pts.size(); i++) {
-                    //if ((pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) > 0)
-                    //        && (pathPoints.get(pathPoints.size() - 1).distance(pts.get(i)) <= 2))
-                    pathPoints.add(pts.get(i));
-                    //else
-                    //    System.out.println("Point discarded.");
-                }
-            }
-        } else {
-            pathPoints.add(current_node);
-        }
-        for (int i = pathPoints.size() - 1; i >= 0; i--) {
-            reversePathPoints.add(pathPoints.get(i));
-        }
-        reverse();
-        found = true;
-        recalcLength();
-    }
-
-    private void reconstructPath(HashMap<TopologicalNode, TopologicalNode> came_from, TopologicalNode current_node) {
-        while (came_from.containsKey(current_node) && (came_from.get(current_node) != current_node)) {
-            pathNodesReverse.add(current_node);
-            current_node = came_from.get(current_node);
-        }
-        pathNodesReverse.add(current_node);
-        for (int i = pathNodesReverse.size() - 1; i >= 0; i--) {
-            pathNodes.add(pathNodesReverse.get(i));
-        }
-        found = true;
     }
 
     private int getLowestScoreInList(List<?> set, HashMap<?, Double> score) {
@@ -920,13 +682,15 @@ public class Path {
     }
 
     public LinkedList<Point> getAllPathPixels() {
-        allPathPixels = new LinkedList<>();
-        Iterator<Point> i = pathPoints.iterator();
-        Point curr, prev = start;
-        while (i.hasNext()) {
-            curr = i.next();
-            allPathPixels = mergeLists(allPathPixels, pointsAlongSegment(prev, curr));
-            prev = curr;
+        if (allPathPixels == null) {
+            allPathPixels = new LinkedList<>();
+            Iterator<Point> i = pathPoints.iterator();
+            Point curr, prev = startPoint;
+            while (i.hasNext()) {
+                curr = i.next();
+                allPathPixels = mergeLists(allPathPixels, pointsAlongSegment(prev, curr));
+                prev = curr;
+            }
         }
         return allPathPixels;
     }
@@ -938,7 +702,7 @@ public class Path {
     }
 
     public Path getReversePath() {
-        Path p = new Path(grid, goal, start, limit, jump_allowed);
+        Path p = new Path(grid, goalPoint, startPoint, limit, jump);
         p.pathPoints = reversePathPoints;
         p.reversePathPoints = pathPoints;
         p.found = found;
@@ -1004,17 +768,17 @@ public class Path {
                     }
                 }
 
-                // Check 4: is it not too close to wall (unless it's a goal)
+                // Check 4: is it not too close to wall (unless it's a goalPoint)
                 /*if(grid.obstacleWithinDistance(neighbourX, neighbourY, Constants.WALL_DISTANCE) &&
-                   !(goal.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE ) &&
-                   !(start.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE))
+                   !(goalPoint.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE ) &&
+                   !(startPoint.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE))
                     continue;*/
                 // Check 5: avoid running into teammates
                 /*teammateCollision = false;
                 for(TeammateAgent t: agent.getAllTeammates().values())
                     if(t.isInDirectRange() &&
                        t.distanceTo(new Point(neighbourX, neighbourY)) < 2*Constants.WALL_DISTANCE &&
-                       !(goal.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE )) {
+                       !(goalPoint.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE )) {
                         teammateCollision = true;
                         break;
                     }
@@ -1028,10 +792,9 @@ public class Path {
         /*if(grid.locationExists(neighbourX, neighbourY) &&
                    grid.directLinePossible(pt.x, pt.y, neighbourX, neighbourY) &&
                    (!grid.obstacleWithinDistance(neighbourX, neighbourY, Constants.WALL_DISTANCE) ||
-                    goal.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE ) &&
+                    goalPoint.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE ) &&
                     grid.freeSpaceAt(neighbourX, neighbourY))
                         validNeighbours.add(new Point(neighbourX, neighbourY));*/
-        //System.out.println("Found " + validNeighbours.size() + "neighbours");
         return validNeighbours;
     }
 
@@ -1066,8 +829,8 @@ public class Path {
 
     @Override
     public String toString() {
-        if (this.start != null && this.goal != null) {
-            return ("[Path Planner] (" + this.start.x + "," + this.start.y + ") -> (" + this.goal.x + "," + this.goal.y + ")");
+        if (this.startPoint != null && this.goalPoint != null) {
+            return ("[Path Planner] (" + this.startPoint.x + "," + this.startPoint.y + ") -> (" + this.goalPoint.x + "," + this.goalPoint.y + ")");
         } else {
             return ("[Path Planner] null-Path");
         }
@@ -1081,10 +844,10 @@ public class Path {
                 agentSettings.showFreeSpace = true;
                 if (tMap == null) {
                     agentSettings.baseStation = false;
-                    img.fullUpdatePath(grid, start, goal, agentSettings);
+                    img.fullUpdatePath(grid, startPoint, goalPoint, agentSettings);
                 } else {
                     agentSettings.showTopologicalMap = true;
-                    img.fullUpdatePath(grid, tMap, start, goal, agentSettings);
+                    img.fullUpdatePath(grid, tMap, startPoint, goalPoint, agentSettings);
                 }
                 img.saveScreenshot(Constants.DEFAULT_PATH_LOG_DIRECTORY);
                 System.out.println("Outputting path debug screens to: " + Constants.DEFAULT_PATH_LOG_DIRECTORY);
@@ -1109,7 +872,7 @@ public class Path {
             }
         }
         //currentPOint starts with 0 (startPoint) so we want to increment first!
-        // pathPoints.size() - 1 is the goal
+        // pathPoints.size() - 1 is the goalPoint
         if (currentPoint >= pathPoints.size() - 1) {
             currentPoint = pathPoints.size() - 1;
         } else {

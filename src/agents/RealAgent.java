@@ -634,7 +634,6 @@ public class RealAgent extends Agent {
     }
 
     public Path calculatePath(Point startPoint, Point goalPoint, boolean pureAStar) {
-
         if (timeElapsed - timeTopologicalMapUpdated >= Constants.REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
             if (timeElapsed - timeTopologicalMapUpdated >= Constants.MUST_REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
                 updateTopologicalMap(true);
@@ -642,29 +641,20 @@ public class RealAgent extends Agent {
                 updateTopologicalMap(false);
             }
         }
-        Path tpath = new Path(occGrid, topologicalMap, startPoint, goalPoint);
 
-        if (!pureAStar) {
-            if (!tpath.found && !(timeTopologicalMapUpdated == timeElapsed)) {
-                //Update topological map and retry
-                updateTopologicalMap(true);
-                return calculatePath(startPoint, goalPoint, false);
-            } else if (!tpath.found) {
-                System.out.println(this + "at location (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") failed to plan path (" + (int) startPoint.getX() + "," + (int) startPoint.getY() + ") to (" + (int) goalPoint.getX() + "," + (int) goalPoint.getY() + "), not retrying; "
-                        + "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed
-                        + ", mapCellsChanged: " + occGrid.getMapCellsChanged() + "/" + Constants.MAP_CHANGED_THRESHOLD);
+        Path tpath = new Path(occGrid, topologicalMap, startPoint, goalPoint, false, !pureAStar);
 
-            }
-        } else {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(this + "calculating jump path from "
-                        + startPoint + " to " + goalPoint);
-            }
-            tpath = new Path(occGrid, startPoint, goalPoint, false, pureAStar);
-            if (!tpath.found) {
-                System.err.println(this + "!!!! CATASTROPHIC FAILURE !!!!! No path from " + startPoint + " to " + goalPoint);
-            }
+        if (!tpath.found && !(timeTopologicalMapUpdated == timeElapsed)) {
+            //Update topological map and retry
+            updateTopologicalMap(true);
+            return calculatePath(startPoint, goalPoint, false);
+        } else if (!tpath.found) {
+            System.out.println(this + "at location (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") failed to plan path (" + (int) startPoint.getX() + "," + (int) startPoint.getY() + ") to (" + (int) goalPoint.getX() + "," + (int) goalPoint.getY() + "), not retrying; "
+                    + "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed
+                    + ", mapCellsChanged: " + occGrid.getMapCellsChanged() + "/" + Constants.MAP_CHANGED_THRESHOLD);
+
         }
+
         return tpath;
     }
 

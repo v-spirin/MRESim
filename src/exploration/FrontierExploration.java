@@ -211,7 +211,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         long realtimeStart = System.currentTimeMillis();
         boolean foundFrontier = false;
 
-        if (!agent.getSimConfig().keepAssigningRobotsToFrontiers()) {
+        /*if (!agent.getSimConfig().keepAssigningRobotsToFrontiers()) {
             foundFrontier = (chooseFrontier(true, null) == null);
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent.toString() + "chooseFrontier took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
@@ -229,6 +229,12 @@ public class FrontierExploration extends BasicExploration implements Exploration
                     foundFrontier = true;
                 }
             }
+        }*/
+        if (!foundFrontier && !frontiers.isEmpty()) {
+            FrontierUtility best = chooseFrontier();
+            agent.setLastFrontier(best.frontier);
+            agent.setPath(best.path);
+            foundFrontier = true;
         }
 
         //If no frontier could be assigned, then go back to base.">
@@ -301,12 +307,10 @@ public class FrontierExploration extends BasicExploration implements Exploration
             if (currFrontier.getArea() >= Constants.MIN_FRONTIER_SIZE
                     && currFrontier.hasUnknownBoundary(grid)) {//TODO Unneccessary!?!?
                 //ignore frontiers not reachable from base //TODO WHY??? Woudn't path from agent be better?
-                Path pathToFrontier = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(),
-                        currFrontier.getCentre(), false);
+                /*Path pathToFrontier = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(),
+                        currFrontier.getCentre(), false);*/
+                Path pathToFrontier = agent.calculatePath(agent.getLocation(), currFrontier.getCentre(), false);
                 if (!pathToFrontier.found) {
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println(agent + "adding bad frontier " + currFrontier);
-                    }
                     agent.addBadFrontier(currFrontier);
                 } else {
                     list.add(currFrontier);

@@ -74,7 +74,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
 
     private SinglePointRendezvousStrategySettings settings;
 
-    public SinglePointRendezvousStrategy(RealAgent agent, SinglePointRendezvousStrategySettings settings) {
+    public SinglePointRendezvousStrategy(final RealAgent agent, SinglePointRendezvousStrategySettings settings) {
         this.agent = agent;
         displayData = new SinglePointRendezvousStrategyDisplayData();
         this.settings = settings;
@@ -219,7 +219,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
         }
         Path pathParentToCS = agent.calculatePath(relayLoc, baseLoc, false);
         Path pathCSToRendezvous = agent.calculatePath(baseLoc, rvd.getParentRendezvous().getParentLocation(), false);
-        //<editor-fold defaultstate="collapsed" desc="Couldn't find pathCSToRV - approximate">
+        //Couldn't find pathCSToRV - approximate
         if ((pathCSToRendezvous.getLength() == 0)
                 && (!rvd.getParentRendezvous().getParentLocation().equals(
                         agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation()))) {
@@ -229,7 +229,6 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
             //let's at least set it to a rough approximation - better than setting it to 0!
             pathCSToRendezvous = pathParentToCS;
         }
-        //</editor-fold>
         double totalPathLength = pathParentToCS.getLength() + pathCSToRendezvous.getLength();
         if (settings.useSimpleCircleCommModelForBaseRange) {
             totalPathLength = totalPathLength - 2 * Math.min(agent.getParentTeammate().getCommRange(),
@@ -244,7 +243,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
         }
 
         if (settings.giveExplorerMinTimeNearFrontier) {
-            //<editor-fold defaultstate="collapsed" desc="Check time for explorer to reach frontier, to make sure he has time to explore before returning">
+            //Check time for explorer to reach frontier, to make sure he has time to explore before returning
             Point frontierLoc;
             if (agent.getLastFrontier() != null) {
                 frontierLoc = agent.getLastFrontier().getCentre();
@@ -266,7 +265,6 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
             } else if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent + " frontier is null");
             }
-            //</editor-fold>
         }
 
         rvd.getParentRendezvous().setTimeMeeting(timeElapsed + rvd.getTimeUntilRendezvous());
@@ -520,12 +518,12 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
     }
 
     @Override
-    public RealAgent getAgent() {
+    public final RealAgent getAgent() {
         return agent;
     }
 
     @Override
-    public void setAgent(RealAgent ag) {
+    public void setAgent(final RealAgent ag) {
         agent = ag;
     }
 }

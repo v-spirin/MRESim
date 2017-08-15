@@ -81,7 +81,6 @@ public class RoleBasedExploration extends FrontierExploration {
         this.timeElapsed = timeElapsed;
 
         Point nextStep = null;
-
         //Run correct takeStep function depending on agent state, set nextStep to output
         switch (agent.getExploreState()) {
             case Initial:
