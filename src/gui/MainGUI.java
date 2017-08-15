@@ -43,6 +43,7 @@
  */
 package gui;
 
+import agents.Agent;
 import agents.ComStation;
 import agents.RealAgent;
 import config.RobotConfig;
@@ -212,7 +213,7 @@ public class MainGUI extends javax.swing.JFrame {
     }
     // </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="GUI changes">
+// GUI changes
     public void updateFromRobotTeamConfig() {
         try {
             RobotConfig currRobot;
@@ -269,7 +270,13 @@ public class MainGUI extends javax.swing.JFrame {
         for (int i = 0; i < agent.length; i++) {
             currRobotPanel = (RobotPanel) panelRobotInfo.getComponent(i);
             currRobotPanel.getLabelRole().setText(agent[i].getRole().toString());
-            currRobotPanel.getLabelState().setText(agent[i].getState().toString());
+            String state;
+            if (agent[i].getState() != Agent.AgentState.AKTIVE) {
+                state = agent[i].getState().toString();
+            } else {
+                state = agent[i].getExploreState().toString();
+            }
+            currRobotPanel.getLabelState().setText(state);
             currRobotPanel.getLabelPower().setText(Integer.toString(agent[i].getBatteryPower()));
 
             ArrayList<ComStation> comStations = agent[i].getComStations();
@@ -403,7 +410,6 @@ public class MainGUI extends javax.swing.JFrame {
         return true;
     }
 
-// </editor-fold>
     WindowListener windowListener = new WindowAdapter() {
         @Override
         public void windowClosing(WindowEvent w) {
