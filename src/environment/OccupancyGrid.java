@@ -278,6 +278,13 @@ public class OccupancyGrid implements IntGrid {
         return cellsUpdated;
     }
 
+    /**
+     * Is freeSpace/not obstacle and has unknown cell around (frontier-cell)
+     *
+     * @param xCoord
+     * @param yCoord
+     * @return
+     */
     public boolean frontierCellAt(int xCoord, int yCoord) {
         return //(
                 //freeSpaceAt(xCoord, yCoord) &&
@@ -289,6 +296,13 @@ public class OccupancyGrid implements IntGrid {
                 && frontierBorderCellAt(xCoord, yCoord));
     }
 
+    /**
+     * is unknown at any surrounding cell
+     *
+     * @param xCoord
+     * @param yCoord
+     * @return
+     */
     public boolean frontierBorderCellAt(int xCoord, int yCoord) {
         //if(!frontierCellAt(xCoord, yCoord))
         //    return false;
@@ -315,6 +329,13 @@ public class OccupancyGrid implements IntGrid {
         return true;
     }
 
+    /**
+     * is unonown but in grid
+     *
+     * @param xCoord
+     * @param yCoord
+     * @return
+     */
     public boolean emptyAt(int xCoord, int yCoord) {
         if (xCoord < 0) {
             return false;

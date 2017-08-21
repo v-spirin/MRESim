@@ -166,7 +166,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
             frontier_com_failure_counter++;
             if (frontier_com_failure_counter > 5) {
                 frontier_com_failure_counter = 0;
-                frontiers.remove(agent.getLastFrontier());
+                frontiers.remove(agent.getFrontier());
 
             }
             agent.getStats().setTimeSinceLastPlan(0);
@@ -202,7 +202,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         long realtimeStart = System.currentTimeMillis();
         //System.out.println(agent.toString() + "Choosing a frontier ...");
 
-        FrontierUtility frontierUtil = chooseFrontier();
+        FrontierUtility frontierUtil = chooseFrontier(true);
 
         // If no best frontier could be assigned (can happen e.g. when more robots than frontiers),
         // then take random step.
@@ -212,8 +212,8 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
             agent.getStats().setTimeSinceLastPlan(0);
             return nextStep;
         } else {
-            agent.setLastFrontier(frontierUtil.frontier);
-            agent.setPath(frontierUtil.path);
+            agent.setFrontier(frontierUtil.getFrontier());
+            agent.setPath(frontierUtil.getPath());
 
         }
 

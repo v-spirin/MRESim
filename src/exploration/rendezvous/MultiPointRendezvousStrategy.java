@@ -536,8 +536,8 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
 
     private Point getExplorerFrontier() {
         Point frontierCentre = agent.getLocation();
-        if (agent.getLastFrontier() != null) {
-            frontierCentre = agent.getLastFrontier().getCentre();//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
+        if (agent.getFrontier() != null) {
+            frontierCentre = agent.getFrontier().getCentre();//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
         } else if (Constants.DEBUG_OUTPUT) {
             System.out.println(agent + " !!!! getLastFrontier returned null, setting frontierCentre to " + agent.getLocation());
         } //frontierCentre = agent.getLocation();
@@ -680,7 +680,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         CommLink bestLink = null;
 
         for (Frontier f : frontiers) {
-            if (!f.equals(agent.getLastFrontier())) { //potential frontier for the relay to explore
+            if (!f.equals(agent.getFrontier())) { //potential frontier for the relay to explore
                 //can relay even get to frontier in time, if the meeting point was at frontier centre?
                 double timeToFrontier = 0;
                 timeToFrontier += agent.calculatePath(relay.getLocation(), currentRelayBasePoint, false).getLength();

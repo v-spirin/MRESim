@@ -43,19 +43,18 @@
  */
 package exploration;
 
-import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.Constants;
-import config.RobotConfig;
 import config.SimulatorConfig;
 import environment.ContourTracer;
 import environment.Frontier;
 import environment.OccupancyGrid;
 import exploration.Frontier.FrontierUtility;
-import exploration.rendezvous.RendezvousAgentData;
 import java.awt.Point;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 import path.Path;
@@ -178,10 +177,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
         if (frontierExpType.equals(SimulatorConfig.frontiertype.UtilReturn)) {
             double infoRatio = (double) agent.getStats().getCurrentBaseKnowledgeBelief()
                     / (double) (agent.getStats().getCurrentBaseKnowledgeBelief() + agent.getStats().getNewInfo());
-
-            System.out.println(agent.toString() + " in state Explore. infoRatio = "
-                    + infoRatio + ", Target = " + simConfig.TARGET_INFO_RATIO + ". newInfo = " + agent.getStats().getNewInfo()
-                    + ", baseInfo = " + agent.getStats().getCurrentBaseKnowledgeBelief());
             if (infoRatio < simConfig.TARGET_INFO_RATIO) {
                 agent.setPathToBaseStation();
                 nextStep = agent.getNextPathPoint();
@@ -189,7 +184,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
             }
         }
         calculateFrontiers();
-
+//        frontiers.forEach(f -> System.out.println(f));
         //If no frontiers found, or reached exploration goal, return to ComStation
         if (((frontiers.isEmpty()) || no_change_counter > 20 || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
             agent.setMissionComplete(true);
@@ -208,37 +203,20 @@ public class FrontierExploration extends BasicExploration implements Exploration
             last_percentage_known = agent.getStats().getPercentageKnown();
         }
 
-        long realtimeStart = System.currentTimeMillis();
-        boolean foundFrontier = false;
+        FrontierUtility best;
+        best = chooseFrontier(true);
+        //If could not find frontier, try to disregard other agents when planning
+        if (best == null) {
+            best = chooseFrontier(false);
+        }
 
-        /*if (!agent.getSimConfig().keepAssigningRobotsToFrontiers()) {
-            foundFrontier = (chooseFrontier(true, null) == null);
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent.toString() + "chooseFrontier took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
-            }
-
-            //If could not find frontier, try to disregard other agents when planning
-            if (!foundFrontier) {
-                foundFrontier = (chooseFrontier(false, null) == null);
-            }
-        } else {
-            LinkedList<Integer> assignedTeammates = new LinkedList<Integer>();
-            for (int i = 0; (i < agent.getAllTeammates().size()) && !foundFrontier; i++) {
-                assignedTeammates = chooseFrontier(true, assignedTeammates);
-                if (assignedTeammates == null) {
-                    foundFrontier = true;
-                }
-            }
-        }*/
-        if (!foundFrontier && !frontiers.isEmpty()) {
-            FrontierUtility best = chooseFrontier();
-            agent.setLastFrontier(best.frontier);
-            agent.setPath(best.path);
-            foundFrontier = true;
+        if (best != null) {
+            agent.setFrontier(best.getFrontier());
+            agent.setPath(best.getPath());
         }
 
         //If no frontier could be assigned, then go back to base.">
-        if (!foundFrontier) {
+        if (best == null) {
             // mission complete
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent.toString() + " could not find frontier, proceeding to BaseStation (Mission Complete).");
@@ -325,138 +303,24 @@ public class FrontierExploration extends BasicExploration implements Exploration
         frontiers = list;
     }
 
-    private double utilityEstimate(Point agentLoc, Frontier frontier) {
-        if (agentLoc.getX() == frontier.getCentre().x
-                && agentLoc.getY() == frontier.getCentre().y) {
-            return -1001;
-        }
-        return ((frontier.getArea() * 100000000) / Math.pow(agentLoc.distance(frontier.getCentre()), 4));
-    }
-
-    private void calculateUtilityExact(FrontierUtility ute) {
-        if (agent.getLocation().getX() == ute.frontier.getCentre().x
-                && agent.getLocation().getY() == ute.frontier.getCentre().y) {
-            ute.utility = -1001;
-            return;
-        }
-        Point start;
-        boolean isMe = (ute.agentID == agent.getID());
-        if (isMe) {
-            start = agent.getLocation();
-        } else {
-            start = agent.getTeammate(ute.agentID).getLocation();
-        }
-        Path p;
-        {
-            p = agent.calculatePath(start, ute.frontier.getCentre(), false/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
-        }
-
-        if (p.found) {
-            ute.path = p;
-            ute.utility = (ute.frontier.getArea() * 100000000) / Math.pow(p.getLength(), 4);
-            if (Constants.AVOID_FRONTIERS_WE_CANNOT_REACH_IN_TIME && isMe) {
-                //calculate how much time we have left if we are in Role-Based exp.
-                Point RVDestination = null;
-                int timeMeeting = Integer.MAX_VALUE;
-                RendezvousAgentData rvd = agent.getRendezvousAgentData();
-                Path frontierToRV = null;
-                if (agent.getRole() == RobotConfig.roletype.Explorer) {
-                    RVDestination = rvd.getParentRendezvous().getChildLocation();
-                    if (RVDestination != null) {
-                        frontierToRV = agent.calculatePath(ute.frontier.getCentre(), RVDestination, false);
-                    }
-                    timeMeeting = rvd.getParentRendezvous().getTimeMeeting();
-                } else if (agent.getRole() == RobotConfig.roletype.Relay) {
-                    RVDestination = rvd.getChildRendezvous().getParentLocation();
-                    if (RVDestination != null) {
-                        Path frontierToParent = agent.calculatePath(ute.frontier.getCentre(), RVDestination, false);
-                        Path frontierToChild = agent.calculatePath(ute.frontier.getCentre(), rvd.getChildRendezvous().getChildLocation(), false);
-                        if (frontierToParent.getLength() < frontierToChild.getLength() && frontierToParent.found) {
-                            frontierToRV = frontierToParent;
-                        } else if (frontierToParent.getLength() >= frontierToChild.getLength() && frontierToChild.found) {
-                            frontierToRV = frontierToChild;
-                        } else {
-                            frontierToRV = frontierToParent;
-                        }
-                    }
-                    timeMeeting = rvd.getChildRendezvous().getTimeMeeting();
-                }
-                if (RVDestination != null && frontierToRV != null) {
-                    Path meToFrontier = p;
-
-                    int timeToRV = (int) ((meToFrontier.getLength() + frontierToRV.getLength()) / Constants.DEFAULT_SPEED) + agent.getTimeElapsed();
-                    //if time available is less than time to frontier, set utility to low value
-                    if (timeToRV > timeMeeting) {
-                        if (Constants.DEBUG_OUTPUT) {
-                            System.out.println(agent + "Cannot explore frontier with centre " + ute.frontier.getCentre() + ", timeToRV is " + timeToRV + ", timeMeeting is " + timeMeeting + ", utility was " + ute.utility + ", setting utility to " + (ute.utility - 100000000));
-                        }
-                        ute.utility = ute.utility - 100000000;
-                        if (agent.getRole() == RobotConfig.roletype.Relay) {
-                            ute.utility = -1;
-                        }
-                    }
-                }
-
-            }
-        } else {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println("Could not find path from " + start + " to " + ute.frontier.getCentre());
-            }
-            ute.utility = -1000;
-        }
-
-    }
-
-    // Calculates Euclidean distance from all known teammates and self to frontiers of interest
-    private PriorityQueue initializeUtilities(boolean considerOtherAgents, LinkedList<Integer> teammatesAssignedIDs) {
-        if (teammatesAssignedIDs == null) {
-            teammatesAssignedIDs = new LinkedList<Integer>();
-        }
+    /**
+     * Calculates Euclidean distance from all known teammates and self to frontiers of interest
+     */
+    private PriorityQueue initializeUtilities(boolean considerOtherAgents) {
         PriorityQueue<FrontierUtility> utilities = new PriorityQueue<FrontierUtility>();
-
-        int lastCommLimit = Constants.REMEMBER_TEAMMATE_FRONTIER_PERIOD;
-        if (!considerOtherAgents) {
-            lastCommLimit = -1;
-        }
 
         // For each frontier of interest
         for (Frontier frontier : frontiers) {
             // Add own utilities
-            utilities.add(new FrontierUtility(agent.getID(),
-                    agent.getLocation(),
-                    frontier,
-                    utilityEstimate(agent.getLocation(), frontier),
-                    null));
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(Constants.INDENT + "Own utility with ID "
-                        + agent.getID() + " for frontier at "
-                        + frontier.getCentre().x + ","
-                        + frontier.getCentre().y + " is "
-                        + (int) utilityEstimate(agent.getLocation(), frontier));
-            }
+            utilities.add(new FrontierUtility(agent, frontier));
             // Add teammates' utilities
             for (TeammateAgent teammate : agent.getAllTeammates().values()) {
-                if (teammate.getID() != 1
-                        && teammate.getID() != agent.getID()
+                if (considerOtherAgents
                         && teammate.isExplorer()
-                        && // THIS LINE ONLY IF non-explorer agents are to be ignored
-                        teammate.getTimeSinceLastComm() < lastCommLimit
-                        && !teammatesAssignedIDs.contains(teammate.getID())) {
-                    utilities.add(new FrontierUtility(teammate.getID(),
-                            teammate.getLocation(),
-                            frontier,
-                            utilityEstimate(teammate.getLocation(), frontier),
-                            null));
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println(Constants.INDENT + "Utility of robot with ID "
-                                + teammate.getID() + " at location "
-                                + "(" + (int) teammate.getLocation().getX() + ","
-                                + (int) teammate.getLocation().getY()
-                                + ") for frontier at "
-                                + frontier.getCentre().x + ","
-                                + frontier.getCentre().y + " is "
-                                + (int) utilityEstimate(teammate.getLocation(), frontier));
-                    }
+                        && teammate.getTimeSinceLastComm() < Constants.REMEMBER_TEAMMATE_FRONTIER_PERIOD) {
+
+                    utilities.add(new FrontierUtility(teammate,
+                            frontier));
                 }
             }
         }
@@ -464,207 +328,55 @@ public class FrontierExploration extends BasicExploration implements Exploration
         return utilities;
     }
 
-    /**
-     * Calculates Euclidean distance from all known teammates and self to frontiers of interest
-     *
-     * @param p
-     */
-    private PriorityQueue initializeUtilities(Point p) {
-        PriorityQueue<FrontierUtility> utilities = new PriorityQueue<FrontierUtility>();
-
-        // For each frontier of interest
-        frontiers.stream().forEach((frontier) -> {
-            // Add own utilities
-            utilities.add(new FrontierUtility(99,
-                    p,
-                    frontier,
-                    utilityEstimate(p, frontier),
-                    null));
-        });
-
-        return utilities;
-    }
-
-    protected LinkedList<Integer> chooseFrontier(boolean considerOtherAgents,
-            LinkedList<Integer> teammatesAssignedIDs) {
-        if (teammatesAssignedIDs == null) {
-            teammatesAssignedIDs = new LinkedList<Integer>();
-        }
-        // Step 1:  Create list of frontiers of interest (closest ones)
-        frontiersOfInterest(agent.getLastFrontier(), agent.getOccupancyGrid());
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent + " frontiers of interest: " + frontiers.size());
-        }
-        // Step 2:  Create priorityQueue of utility estimates (Euclidean distance)
-        PriorityQueue<FrontierUtility> utilities = initializeUtilities(considerOtherAgents, teammatesAssignedIDs);
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent + " frontier utilities: " + utilities.size());
-        }
+    protected FrontierUtility chooseFrontier(boolean considerOtherAgents) {
+        // Step 1:  Create list of frontiers of interest
+        frontiersOfInterest(agent.getFrontier(), agent.getOccupancyGrid());
+        // Step 2:  Create utility estimates
+        PriorityQueue<FrontierUtility> utilities = initializeUtilities(considerOtherAgents);
         // Step 3
         FrontierUtility best;
-        LinkedList<FrontierUtility> removal;
-        boolean isLastFrontier = false;
 
-        while (!utilities.isEmpty()) {    // && counter < 5) {
-            best = utilities.poll();
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent + best.toString());
+        ArrayList<FrontierUtility> badUtilities = new ArrayList<>();
+        Iterator<FrontierUtility> util_iter = utilities.iterator();
+        while (util_iter.hasNext()) {
+            best = util_iter.next();
+            if (badUtilities.contains(best)) {
+                util_iter.remove();
+                continue;
             }
-            // Check if this is the only remaining frontier
-            isLastFrontier = true;
-            if (!utilities.isEmpty()) {
+            // Check if this is the only remaining frontier would be a little optimization
+
+            // /it's not possible to plan a path to this frontier or we are already there, so eliminate it entirely
+            if (best.getEcaxtUtility(agent) < 0) {
+                badUtilities.add(best);
                 for (FrontierUtility u : utilities) {
-                    if (u.frontier != best.frontier) {
-                        isLastFrontier = false;
-                        break;
+                    if (u.getFrontier() == best.getFrontier()) {
+                        badUtilities.add(u);
                     }
                 }
-            }
-
-            // If this is an estimate, calculate true utility
-            if (best.path == null) {
-                calculateUtilityExact(best);
-            }
-
-            if (best.path == null) {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(agent + " could not calculate exact utility: " + best + ", removing frontier: "
-                            + best.frontier);
-                }
-                // it's not possible to plan a path to this frontier, so eliminate it entirely
-                removal = new LinkedList<FrontierUtility>();
-                for (FrontierUtility u : utilities) {
-                    if (u.frontier == best.frontier) {
-                        removal.add(u);
-                    }
-                }
-                for (FrontierUtility r : removal) {
-                    utilities.remove(r);
-                }
-                if (best.agentID == agent.getID()) {
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println(agent + " adding bad frontier");
-                    }
-                    agent.addBadFrontier(best.frontier); //only add bad frontiers if they are 'ours'
+                if (best.getAgent() == agent) {
+                    agent.addBadFrontier(best.getFrontier()); //only add bad frontiers if they are 'ours'
                 }
 
-            } else if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
-                if (best.agentID == agent.getID()) {
-                    if ((agent.getRole() == RobotConfig.roletype.Relay) && (best.utility < 0)) {//cannot reach frontier in time
-                        agent.setState(Agent.AgentState.GoToChild);
-                        return null;
-                    }
-                    agent.setLastFrontier(best.frontier);
-                    agent.setPath(best.path);
-                    return null;
-                } else {
-                    // This robot assigned, so remove all remaining associated utilities
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println(agent + "This robot assigned, so remove all remaining associated utilities");
-                    }
-                    removal = new LinkedList<FrontierUtility>();
-                    for (FrontierUtility u : utilities) {
-                        if (u.agentID == best.agentID
-                                || u.frontier == best.frontier) {
-                            removal.add(u);
-                        }
-                    }
-                    for (FrontierUtility r : removal) {
-                        utilities.remove(r);
-                    }
-                    teammatesAssignedIDs.add(best.agentID);
-                }
-            } else {
-                utilities.add(best);
-            }
-
-        }
-
-        return teammatesAssignedIDs;  // couldn't assign frontier - could be there are more robots than frontiers?
-    }
-
-    protected FrontierUtility chooseFrontier() {
-        // Step 1:  Create list of frontiers of interest (closest ones)
-        frontiersOfInterest(agent.getLastFrontier(), agent.getOccupancyGrid());
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent + " frontiers of interest: " + frontiers.size());
-        }
-        // Step 2:  Create priorityQueue of utility estimates (Euclidean distance)
-        PriorityQueue<FrontierUtility> utilities = initializeUtilities(false, new LinkedList<Integer>());
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent + " frontier utilities: " + utilities.size());
-        }
-        // Step 3
-        FrontierUtility best;
-        LinkedList<FrontierUtility> removal;
-
-        while (!utilities.isEmpty()) {
-            best = utilities.poll();
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent + best.toString());
-            }
-            // Check if this is the only remaining frontier
-            if (!utilities.isEmpty()) {
-                for (FrontierUtility u : utilities) {
-                    if (u.frontier != best.frontier) {
-                        break;
-                    }
-                }
-            }
-
-            // If this is an estimate, calculate true utility
-            if (best.path == null) {
-                calculateUtilityExact(best);
-            }
-
-            if (best.path == null) {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(agent + " could not calculate exact utility: " + best + ", removing frontier: "
-                            + best.frontier);
-                }
-                // it's not possible to plan a path to this frontier, so eliminate it entirely
-                removal = new LinkedList<FrontierUtility>();
-                for (FrontierUtility u : utilities) {
-                    if (u.frontier == best.frontier) {
-                        removal.add(u);
-                    }
-                }
-                for (FrontierUtility r : removal) {
-                    utilities.remove(r);
-                }
-                if (best.agentID == agent.getID()) {
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println(agent + " adding bad frontier");
-                    }
-                    agent.addBadFrontier(best.frontier); //only add bad frontiers if they are 'ours'
-                }
-
-            } else if ((utilities.isEmpty()) || (best.utility >= utilities.peek().utility)) {
-                if (best.agentID == agent.getID()) {
+            } else if (utilities.isEmpty() || (best.getUtility() >= utilities.peek().getUtility())) {
+                //as the utility estimate is an optimistic heuristic if the best.utility is better as the peek-utility... go and get it
+                if (!considerOtherAgents || best.getAgent() == agent) {
                     return best;
                 } else {
-                    // This robot assigned, so remove all remaining associated utilities
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println(agent + "This robot assigned, so remove all remaining associated utilities");
-                    }
-                    removal = new LinkedList<FrontierUtility>();
+                    // This robot is assigned to this frontier, so remove all remaining associated utilities (for the agent and for the frontier)
+                    badUtilities.add(best);
                     for (FrontierUtility u : utilities) {
-                        if (u.agentID == best.agentID
-                                || u.frontier == best.frontier) {
-                            removal.add(u);
+                        if (u.getAgent() == best.getAgent() || u.getFrontier() == best.getFrontier()) {
+                            badUtilities.add(u);
                         }
                     }
-                    for (FrontierUtility r : removal) {
-                        utilities.remove(r);
-                    }
                 }
-            } else {
-                utilities.add(best);
             }
 
         }
+        utilities.removeAll(badUtilities);
 
-        return null;  // couldn't assign frontier
+        return utilities.peek();  // give the best Utility
     }
 
     /**
@@ -677,7 +389,10 @@ public class FrontierExploration extends BasicExploration implements Exploration
         });
 
         // 1. Find all Contours
-        LinkedList<LinkedList> contours = ContourTracer.findAllContours(agent.getOccupancyGrid());
+        LinkedList<LinkedList<Point>> contours = ContourTracer.findAllContours(agent.getOccupancyGrid());
+        //System.out.println(contours.size());
+        //ContourTracer.mergeContours(contours);
+        //System.out.println(contours.size());
 
         frontiers = new PriorityQueue();
         Frontier currFrontier;

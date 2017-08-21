@@ -62,9 +62,9 @@ public class Frontier implements Comparable<Frontier> {
     private double area;
 
     // This constructor used by new calculatefrontier function
-    public Frontier(int agentX, int agentY, LinkedList<Point> po) {
-        this.polygonOutline = po;
-        this.areaPolygon = createAreaPolygonFromList(po);
+    public Frontier(int agentX, int agentY, LinkedList<Point> outline) {
+        this.polygonOutline = outline;
+        this.areaPolygon = createAreaPolygonFromList(outline);
         this.area = calculateArea();
         this.centre = calculateCentre();
         this.distanceToCentre = centre.distance(agentX, agentY);
@@ -235,7 +235,7 @@ public class Frontier implements Comparable<Frontier> {
     }
 
     private Point calculateCentre() {
-        double cx, cy;
+        /*double cx, cy;
         Point temp;
         double runningTotal = 0;
 

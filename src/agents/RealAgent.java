@@ -58,7 +58,6 @@ import exploration.Exploration;
 import exploration.FrontierExploration;
 import exploration.LeaderFollower;
 import exploration.RandomExploration;
-import exploration.RelayFrontierExploration;
 import exploration.RoleBasedExploration;
 import exploration.RunFromLog;
 import exploration.WallFollowExploration;
@@ -96,7 +95,7 @@ public class RealAgent extends Agent {
 
     // Frontiers
     PriorityQueue<Frontier> frontiers;
-    Frontier lastFrontier;          // Keep track of last frontier of interest
+    Frontier frontier;          // Keep track of last frontier of interest
     //Frontiers that are impossible to reach, so should be discarded
     HashMap<Frontier, Boolean> badFrontiers;
     public int totalSpareTime; //total time this agent was not used for exploration
@@ -243,12 +242,12 @@ public class RealAgent extends Agent {
         }
     }
 
-    public Frontier getLastFrontier() {
-        return this.lastFrontier;
+    public Frontier getFrontier() {
+        return this.frontier;
     }
 
-    public void setLastFrontier(Frontier f) {
-        this.lastFrontier = f;
+    public void setFrontier(Frontier f) {
+        this.frontier = f;
     }
 
     public Path getPath() {
@@ -349,6 +348,9 @@ public class RealAgent extends Agent {
     }
 
     public void addTeammate(TeammateAgent teammate) {
+        if (teammate.getID() == this.ID) {
+            return;
+        }
         teammates.put(teammate.getID(), teammate);
     }
 
@@ -498,8 +500,6 @@ public class RealAgent extends Agent {
         }*/ //Not necessary anymore I think
         if (oldTimeElapsed != timeElapsed) {
             // First call in cycle
-            //TODO Only needed for Util and RoleBased, but needs to be done on request!!!
-            //setDistanceToBase(getPathToBaseStation().getLength());
             if (exploration == null) {
                 switch (simConfig.getExpAlgorithm()) {
                     case RunFromLog:
@@ -517,10 +517,7 @@ public class RealAgent extends Agent {
                     case RoleBasedExploration:
                         exploration = new RoleBasedExploration(timeElapsed, this, simConfig, this.getRendezvousStrategy(), baseStation);
                         break;
-
                     case Testing:
-                        exploration = new RelayFrontierExploration(this, simConfig, baseStation);
-                        break;
                     case Random:
                         exploration = new RandomExploration(this, simConfig);
                         break;
@@ -659,8 +656,7 @@ public class RealAgent extends Agent {
     }
 
     /**
-     * update stats of what we know about the environment. TODO: we shouldn't call this every time
-     * step, this is a performance bottleneck and can be made more efficient.
+     * update stats of what we know about the environment.
      */
     public void updateAreaKnown() {
         //<editor-fold defaultstate="collapsed" desc="Commented out - brute force">
@@ -720,7 +716,11 @@ public class RealAgent extends Agent {
         }
     }
 
-    // TODO: Should be able to make this more efficient.
+    /**
+     * // TODO: Should be able to make this more efficient.
+     *
+     * @param ag
+     */
     public void updateAreaRelayed(TeammateAgent ag) {
         //long timer = System.currentTimeMillis();
         if (ag.robotNumber == robotNumber) //we are the same as ag, nothing to do here
@@ -731,12 +731,12 @@ public class RealAgent extends Agent {
         {
             return;
         }
-        if (ag.timeToBase() == timeToBase()) { //robots overlapping in sim; couldn't happen in real life.
+        /*if (ag.timeToBase() == timeToBase()) { //robots overlapping in sim; couldn't happen in real life.
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(toString() + " timeToBase same as " + ag.name + " (" + timeToBase() + " vs " + ag.timeToBase() + ")");
             }
             return;                          //anyway, this means there is symmetry so could potentially lose new data
-        }
+        }*/
 
         if (ag.getNewInfo() == 0 || stats.getNewInfo() == 0) { //only at most one agent is responsible for data
             if (Math.abs(ag.timeToBase() - timeToBase()) < 3) //then only 'swap' data if significant advantage is offered
@@ -746,13 +746,6 @@ public class RealAgent extends Agent {
         }
         int new_counter = 0;
         boolean iAmCloserToBase = (ag.timeToBase() > timeToBase()); //buffer to prevent oscillations
-        if (iAmCloserToBase) {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(toString() + " relaying for " + ag.name + " (" + timeToBase() + " vs " + ag.timeToBase() + ")");
-            } else if (Constants.DEBUG_OUTPUT) {
-                System.out.println(ag.name + " relaying for " + toString() + " (" + ag.timeToBase() + " vs " + timeToBase() + ")");
-            }
-        }
 
         if (iAmCloserToBase) {
             for (Point point : ag.occGrid.getOwnedCells()) {

@@ -109,8 +109,8 @@ public class DataMessage implements IDataMessage {
         timeBaseMessageListSize = agent.getStats().getTimeBaseMessageListSize();
         newInfo = agent.getStats().getNewInfo();
 
-        if (agent.getLastFrontier() != null) {
-            frontierCentre = new Point(agent.getLastFrontier().getCentre());//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid()));
+        if (agent.getFrontier() != null) {
+            frontierCentre = new Point(agent.getFrontier().getCentre());//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid()));
         } else {
             frontierCentre = new Point(agent.getLocation());
         }

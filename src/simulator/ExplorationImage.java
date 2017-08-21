@@ -531,12 +531,10 @@ public class ExplorationImage {
         //    setPixel(xCoord, yCoord, Constants.MapColor.safe());
         //}
         // Update obstacles
-        {
-            if (agentSettings.showFreeSpace
+         if (agentSettings.showFreeSpace
                     && agentGrid.obstacleAt(xCoord, yCoord)) {
                 setPixel(xCoord, yCoord, Constants.MapColor.agent_obstacle());
             }
-        }
     }
 
     public void redrawEnvAndAgents(MainGUI mainGUI, RobotTeamConfig rtc, SimulatorConfig simConfig) {
@@ -645,6 +643,7 @@ public class ExplorationImage {
         //drawRange(env, agent, range, Constants.MapColor.comm());
         for (TeammateAgent teammate : agent.getAllTeammates().values()) {
             if (teammate.hasCommunicationLink()) {
+                //if (teammate.getDirectComLink() > 0) {
                 for (Point p : pointsAlongSegment(agent.getLocation(), teammate.getLocation())) {
                     for (int i = p.x - 1; i <= p.x + 1; i++) {
                         for (int j = p.y - 1; j <= p.y + 1; j++) {

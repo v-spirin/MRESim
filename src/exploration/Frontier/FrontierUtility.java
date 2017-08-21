@@ -1,5 +1,5 @@
 /*
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -43,6 +43,8 @@
  */
 package exploration.Frontier;
 
+import agents.Agent;
+import agents.RealAgent;
 import environment.Frontier;
 import java.awt.Point;
 import path.Path;
@@ -51,34 +53,88 @@ import path.Path;
  *
  * @author christian
  */
-    public class FrontierUtility implements Comparable<FrontierUtility> {
+public class FrontierUtility implements Comparable<FrontierUtility> {
 
-        public int agentID;
-        public Point agentLocation;
-        public Frontier frontier;
-        public double utility;
-        public Path path;
+    private Agent agent;
+    private Frontier frontier;
+    private double utility;
+    private Path path;
+    private boolean exact;
 
-        public FrontierUtility(int agent_id, Point al, Frontier f, double u, Path p) {
-            agentID = agent_id;
-            agentLocation = al;
-            frontier = f;
-            utility = u;
-            path = p;
-        }
+    public FrontierUtility(Agent agent, Frontier f) {
+        this.agent = agent;
+        frontier = f;
+        utility = utilityEstimate(agent.getLocation(), frontier);
+        path = null;
+        exact = false;
 
-        @Override
-        public int compareTo(FrontierUtility other) {
-            if (other.utility > this.utility) {
-                return 1;
-            } else {
-                return -1;
-            }
-        }
+    }
 
-        @Override
-        public String toString() {
-            return "FrontierUtility ID: " + agentID + ", agentLocation: (" + (int) agentLocation.getX() + "," + (int) agentLocation.getY() + "), frontier: " + frontier
-                    + ", utility: " + utility;
+    @Override
+    public int compareTo(FrontierUtility other) {
+        if (other.utility > this.utility) {
+            return 1;
+        } else if (other.utility == this.utility) {
+            return 0;
+        } else {
+            return -1;
         }
     }
+
+    public Path getPath() {
+        return path;
+    }
+
+    public double getUtility() {
+        return utility;
+    }
+
+    public Frontier getFrontier() {
+        return frontier;
+    }
+
+    public Agent getAgent() {
+        return agent;
+    }
+
+    public boolean isExact() {
+        return exact;
+    }
+
+    public double getEcaxtUtility(RealAgent calcAgent) {
+        if (!exact) {
+            calculateUtilityExact(calcAgent);
+        }
+        return this.utility;
+    }
+
+    @Override
+    public String toString() {
+        return "FrontierUtility ID: " + agent.getID() + ", agentLocation: (" + (int) agent.getLocation().getX() + "," + (int) agent.getLocation().getY() + "), frontier: " + frontier
+                + ", utility: " + utility;
+    }
+
+    private double utilityEstimate(Point agentLoc, Frontier frontier) {
+        if (agentLoc.getX() == frontier.getCentre().x
+                && agentLoc.getY() == frontier.getCentre().y) {
+            return -1001;
+        }
+        return ((frontier.getArea() * 100000000) / Math.pow(agentLoc.distance(frontier.getCentre()), 4));
+    }
+
+    private void calculateUtilityExact(RealAgent calcAgent) {
+        if (agent.getLocation() == frontier.getCentre()) {
+            utility = -1001;
+            exact = true;
+            return;
+        }
+        path = calcAgent.calculatePath(agent.getLocation(), frontier.getCentre(), false/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
+
+        if (path.found) {
+            utility = (frontier.getArea() * 100000000) / Math.pow(path.getLength(), 4);
+        } else {
+            utility = -1000;
+        }
+        exact = true;
+    }
+}

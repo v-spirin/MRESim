@@ -58,6 +58,65 @@ import javax.imageio.ImageIO;
  */
 public class ContourTracer {
 
+    public static void mergeContours(LinkedList<LinkedList<Point>> contours) {
+        for (int i = 0; i < contours.size(); i++) {
+            LinkedList<Point> contour = contours.get(i);
+
+            Point p1 = contour.getFirst();
+            Point p2 = contour.getLast();
+            LinkedList<Point> conn1 = hasNeighbor(contours, contour, p1);
+            LinkedList<Point> conn2 = hasNeighbor(contours, contour, p1);
+            if (conn1 != null) {
+                contour.addAll(conn1);
+                contours.remove(conn1);
+            }
+            if (conn2 != null) {
+                contour.addAll(conn2);
+                contours.remove(conn2);
+            }
+
+        }
+    }
+
+    private static LinkedList<Point> hasNeighbor(LinkedList<LinkedList<Point>> contours, LinkedList<Point> containing, Point p) {
+        for (int k = 0; k < contours.size(); k++) {
+            LinkedList<Point> contour = contours.get(k);
+            if (containing == contour) {
+                break;
+            }
+
+            Point pf = isNeighbor(p, contour.getFirst());
+            Point pl = isNeighbor(p, contour.getLast());
+            if (pf != null) {
+                contour.add(pf);
+                return contour;
+            } else if (pl != null) {
+                contour.add(pl);
+                return contour;
+            } else {
+                return null;
+            }
+        }
+
+        return null;
+    }
+
+    private static Point isNeighbor(Point p, Point q) {
+        if (p.x - q.x == 2) {
+            return new Point(p.x - 1, p.y);
+        }
+        if (p.x - q.x == -2) {
+            return new Point(p.x + 1, p.y);
+        }
+        if (p.y - q.y == 2) {
+            return new Point(p.x, p.y - 1);
+        }
+        if (p.y - q.y == -2) {
+            return new Point(p.x, p.y + 1);
+        }
+        return null;
+    }
+
     // Order is important!
     private static enum direction {
         NE, E, SE, S, SW, W, NW, N
@@ -181,6 +240,9 @@ public class ContourTracer {
 
         // In loop until all pixels on contour have been found
         while (!(currPixel.equals(firstPixel) && nextPixel.equals(secondPixel))) {
+            if (pts.contains(currPixel)) {
+                break;
+            }
             pts.add(currPixel);
             label[currPixel.x][currPixel.y] = componentIndex;
             searchStart = searchDir(nextPixel, currPixel);
@@ -223,11 +285,9 @@ public class ContourTracer {
         }
     }
 
-    public static LinkedList<LinkedList> findAllContours(OccupancyGrid occGrid) {
-        LinkedList<LinkedList> contourList = new LinkedList<LinkedList>();
+    public static LinkedList<LinkedList<Point>> findAllContours(OccupancyGrid occGrid) {
+        LinkedList<LinkedList<Point>> contourList = new LinkedList<>();
         LinkedList<Point> currContour;
-
-        long realtimeStart = System.currentTimeMillis();
 
         int[][] labels = new int[occGrid.width][occGrid.height];
         int componentIndex = 1;
@@ -237,17 +297,12 @@ public class ContourTracer {
                 label[j] = 0;
             }
         }
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println("[findAllContours] labels init took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
-        realtimeStart = System.currentTimeMillis();
 
         int contourCounter = 0;
-        // Assume that topline of occGrid is empty, i.e. no frontier cells.
         for (int j = 0; j < occGrid.height; j++) {
             for (int i = 0; i < occGrid.width; i++) {
                 if (occGrid.frontierCellAt(i, j)
-                        && (!occGrid.locationExists(i, j - 1) || !occGrid.frontierCellAt(i, j - 1))
+                        && (!occGrid.locationExists(i, j - 1) || (!occGrid.frontierCellAt(i - 1, j - 1) && !occGrid.frontierCellAt(i, j - 1) && !occGrid.frontierCellAt(i + 1, j - 1)))
                         && labels[i][j] == 0) {
                     contourCounter++;
                     // We must have found external contour of new component
@@ -268,7 +323,7 @@ public class ContourTracer {
         }
         if (Constants.DEBUG_OUTPUT) {
             System.out.println("[findAllContours] contours processed: " + contourCounter);
-            System.out.println("[findAllContours] main loop took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
+            System.out.println("[findAllContours] main loop");
         }
         //saveLabelsToPNG(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "contours", labels);
         return contourList;

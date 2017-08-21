@@ -167,8 +167,8 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
         });
 
         PriorityQueue<NearRVPoint> nearRVPoints = new PriorityQueue<NearRVPoint>();
-        if (agent.getLastFrontier() != null) {
-            frontierCentre = agent.getLastFrontier().getCentre();//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
+        if (agent.getFrontier() != null) {
+            frontierCentre = agent.getFrontier().getCentre();//getClosestPoint(agent.getLocation(), agent.getOccupancyGrid());
         } else {
             if (Constants.DEBUG_OUTPUT) {
                 System.out.println(agent + " !!!! getLastFrontier returned null, setting frontierCentre to " + agent.getLocation());
@@ -245,8 +245,8 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
         if (settings.giveExplorerMinTimeNearFrontier) {
             //Check time for explorer to reach frontier, to make sure he has time to explore before returning
             Point frontierLoc;
-            if (agent.getLastFrontier() != null) {
-                frontierLoc = agent.getLastFrontier().getCentre();
+            if (agent.getFrontier() != null) {
+                frontierLoc = agent.getFrontier().getCentre();
             } else {
                 if (Constants.DEBUG_OUTPUT) {
                     System.out.println(agent + " Setting frontierCentre to agent location");

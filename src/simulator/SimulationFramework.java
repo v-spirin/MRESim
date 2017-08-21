@@ -697,7 +697,10 @@ public class SimulationFramework implements ActionListener {
         return sensorData;
     }
 
-    // update area known if needed
+    /**
+     * update area known if needed
+     *
+     */
     private void updateAgentKnowledgeData() {
         if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
             return; //Nothing to do here
@@ -886,10 +889,10 @@ public class SimulationFramework implements ActionListener {
         agent2.setPath(p2);
         agent2.addDirtyCells(p2.getAllPathPixels());
 
-        // exchange lastFrontier
-        Frontier tempLastFrontier = agent1.getLastFrontier();
-        agent1.setLastFrontier(agent2.getLastFrontier());
-        agent2.setLastFrontier(tempLastFrontier);
+        // exchange frontier
+        Frontier tempLastFrontier = agent1.getFrontier();
+        agent1.setFrontier(agent2.getFrontier());
+        agent2.setFrontier(tempLastFrontier);
 
         // exchange RV Strategy state
         IRendezvousStrategy tempStrategy = agent1.getRendezvousStrategy();

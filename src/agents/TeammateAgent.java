@@ -124,9 +124,6 @@ public class TeammateAgent extends Agent {
     }
 
     public boolean hasCommunicationLink() {
-        if (communicationLink) {
-            //System.out.println("I am " + this.getName() + "[" + this.getID() + "], in range with my teammate.");
-        }
         return communicationLink;
     }
 
