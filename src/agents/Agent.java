@@ -77,13 +77,12 @@ abstract public class Agent {
     RobotConfig.roletype role;
 
     public static enum AgentState {
-        Initial, Explore, ReturnToBaseStation, WaitForParent, GiveParentInfo,
-        GoToChild, WaitForChild, GetInfoFromChild, OutOfService, RELAY, INACTIVE, OCCUPIED, AKTIVE
+        Initial, Explore, OutOfService, RELAY, INACTIVE, OCCUPIED, AKTIVE
     }
 
     public static enum ExplorationState {
-        Initial, Explore, ReturnToBaseStation, WaitForParent, GiveParentInfo,
-        GoToChild, WaitForChild, GetInfoFromChild, OutOfService
+        Initial, Explore, GoToParent, WaitForParent,
+        GoToChild, WaitForChild, ReturnToBase, SettingRelay, TakingRelay, EnvError, Finished
     }
     private AgentState state;
     private ExplorationState prevExploreState = ExplorationState.Initial;

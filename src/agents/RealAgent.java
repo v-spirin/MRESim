@@ -312,10 +312,6 @@ public class RealAgent extends Agent {
         return rendezvousAgentData;
     }
 
-    public void setRendezvousAgentData(RendezvousAgentData data) {
-        this.rendezvousAgentData = data;
-    }
-
     public IRendezvousStrategy getRendezvousStrategy() {
         if (rendezvousStrategy == null) {
             rendezvousStrategy = RendezvousStrategyFactory.createRendezvousStrategy(simConfig, this);
@@ -548,12 +544,7 @@ public class RealAgent extends Agent {
                     nextStep = this.getNextPathPoint();
                     break;
                 case RoleBasedExploration:
-                    if ((this.getState() != AgentState.GiveParentInfo)
-                            && (this.getState() != AgentState.GetInfoFromChild)
-                            && (this.getState() != AgentState.WaitForChild)
-                            && (this.getState() != AgentState.WaitForParent)) {
-                        nextStep = this.getNextPathPoint();
-                    }
+                    nextStep = this.getNextPathPoint();
                     break;
                 case Testing:
                     nextStep = this.getNextPathPoint();
@@ -628,6 +619,16 @@ public class RealAgent extends Agent {
             System.out.println(this.toString() + "WriteStep complete, took "
                     + (System.currentTimeMillis() - realtimeStart) + "ms.");
         }
+    }
+
+    /**
+     * Calculates the standard-path from where the agent is to the given goal with optimizations
+     *
+     * @param goalPoint
+     * @return
+     */
+    public Path calculatePath(Point goalPoint) {
+        return calculatePath(this.getLocation(), goalPoint, false);
     }
 
     public Path calculatePath(Point startPoint, Point goalPoint, boolean pureAStar) {
@@ -767,7 +768,7 @@ public class RealAgent extends Agent {
                 }
             }
 
-            if ((simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)
+            /*if ((simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)
                     && (simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.UtilReturn)) {
                 if (((getState() == AgentState.ReturnToBaseStation) || ag.getState() == AgentState.ReturnToBaseStation)
                         && (ag.getNewInfo() > 1 || stats.getNewInfo() > 1)) {
@@ -775,8 +776,7 @@ public class RealAgent extends Agent {
                 } else {
                     setState(AgentState.Explore);
                 }
-            }
-
+            }*/
         } else {
             if ((simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)
                     && (simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.UtilReturn)) {
@@ -1000,7 +1000,7 @@ public class RealAgent extends Agent {
                 stats.incrementTimeDoubleSensing(timeElapsed);
             }
         }
-        if (getState().equals(AgentState.ReturnToBaseStation)
+        /*        if (getState().equals(AgentState.ReturnToBaseStation)
                 || getState().equals(AgentState.WaitForParent)
                 || getState().equals(AgentState.WaitForChild)
                 || //getState().equals(AgentState.GetInfoFromChild) ||
@@ -1009,7 +1009,7 @@ public class RealAgent extends Agent {
         //they don't know they are going to child at the time!
         {
             stats.incrementTimeReturning(timeElapsed);
-        }
+        }*/
     }
 
     protected void updateObstacles(Polygon newFreeSpace) {

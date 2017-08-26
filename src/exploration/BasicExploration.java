@@ -44,6 +44,7 @@
 
 package exploration;
 
+import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.Constants;
@@ -69,11 +70,7 @@ abstract class BasicExploration {
      */
     Path path;
 
-    enum ExplorationState {
-        Initial, Exploring, BackToBase, Finished, SettingRelay, TakingRelay, EnvError
-    }
-
-    ExplorationState state = ExplorationState.Initial;
+    Agent.ExplorationState state = Agent.ExplorationState.Initial;
 
     SimulatorConfig simConfig;
 
@@ -82,7 +79,7 @@ abstract class BasicExploration {
      *
      * @param agent The agend using this ExplorationStrategy
      */
-    public BasicExploration(RealAgent agent, SimulatorConfig simConfig, ExplorationState initialState) {
+    public BasicExploration(RealAgent agent, SimulatorConfig simConfig, Agent.ExplorationState initialState) {
         this.agent = agent;
         this.simConfig = simConfig;
         this.state = initialState;
@@ -115,6 +112,14 @@ abstract class BasicExploration {
             }
         }
         return true;
+    }
+
+    protected Point takeStep_ReturnToBase(Agent.ExplorationState followUp) {
+        agent.setPathToBaseStation();
+        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInHandoverRange(agent)) {
+            agent.setExploreState(followUp);
+        }
+        return agent.getNextPathPoint();
     }
 
 }

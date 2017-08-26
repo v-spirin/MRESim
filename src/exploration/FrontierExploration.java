@@ -43,6 +43,7 @@
  */
 package exploration;
 
+import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.Constants;
@@ -85,7 +86,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
      * @param baseStation
      */
     public FrontierExploration(RealAgent agent, SimulatorConfig simConfig, RealAgent baseStation) {
-        super(agent, simConfig, ExplorationState.Initial);
+        super(agent, simConfig, Agent.ExplorationState.Initial);
         this.agent = agent;
         this.frontierExpType = simConfig.getFrontierAlgorithm();
         this.baseStation = baseStation;
@@ -102,7 +103,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
      * @param frontierType
      */
     protected FrontierExploration(RealAgent agent, SimulatorConfig simConfig, RealAgent baseStation, SimulatorConfig.frontiertype frontierType) {
-        super(agent, simConfig, ExplorationState.Initial);
+        super(agent, simConfig, Agent.ExplorationState.Initial);
         this.agent = agent;
         this.frontierExpType = frontierType;
         this.baseStation = baseStation;
@@ -117,7 +118,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         //Preprocessing
         if (agent.getEnvError()) {
             agent.setEnvError(false);
-            state = ExplorationState.EnvError;
+            agent.setExploreState(Agent.ExplorationState.EnvError);
         }
         if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
             agent.getStats().setTimeLastDirectContactCS(1);
@@ -127,15 +128,15 @@ public class FrontierExploration extends BasicExploration implements Exploration
         }
 
         //Statemachine
-        switch (state) {
+        switch (agent.getExploreState()) {
             case Initial:
                 nextStep = RandomWalk.randomStep(agent);
                 agent.getStats().setTimeSinceLastPlan(0);
                 if (timeElapsed >= Constants.INIT_CYCLES - 1) {
-                    state = ExplorationState.Exploring;
+                    agent.setExploreState(Agent.ExplorationState.Explore);
                 }
                 break;
-            case Exploring:
+            case Explore:
                 if ((agent.getStats().getTimeSinceLastPlan() < Constants.REPLAN_INTERVAL)
                         && agent.getPath() != null && agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
                     nextStep = agent.getNextPathPoint();
@@ -143,11 +144,11 @@ public class FrontierExploration extends BasicExploration implements Exploration
                     nextStep = replan(timeElapsed);
                 }
                 break;
-            case BackToBase:
+            case ReturnToBase:
             case Finished:
             case SettingRelay:
             case EnvError:
-                state = ExplorationState.Exploring;
+                agent.setExploreState(Agent.ExplorationState.Explore);
             default:
                 nextStep = RandomWalk.randomStep(agent);
 

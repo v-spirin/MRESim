@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -54,6 +54,9 @@ import config.SimulatorConfig;
 public class RendezvousStrategyFactory {
 
     public static IRendezvousStrategy createRendezvousStrategy(SimulatorConfig simConfig, RealAgent agent) {
+        if (true) {
+            return createSimpleRendezvousStrategy(simConfig, agent);
+        }
         if (!simConfig.RVThroughWallsEnabled()) {
             return createSinglePointRendezvousStrategy(simConfig, agent);
         } else {
@@ -85,6 +88,12 @@ public class RendezvousStrategyFactory {
         rvSettings.allowReplanning = false;
         rvSettings.useImprovedRendezvous = true;
         SinglePointRendezvousStrategy rendezvousStrategy = new SinglePointRendezvousStrategy(agent, rvSettings);
+        return rendezvousStrategy;
+    }
+
+    public static IRendezvousStrategy createSimpleRendezvousStrategy(SimulatorConfig simConfig, RealAgent agent) {
+        SimpleRendezvousStrategySettings rvSettings = new SimpleRendezvousStrategySettings();
+        IRendezvousStrategy rendezvousStrategy = new SimpleRendezvousStrategy(agent, rvSettings);
         return rendezvousStrategy;
     }
 }

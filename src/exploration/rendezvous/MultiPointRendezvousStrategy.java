@@ -220,7 +220,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
                     Path newPath = agent.calculatePath(point1, agent.getParentTeammate().getLocation(), false);
                     agent.setPath(newPath);
 
-                    agent.setState(Agent.AgentState.ReturnToBaseStation);
+                    agent.setExploreState(Agent.ExplorationState.ReturnToBase);
                     return agent.getLocation();
                 }
             } else {
@@ -287,39 +287,18 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
     @Override
     public void processJustGotIntoParentRange(int timeElapsed) {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
-        //<editor-fold defaultstate="collapsed" desc="Case 1: Explorer">
+        //Case 1: Explorer
         if (agent.isExplorer()) {
             // Second, calculate rendezvous, but stick around for one time step to communicate
             //if(settings.useImprovedRendezvous) {
             calculateRendezvousExplorerWithRelay(timeElapsed);
-            /*if (rvThroughWalls) {
-                    if (rvd.getTimeSinceLastRVCalc() == 0)
-                        rvd.setTimeSinceLastRVCalc(100);
-                    rvd.setParentBackupRendezvous(rvd.getParentRendezvous());
-                    //calculateRVThroughWalls(agent);
-                    calculateRendezvousRandomSampling(agent);
-                }*/
- /*}
-            else {
-                //calculateRendezvous();
-                rvd.setParentRendezvous(rvd.getChildRendezvous());
-                /*if (rvThroughWalls && timeElapsed > 100) {
-                    if (rvd.getTimeSinceLastRVCalc() == 0)
-                        rvd.setTimeSinceLastRVCalc(100);
-                    rvd.setParentBackupRendezvous(rvd.getParentRendezvous());
-                    calculateRVThroughWalls(agent);
-                }*/
-            //}
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="Case 2: Relay with another relay as parent">
-        else if (agent.getParent() != Constants.BASE_STATION_TEAMMATE_ID) {
-            calculateRendezvousRelayWithRelay();
-        } //</editor-fold>
-        //<editor-fold defaultstate="collapsed" desc="Case 3: Relay with base station as parent, no need to recalculate rv">
-        else {
 
+        } else if (agent.getParent() != Constants.BASE_STATION_TEAMMATE_ID) {
+            //Case 2: Relay with another relay as parent
+            calculateRendezvousRelayWithRelay();
         }
-        //</editor-fold>
+        //Case 3: Relay with base station as parent, no need to recalculate rv
+
     }
 
     @Override
@@ -911,31 +890,14 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             rvd.setTimeSinceLastRVCalc(0);
         }
 
-        long realtimeStart = System.currentTimeMillis();
-
         TeammateAgent relay = agent.getParentTeammate();
-
-        System.out.print(Constants.INDENT + "Generating random points ... ");
-
         generatedPoints = SampleEnvironmentPoints(agent, settings.SamplePointDensity);
-
-        System.out.print(Constants.INDENT + "Finding commlinks ... ");
-
         connectionsToBase = FindCommLinks(generatedPoints, agent);
-
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(Constants.INDENT + "Choosing specific RV point ... ");
-        }
-
         PriorityQueue<NearRVPoint> pointsNearFrontier = GetPointsWithinDistOfFrontier(generatedPoints, 100);
-
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent + " connectionsToBase count is " + connectionsToBase.size());
-        }
 
         int pathsCalculated = 0;
 
-        //<editor-fold defaultstate="collapsed" desc="Now for top K points, let's calculate p' distances to base, and find the nearest point connected to base">
+        //Now for top K points, let's calculate p' distances to base, and find the nearest point connected to base
         PriorityQueue<NearRVPoint> pointsNearFrontierReal = new PriorityQueue<NearRVPoint>();
         for (int k = 0; (k < 50) && !pointsNearFrontier.isEmpty(); k++) {
             NearRVPoint p = pointsNearFrontier.poll();
@@ -979,20 +941,11 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
 
             p.utility = NearRVPoint.getFullRVUtility(p.distanceToFrontier,
                     p.commLinkClosestToBase.getRemotePoint().distanceToParent, p.commLinkClosestToBase.numObstacles);
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent + " utility is " + p.utility + " for point " + p + " linked to "
-                        + p.commLinkClosestToBase.getRemotePoint() + "; distToFrontier: " + p.distanceToFrontier
-                        + ", distToParent: " + p.commLinkClosestToBase.getRemotePoint().distanceToParent);
-            }
+
             pointsNearFrontierReal.add(p);
         }
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent + "complete, took " + (System.currentTimeMillis())
-                    + " ms., paths calculated: " + pathsCalculated);
-        }
-        //</editor-fold>
 
-        //<editor-fold defaultstate="collapsed" desc="Now just need to retrieve the best point">
+        //Now just need to retrieve the best point
         NearRVPoint childPoint = pointsNearFrontierReal.peek();
         NearRVPoint parentPoint = childPoint.commLinkClosestToBase.getRemotePoint();
 
@@ -1001,14 +954,10 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
 
         Rendezvous parentsMeetingLocation = new Rendezvous(parentPoint.parentPoint);
         Point baseLocation = agent.getTeammate(agent.getParentTeammate().getParent()).getLocation();
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println("    base location: " + baseLocation);
-        }
         parentsMeetingLocation.setParentLocation(agent.getTeammate(agent.getParentTeammate().getParent()).getLocation());
 
         meetingLocation.parentsRVLocation = parentsMeetingLocation;
         rvd.setParentRendezvous(meetingLocation);
-        //</editor-fold>
 
         Rendezvous backupRV = new Rendezvous(childPoint);
         rvd.setParentBackupRendezvous(backupRV);
@@ -1017,16 +966,6 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
 
         displayData.setGeneratedPoints(generatedPoints);
         displayData.setPointsNearFrontier(pointsNearFrontier);
-
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.print(Constants.INDENT + "Choosing complete, chose "
-                    + rvd.getParentRendezvous().getChildLocation().x + ","
-                    + rvd.getParentRendezvous().getChildLocation().y + ". ");
-        }
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(Constants.INDENT + "Complete RV calculation process took "
-                    + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
     }
 
     @Override

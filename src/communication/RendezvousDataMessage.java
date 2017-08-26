@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -90,21 +90,11 @@ public class RendezvousDataMessage implements IDataMessage {
         teammate.getRendezvousAgentData().setChildRendezvous(childRendezvous);
         teammate.getRendezvousAgentData().setParentRendezvous(parentRendezvous);
 
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println(agent + " comms setting teammate " + teammate.getName()
-                    + " childRV to " + childRendezvous + ", parentRV to " + parentRendezvous);
-        }
         //if the message is from our child
         if (teammate.getID() == agent.getChild() && teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
             rvd.setChildRendezvous(parentRendezvous);
             rvd.setChildBackupRendezvous(parentBackupRendezvous);
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println(agent + " comms setting own childRV to " + parentRendezvous + ", childBackupRV to " + parentBackupRendezvous);
-            }
             if (parentRendezvous.parentsRVLocation != null) {
-                if (Constants.DEBUG_OUTPUT) {
-                    System.out.println(agent + " comms setting own parentRV loc to " + parentRendezvous.parentsRVLocation);
-                }
                 rvd.setParentRendezvous(parentRendezvous.parentsRVLocation);
             }
         }

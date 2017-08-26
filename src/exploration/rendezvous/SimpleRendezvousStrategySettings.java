@@ -42,27 +42,15 @@
  *     If not, see <http://www.gnu.org/licenses/>.
  */
 
-package agents;
-
-import config.RobotConfig;
-import config.SimulatorConfig;
-import java.awt.Point;
+package exploration.rendezvous;
 
 /**
  *
- * @author julh
+ * @author Christian Clausen <christian.clausen@uni-bremen.de>
  */
-public class ComStation extends RealAgent {
+class SimpleRendezvousStrategySettings extends SinglePointRendezvousStrategySettings {
 
-    public ComStation(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig) {
-        super(envWidth, envHeight, robot, simConfig, null);
-        this.setChild(1);
-        this.setState(Agent.AgentState.RELAY);
-        this.speed = 0;
+    public SimpleRendezvousStrategySettings() {
     }
 
-    @Override
-    public void writeStep(Point nextLoc, double[] sensorData, boolean updateSensorData) {
-        batteryPower -= energyCunsumption;
-    }
 }

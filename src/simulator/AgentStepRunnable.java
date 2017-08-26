@@ -44,7 +44,6 @@
 
 package simulator;
 
-import agents.Agent;
 import agents.RealAgent;
 import config.Constants;
 import config.SimulatorConfig;
@@ -160,13 +159,13 @@ public class AgentStepRunnable implements Runnable {
                 break;
             }
 
-            if ((agent.getState() != Agent.AgentState.Explore)
+            /*if ((agent.getState() != Agent.AgentState.Explore)
                     && (agent.getState() != Agent.AgentState.GoToChild)
                     && (agent.getState() != Agent.AgentState.ReturnToBaseStation)
                     && (agent.getState() != Agent.AgentState.Initial)
                     && (agent.getState() != Agent.AgentState.AKTIVE)) {
                 break;
-            }
+            }*/
             if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
                 break;
             }

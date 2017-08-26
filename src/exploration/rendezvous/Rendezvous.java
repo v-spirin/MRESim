@@ -43,13 +43,8 @@
  */
 package exploration.rendezvous;
 
-import agents.RealAgent;
-import communication.PropModel1;
 import config.Constants;
-import environment.OccupancyGrid;
 import java.awt.Point;
-import java.awt.Polygon;
-import java.util.LinkedList;
 import java.util.Objects;
 
 /**
@@ -68,9 +63,7 @@ public class Rendezvous {
     public Rendezvous parentsRVLocation; //this is the RV location for our parent to meet with its parent (we calculate it).
 
     public Rendezvous(Point location) {
-        if (location == null) {
-            System.err.println("!!! location is null? This should never happen!");
-        }
+        assert (location != null);
         childLocation = location;
         parentLocation = location;
         timeMeeting = Constants.MAX_TIME; //meeting time not agreed
@@ -79,10 +72,6 @@ public class Rendezvous {
     }
 
     public Rendezvous copy() {
-        if (childLocation == null) {
-            System.err.println("!!! childLocation is null? This should never happen!");
-            return null;
-        }
         Rendezvous locCopy = new Rendezvous(childLocation);
         locCopy.setChildLocation(new Point(childLocation));
         locCopy.setParentLocation(new Point(parentLocation));
@@ -123,104 +112,12 @@ public class Rendezvous {
         return hash;
     }
 
-    /**
-     * find the second RV point in a pair. (one agent goes to the first point, other goes to the
-     * second) The second point is found through wall, within comm range, that gives an advantage
-     * heading to the goal
-     *
-     * @param agent
-     * @param firstRV
-     * @param goal
-     * @param minAcceptableRatio
-     * @return
-     */
-    public static Point findSecondRVPoint(RealAgent agent, Point firstRV, Point goal, double minAcceptableRatio) {
-        long realtimeStart = System.currentTimeMillis();
-        LinkedList<Point> candidatePoints = new LinkedList<Point>();
-//        LinkedList<Point> directPoints = new LinkedList<Point>(); //connection is not through a wall
-
-        OccupancyGrid occGrid = agent.getOccupancyGrid();
-
-        int pointSkip = 1;
-
-        /*Polygon commPoly = PropModel1.getRangeForRV(occGrid,
-                new Agent(0, "", 0, firstRV.x, firstRV.y, 0, 0,
-                        Math.min(agent.getCommRange(),
-                                agent.getParentTeammate().getCommRange()), 0,
-                        RobotConfig.roletype.Relay, 0, 0, 0)
-                );*/
-        Polygon commPoly = PropModel1.getRangeForRV(occGrid,
-                firstRV.x, firstRV.y, 0, 200);
-
-        int counter = 0;
-        //for(Point p : ExplorationImage.polygonPoints(commPoly))
-        for (int i = 0; i < commPoly.npoints; i++) {
-            Point p = new Point(commPoly.xpoints[i], commPoly.ypoints[i]);
-            if (occGrid.freeSpaceAt(p.x, p.y) /*&& !env.directLinePossible(firstRV.x, firstRV.y, p.x, p.y)*/) {
-                if (counter % pointSkip == 0) {
-                    if (!occGrid.directLinePossible(firstRV, p, true, false)) {
-                        candidatePoints.add(p);
-                    } else {
-//                        directPoints.add(p);
-                    }
-                }
-                counter++;
-            }
-        }
-        //System.out.println("Added " + candidatePoints.size() + " candidate points, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-        //realtimeStart = System.currentTimeMillis();
-        // let's find which candidate point is closest to goal
-
-        Point secondRV = firstRV;
-
-        if (candidatePoints.size() > 0) {
-            double minDistance = agent.calculatePath(firstRV, goal, false).getLength();
-
-            for (Point p : candidatePoints) {
-                double distance = agent.calculatePath(p, goal, false).getLength();
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    secondRV = p;
-                }
-            }
-
-            //System.out.println("1, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-            //realtimeStart = System.currentTimeMillis();
-            double minDistanceDirect;
-            /*for (Point p: directPoints)
-            {
-                double distance = agent.calculatePath(p, goal).getLength();
-                if (distance < minDistanceDirect)
-                {
-                    minDistanceDirect = distance;
-                }
-            }*/
-            minDistanceDirect = agent.calculatePath(firstRV, goal, false).getLength() - (agent.getCommRange() / Constants.DEFAULT_SPEED);
-
-            //System.out.println("2, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-            //realtimeStart = System.currentTimeMillis();
-            //communication through the wall gives no advantage
-            if ((minDistanceDirect < 0) || ((minDistance / minDistanceDirect) > minAcceptableRatio)) {
-                secondRV = firstRV;
-            }
-            /*else
-            {
-                if ((minDistance / agent.calculatePath(firstRV, secondRV).getLength()) > minAcceptableRatio)
-                    secondRV = firstRV;
-            }*/
-        }
-        //System.out.println("Checked all candidate points, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
-
-        return secondRV;
-    }
-
     @Override
     public String toString() {
         return "parentLoc: (" + (int) parentLocation.getX() + "," + (int) parentLocation.getX() + "), childLoc: (" + (int) childLocation.getX() + "," + (int) childLocation.getX()
                 + "), timeMeeting: " + timeMeeting + ", timeWait: " + timeWait;
     }
 
-    //<editor-fold defaultstate="collapsed" desc="Getters and setters">
     public void setChildLocation(Point childLocation) {
         this.childLocation = childLocation;
     }
@@ -230,17 +127,9 @@ public class Rendezvous {
     }
 
     public void setTimeMeeting(int timeMeeting) {
-        //System.out.println("Setting meeting time to " + timeMeeting);
         this.timeMeeting = timeMeeting;
     }
 
-    /*public void setMinTimeMeeting(int minTimeMeeting) {
-        this.minTimeMeeting = minTimeMeeting;
-    }
-
-    public int getMinTimeMeeting() {
-        return minTimeMeeting;
-    }*/
     public void setTimeWait(int timeWait) {
         this.timeWait = timeWait;
     }
@@ -260,6 +149,4 @@ public class Rendezvous {
     public int getTimeWait() {
         return timeWait;
     }
-
-    //</editor-fold>
 }

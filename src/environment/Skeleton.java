@@ -44,11 +44,12 @@
 package environment;
 
 import agents.RealAgent;
+import communication.PropModel1;
 import config.Constants;
 import config.SimulatorConfig;
-import exploration.rendezvous.Rendezvous;
 import java.awt.Color;
 import java.awt.Point;
+import java.awt.Polygon;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileWriter;
@@ -1040,13 +1041,72 @@ public class Skeleton {
         int counter = 1;
         for (Point rvPoint : borderRVPoints) {
             //System.out.println("Processing: " + counter + " / " + borderRVPoints.size());
-            secondRVPoints.add(Rendezvous.findSecondRVPoint(agent, rvPoint, goal, Constants.MIN_RV_THROUGH_WALL_ACCEPT_RATIO));
+            secondRVPoints.add(findSecondRVPoint(agent, rvPoint, goal, Constants.MIN_RV_THROUGH_WALL_ACCEPT_RATIO));
             counter++;
         }
         if (Constants.DEBUG_OUTPUT) {
             System.out.println("Checked all candidate points, took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
         }
         return secondRVPoints;
+    }
+
+    /**
+     * find the second RV point in a pair. (one agent goes to the first point, other goes to the
+     * second) The second point is found through wall, within comm range, that gives an advantage
+     * heading to the goal
+     *
+     * @param agent
+     * @param firstRV
+     * @param goal
+     * @param minAcceptableRatio
+     * @return
+     */
+    public static Point findSecondRVPoint(RealAgent agent, Point firstRV, Point goal, double minAcceptableRatio) {
+        LinkedList<Point> candidatePoints = new LinkedList<Point>();
+
+        OccupancyGrid occGrid = agent.getOccupancyGrid();
+
+        int pointSkip = 1;
+
+        Polygon commPoly = PropModel1.getRangeForRV(occGrid,
+                firstRV.x, firstRV.y, 0, 200);
+
+        int counter = 0;
+        for (int i = 0; i < commPoly.npoints; i++) {
+            Point p = new Point(commPoly.xpoints[i], commPoly.ypoints[i]);
+            if (occGrid.freeSpaceAt(p.x, p.y) /*&& !env.directLinePossible(firstRV.x, firstRV.y, p.x, p.y)*/) {
+                if (counter % pointSkip == 0) {
+                    if (!occGrid.directLinePossible(firstRV, p, true, false)) {
+                        candidatePoints.add(p);
+                    }
+                }
+                counter++;
+            }
+        }
+        // let's find which candidate point is closest to goal
+
+        Point secondRV = firstRV;
+
+        if (candidatePoints.size() > 0) {
+            double minDistance = agent.calculatePath(firstRV, goal, false).getLength();
+
+            for (Point p : candidatePoints) {
+                double distance = agent.calculatePath(p, goal, false).getLength();
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    secondRV = p;
+                }
+            }
+
+            double minDistanceDirect;
+            minDistanceDirect = agent.calculatePath(firstRV, goal, false).getLength() - (agent.getCommRange() / Constants.DEFAULT_SPEED);
+
+            //communication through the wall gives no advantage
+            if ((minDistanceDirect < 0) || ((minDistance / minDistanceDirect) > minAcceptableRatio)) {
+                secondRV = firstRV;
+            }
+        }
+        return secondRV;
     }
 
     public static void writeToFile(int[][] grid) {

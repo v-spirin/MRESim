@@ -44,6 +44,7 @@
 
 package exploration;
 
+import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.Constants;
@@ -63,7 +64,7 @@ public class RandomExploration extends BasicExploration implements Exploration {
     TopologicalMap tmap;
 
     public RandomExploration(RealAgent agent, SimulatorConfig simConfig) {
-        super(agent, simConfig, ExplorationState.Exploring);
+        super(agent, simConfig, Agent.ExplorationState.Explore);
         this.relayType = simConfig.getRelayAlgorithm();
         this.occGrid = agent.getOccupancyGrid();
         tmap = new TopologicalMap(occGrid);
@@ -73,21 +74,21 @@ public class RandomExploration extends BasicExploration implements Exploration {
     public Point takeStep(int timeElapsed) {
         Point nextStep;
         switch (state) {
-            case Exploring:
+            case Explore:
                 nextStep = takeStep_explore(timeElapsed);
                 break;
             case SettingRelay:
                 agent.dropComStation();
-                state = ExplorationState.Exploring;
+                state = Agent.ExplorationState.Explore;
                 nextStep = agent.getLocation();
                 break;
             case TakingRelay:
                 agent.liftComStation();
-                state = ExplorationState.Exploring;
+                state = Agent.ExplorationState.Explore;
                 nextStep = agent.getLocation();
                 break;
             case Initial:
-            case BackToBase:
+            case ReturnToBase:
             case Finished:
             case EnvError:
             default:
@@ -109,13 +110,13 @@ public class RandomExploration extends BasicExploration implements Exploration {
         switch (relayType) {
             case Random:
                 if (!agent.comStations.isEmpty() && (Math.random() < simConfig.getComStationDropChance())) {
-                    state = ExplorationState.SettingRelay;
+                    state = Agent.ExplorationState.SettingRelay;
                 }
                 TeammateAgent relay = agent.findNearComStation(agent.getSpeed());
 
                 if (agent.comStations.size() < agent.getComStationLimit() && relay != null && Math.random() < simConfig.getComStationTakeChance()) {
                     nextStep = relay.getLocation();
-                    state = ExplorationState.TakingRelay;
+                    state = Agent.ExplorationState.TakingRelay;
                 }
                 break;
             case KeyPoints:
@@ -126,7 +127,7 @@ public class RandomExploration extends BasicExploration implements Exploration {
                         simulator.ExplorationImage.addErrorMarker(p, "", true);
                         if (agent.getLocation().distance(p) < Constants.KEY_POINT_RELAY_DISTANCE) {
                             if (noRelay(p) && noNearRelay(p)) {
-                                state = ExplorationState.SettingRelay;
+                                state = Agent.ExplorationState.SettingRelay;
                                 break;
                             }
                         }
@@ -150,7 +151,7 @@ public class RandomExploration extends BasicExploration implements Exploration {
                         }
                     }
                     if (useful) {
-                        state = ExplorationState.SettingRelay;
+                        state = Agent.ExplorationState.SettingRelay;
                     }
                 }
                 break;
@@ -159,7 +160,7 @@ public class RandomExploration extends BasicExploration implements Exploration {
         }
 
         //If the stati stil is exploring, we explore, if it changed we stay still (state must be setting relay)
-        if (state == ExplorationState.Exploring) {
+        if (state == Agent.ExplorationState.Explore) {
             return RandomWalk.randomStep(agent);
         } else {
             agent.setStepFinished(true);

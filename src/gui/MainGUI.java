@@ -887,21 +887,19 @@ public class MainGUI extends javax.swing.JFrame {
     private void buttonStopActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonStopActionPerformed
         RUNMODE = runMode.paused;
         buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPlay.png")));
-        simulation.pause();
+        if (simulation != null) {
+            simulation.pause();
 
-        int answer = JOptionPane.showConfirmDialog(new JFrame(),
-                "Are you sure you want to reset?  This will completely stop the run.",
-                "Confirm Reset",
-                JOptionPane.YES_NO_OPTION);
+            int answer = JOptionPane.showConfirmDialog(new JFrame(),
+                    "Are you sure you want to reset?  This will completely stop the run.",
+                    "Confirm Reset",
+                    JOptionPane.YES_NO_OPTION);
 
-        if (answer == 0) {
-            try {
+            if (answer == 0) {
                 RUNMODE = runMode.stopped;
                 simulation.kill();
                 simulation = null;
                 this.updateFromEnvConfig();
-            } catch (NullPointerException e) {
-                System.err.println("Error: No exploration that can be stopped.");
             }
         }
 }//GEN-LAST:event_buttonStopActionPerformed

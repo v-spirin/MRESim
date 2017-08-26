@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -47,9 +47,9 @@ import exploration.rendezvous.NearRVPoint;
 import java.awt.Point;
 
 /**
+ * This class represents a communication link between two topological regions of the map.
  *
- * @author Victor This class represents a communication link between two
- * topological regions of the map.
+ * @author Victor
  */
 public class CommLink implements Comparable<CommLink> {
 
@@ -127,15 +127,15 @@ public class CommLink implements Comparable<CommLink> {
     /*public void setLocalNode(TopologicalNode localNode) {
         this.localNode = localNode;
     }
-    
+
     public TopologicalNode getLocalNode() {
         return localNode;
     }
-    
+
     public void setRemoteNode(TopologicalNode remoteNode) {
         this.remoteNode = remoteNode;
     }
-    
+
     public TopologicalNode getRemoteNode() {
         return remoteNode;
     }*/

@@ -120,7 +120,7 @@ public class RunFromLog implements Exploration {
     }
 
     public AgentState getState(int time) {
-        Point nextStep = new Point(0, 0);
+        /*Point nextStep = new Point(0, 0);
 
         File file = new File(fileName);
 
@@ -167,7 +167,7 @@ public class RunFromLog implements Exploration {
             } catch (NumberFormatException e) {
                 System.out.println("RunFromLog: Error -- incorrect data format in file " + fileName);
             }
-        }
+        }*/
         return AgentState.Initial;
     }
 
