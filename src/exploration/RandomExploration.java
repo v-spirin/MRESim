@@ -49,7 +49,6 @@ import agents.RealAgent;
 import agents.TeammateAgent;
 import config.SimConstants;
 import config.SimulatorConfig;
-import environment.OccupancyGrid;
 import environment.TopologicalMap;
 import java.awt.Point;
 
@@ -60,14 +59,12 @@ import java.awt.Point;
 public class RandomExploration extends BasicExploration implements Exploration {
 
     SimulatorConfig.relaytype relayType = SimulatorConfig.relaytype.None;
-    private final OccupancyGrid occGrid;
     TopologicalMap tmap;
 
     public RandomExploration(RealAgent agent, SimulatorConfig simConfig) {
         super(agent, simConfig, Agent.ExplorationState.Explore);
         this.relayType = simConfig.getRelayAlgorithm();
-        this.occGrid = agent.getOccupancyGrid();
-        tmap = new TopologicalMap(occGrid);
+        tmap = new TopologicalMap(agent.getOccupancyGrid());
     }
 
     @Override
@@ -112,11 +109,11 @@ public class RandomExploration extends BasicExploration implements Exploration {
                 if (!agent.comStations.isEmpty() && (Math.random() < simConfig.getComStationDropChance())) {
                     state = Agent.ExplorationState.SettingRelay;
                 }
-                TeammateAgent relay = agent.findNearComStation(agent.getSpeed());
 
+                TeammateAgent relay = agent.findNearComStation(agent.getSpeed());
                 if (agent.comStations.size() < agent.getComStationLimit() && relay != null && Math.random() < simConfig.getComStationTakeChance()) {
-                    nextStep = relay.getLocation();
                     state = Agent.ExplorationState.TakingRelay;
+                    nextStep = relay.getLocation();
                 }
                 break;
             case KeyPoints:
@@ -139,9 +136,7 @@ public class RandomExploration extends BasicExploration implements Exploration {
                 if (!agent.comStations.isEmpty()) {
                     boolean useful = false;
                     for (TeammateAgent mate : agent.getAllTeammates().values()) {
-                        //System.out.println(mate.getName());
                         if (mate.isStationary()) {
-                            //System.out.println(mate.getName() + ": " + mate.getDirectComLink());
                             if (mate.getDirectComLink() != 0 && mate.getDirectComLink() < agent.getSpeed() + 1) {
                                 useful = true;
                             } else if (mate.getDirectComLink() != 0) {

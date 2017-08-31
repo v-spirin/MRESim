@@ -170,6 +170,7 @@ public class AgentStepRunnable implements Runnable {
                 break;
             }
             if (agent.isStepFinished()) {
+                distance_left = 0;
                 agent.setStepFinished(false);
                 break;
             }

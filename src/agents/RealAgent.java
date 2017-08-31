@@ -47,9 +47,9 @@ package agents;
 import Logging.AgentStats;
 import communication.CommLink;
 import communication.DataMessage;
-import config.SimConstants;
 import config.RobotConfig;
 import config.RobotConfig.roletype;
+import config.SimConstants;
 import config.SimulatorConfig;
 import environment.Frontier;
 import environment.OccupancyGrid;
@@ -382,6 +382,11 @@ public class RealAgent extends Agent {
     }
 
 // </editor-fold>
+    public Point stay() {
+        this.stepFinished = true;
+        return this.getLocation();
+    }
+
     public void updatePathDirt() {
         if (path == null) {
             return;
@@ -475,7 +480,7 @@ public class RealAgent extends Agent {
         }
         if (occupied > 0) {
             this.setState(AgentState.OCCUPIED);
-            return getLocation();
+            return stay();
         } else {
             setState(AgentState.AKTIVE);
         }

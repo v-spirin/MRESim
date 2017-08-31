@@ -1,6 +1,6 @@
-LeaderFollower
+RoleBasedExploration
 PeriodicReturn
-Random
+KeyPoints
 null
 StaticCircle
 false

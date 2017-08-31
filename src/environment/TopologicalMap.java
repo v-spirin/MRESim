@@ -121,6 +121,11 @@ public class TopologicalMap {
         keyPoints = Skeleton.findKeyPoints(getSkeletonGrid(), occGrid, false, 40);
     }
 
+    /**
+     * Gives a list of Points at the junctions of the skeleton
+     *
+     * @return
+     */
     public LinkedList<Point> getJunctionPoints() {
         if (junctionPoints == null) {
             findJunctionPoints();

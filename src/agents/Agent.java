@@ -82,7 +82,7 @@ abstract public class Agent {
 
     public static enum ExplorationState {
         Initial, Explore, GoToParent, WaitForParent,
-        GoToChild, WaitForChild, ReturnToBase, SettingRelay, TakingRelay, EnvError, Finished
+        GoToChild, WaitForChild, ReturnToBase, SettingRelay, TakingRelay, EnvError, Finished, GoToRelay
     }
     private AgentState state;
     private ExplorationState prevExploreState = ExplorationState.Initial;
