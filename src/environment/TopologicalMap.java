@@ -45,7 +45,7 @@
 package environment;
 
 import agents.RealAgent;
-import config.Constants;
+import config.SimConstants;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.HashMap;
@@ -82,7 +82,7 @@ public class TopologicalMap {
     }
 
     public final void update(boolean force) {
-        if (!force && occGrid.getMapCellsChanged() < Constants.MAP_CHANGED_THRESHOLD) {
+        if (!force && occGrid.getMapCellsChanged() < SimConstants.MAP_CHANGED_THRESHOLD) {
             return;
         }
         skeletonGrid = null;
@@ -109,7 +109,7 @@ public class TopologicalMap {
     }
 
     private void generateSkeleton() {
-        skeletonGrid = Skeleton.findSkeleton(occGrid);
+        skeletonGrid = occGrid.getSkeleton();
         skeletonPoints = Skeleton.gridToList(skeletonGrid);
     }
 
@@ -187,12 +187,12 @@ public class TopologicalMap {
         int index = 0;
         for (Point p : getKeyPoints()) {
             index++;
-            if (index == Constants.UNEXPLORED_NODE_ID) {
+            if (index == SimConstants.UNEXPLORED_NODE_ID) {
                 index++;
             }
             topologicalNodes.put(index, new TopologicalNode(index, p));
         }
-        topologicalNodes.put(Constants.UNEXPLORED_NODE_ID, new TopologicalNode(Constants.UNEXPLORED_NODE_ID, new Point(-1, -1)));
+        topologicalNodes.put(SimConstants.UNEXPLORED_NODE_ID, new TopologicalNode(SimConstants.UNEXPLORED_NODE_ID, new Point(-1, -1)));
 
         // calculate the areas for each node
         areaGrid = Skeleton.fillKeyAreas(occGrid, getKeyPoints(), topologicalNodes);
@@ -208,8 +208,8 @@ public class TopologicalMap {
                         if ((areaGrid[p.x + i][p.y + j] != curCell) && (areaGrid[p.x + i][p.y + j] > 0)) {
                             TopologicalNode neighbourNode = topologicalNodes.get(areaGrid[p.x + i][p.y + j]);
                             if (!node.getListOfNeighbours().contains(neighbourNode)) {
-                                if ((curCell != Constants.UNEXPLORED_NODE_ID)
-                                        && (areaGrid[p.x + i][p.y + j] != Constants.UNEXPLORED_NODE_ID)) {
+                                if ((curCell != SimConstants.UNEXPLORED_NODE_ID)
+                                        && (areaGrid[p.x + i][p.y + j] != SimConstants.UNEXPLORED_NODE_ID)) {
                                     Path pathToNode;
                                     //check path cache
                                     Rectangle pathCoords = new Rectangle(node.getPosition().x, node.getPosition().y,
@@ -235,7 +235,7 @@ public class TopologicalMap {
                                     node.addNeighbour(neighbourNode, null);
                                     neighbourNode.addNeighbour(node, null);
                                     //Should not be neccessary!
-                                    /*if (areaGrid[p.x + i][p.y + j] == Constants.UNEXPLORED_NODE_ID) {
+                                    /*if (areaGrid[p.x + i][p.y + j] == SimConstants.UNEXPLORED_NODE_ID) {
                                         node.getCellList().stream().forEach((nodeCell) -> {
                                             occGrid.unsetFinalTopologicalMapCell(nodeCell.x, nodeCell.y);
                                         });

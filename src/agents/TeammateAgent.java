@@ -44,7 +44,7 @@
 
 package agents;
 
-import config.Constants;
+import config.SimConstants;
 import config.RobotConfig;
 import config.RobotConfig.roletype;
 import environment.OccupancyGrid;
@@ -128,7 +128,7 @@ public class TeammateAgent extends Agent {
     }
 
     public boolean isInHandoverRange(Agent agent) {
-        return (distanceTo(agent) < Constants.HANDOVER_RANGE);
+        return (distanceTo(agent) < SimConstants.HANDOVER_RANGE);
     }
 
     public void setCommunicationLink(boolean r) {
@@ -151,16 +151,12 @@ public class TeammateAgent extends Agent {
         return role.equals(roletype.Explorer);
     }
 
-    public boolean isRelay() {
+    public boolean isStationary() {
         return role.equals(roletype.RelayStation) || role.equals(roletype.BaseStation);
     }
 
     public void setExplorer() {
         role = roletype.Explorer;
-    }
-
-    public void setRelay() {
-        role = roletype.Relay;
     }
 
     public Point getFrontierCentre() {

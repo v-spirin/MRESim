@@ -46,7 +46,7 @@ package communication;
 import agents.Agent.AgentState;
 import agents.RealAgent;
 import agents.TeammateAgent;
-import config.Constants;
+import config.SimConstants;
 import environment.Frontier;
 import environment.OccupancyGrid;
 import java.awt.Point;
@@ -136,7 +136,7 @@ public class DataMessage implements IDataMessage {
         teammate.setRelayID(relayID);
         teammate.setFrontierCentre(frontierCentre);
         teammate.setNewInfo(newInfo); //needed for UtilExploration to correctly execute updateAreaRelayed
-        if (teammate.getID() == agent.getChild() && teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
+        if (teammate.getID() == agent.getChild() && teammate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID) {
             agent.setMissionComplete(missionComplete);
         }
         teammate.setTimeSinceLastComm(0);
@@ -145,7 +145,7 @@ public class DataMessage implements IDataMessage {
         if (agent.getSimConfig().timeStampTeammateDataEnabled()) {
             for (TeammateAgent remoteTeammateInfo : teammates) {
                 TeammateAgent localTeammateInfo = agent.getTeammateByNumber(remoteTeammateInfo.getRobotNumber());
-                if (Constants.DEBUG_OUTPUT) {
+                if (SimConstants.DEBUG_OUTPUT) {
                     System.out.println(agent + "remoteTeammate: " + remoteTeammateInfo
                             + ", localTeammate: " + localTeammateInfo);
                 }
@@ -181,7 +181,7 @@ public class DataMessage implements IDataMessage {
         }
 
         // This is for max/avg latency for message from base station
-        if (teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
+        if (teammate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID) {
             agent.getStats().commWithTeammate(agent.getTimeElapsed(), timeBaseMessageListSize);
         } else {
             agent.getStats().commWithBaseStation(agent.getTimeElapsed());

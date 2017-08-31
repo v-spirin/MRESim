@@ -51,7 +51,7 @@ import communication.DataMessage;
 import communication.DirectLine;
 import communication.PropModel1;
 import communication.StaticCircle;
-import config.Constants;
+import config.SimConstants;
 import config.RobotConfig;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
@@ -158,7 +158,7 @@ public class SimulationFramework implements ActionListener {
 
         // Initialize Timer
         timer = new Timer(0, this);
-        timer.setInitialDelay(Constants.INIT_DELAY);
+        timer.setInitialDelay(SimConstants.INIT_DELAY);
         timer.setCoalesce(true);
 
         // Initialize Debris timing
@@ -235,7 +235,7 @@ public class SimulationFramework implements ActionListener {
         if (timeElapsed == 1) {
             simStartTime = System.currentTimeMillis();
         }
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println("\n" + this.toString() + "************** CYCLE " + timeElapsed + " ******************\n");
         }
         //set exploration goals at the start of the mission
@@ -260,14 +260,14 @@ public class SimulationFramework implements ActionListener {
         }
 
         agentSteps();               // move agents, simulate sensor data
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "agentSteps took " + (System.currentTimeMillis() - realtimeStartCycle) + "ms.\n");
         }
         time1 += (System.currentTimeMillis() - realtimeStartCycle);
         //if(timeElapsed % 7 == 0 || timeElapsed % 7 == 1) {
         long localTimer = System.currentTimeMillis();
         simulateCommunication();    // simulate communication
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "simulateCommunication took " + (System.currentTimeMillis() - localTimer) + "ms.\n");
         }
         time2 += (System.currentTimeMillis() - localTimer);
@@ -290,7 +290,7 @@ public class SimulationFramework implements ActionListener {
 //                        agent[i].setState(Agent.AgentState.GoToChild);
 //                        agent[i].setStateTimer(0);
 //                        agent[i].addDirtyCells(agent[i].getPath().getAllPathPixels());
-//                        if (Constants.DEBUG_OUTPUT) {
+//                        if (SimConstants.DEBUG_OUTPUT) {
 //                            System.out.println("\nSecondary switch: " + agent[i].getName()
 //                                    + " and " + agent[j].getName() + "\n");
 //                        }
@@ -308,13 +308,13 @@ public class SimulationFramework implements ActionListener {
         //simulateDebris();           // simulate dynamic environment
         //System.out.println(this.toString() + "simulateDebris took " + (System.currentTimeMillis()-timer) + "ms.\n");
         localTimer = System.currentTimeMillis();
-        if (timeElapsed % Constants.UPDATE_AGENT_KNOWLEDGE_INTERVAL == 0) {
+        if (timeElapsed % SimConstants.UPDATE_AGENT_KNOWLEDGE_INTERVAL == 0) {
             updateAgentKnowledgeData();
         }
         updateGlobalData();         // update data
         //System.out.println(this.toString() + "updateGlobalData took " + (System.currentTimeMillis()-realtimeStartCycle) + "ms.\n");
 
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "updateGlobalData took " + (System.currentTimeMillis() - localTimer) + "ms.\n");
         }
         time3 += (System.currentTimeMillis() - localTimer);
@@ -324,7 +324,7 @@ public class SimulationFramework implements ActionListener {
         localTimer = System.currentTimeMillis();
         updateGUI();                // update GUI
 
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "updateGUI took " + (System.currentTimeMillis() - localTimer) + "ms.\n");
         }
         time4 += (System.currentTimeMillis() - localTimer);
@@ -334,25 +334,25 @@ public class SimulationFramework implements ActionListener {
 
         robotTeamConfig.getRobotTeam().entrySet().stream().filter((entry) -> (entry.getValue().getLoggingState())).forEach((entry) -> {
             RealAgent a = agent[entry.getValue().getRobotNumber() - 1];
-            a.getOccupancyGrid().saveToPNG(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "occuGrid " + a.toString() + timeElapsed + ".png");
+            a.getOccupancyGrid().saveToPNG(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + "occuGrid " + a.toString() + timeElapsed + ".png");
             logging_agent = true; //There is a logging-wish
         });
         if (logging_agent) {  //do non-agent-based logging if there is a wish to log for any robot
-            //EnvLoader.saveWallConfig(env, Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "environment " + timeElapsed + ".png");
-            image.saveScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY, timeElapsed);
+            //EnvLoader.saveWallConfig(env, SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + "environment " + timeElapsed + ".png");
+            image.saveScreenshot(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY, timeElapsed);
         }
         logging_agent = false; //reset logging-wish for next cycle
 
         //if ((timeElapsed % 10) == 0) verifyNoInfoGotLost(); //verify relaying works fine
         //System.out.println(this.toString() + "logging took " + (System.currentTimeMillis()-timer) + "ms.\n");
         int currentCycleTime = (int) (System.currentTimeMillis() - realtimeStartCycle);
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Cycle complete, took " + currentCycleTime + "ms.\n");
         }
         //avgCycleTime = (((timeElapsed - 1) * avgCycleTime) + currentCycleTime) / timeElapsed;
         checkPause();               // check whether user wanted to pause
         avgCycleTime = (int) (System.currentTimeMillis() - simStartTime) / timeElapsed;
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println("Time1 = " + time1 + ", time2 = " + time2 + ", time3 = " + time3 + ", time4 = " + time4);
         }
         return checkRunFinish(agent, timeElapsed, pctAreaKnownTeam, avgCycleTime);           // for scripting multiple runs, to max number of cycles
@@ -461,7 +461,7 @@ public class SimulationFramework implements ActionListener {
             simConfig.loadEnvironment(envDir + "\\" + map);
             robotTeamConfig.loadConfig(envDir + "\\" + conf);
 
-            if (Constants.DEBUG_OUTPUT) {
+            if (SimConstants.DEBUG_OUTPUT) {
                 System.out.println(simConfig.toString());
             }
             try (PrintWriter out = new PrintWriter(outputDir + "\\config.txt")) {
@@ -526,7 +526,7 @@ public class SimulationFramework implements ActionListener {
             reset();
         }
         //simConfig.TARGET_INFO_RATIO = 0.90;
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Starting exploration!");
         }
         timer.start();
@@ -538,7 +538,7 @@ public class SimulationFramework implements ActionListener {
             updateRunConfig();
         }
         reset();
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Restarting exploration!");
         }
         simStartTime = System.currentTimeMillis();
@@ -566,7 +566,7 @@ public class SimulationFramework implements ActionListener {
                 return false;
         }
         return true;*/
-        return (((double) agent[0].getStats().getAreaKnown() / (double) totalArea) >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL);
+        return (((double) agent[0].getStats().getAreaKnown() / (double) totalArea) >= SimConstants.TERRITORY_PERCENT_EXPLORED_GOAL);
     }
 
     private boolean checkRunFinish(RealAgent[] agent, int timeElapsed, double pctAreaKnownTeam, int avgCycleTime) {
@@ -581,7 +581,7 @@ public class SimulationFramework implements ActionListener {
             }*/
         }
 
-        if (timeElapsed >= Constants.MAXIMUM_TIME || baseStationDone() || allAgentsAtBase) {
+        if (timeElapsed >= SimConstants.MAXIMUM_TIME || baseStationDone() || allAgentsAtBase) {
             updateGUI();
             timer.stop();
             runNumber++;
@@ -596,14 +596,14 @@ public class SimulationFramework implements ActionListener {
 
     public void pause() {
         timer.stop();
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Pausing exploration!");
         }
     }
 
     public void kill() {
         timer.stop();
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println(this.toString() + "Resetting exploration!");
         }
     }
@@ -713,7 +713,7 @@ public class SimulationFramework implements ActionListener {
         //long realtimeStart2;
         //System.out.println(this.toString() + "Simulating communication ... ");
 
-        //System.out.println(Constants.INDENT + "detectCommunication took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        //System.out.println(SimConstants.INDENT + "detectCommunication took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         // Exchange data
         for (int i = 0; i < numRobots - 1; i++) {
             for (int j = i + 1; j < numRobots; j++) {
@@ -725,8 +725,8 @@ public class SimulationFramework implements ActionListener {
                     agent[i].receiveMessage(msgFromSecond);
                     agent[j].receiveMessage(msgFromFirst);
 
-                    if (Constants.DEBUG_OUTPUT) {
-                        System.out.println(Constants.INDENT + "Communication between "
+                    if (SimConstants.DEBUG_OUTPUT) {
+                        System.out.println(SimConstants.INDENT + "Communication between "
                                 + agent[i].getName() + " and "
                                 + agent[j].getName() + " took "
                                 + (System.currentTimeMillis() - realtimeStart2) + "ms.");
@@ -741,7 +741,7 @@ public class SimulationFramework implements ActionListener {
             agent[q].updateAfterCommunication();
         }
 
-        //System.out.println(Constants.INDENT + "Communication complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
+        //System.out.println(SimConstants.INDENT + "Communication complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
     private void detectMultiHopLinks() {
@@ -858,7 +858,7 @@ public class SimulationFramework implements ActionListener {
                 timer.start();
             }
             //newSimRate 1-10, 10 is no delay
-            timer.setDelay(10 * Constants.TIME_INCREMENT - newSimRate * Constants.TIME_INCREMENT);
+            timer.setDelay(10 * SimConstants.TIME_INCREMENT - newSimRate * SimConstants.TIME_INCREMENT);
 
         }
     }
@@ -908,7 +908,7 @@ public class SimulationFramework implements ActionListener {
         long realtimeStart = System.currentTimeMillis();
         //System.out.print(this.toString() + "Updating Global Data ... ");
         timeElapsed++;
-        double pctAreaKnownBase = 100 * (double) agent[Constants.BASE_STATION_AGENT_ID].getStats().getAreaKnown() / (double) totalArea;
+        double pctAreaKnownBase = 100 * (double) agent[SimConstants.BASE_STATION_AGENT_ID].getStats().getAreaKnown() / (double) totalArea;
         pctAreaKnownTeam = pctAreaKnownBase;
         if (simConfig.logData()) {
             avgAgentKnowledge = 0;
@@ -931,13 +931,13 @@ public class SimulationFramework implements ActionListener {
 
             int totalRelayingTime = 0; //sum of individual agent time spent in "returning to parent" state.
 
-            if ((timeElapsed % Constants.RECALC_JOINT_AREA) == 1) {
+            if ((timeElapsed % SimConstants.RECALC_JOINT_AREA) == 1) {
                 jointAreaKnown = getTrueJointAreaKnown();
             } else {
-                jointAreaKnown = Math.max(agent[Constants.BASE_STATION_AGENT_ID].getStats().getAreaKnown(), jointAreaKnown);
+                jointAreaKnown = Math.max(agent[SimConstants.BASE_STATION_AGENT_ID].getStats().getAreaKnown(), jointAreaKnown);
             }
 
-            jointAreaKnown = Math.max(agent[Constants.BASE_STATION_AGENT_ID].getStats().getAreaKnown(), jointAreaKnown);
+            jointAreaKnown = Math.max(agent[SimConstants.BASE_STATION_AGENT_ID].getStats().getAreaKnown(), jointAreaKnown);
 
             for (int i = 1; i < agent.length; i++) {
                 avgAgentKnowledge += agent[i].getStats().getAreaKnown();

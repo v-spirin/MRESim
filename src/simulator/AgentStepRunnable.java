@@ -45,7 +45,7 @@
 package simulator;
 
 import agents.RealAgent;
-import config.Constants;
+import config.SimConstants;
 import config.SimulatorConfig;
 import environment.Environment;
 import java.awt.Point;
@@ -92,7 +92,7 @@ public class AgentStepRunnable implements Runnable {
                         + "distance_left is " + distance_left);
             }
             agent.flush();
-            if (Constants.PROFILING) {
+            if (SimConstants.PROFILING) {
                 System.out.println(agent.toString() + "Get next step (" + nextStep.x + ","
                         + nextStep.y + ") took "
                         + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
@@ -116,7 +116,7 @@ public class AgentStepRunnable implements Runnable {
                     if (!env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y, agent.ability)) {
                         nextStep.x = agent.getX();
                         nextStep.y = agent.getY();
-                        if (Constants.DEBUG_OUTPUT) {
+                        if (SimConstants.DEBUG_OUTPUT) {
                             System.out.println(agent.toString() + " directLinePossible returned wrong result!");
                         }
                     }
@@ -179,7 +179,7 @@ public class AgentStepRunnable implements Runnable {
             agent.updateTrueAreaKnown(env);*/
         //benchmark
         agent.getStats().incrementTimeLastCentralCommand();
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println(agent.toString() + "Agent cycle complete, took " + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
         }
     }

@@ -45,7 +45,7 @@ package environment;
 
 import agents.RealAgent;
 import communication.PropModel1;
-import config.Constants;
+import config.SimConstants;
 import config.SimulatorConfig;
 import java.awt.Color;
 import java.awt.Point;
@@ -269,7 +269,7 @@ public class Skeleton {
     }
 
     /**
-     * CHecks if the box 2*Constants.WIDE_OPEN_SPACE_VALUE (currently 2*50) around the given Point
+     * CHecks if the box 2*SimConstants.WIDE_OPEN_SPACE_VALUE (currently 2*50) around the given Point
      *
      * @param grid
      * @param x Point.x
@@ -277,8 +277,8 @@ public class Skeleton {
      * @return true if the point is in open space
      */
     private static boolean inWideOpenSpace(int[][] grid, int x, int y) {
-        for (int i = Math.max(0, x - Constants.WIDE_OPEN_SPACE_VALUE); i <= Math.min(grid.length - 1, x + Constants.WIDE_OPEN_SPACE_VALUE); i++) {
-            for (int j = Math.max(0, y - Constants.WIDE_OPEN_SPACE_VALUE); j <= Math.min(grid[0].length - 1, y + Constants.WIDE_OPEN_SPACE_VALUE); j++) {
+        for (int i = Math.max(0, x - SimConstants.WIDE_OPEN_SPACE_VALUE); i <= Math.min(grid.length - 1, x + SimConstants.WIDE_OPEN_SPACE_VALUE); i++) {
+            for (int j = Math.max(0, y - SimConstants.WIDE_OPEN_SPACE_VALUE); j <= Math.min(grid[0].length - 1, y + SimConstants.WIDE_OPEN_SPACE_VALUE); j++) {
                 if (grid[i][j] == 0) {
                     return false;
                 }
@@ -429,12 +429,12 @@ public class Skeleton {
         Point p;
         for (int i = junctions.size() - 1; i >= 0; i--) {
             p = junctions.get(i);
-            if (grid.obstacleWithinDistance(p.x, p.y, Constants.WALL_DISTANCE)) {
+            if (grid.obstacleWithinDistance(p.x, p.y, SimConstants.WALL_DISTANCE)) {
                 junctions.remove(i);
                 continue;
             }
             for (int j = junctions.size() - 1; j >= 0; j--) {
-                if (i != j && p.distance(junctions.get(j)) < Constants.KEY_POINT_DISTANCE) {
+                if (i != j && p.distance(junctions.get(j)) < SimConstants.KEY_POINT_DISTANCE) {
                     junctions.remove(i);
                     break;
                 }
@@ -488,7 +488,7 @@ public class Skeleton {
         // Pass 3:  prune points too close to another rv point or too close to an obstacle
         for (int i = rvPts.size() - 1; i >= 0; i--) {
             p = rvPts.get(i);
-            if (grid.obstacleWithinDistance(p.x, p.y, Constants.WALL_DISTANCE)) {
+            if (grid.obstacleWithinDistance(p.x, p.y, SimConstants.WALL_DISTANCE)) {
                 rvPts.remove(i);
                 continue;
             }
@@ -522,7 +522,7 @@ public class Skeleton {
                 if ((occGrid.obstacleAt(i, j)) || (i == 0) || (j == 0) || (i == (areaGrid.length - 1)) || (j == (areaGrid[0].length - 1))) {
                     areaGrid[i][j] = -1;
                 } else if ((!occGrid.obstacleAt(i, j)) && (!occGrid.freeSpaceAt(i, j))) {
-                    areaGrid[i][j] = Constants.UNEXPLORED_NODE_ID; //unexplored space
+                    areaGrid[i][j] = SimConstants.UNEXPLORED_NODE_ID; //unexplored space
                 } else {
                     areaGrid[i][j] = 0;
                 }
@@ -531,11 +531,11 @@ public class Skeleton {
 
         // initialize the keypoint of each Node to the node's ID; add the immediate neighbour cells to "points of interest" list
         for (TopologicalNode t : nodes.values()) {
-            if (t.getID() == Constants.UNEXPLORED_NODE_ID) {
+            if (t.getID() == SimConstants.UNEXPLORED_NODE_ID) {
                 continue;
             }
             Point p = t.getPosition();
-            if ((areaGrid[p.x][p.y] >= 0) && (areaGrid[p.x][p.y] < Constants.UNEXPLORED_NODE_ID)) {
+            if ((areaGrid[p.x][p.y] >= 0) && (areaGrid[p.x][p.y] < SimConstants.UNEXPLORED_NODE_ID)) {
                 areaGrid[p.x][p.y] = t.getID();
                 if (areaGrid[p.x - 1][p.y] == 0) {
                     pointsOfInterest.add(new Point(p.x - 1, p.y));
@@ -584,7 +584,7 @@ public class Skeleton {
                 int s = 0;
                 int se = 0;
 
-                if ((areaGrid[p.x - 1][p.y - 1] > 0) && (areaGrid[p.x - 1][p.y - 1] < Constants.UNEXPLORED_NODE_ID)) {
+                if ((areaGrid[p.x - 1][p.y - 1] > 0) && (areaGrid[p.x - 1][p.y - 1] < SimConstants.UNEXPLORED_NODE_ID)) {
                     //nw has a node
                     //If any other neighbor of p is the same node, nw++
                     if (areaGrid[p.x][p.y - 1] == areaGrid[p.x - 1][p.y - 1]) {
@@ -612,7 +612,7 @@ public class Skeleton {
                     // if p is obstacle, unexploredNode nw--
                     nw--;
                 }
-                if ((areaGrid[p.x][p.y - 1] > 0) && (areaGrid[p.x][p.y - 1] < Constants.UNEXPLORED_NODE_ID)) {
+                if ((areaGrid[p.x][p.y - 1] > 0) && (areaGrid[p.x][p.y - 1] < SimConstants.UNEXPLORED_NODE_ID)) {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x][p.y - 1]) {
                         n++;
                     }
@@ -637,7 +637,7 @@ public class Skeleton {
                 } else {
                     n--;
                 }
-                if ((areaGrid[p.x + 1][p.y - 1] > 0) && (areaGrid[p.x + 1][p.y - 1] < Constants.UNEXPLORED_NODE_ID)) {
+                if ((areaGrid[p.x + 1][p.y - 1] > 0) && (areaGrid[p.x + 1][p.y - 1] < SimConstants.UNEXPLORED_NODE_ID)) {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x + 1][p.y - 1]) {
                         ne++;
                     }
@@ -662,7 +662,7 @@ public class Skeleton {
                 } else {
                     ne--;
                 }
-                if ((areaGrid[p.x - 1][p.y] > 0) && (areaGrid[p.x - 1][p.y] < Constants.UNEXPLORED_NODE_ID)) {
+                if ((areaGrid[p.x - 1][p.y] > 0) && (areaGrid[p.x - 1][p.y] < SimConstants.UNEXPLORED_NODE_ID)) {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x - 1][p.y]) {
                         w++;
                     }
@@ -687,7 +687,7 @@ public class Skeleton {
                 } else {
                     w--;
                 }
-                if ((areaGrid[p.x + 1][p.y] > 0) && (areaGrid[p.x + 1][p.y] < Constants.UNEXPLORED_NODE_ID)) {
+                if ((areaGrid[p.x + 1][p.y] > 0) && (areaGrid[p.x + 1][p.y] < SimConstants.UNEXPLORED_NODE_ID)) {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x + 1][p.y]) {
                         e++;
                     }
@@ -712,7 +712,7 @@ public class Skeleton {
                 } else {
                     e--;
                 }
-                if ((areaGrid[p.x - 1][p.y + 1] > 0) && (areaGrid[p.x - 1][p.y + 1] < Constants.UNEXPLORED_NODE_ID)) {
+                if ((areaGrid[p.x - 1][p.y + 1] > 0) && (areaGrid[p.x - 1][p.y + 1] < SimConstants.UNEXPLORED_NODE_ID)) {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x - 1][p.y + 1]) {
                         sw++;
                     }
@@ -738,7 +738,7 @@ public class Skeleton {
                     sw--;
                 }
 
-                if ((areaGrid[p.x][p.y + 1] > 0) && (areaGrid[p.x][p.y + 1] < Constants.UNEXPLORED_NODE_ID)) {
+                if ((areaGrid[p.x][p.y + 1] > 0) && (areaGrid[p.x][p.y + 1] < SimConstants.UNEXPLORED_NODE_ID)) {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x][p.y + 1]) {
                         s++;
                     }
@@ -764,7 +764,7 @@ public class Skeleton {
                     s--;
                 }
 
-                if ((areaGrid[p.x + 1][p.y + 1] > 0) && (areaGrid[p.x + 1][p.y + 1] < Constants.UNEXPLORED_NODE_ID)) {
+                if ((areaGrid[p.x + 1][p.y + 1] > 0) && (areaGrid[p.x + 1][p.y + 1] < SimConstants.UNEXPLORED_NODE_ID)) {
                     if (areaGrid[p.x - 1][p.y - 1] == areaGrid[p.x + 1][p.y + 1]) {
                         se++;
                     }
@@ -811,7 +811,7 @@ public class Skeleton {
                 if (areaGrid[p.x][p.y] == -1) {
                     //unexplored won the competition... not useful!
                     areaGrid[p.x][p.y] = 0;
-                } else if ((areaGrid[p.x][p.y] > 0) && (areaGrid[p.x][p.y] < Constants.UNEXPLORED_NODE_ID)) {
+                } else if ((areaGrid[p.x][p.y] > 0) && (areaGrid[p.x][p.y] < SimConstants.UNEXPLORED_NODE_ID)) {
                     occGrid.setFinalTopologicalMapCell(p.x, p.y);
                     nodes.get(areaGrid[p.x][p.y]).addCell(p);
                 }
@@ -856,7 +856,7 @@ public class Skeleton {
                 }
             }
         }
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println("Max queue size: " + maxQueueSize);
         }
 
@@ -865,7 +865,7 @@ public class Skeleton {
         /*for (int i = 1; i < areaGrid.length - 1; i++) {
             for (int j = 1; j < areaGrid[0].length - 1; j++) {
                 if (areaGrid[i][j] == 0) {
-                    areaGrid[i][j] = Constants.UNEXPLORED_NODE_ID;
+                    areaGrid[i][j] = SimConstants.UNEXPLORED_NODE_ID;
                 }
             }
         }*/
@@ -905,7 +905,7 @@ public class Skeleton {
     public static boolean withinDistanceBySkeleton(int[][] skeleton, Point a, Point b, Point came_from, int distance, long timeStart) {
         // just to be 100% sure we don't freeze here
         long curRealTime = System.currentTimeMillis();
-        if (curRealTime - timeStart > Constants.MAX_TIME_DISTANCE_BY_SKELETON) {
+        if (curRealTime - timeStart > SimConstants.MAX_TIME_DISTANCE_BY_SKELETON) {
             return a.equals(b);
         }
 
@@ -1012,7 +1012,7 @@ public class Skeleton {
         // Pass 3:  prune points too close to another rv point or too close to an obstacle
         for (int i = rvPts.size() - 1; i >= 0; i--) {
             p = rvPts.get(i);
-            if (occGrid.obstacleWithinDistance(p.x, p.y, Constants.WALL_DISTANCE)) {
+            if (occGrid.obstacleWithinDistance(p.x, p.y, SimConstants.WALL_DISTANCE)) {
                 rvPts.remove(i);
                 continue;
             }
@@ -1034,17 +1034,17 @@ public class Skeleton {
 
     public static LinkedList<Point> findSecondBorderRVPoints(LinkedList<Point> borderRVPoints, RealAgent agent, Point goal) {
         LinkedList<Point> secondRVPoints = new LinkedList<Point>();
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println("Border points: " + borderRVPoints.size());
         }
         long realtimeStart = System.currentTimeMillis();
         int counter = 1;
         for (Point rvPoint : borderRVPoints) {
             //System.out.println("Processing: " + counter + " / " + borderRVPoints.size());
-            secondRVPoints.add(findSecondRVPoint(agent, rvPoint, goal, Constants.MIN_RV_THROUGH_WALL_ACCEPT_RATIO));
+            secondRVPoints.add(findSecondRVPoint(agent, rvPoint, goal, SimConstants.MIN_RV_THROUGH_WALL_ACCEPT_RATIO));
             counter++;
         }
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println("Checked all candidate points, took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
         }
         return secondRVPoints;
@@ -1099,7 +1099,7 @@ public class Skeleton {
             }
 
             double minDistanceDirect;
-            minDistanceDirect = agent.calculatePath(firstRV, goal, false).getLength() - (agent.getCommRange() / Constants.DEFAULT_SPEED);
+            minDistanceDirect = agent.calculatePath(firstRV, goal, false).getLength() - (agent.getCommRange() / SimConstants.DEFAULT_SPEED);
 
             //communication through the wall gives no advantage
             if ((minDistanceDirect < 0) || ((minDistance / minDistanceDirect) > minAcceptableRatio)) {
@@ -1153,19 +1153,19 @@ public class Skeleton {
     public static void main(String args[]) {
 
         SimulatorConfig tempSimConfig = new SimulatorConfig();
-        tempSimConfig.loadEnvironment(Constants.DEFAULT_ENV_DIRECTORY + "maze1.png");
+        tempSimConfig.loadEnvironment(SimConstants.DEFAULT_ENV_DIRECTORY + "maze1.png");
 
         int[][] skel = findSkeleton(tempSimConfig.getEnvironment(), false, false, Integer.MAX_VALUE);
         LinkedList<Point> junc = findKeyPoints(skel, tempSimConfig.getEnvironment(), true, 40);
         System.out.println(junc.size());
         writeToImg(skel, junc, "1");
 
-        tempSimConfig.loadEnvironment(Constants.DEFAULT_ENV_DIRECTORY + "corridor.png");
+        tempSimConfig.loadEnvironment(SimConstants.DEFAULT_ENV_DIRECTORY + "corridor.png");
         skel = findSkeleton(tempSimConfig.getEnvironment(), false, false, Integer.MAX_VALUE);
         junc = findKeyPoints(skel, tempSimConfig.getEnvironment(), true, 40);
         System.out.println(junc.size());
         writeToImg(skel, junc, "2");
-        tempSimConfig.loadEnvironment(Constants.DEFAULT_ENV_DIRECTORY + "library.png");
+        tempSimConfig.loadEnvironment(SimConstants.DEFAULT_ENV_DIRECTORY + "library.png");
         skel = findSkeleton(tempSimConfig.getEnvironment(), false, false, Integer.MAX_VALUE);
         junc = findKeyPoints(skel, tempSimConfig.getEnvironment(), true, 40);
         System.out.println(junc.size());

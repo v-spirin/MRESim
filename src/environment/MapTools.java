@@ -43,7 +43,7 @@
  */
 package environment;
 
-import config.Constants;
+import config.SimConstants;
 import config.EnvLoader;
 import environment.Environment.Status;
 import java.awt.Point;
@@ -495,7 +495,7 @@ public class MapTools {
         System.out.println(className() + "Map \"" + fileName + "\" has metric2: " + metric2 + ".");
          //*/
         for (int i = 20; i < 21; i++) {
-            EnvLoader.saveWallConfig(generateRandomPerlinNoiseMap(0.01f, 0f), Constants.DEFAULT_ENV_DIRECTORY + "random" + File.separator + "newrandom" + i + ".png");
+            EnvLoader.saveWallConfig(generateRandomPerlinNoiseMap(0.01f, 0f), SimConstants.DEFAULT_ENV_DIRECTORY + "random" + File.separator + "newrandom" + i + ".png");
         }
     }
 

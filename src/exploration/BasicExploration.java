@@ -47,7 +47,7 @@ package exploration;
 import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
-import config.Constants;
+import config.SimConstants;
 import config.SimulatorConfig;
 import java.awt.Point;
 import path.Path;
@@ -97,7 +97,7 @@ abstract class BasicExploration {
     protected boolean noRelay(Point p) {
 
         for (TeammateAgent agt : agent.getAllTeammates().values()) {
-            if (agt.isRelay() && agt.getLocation().equals(p)) {
+            if (agt.isStationary() && agt.getLocation().equals(p)) {
                 return false;
             }
         }
@@ -107,7 +107,7 @@ abstract class BasicExploration {
     protected boolean noNearRelay(Point p) {
 
         for (TeammateAgent agt : agent.getAllTeammates().values()) {
-            if (agt.isRelay() && (agt.getLocation().distance(p) < Constants.MIN_RELAY_DISTANCE)) {
+            if (agt.isStationary() && (agt.getLocation().distance(p) < SimConstants.MIN_RELAY_DISTANCE)) {
                 return false;
             }
         }
@@ -116,7 +116,7 @@ abstract class BasicExploration {
 
     protected Point takeStep_ReturnToBase(Agent.ExplorationState followUp) {
         agent.setPathToBaseStation();
-        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).isInHandoverRange(agent)) {
+        if (agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).isInHandoverRange(agent)) {
             agent.setExploreState(followUp);
         }
         return agent.getNextPathPoint();

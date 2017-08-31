@@ -45,7 +45,10 @@
 package exploration.rendezvous;
 
 import agents.RealAgent;
+import agents.TeammateAgent;
 import java.awt.Point;
+import java.util.List;
+import java.util.PriorityQueue;
 import path.Path;
 
 /**
@@ -54,17 +57,24 @@ import path.Path;
  */
 class SimpleRendezvousStrategy implements IRendezvousStrategy {
 
-    public SimpleRendezvousStrategy(RealAgent agent, SimpleRendezvousStrategySettings rvSettings) {
+    private final RealAgent agent;
+    private final SinglePointRendezvousStrategyDisplayData displayData;
+    private final SimpleRendezvousStrategySettings settings;
+
+    public SimpleRendezvousStrategy(RealAgent agent, SimpleRendezvousStrategySettings settings) {
+        this.agent = agent;
+        displayData = new SinglePointRendezvousStrategyDisplayData();
+        this.settings = settings;
     }
 
     @Override
-    public void calculateRendezvousExplorerWithRelay(int timeElapsed) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Rendezvous calculateRendezvous(int timeElapsed, TeammateAgent mate) {
+        return new Rendezvous(calculateRVPoint(agent, mate));
     }
 
     @Override
-    public void calculateRendezvousRelayWithRelay() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Rendezvous calculateRendezvousRelayWithRelay(int timeElapsed, TeammateAgent mate) {
+        return new Rendezvous(calculateRVPoint(agent, mate));
     }
 
     @Override
@@ -103,7 +113,7 @@ class SimpleRendezvousStrategy implements IRendezvousStrategy {
     }
 
     @Override
-    public void processJustGotIntoParentRange(int timeElapsed) {
+    public void processJustGotIntoParentRange(int timeElapsed, TeammateAgent parent) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -124,7 +134,7 @@ class SimpleRendezvousStrategy implements IRendezvousStrategy {
 
     @Override
     public IRendezvousDisplayData getRendezvousDisplayData() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return displayData;
     }
 
     @Override
@@ -135,6 +145,23 @@ class SimpleRendezvousStrategy implements IRendezvousStrategy {
     @Override
     public void setAgent(RealAgent ag) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public Point calculateRVPoint(RealAgent agent, TeammateAgent mate) {
+        List<Point> pts = agent.getOccupancyGrid().getSkeletonList();
+
+        if (pts == null || pts.isEmpty()) {
+            return agent.getLocation();
+        } else if (mate.isStationary()) {
+            return mate.getLocation();
+        } else {
+            PriorityQueue<NearRVPoint> tempPoints = new PriorityQueue<>();
+            for (Point p : pts) {
+
+                tempPoints.add(new NearRVPoint(p.x, p.y, p.distance(mate.getLocation())));
+            }
+            return tempPoints.peek().getLocation();
+        }
     }
 
 }

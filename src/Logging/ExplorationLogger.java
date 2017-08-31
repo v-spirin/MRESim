@@ -45,7 +45,7 @@
 package Logging;
 
 import agents.RealAgent;
-import config.Constants;
+import config.SimConstants;
 import config.SimulatorConfig;
 import gui.MainConsole;
 import java.io.FileNotFoundException;
@@ -91,7 +91,7 @@ public class ExplorationLogger {
         double total = simConfig.getEnvironment().getTotalFreeSpace();
         PrintWriter exploration;
         try {
-            exploration = new PrintWriter(Constants.DEFAULT_LOG_DIRECTORY + "exploration" + this.name + ".csv");
+            exploration = new PrintWriter(SimConstants.DEFAULT_LOG_DIRECTORY + "exploration" + this.name + ".csv");
 
             //exploration.printf("Cycle,%s,%s,%s,ComStationsInUse,EnergyConsumption,TotalCommunications\n", agents[0].getName(), agents[1].getName(), agents[2].getName());
             String header = "";

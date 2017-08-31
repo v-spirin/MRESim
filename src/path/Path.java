@@ -44,7 +44,7 @@
 
 package path;
 
-import config.Constants;
+import config.SimConstants;
 import environment.Environment;
 import environment.OccupancyGrid;
 import environment.TopologicalMap;
@@ -133,12 +133,12 @@ public class Path {
                 return;
             }
         }
-        if (startNode.getID() == Constants.UNEXPLORED_NODE_ID || goalNode.getID() == Constants.UNEXPLORED_NODE_ID) {
+        if (startNode.getID() == SimConstants.UNEXPLORED_NODE_ID || goalNode.getID() == SimConstants.UNEXPLORED_NODE_ID) {
             topologicalNodes = tMap.getTopologicalNodes(true);
             areaGrid = tMap.getAreaGrid();
             startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
             goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
-            if (startNode.getID() == Constants.UNEXPLORED_NODE_ID || goalNode.getID() == Constants.UNEXPLORED_NODE_ID) {
+            if (startNode.getID() == SimConstants.UNEXPLORED_NODE_ID || goalNode.getID() == SimConstants.UNEXPLORED_NODE_ID) {
                 System.err.println(this + "Error after TopoNodesUpdate: startNode: " + startNode + " , goalNode: " + goalNode);
                 return;
             }
@@ -230,7 +230,7 @@ public class Path {
             closedSet.add(current);
 
             for (TopologicalNode neighbour : current.getListOfNeighbours()) {
-                if (neighbour.getID() == Constants.UNEXPLORED_NODE_ID || closedSet.contains(neighbour)) {
+                if (neighbour.getID() == SimConstants.UNEXPLORED_NODE_ID || closedSet.contains(neighbour)) {
                     continue;
                 }
                 tentative_g_score = g_score.get(current) + current.getPathToNeighbour(neighbour).getLength();
@@ -300,7 +300,7 @@ public class Path {
 
         while (!openSet.isEmpty()) {
             long time_elapsed = System.currentTimeMillis() - realtimeStart;
-            if ((time_elapsed > Constants.MAX_PATH_SEARCH_TIME) /*&& (limit)*/) {
+            if ((time_elapsed > SimConstants.MAX_PATH_SEARCH_TIME) /*&& (limit)*/) {
                 System.err.println("Took too long (A*), startpoint is " + startPoint.toString()
                         + ", endpoint is " + goalPoint.toString() + "time elapsed: " + time_elapsed + "ms.");
 
@@ -310,7 +310,7 @@ public class Path {
             }
             int current_index = getLowestScoreInList(openSet, f_score);
             current = openSet.get(current_index);
-            if (current.distance(goalPoint) < Constants.STEP_SIZE * 2) {
+            if (current.distance(goalPoint) < SimConstants.STEP_SIZE * 2) {
                 came_from.put(goalPoint, current);
                 reconstructPath(came_from, goalPoint);
                 break;
@@ -391,14 +391,14 @@ public class Path {
 
         while (!openSet.isEmpty()) {
             long time_elapsed = System.currentTimeMillis() - realtimeStart;
-            if ((time_elapsed > Constants.MAX_PATH_SEARCH_TIME) && (limit)) {
+            if ((time_elapsed > SimConstants.MAX_PATH_SEARCH_TIME) && (limit)) {
                 System.err.println("Took too long, time elapsed: " + time_elapsed + "ms.");
                 limit_hit = true;
                 break;
             }
             int current_index = getLowestScoreInList(openSet, f_score);
             current = openSet.get(current_index);
-            if (current.distance(goalPoint) <= 2 * Constants.STEP_SIZE) {
+            if (current.distance(goalPoint) <= 2 * SimConstants.STEP_SIZE) {
                 came_from.put(goalPoint, current);
                 reconstructJumpPath(came_from, goalPoint);
                 break;
@@ -725,7 +725,7 @@ public class Path {
     }
 
     private LinkedList<Point> neighbours(Point pt) {
-        return neighbours(pt, Constants.STEP_SIZE);
+        return neighbours(pt, SimConstants.STEP_SIZE);
     }
 
     private LinkedList<Point> neighbours(Point pt, int stepSize) {
@@ -769,16 +769,16 @@ public class Path {
                 }
 
                 // Check 4: is it not too close to wall (unless it's a goalPoint)
-                /*if(grid.obstacleWithinDistance(neighbourX, neighbourY, Constants.WALL_DISTANCE) &&
-                   !(goalPoint.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE ) &&
-                   !(startPoint.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE))
+                /*if(grid.obstacleWithinDistance(neighbourX, neighbourY, SimConstants.WALL_DISTANCE) &&
+                   !(goalPoint.distance(neighbourX, neighbourY) <= SimConstants.WALL_DISTANCE ) &&
+                   !(startPoint.distance(neighbourX, neighbourY) <= SimConstants.WALL_DISTANCE))
                     continue;*/
                 // Check 5: avoid running into teammates
                 /*teammateCollision = false;
                 for(TeammateAgent t: agent.getAllTeammates().values())
                     if(t.isInDirectRange() &&
-                       t.distanceTo(new Point(neighbourX, neighbourY)) < 2*Constants.WALL_DISTANCE &&
-                       !(goalPoint.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE )) {
+                       t.distanceTo(new Point(neighbourX, neighbourY)) < 2*SimConstants.WALL_DISTANCE &&
+                       !(goalPoint.distance(neighbourX, neighbourY) <= SimConstants.WALL_DISTANCE )) {
                         teammateCollision = true;
                         break;
                     }
@@ -791,8 +791,8 @@ public class Path {
 
         /*if(grid.locationExists(neighbourX, neighbourY) &&
                    grid.directLinePossible(pt.x, pt.y, neighbourX, neighbourY) &&
-                   (!grid.obstacleWithinDistance(neighbourX, neighbourY, Constants.WALL_DISTANCE) ||
-                    goalPoint.distance(neighbourX, neighbourY) <= Constants.WALL_DISTANCE ) &&
+                   (!grid.obstacleWithinDistance(neighbourX, neighbourY, SimConstants.WALL_DISTANCE) ||
+                    goalPoint.distance(neighbourX, neighbourY) <= SimConstants.WALL_DISTANCE ) &&
                     grid.freeSpaceAt(neighbourX, neighbourY))
                         validNeighbours.add(new Point(neighbourX, neighbourY));*/
         return validNeighbours;
@@ -837,7 +837,7 @@ public class Path {
     }
 
     private void outputPathError() {
-        if (Constants.OUTPUT_PATH_ERROR) {
+        if (SimConstants.OUTPUT_PATH_ERROR) {
             try {
                 ExplorationImage img = new ExplorationImage(new Environment(grid.height, grid.width));
                 ShowSettingsAgent agentSettings = new ShowSettingsAgent();
@@ -849,8 +849,8 @@ public class Path {
                     agentSettings.showTopologicalMap = true;
                     img.fullUpdatePath(grid, tMap, startPoint, goalPoint, agentSettings);
                 }
-                img.saveScreenshot(Constants.DEFAULT_PATH_LOG_DIRECTORY);
-                System.out.println("Outputting path debug screens to: " + Constants.DEFAULT_PATH_LOG_DIRECTORY);
+                img.saveScreenshot(SimConstants.DEFAULT_PATH_LOG_DIRECTORY);
+                System.out.println("Outputting path debug screens to: " + SimConstants.DEFAULT_PATH_LOG_DIRECTORY);
 
             } catch (Exception e) {
                 System.err.println("Couldn't save path error screenshot, reason: " + e.getMessage());

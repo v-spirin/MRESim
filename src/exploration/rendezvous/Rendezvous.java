@@ -43,7 +43,7 @@
  */
 package exploration.rendezvous;
 
-import config.Constants;
+import config.SimConstants;
 import java.awt.Point;
 import java.util.Objects;
 
@@ -66,9 +66,9 @@ public class Rendezvous {
         assert (location != null);
         childLocation = location;
         parentLocation = location;
-        timeMeeting = Constants.MAX_TIME; //meeting time not agreed
-        timeWait = Constants.MAX_TIME; //wait indefinitely
-        //minTimeMeeting = Constants.MAX_TIME;
+        timeMeeting = SimConstants.MAX_TIME; //meeting time not agreed
+        timeWait = SimConstants.MAX_TIME; //wait indefinitely
+        //minTimeMeeting = SimConstants.MAX_TIME;
     }
 
     public Rendezvous copy() {
@@ -114,7 +114,7 @@ public class Rendezvous {
 
     @Override
     public String toString() {
-        return "parentLoc: (" + (int) parentLocation.getX() + "," + (int) parentLocation.getX() + "), childLoc: (" + (int) childLocation.getX() + "," + (int) childLocation.getX()
+        return "parentLoc: (" + (int) parentLocation.getX() + "," + (int) parentLocation.getY() + "), childLoc: (" + (int) childLocation.getX() + "," + (int) childLocation.getY()
                 + "), timeMeeting: " + timeMeeting + ", timeWait: " + timeWait;
     }
 

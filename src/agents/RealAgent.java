@@ -47,7 +47,7 @@ package agents;
 import Logging.AgentStats;
 import communication.CommLink;
 import communication.DataMessage;
-import config.Constants;
+import config.SimConstants;
 import config.RobotConfig;
 import config.RobotConfig.roletype;
 import config.SimulatorConfig;
@@ -129,6 +129,7 @@ public class RealAgent extends Agent {
      */
     private int occupied = 0;
     Exploration exploration;
+    private String dynamicInfo;
 
     public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, RealAgent baseStation) {
         super(robot);
@@ -412,7 +413,7 @@ public class RealAgent extends Agent {
             }
         }
         pathToBase = calculatePath(getLocation(), nearestBaseCommunicationPoint, false);
-        if (Constants.DEBUG_OUTPUT || Constants.PROFILING) {
+        if (SimConstants.DEBUG_OUTPUT || SimConstants.PROFILING) {
             System.out.println(this.toString() + "Path to base computation took " + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
         }
     }
@@ -479,7 +480,7 @@ public class RealAgent extends Agent {
             setState(AgentState.AKTIVE);
         }
         //shall we go out of service?
-        if (Math.random() < Constants.PROB_OUT_OF_SERVICE) {
+        if (Math.random() < SimConstants.PROB_OUT_OF_SERVICE) {
             if ((timeElapsed > (robotNumber * 150)) && (robotNumber > 0)) {
                 setState(AgentState.OutOfService);
             }
@@ -561,7 +562,7 @@ public class RealAgent extends Agent {
             }
         }
 
-        if (Constants.DEBUG_OUTPUT || Constants.PROFILING) {
+        if (SimConstants.DEBUG_OUTPUT || SimConstants.PROFILING) {
             String nxt = nextStep == null ? "NOTHING" : ((int) nextStep.getX() + "," + (int) nextStep.getY());
             System.out.println(this.toString() + "Taking step complete, moving from (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") to (" + nxt + "), took " + (System.currentTimeMillis() - realtimeStartAgentStep) + "ms.");
         }
@@ -580,7 +581,7 @@ public class RealAgent extends Agent {
     public void writeStep(Point nextLoc, double[] sensorData, boolean updateSensorData) {
         long realtimeStart = System.currentTimeMillis();
 
-        //int safeRange = (int) (sensRange * Constants.SAFE_RANGE / 100);
+        //int safeRange = (int) (sensRange * SimConstants.SAFE_RANGE / 100);
         Polygon newFreeSpace;//, newSafeSpace;
 
         //Points between our old location and new location are definitely safe, as we are moving through them now!
@@ -615,7 +616,7 @@ public class RealAgent extends Agent {
         batteryPower -= energyCunsumption;
         this.getStats().incrementEnergyConsumption(energyCunsumption);
 
-        if (Constants.PROFILING) {
+        if (SimConstants.PROFILING) {
             System.out.println(this.toString() + "WriteStep complete, took "
                     + (System.currentTimeMillis() - realtimeStart) + "ms.");
         }
@@ -632,8 +633,8 @@ public class RealAgent extends Agent {
     }
 
     public Path calculatePath(Point startPoint, Point goalPoint, boolean pureAStar) {
-        if (timeElapsed - timeTopologicalMapUpdated >= Constants.REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
-            if (timeElapsed - timeTopologicalMapUpdated >= Constants.MUST_REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
+        if (timeElapsed - timeTopologicalMapUpdated >= SimConstants.REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
+            if (timeElapsed - timeTopologicalMapUpdated >= SimConstants.MUST_REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
                 updateTopologicalMap(true);
             } else {
                 updateTopologicalMap(false);
@@ -649,7 +650,7 @@ public class RealAgent extends Agent {
         } else if (!tpath.found) {
             System.out.println(this + "at location (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") failed to plan path (" + (int) startPoint.getX() + "," + (int) startPoint.getY() + ") to (" + (int) goalPoint.getX() + "," + (int) goalPoint.getY() + "), not retrying; "
                     + "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed
-                    + ", mapCellsChanged: " + occGrid.getMapCellsChanged() + "/" + Constants.MAP_CHANGED_THRESHOLD);
+                    + ", mapCellsChanged: " + occGrid.getMapCellsChanged() + "/" + SimConstants.MAP_CHANGED_THRESHOLD);
 
         }
 
@@ -728,12 +729,12 @@ public class RealAgent extends Agent {
         {
             return;
         }
-        if (getID() == Constants.BASE_STATION_TEAMMATE_ID) //base station
+        if (getID() == SimConstants.BASE_STATION_TEAMMATE_ID) //base station
         {
             return;
         }
         /*if (ag.timeToBase() == timeToBase()) { //robots overlapping in sim; couldn't happen in real life.
-            if (Constants.DEBUG_OUTPUT) {
+            if (SimConstants.DEBUG_OUTPUT) {
                 System.out.println(toString() + " timeToBase same as " + ag.name + " (" + timeToBase() + " vs " + ag.timeToBase() + ")");
             }
             return;                          //anyway, this means there is symmetry so could potentially lose new data
@@ -763,7 +764,7 @@ public class RealAgent extends Agent {
                 if (stats.getNewInfo() == 0) {
                     stats.setNewInfo(1);
                 }
-                if (Constants.DEBUG_OUTPUT) {
+                if (SimConstants.DEBUG_OUTPUT) {
                     System.out.println(toString() + "setGotUnrelayed: " + new_counter);
                 }
             }
@@ -786,7 +787,7 @@ public class RealAgent extends Agent {
                 // Need to iterate over a copy of getOwnedCells list, as the list gets changed by setGotRelayed.
                 new_counter = occGrid.setOwnedCellsRelayed();
                 if (new_counter > 0) {
-                    if (Constants.DEBUG_OUTPUT) {
+                    if (SimConstants.DEBUG_OUTPUT) {
                         System.out.println(toString() + "setGotRelayed: " + new_counter);
                     }
                 }
@@ -807,7 +808,7 @@ public class RealAgent extends Agent {
             return;
         }
 
-        int safeRange = (int) (sensRange * Constants.SAFE_RANGE / 100);
+        int safeRange = (int) (sensRange * SimConstants.SAFE_RANGE / 100);
 
         // To create a polygon, add robot at start and end
         Polygon polygon = new Polygon();
@@ -1033,7 +1034,7 @@ public class RealAgent extends Agent {
                     currX = first.x + (int) (j * (Math.cos(angle)));
                     currY = first.y + (int) (j * (Math.sin(angle)));
                     double angleDepth = Math.atan2(currY - y, currX - x);
-                    for (int k = 0; k < Constants.WALL_THICKNESS; k++) {
+                    for (int k = 0; k < SimConstants.WALL_THICKNESS; k++) {
                         int newX = currX + (int) (k * Math.cos(angleDepth));
                         int newY = currY + (int) (k * Math.sin(angleDepth));
                         if (newX < 0) {
@@ -1110,8 +1111,8 @@ public class RealAgent extends Agent {
         msg.receiveMessage(this, teammate);
 
         boolean isBaseStation = false;
-        if ((teammate.getRobotNumber() == Constants.BASE_STATION_TEAMMATE_ID)
-                || (this.getRobotNumber() == Constants.BASE_STATION_TEAMMATE_ID)) {
+        if ((teammate.getRobotNumber() == SimConstants.BASE_STATION_TEAMMATE_ID)
+                || (this.getRobotNumber() == SimConstants.BASE_STATION_TEAMMATE_ID)) {
             isBaseStation = true;
         }
 
@@ -1119,13 +1120,7 @@ public class RealAgent extends Agent {
         dirtyCells.addAll(
                 occGrid.mergeGrid(teammate.getOccupancyGrid(), isBaseStation));
 
-        if ((simConfig != null)
-                && ((simConfig.getExpAlgorithm() == SimulatorConfig.exptype.FrontierExploration)
-                && (simConfig.getFrontierAlgorithm() == SimulatorConfig.frontiertype.UtilReturn))
-                || (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RoleBasedExploration)) //this line just so we can compare logs with UtilReturn exploration
-        {
-            updateAreaRelayed(teammate);
-        }
+        updateAreaRelayed(teammate);
 
     }
 
@@ -1147,7 +1142,7 @@ public class RealAgent extends Agent {
             comStation.setY(this.y);
             this.getStats().incrementDroppedComStations();
             baseStation.getStats().incrementDroppedComStations();
-            occupied = Constants.COM_STATION_DROP_TIME; // use X cycles to drop ComStation (including current one
+            occupied = SimConstants.COM_STATION_DROP_TIME; // use X cycles to drop ComStation (including current one
         }
     }
 
@@ -1172,7 +1167,7 @@ public class RealAgent extends Agent {
             this.getStats().incrementDroppedComStations();
             this.getStats().decrementDroppedComStations();
             baseStation.getStats().decrementDroppedComStations();
-            occupied = Constants.COM_STATION_LIFT_TIME; // use X cycles to drop ComStation (including current one
+            occupied = SimConstants.COM_STATION_LIFT_TIME; // use X cycles to drop ComStation (including current one
             return true;
         }
         return false;
@@ -1186,10 +1181,18 @@ public class RealAgent extends Agent {
      */
     public TeammateAgent findNearComStation(int distance) {
         for (TeammateAgent mate : teammates.values()) {
-            if (mate.isRelay() && mate.getRole() == roletype.RelayStation && this.getLocation().distance(mate.getLocation()) < distance) {
+            if (mate.isStationary() && mate.getRole() == roletype.RelayStation && this.getLocation().distance(mate.getLocation()) < distance) {
                 return mate; //This works as ComStations are nearly only Agents
             }
         }
         return null;
+    }
+
+    public String getDynamicInfoText() {
+        return this.dynamicInfo;
+    }
+
+    public void setDynamicInfoText(String info) {
+        this.dynamicInfo = info;
     }
 }

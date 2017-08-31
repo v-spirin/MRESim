@@ -65,13 +65,13 @@ public class EnvLoader {
 
     public static boolean saveWallConfig_ImageBased(Environment env, String fileName) {
         try {
-            if (Constants.DEBUG_OUTPUT) {
+            if (SimConstants.DEBUG_OUTPUT) {
                 System.out.println(className() + "Trying to save image based environment ... ");
             }
-            BufferedImage image = new BufferedImage(Constants.MAX_COLS, Constants.MAX_ROWS, BufferedImage.TYPE_INT_RGB);
+            BufferedImage image = new BufferedImage(SimConstants.MAX_COLS, SimConstants.MAX_ROWS, BufferedImage.TYPE_INT_RGB);
 
-            for (int i = 0; i < Constants.MAX_COLS; i++) {
-                for (int j = 0; j < Constants.MAX_ROWS; j++) {
+            for (int i = 0; i < SimConstants.MAX_COLS; i++) {
+                for (int j = 0; j < SimConstants.MAX_ROWS; j++) {
                     switch (env.statusAt(i, j)) {
                         case unexplored:
                             image.setRGB(i, j, Color.blue.getRGB());
@@ -102,7 +102,7 @@ public class EnvLoader {
 
             ImageIO.write(image, "png", new File(fileName));
 
-            if (Constants.DEBUG_OUTPUT) {
+            if (SimConstants.DEBUG_OUTPUT) {
                 System.out.println(className() + "Environment saved successfully.");
             }
             return true;
@@ -159,13 +159,13 @@ public class EnvLoader {
 
         Environment env;
         try (BufferedReader inFile = new BufferedReader(new FileReader(file))) {
-            if (Constants.DEBUG_OUTPUT) {
+            if (SimConstants.DEBUG_OUTPUT) {
                 System.out.println(className() + "Trying to load text based environment from " + fileName + "... ");
             }
 
             int rows = Integer.parseInt(inFile.readLine());
             int columns = Integer.parseInt(inFile.readLine());
-            if (Constants.DEBUG_OUTPUT) {
+            if (SimConstants.DEBUG_OUTPUT) {
                 System.out.println(columns + " columns, " + rows + " rows.");
             }
 
@@ -173,8 +173,8 @@ public class EnvLoader {
                 return null;
             }
 
-            int offsetX = (Constants.MAX_COLS - columns) / 2;
-            int offsetY = (Constants.MAX_ROWS - rows) / 2;
+            int offsetX = (SimConstants.MAX_COLS - columns) / 2;
+            int offsetY = (SimConstants.MAX_ROWS - rows) / 2;
 
             env = new Environment(rows, columns);
             int currValue;
@@ -224,7 +224,7 @@ public class EnvLoader {
         }
         //Temp for debugging:
         //saveWallConfig(fileName + "2");
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println(className() + "Environment loaded successfully.");
         }
         return env;
@@ -240,14 +240,14 @@ public class EnvLoader {
 
         try {
             BufferedImage image = ImageIO.read(file);
-            if (Constants.DEBUG_OUTPUT) {
+            if (SimConstants.DEBUG_OUTPUT) {
                 System.out.println(className() + "Trying to load image based environment from " + fileName + "... ");
             }
             //Raster raster = image.getRaster();
 
             int columns = image.getWidth();
             int rows = image.getHeight();
-            if (Constants.DEBUG_OUTPUT) {
+            if (SimConstants.DEBUG_OUTPUT) {
                 System.out.println(columns + " columns, " + rows + " rows.");
             }
 
@@ -255,10 +255,10 @@ public class EnvLoader {
                 return null;
             }
 
-            int offsetX = (Constants.MAX_COLS - columns) / 2;
-            int offsetY = (Constants.MAX_ROWS - rows) / 2;
+            int offsetX = (SimConstants.MAX_COLS - columns) / 2;
+            int offsetY = (SimConstants.MAX_ROWS - rows) / 2;
 
-            Environment env = new Environment(Constants.MAX_ROWS, Constants.MAX_COLS);
+            Environment env = new Environment(SimConstants.MAX_ROWS, SimConstants.MAX_COLS);
             if (image.getColorModel().getNumColorComponents() == 1) { //GreyScale-Hack
                 Raster raster = image.getRaster();
                 for (int i = 0; i < columns; i++) {
@@ -296,7 +296,7 @@ public class EnvLoader {
                     else
                         env.setStatus(offsetX+i, offsetY+j, Environment.Status.unexplored);*/
 
-            if (Constants.DEBUG_OUTPUT) {
+            if (SimConstants.DEBUG_OUTPUT) {
                 System.out.println(className() + "Environment loaded successfully.");
             }
             return env;
@@ -319,13 +319,13 @@ public class EnvLoader {
     }
 
     private static boolean checkDimensions(int rows, int cols) {
-        if (rows > Constants.MAX_ROWS) {
-            JOptionPane.showMessageDialog(new JFrame(), "Input image height is too large!  Maximum height is " + Constants.MAX_ROWS + ".", "Input Image Error", JOptionPane.ERROR_MESSAGE);
+        if (rows > SimConstants.MAX_ROWS) {
+            JOptionPane.showMessageDialog(new JFrame(), "Input image height is too large!  Maximum height is " + SimConstants.MAX_ROWS + ".", "Input Image Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 
-        if (cols > Constants.MAX_COLS) {
-            JOptionPane.showMessageDialog(new JFrame(), "Input image width is too large!  Maximum width is " + Constants.MAX_COLS + ".", "Input Image Error", JOptionPane.ERROR_MESSAGE);
+        if (cols > SimConstants.MAX_COLS) {
+            JOptionPane.showMessageDialog(new JFrame(), "Input image width is too large!  Maximum width is " + SimConstants.MAX_COLS + ".", "Input Image Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
 

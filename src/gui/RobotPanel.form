@@ -44,7 +44,7 @@
                   </Group>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="jScrollPane1" pref="67" max="32767" attributes="0"/>
+              <Component id="jScrollPane1" pref="87" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -90,14 +90,17 @@
                           <Component id="labelName" min="-2" pref="84" max="-2" attributes="0"/>
                           <EmptySpace type="separate" max="-2" attributes="0"/>
                           <Component id="labelPower" min="-2" pref="43" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="58" max="-2" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
-                          <Component id="labelRole" min="-2" pref="92" max="-2" attributes="0"/>
+                          <Component id="labelRole" min="-2" pref="70" max="-2" attributes="0"/>
+                          <EmptySpace max="32767" attributes="0"/>
+                          <Component id="labelState" min="-2" pref="70" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="labelState" min="-2" pref="105" max="-2" attributes="0"/>
+                          <Component id="labelDynamic" min="-2" pref="45" max="-2" attributes="0"/>
+                          <EmptySpace min="-2" pref="72" max="-2" attributes="0"/>
                       </Group>
                   </Group>
-                  <EmptySpace min="-2" pref="20" max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -113,6 +116,7 @@
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="labelRole" alignment="3" min="-2" pref="14" max="-2" attributes="0"/>
                       <Component id="labelState" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="labelDynamic" alignment="3" min="-2" pref="14" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -161,6 +165,14 @@
             </Property>
             <Property name="horizontalAlignment" type="int" value="4"/>
             <Property name="text" type="java.lang.String" value="0"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="labelDynamic">
+          <Properties>
+            <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
+              <Font name="Arial" size="11" style="0"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" value="dynamic info"/>
           </Properties>
         </Component>
       </SubComponents>

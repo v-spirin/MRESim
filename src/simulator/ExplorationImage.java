@@ -45,7 +45,7 @@ package simulator;
 
 import agents.RealAgent;
 import agents.TeammateAgent;
-import config.Constants;
+import config.SimConstants;
 import config.RobotConfig;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
@@ -147,13 +147,13 @@ public class ExplorationImage {
     public void setPixel(int row, int column, Environment.Status status) {
         switch (status) {
             case unexplored:
-                setPixel(row, column, Constants.MapColor.unexplored());
+                setPixel(row, column, SimConstants.MapColor.unexplored());
                 break;
             case explored:
-                setPixel(row, column, Constants.MapColor.explored());
+                setPixel(row, column, SimConstants.MapColor.explored());
                 break;
             case obstacle:
-                setPixel(row, column, Constants.MapColor.obstacle());
+                setPixel(row, column, SimConstants.MapColor.obstacle());
                 break;
             default:
                 break;
@@ -190,7 +190,7 @@ public class ExplorationImage {
 
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                setPixel(i, j, Constants.MapColor.unexplored());
+                setPixel(i, j, SimConstants.MapColor.unexplored());
             }
         }
     }
@@ -198,8 +198,8 @@ public class ExplorationImage {
 
     private void addDirtyAgentCells(RealAgent agent) {
         // Erase old relay triangle
-        for (int i = agent.getX() - 2 * Constants.AGENT_RADIUS; i <= agent.getX() + 2 * Constants.AGENT_RADIUS; i++) {
-            for (int j = agent.getY() - 2 * Constants.AGENT_RADIUS; j <= agent.getY() + 2 * Constants.AGENT_RADIUS; j++) {
+        for (int i = agent.getX() - 2 * SimConstants.AGENT_RADIUS; i <= agent.getX() + 2 * SimConstants.AGENT_RADIUS; i++) {
+            for (int j = agent.getY() - 2 * SimConstants.AGENT_RADIUS; j <= agent.getY() + 2 * SimConstants.AGENT_RADIUS; j++) {
                 if (agent.getOccupancyGrid().locationExists(i, j)) {
                     agent.getDirtyCells().add(new Point(i, j));
                 }
@@ -207,8 +207,8 @@ public class ExplorationImage {
         }
 
         // Erase old relay name
-        for (int i = agent.getX() + Constants.AGENT_RADIUS; i <= agent.getX() + Constants.AGENT_RADIUS + 46; i++) {
-            for (int j = agent.getY() - Constants.AGENT_RADIUS - 12; j <= agent.getY() - Constants.AGENT_RADIUS + 12; j++) {
+        for (int i = agent.getX() + SimConstants.AGENT_RADIUS; i <= agent.getX() + SimConstants.AGENT_RADIUS + 46; i++) {
+            for (int j = agent.getY() - SimConstants.AGENT_RADIUS - 12; j <= agent.getY() - SimConstants.AGENT_RADIUS + 12; j++) {
                 if (agent.getOccupancyGrid().locationExists(i, j)) {
                     agent.getDirtyCells().add(new Point(i, j));
                 }
@@ -223,7 +223,7 @@ public class ExplorationImage {
         for (Point cell : circlePoints(agent.getPrevX(), agent.getPrevY(), agent.getCommRange())) {
             if (agent.getOccupancyGrid().locationExists(cell.x, cell.y)) {
                 agent.getDirtyCells().add(cell);
-                //setPixel(cell.x, cell.y,Constants.MapColor.unexplored());
+                //setPixel(cell.x, cell.y,SimConstants.MapColor.unexplored());
             }
         }
     }
@@ -275,7 +275,7 @@ public class ExplorationImage {
         //Draw agent grid according nearPoint agentSettings
         for (int i = 0; i < agentGrid.width; i++) {
             for (int j = 0; j < agentGrid.height; j++) {
-                setPixel(i, j, Constants.MapColor.background());
+                setPixel(i, j, SimConstants.MapColor.background());
                 updatePixelAgent(agentSettings, agentGrid, i, j);
             }
         }
@@ -294,7 +294,7 @@ public class ExplorationImage {
         for(int i=0; i<agentGrid.width; i++)
             for(int j=0; j<agentGrid.height; j++)
             {
-                setPixel(i, j, Constants.MapColor.background());
+                setPixel(i, j, SimConstants.MapColor.background());
                 updatePixelAgent(agentSettings, agentGrid, i, j);
             }
         //</editor-fold>
@@ -336,7 +336,7 @@ public class ExplorationImage {
         //Draw agent grid according nearPoint agentSettings
         for (int i = 0; i < agentGrid.width; i++) {
             for (int j = 0; j < agentGrid.height; j++) {
-                setPixel(i, j, Constants.MapColor.background());
+                setPixel(i, j, SimConstants.MapColor.background());
                 updatePixelAgent(agentSettings, agentGrid, i, j);
             }
         }
@@ -486,7 +486,7 @@ public class ExplorationImage {
         String filename = fmt.format(new Date());
         try {
             ImageIO.write(image, "png", new File(dirName + "\\" + filename + ".png"));
-            if (Constants.DEBUG_OUTPUT) {
+            if (SimConstants.DEBUG_OUTPUT) {
                 System.out.println("Filename is: " + filename + ".png");
             }
         } catch (IOException e) {
@@ -507,7 +507,7 @@ public class ExplorationImage {
 //        if ((xCoord < 0) || (yCoord < 0)) {
 //            return;
 //        }
-        //setPixel(xCoord, yCoord, Constants.MapColor.background());
+        //setPixel(xCoord, yCoord, SimConstants.MapColor.background());
 
         //Do this backwards so the basestation sets last his knowledge
         for (int i = agents.length - 1; i >= 0; i--) {
@@ -519,21 +519,21 @@ public class ExplorationImage {
     private void updatePixelAgent(ShowSettingsAgent agentSettings, OccupancyGrid agentGrid, int xCoord, int yCoord) {
         if (agentGrid.freeSpaceAt(xCoord, yCoord)) {
             if (agentSettings.baseStation) {
-                setPixel(xCoord, yCoord, Constants.MapColor.explored_base());
+                setPixel(xCoord, yCoord, SimConstants.MapColor.explored_base());
             } else if (agentSettings.showFreeSpace) {
-                setPixel(xCoord, yCoord, Constants.MapColor.explored());
+                setPixel(xCoord, yCoord, SimConstants.MapColor.explored());
 
             }
 
         } else //Update safe space
         //if (agentSettings.showSafeSpace
         //        && agentGrid.safeSpaceAt(xCoord, yCoord)) {
-        //    setPixel(xCoord, yCoord, Constants.MapColor.safe());
+        //    setPixel(xCoord, yCoord, SimConstants.MapColor.safe());
         //}
         // Update obstacles
          if (agentSettings.showFreeSpace
                     && agentGrid.obstacleAt(xCoord, yCoord)) {
-                setPixel(xCoord, yCoord, Constants.MapColor.agent_obstacle());
+                setPixel(xCoord, yCoord, SimConstants.MapColor.agent_obstacle());
             }
     }
 
@@ -552,7 +552,7 @@ public class ExplorationImage {
                     RobotConfig parent = rtc.getRobotTeam().get(curr.getParent());
                     for (Point p : pointsAlongThickSegment(new Point(curr.getStartX(), curr.getStartY()),
                             new Point(parent.getStartX(), parent.getStartY()))) {
-                        setPixel(p.x, p.y, Constants.MapColor.hierarchy());
+                        setPixel(p.x, p.y, SimConstants.MapColor.hierarchy());
                     }
                 }
             }
@@ -564,7 +564,7 @@ public class ExplorationImage {
 
     public void updateBackground() {
         Rectangle2D.Float bg = new Rectangle2D.Float(0, 0, width, height);
-        g2D.setPaint(Constants.MapColor.background());
+        g2D.setPaint(SimConstants.MapColor.background());
         g2D.fill(bg);
         g2D.draw(bg);
     }
@@ -587,45 +587,45 @@ public class ExplorationImage {
         switch (role) {
             case BaseStation:
                 // Draw ComStation
-                g2D.setPaint(Constants.MapColor.comStation());
-                tempRect = new Rectangle2D.Double(xLoc - Constants.AGENT_RADIUS,
-                        yLoc - Constants.AGENT_RADIUS,
-                        Constants.AGENT_RADIUS * 2,
-                        Constants.AGENT_RADIUS * 2);
+                g2D.setPaint(SimConstants.MapColor.comStation());
+                tempRect = new Rectangle2D.Double(xLoc - SimConstants.AGENT_RADIUS,
+                        yLoc - SimConstants.AGENT_RADIUS,
+                        SimConstants.AGENT_RADIUS * 2,
+                        SimConstants.AGENT_RADIUS * 2);
                 g2D.fill(tempRect);
                 g2D.draw(tempRect);
                 break;
             case RelayStation:
                 // Draw ComStation
-                g2D.setPaint(Constants.MapColor.comStation());
-                tempRect = new Rectangle2D.Double(xLoc - Constants.AGENT_RADIUS,
-                        yLoc - Constants.AGENT_RADIUS,
-                        Constants.AGENT_RADIUS * 2,
-                        Constants.AGENT_RADIUS * 2);
+                g2D.setPaint(SimConstants.MapColor.comStation());
+                tempRect = new Rectangle2D.Double(xLoc - SimConstants.AGENT_RADIUS,
+                        yLoc - SimConstants.AGENT_RADIUS,
+                        SimConstants.AGENT_RADIUS * 2,
+                        SimConstants.AGENT_RADIUS * 2);
                 g2D.fill(tempRect);
                 g2D.draw(tempRect);
                 break;
             default:
                 if (role.equals(RobotConfig.roletype.Relay)) {
-                    g2D.setPaint(Constants.MapColor.relay());
+                    g2D.setPaint(SimConstants.MapColor.relay());
                 } else {
-                    g2D.setPaint(Constants.MapColor.explorer());
+                    g2D.setPaint(SimConstants.MapColor.explorer());
                 }
                 tempPoly = new Polygon();
-                tempPoly.addPoint((int) (xLoc + 2 * Constants.AGENT_RADIUS * Math.cos((float) head)),
-                        (int) (yLoc + 2 * Constants.AGENT_RADIUS * Math.sin((float) head)));
-                tempPoly.addPoint((int) (xLoc + 2 * Constants.AGENT_RADIUS * Math.cos((float) head + (5 * Math.PI / 6))),
-                        (int) (yLoc + 2 * Constants.AGENT_RADIUS * Math.sin((float) head + (5 * Math.PI / 6))));
-                tempPoly.addPoint((int) (xLoc + 2 * Constants.AGENT_RADIUS * Math.cos((float) head - (5 * Math.PI / 6))),
-                        (int) (yLoc + 2 * Constants.AGENT_RADIUS * Math.sin((float) head - (5 * Math.PI / 6))));
+                tempPoly.addPoint((int) (xLoc + 2 * SimConstants.AGENT_RADIUS * Math.cos((float) head)),
+                        (int) (yLoc + 2 * SimConstants.AGENT_RADIUS * Math.sin((float) head)));
+                tempPoly.addPoint((int) (xLoc + 2 * SimConstants.AGENT_RADIUS * Math.cos((float) head + (5 * Math.PI / 6))),
+                        (int) (yLoc + 2 * SimConstants.AGENT_RADIUS * Math.sin((float) head + (5 * Math.PI / 6))));
+                tempPoly.addPoint((int) (xLoc + 2 * SimConstants.AGENT_RADIUS * Math.cos((float) head - (5 * Math.PI / 6))),
+                        (int) (yLoc + 2 * SimConstants.AGENT_RADIUS * Math.sin((float) head - (5 * Math.PI / 6))));
                 g2D.fillPolygon(tempPoly);
                 g2D.draw(tempPoly);
                 break;
         }
 
         // Draw name
-        g2D.setPaint(Constants.MapColor.text());
-        g2D.drawString(name, xLoc + Constants.AGENT_RADIUS, yLoc - Constants.AGENT_RADIUS);
+        g2D.setPaint(SimConstants.MapColor.text());
+        g2D.drawString(name, xLoc + SimConstants.AGENT_RADIUS, yLoc - SimConstants.AGENT_RADIUS);
 
         /*        if (agent != null) {
             //draw debug Wall stuff
@@ -638,16 +638,16 @@ public class ExplorationImage {
     }
 
     public void updateCommRange(Environment env, RealAgent agent, Polygon range) {
-        //drawCircle(relay, Constants.MapColor.comm());
+        //drawCircle(relay, SimConstants.MapColor.comm());
 
-        //drawRange(env, agent, range, Constants.MapColor.comm());
+        //drawRange(env, agent, range, SimConstants.MapColor.comm());
         for (TeammateAgent teammate : agent.getAllTeammates().values()) {
             if (teammate.hasCommunicationLink()) {
                 //if (teammate.getDirectComLink() > 0) {
                 for (Point p : pointsAlongSegment(agent.getLocation(), teammate.getLocation())) {
                     for (int i = p.x - 1; i <= p.x + 1; i++) {
                         for (int j = p.y - 1; j <= p.y + 1; j++) {
-                            setPixel(i, j, Constants.MapColor.link());
+                            setPixel(i, j, SimConstants.MapColor.link());
                             agent.getDirtyCells().add(new Point(i, j));
                         }
                     }
@@ -658,14 +658,14 @@ public class ExplorationImage {
 
         /*Old: only circles
         if(relay.isCommunicating())
-            drawCircle(relay, Constants.MapColor.link());
+            drawCircle(relay, SimConstants.MapColor.link());
         else
-            drawCircle(relay, Constants.MapColor.comm());*/
+            drawCircle(relay, SimConstants.MapColor.comm());*/
         // new:  full rnage
         if (agent.isCommunicating()) {
-            drawRange(env, agent, range, Constants.MapColor.link());
+            drawRange(env, agent, range, SimConstants.MapColor.link());
         } else {
-            drawRange(env, agent, range, Constants.MapColor.comm());
+            drawRange(env, agent, range, SimConstants.MapColor.comm());
         }
     }
 
@@ -676,7 +676,7 @@ public class ExplorationImage {
         }
         for (Frontier f : frontiers) {
             for (Point p : f.getPolygonOutline()) {
-                setPixel(p.x, p.y, Constants.MapColor.frontier());
+                setPixel(p.x, p.y, SimConstants.MapColor.frontier());
                 agent.getDirtyCells().add(new Point(p.x, p.y));
             }
             for (int q = f.getCentre().x - 2; q < f.getCentre().x + 2; q++) {
@@ -750,7 +750,7 @@ public class ExplorationImage {
                         if (remainder == 6) {
                             c = Color.CYAN;
                         }
-                        if (areaGrid[i][j] == Constants.UNEXPLORED_NODE_ID) {
+                        if (areaGrid[i][j] == SimConstants.UNEXPLORED_NODE_ID) {
                             if (tMap.getGrid().freeSpaceAt(i, j)) {
                                 c = Color.WHITE;
                             } else {
@@ -779,34 +779,34 @@ public class ExplorationImage {
         allDirt.parallelStream().forEach((p) -> {
             switch (status[p.x][p.y]) {
                 case barrier:
-                    setPixel(p.x, p.y, Constants.MapColor.wall());
+                    setPixel(p.x, p.y, SimConstants.MapColor.wall());
                     break;
                 case obstacle:
-                    setPixel(p.x, p.y, Constants.MapColor.obstacle());
+                    setPixel(p.x, p.y, SimConstants.MapColor.obstacle());
                     break;
                 case slope:
-                    setPixel(p.x, p.y, Constants.MapColor.slope());
+                    setPixel(p.x, p.y, SimConstants.MapColor.slope());
                     break;
                 case hill:
-                    setPixel(p.x, p.y, Constants.MapColor.hill());
+                    setPixel(p.x, p.y, SimConstants.MapColor.hill());
                     break;
                 case explored:
                 case unexplored:
                 default:
-                    setPixel(p.x, p.y, Constants.MapColor.background());
+                    setPixel(p.x, p.y, SimConstants.MapColor.background());
             }
         });
 
         /*for(Point p : allDirt){
                         switch(status[p.x][p.y]) {
-                            case barrier: setPixel(p.x,p.y,Constants.MapColor.wall()); break;
-                            case obstacle: setPixel(p.x,p.y,Constants.MapColor.obstacle()); break;
-                            case slope: setPixel(p.x,p.y,Constants.MapColor.slope()); break;
-                            case hill: setPixel(p.x,p.y,Constants.MapColor.hill()); break;
+                            case barrier: setPixel(p.x,p.y,SimConstants.MapColor.wall()); break;
+                            case obstacle: setPixel(p.x,p.y,SimConstants.MapColor.obstacle()); break;
+                            case slope: setPixel(p.x,p.y,SimConstants.MapColor.slope()); break;
+                            case hill: setPixel(p.x,p.y,SimConstants.MapColor.hill()); break;
                             case explored:
                             case unexplored:
                             default:
-                                setPixel(p.x,p.y, Constants.MapColor.background());
+                                setPixel(p.x,p.y, SimConstants.MapColor.background());
                         }
         }*/
     }
@@ -816,21 +816,21 @@ public class ExplorationImage {
             for (int j = 0; j < height; j++) {
                 switch (status[i][j]) {
                     case barrier:
-                        setPixel(i, j, Constants.MapColor.wall());
+                        setPixel(i, j, SimConstants.MapColor.wall());
                         break;
                     case obstacle:
-                        setPixel(i, j, Constants.MapColor.obstacle());
+                        setPixel(i, j, SimConstants.MapColor.obstacle());
                         break;
                     case slope:
-                        setPixel(i, j, Constants.MapColor.slope());
+                        setPixel(i, j, SimConstants.MapColor.slope());
                         break;
                     case hill:
-                        setPixel(i, j, Constants.MapColor.hill());
+                        setPixel(i, j, SimConstants.MapColor.hill());
                         break;
                     case explored:
                     case unexplored:
                     default:
-                        setPixel(i, j, Constants.MapColor.background());
+                        setPixel(i, j, SimConstants.MapColor.background());
                 }
             }
         }
@@ -842,13 +842,13 @@ public class ExplorationImage {
             for (int j = 0; j < height; j++) {
                 switch (status[i][j]) {
                     case obstacle:
-                        setPixel(i, j, Constants.MapColor.obstacle());
+                        setPixel(i, j, SimConstants.MapColor.obstacle());
                         break;
                     case slope:
-                        setPixel(i, j, Constants.MapColor.slope());
+                        setPixel(i, j, SimConstants.MapColor.slope());
                         break;
                     case hill:
-                        setPixel(i, j, Constants.MapColor.hill());
+                        setPixel(i, j, SimConstants.MapColor.hill());
                         break;
                     default:
                 }
@@ -863,9 +863,9 @@ public class ExplorationImage {
                 if (agent1.getID() == agent[i].getParent()) {
                     for (Point p : pointsAlongThickSegment(agent[i].getLocation(), agent1.getLocation())) {
                         if (agent[i].getParentTeammate().hasCommunicationLink()) {
-                            setPixel(p.x, p.y, Constants.MapColor.link());
+                            setPixel(p.x, p.y, SimConstants.MapColor.link());
                         } else {
-                            setPixel(p.x, p.y, Constants.MapColor.hierarchy());
+                            setPixel(p.x, p.y, SimConstants.MapColor.hierarchy());
                         }
                         agent[i].getDirtyCells().add(new Point(p.x, p.y));
                     }
@@ -880,12 +880,12 @@ public class ExplorationImage {
             if (agent.getTopologicalMap().getSkeletonPointsBorder() != null) {
                 LinkedList<Point> newDirt = new LinkedList<Point>();
                 for (Point p : agent.getTopologicalMap().getSkeletonPointsBorder()) {
-                    setPixel(p.x, p.y, Constants.MapColor.skeleton());
+                    setPixel(p.x, p.y, SimConstants.MapColor.skeleton());
                     newDirt.add(new Point(p.x, p.y));
                 }
 
                 for (Point p : agent.getTopologicalMap().getKeyPointsBorder()) {
-                    drawPoint(p.x, p.y, Constants.MapColor.rvPoints());
+                    drawPoint(p.x, p.y, SimConstants.MapColor.rvPoints());
                     mergeLists(newDirt, circlePoints(p.x, p.y, 4));
                     mergeLists(newDirt, circlePoints(p.x, p.y, 3));
                     mergeLists(newDirt, circlePoints(p.x, p.y, 2));
@@ -908,7 +908,7 @@ public class ExplorationImage {
                     if (!keyPoints1.get(i).equals(keyPoints2.get(i))) {
                         //counter++;
                         for (Point p : pointsAlongSegment(keyPoints1.get(i), keyPoints2.get(i))) {
-                            setPixel(p.x, p.y, Constants.MapColor.link());
+                            setPixel(p.x, p.y, SimConstants.MapColor.link());
                             newDirt.add(p);
                         }
                     }
@@ -1221,7 +1221,7 @@ public class ExplorationImage {
             setPixel(problem.x, problem.y, Color.MAGENTA);
         }
         if (label != null) {
-            g2D.drawString(label, problem.x + Constants.AGENT_RADIUS, problem.y - Constants.AGENT_RADIUS);
+            g2D.drawString(label, problem.x + SimConstants.AGENT_RADIUS, problem.y - SimConstants.AGENT_RADIUS);
         }
     }
 

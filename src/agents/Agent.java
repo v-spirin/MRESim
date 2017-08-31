@@ -44,7 +44,7 @@
 
 package agents;
 
-import config.Constants;
+import config.SimConstants;
 import config.RobotConfig;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -195,11 +195,13 @@ abstract public class Agent {
     }
 
     public final void setExploreState(ExplorationState s) {
-        setStateTimer(0);
-        if (this.exploreState != s) {
-            prevExploreState = this.exploreState;
-            this.setStateTimer(0);
-            this.exploreState = s;
+        if (!this.exploreState.equals(s)) {
+            setStateTimer(0);
+            if (this.exploreState != s) {
+                prevExploreState = this.exploreState;
+                this.setStateTimer(0);
+                this.exploreState = s;
+            }
         }
     }
 
@@ -212,6 +214,10 @@ abstract public class Agent {
             timeSinceGetChildInfo++;
         }
         stateTimer = t;
+    }
+
+    public void incrementStateTimer() {
+        setStateTimer(stateTimer + 1);
     }
 
     public int getX() {
@@ -347,7 +353,7 @@ abstract public class Agent {
 
     public double timeToBase() {
         if (speed == 0) {
-            return Constants.MAX_TIME;
+            return SimConstants.MAX_TIME;
         }
         return (distanceToBase / speed);
     }

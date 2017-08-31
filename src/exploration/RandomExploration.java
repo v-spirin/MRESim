@@ -47,7 +47,7 @@ package exploration;
 import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
-import config.Constants;
+import config.SimConstants;
 import config.SimulatorConfig;
 import environment.OccupancyGrid;
 import environment.TopologicalMap;
@@ -125,7 +125,7 @@ public class RandomExploration extends BasicExploration implements Exploration {
                     }
                     for (Point p : tmap.getJunctionPoints()) {
                         simulator.ExplorationImage.addErrorMarker(p, "", true);
-                        if (agent.getLocation().distance(p) < Constants.KEY_POINT_RELAY_DISTANCE) {
+                        if (agent.getLocation().distance(p) < SimConstants.KEY_POINT_RELAY_DISTANCE) {
                             if (noRelay(p) && noNearRelay(p)) {
                                 state = Agent.ExplorationState.SettingRelay;
                                 break;
@@ -140,7 +140,7 @@ public class RandomExploration extends BasicExploration implements Exploration {
                     boolean useful = false;
                     for (TeammateAgent mate : agent.getAllTeammates().values()) {
                         //System.out.println(mate.getName());
-                        if (mate.isRelay()) {
+                        if (mate.isStationary()) {
                             //System.out.println(mate.getName() + ": " + mate.getDirectComLink());
                             if (mate.getDirectComLink() != 0 && mate.getDirectComLink() < agent.getSpeed() + 1) {
                                 useful = true;

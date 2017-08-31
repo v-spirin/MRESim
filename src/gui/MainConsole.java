@@ -46,7 +46,7 @@ package gui;
 
 import Logging.ExplorationLogger;
 import agents.RealAgent;
-import config.Constants;
+import config.SimConstants;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
 import java.io.File;
@@ -95,7 +95,7 @@ public class MainConsole extends MainGUI implements Runnable {
         robotTeamConfig = new RobotTeamConfig();
         simConfig = new SimulatorConfig();
         explorationImage = new ExplorationImage(simConfig.getEnvironment());
-        new File(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName).mkdir();
+        new File(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName).mkdir();
     }
 
     /**
@@ -139,7 +139,7 @@ public class MainConsole extends MainGUI implements Runnable {
      */
     @Override
     public void runComplete(RealAgent[] agent, int timeElapsed, double pctAreaKnownTeam, int avgCycleTime) {
-        simulation.logScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
+        simulation.logScreenshot(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
 
         System.out.format("%s\n"
                 + "\tCycle: %d\n"
@@ -187,9 +187,9 @@ public class MainConsole extends MainGUI implements Runnable {
                 + "AreaKnown: {2}%\n"
                 + "AvgTime/Cycle: {3}",
                 new Object[]{this.threadName, timeElapsed, Math.round(pctAreaKnown), (int) avgCycleTime});
-        //simulation.logScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
+        //simulation.logScreenshot(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
         if ((timeElapsed % 50) == 0) {
-            simulation.logScreenshot(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
+            simulation.logScreenshot(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName + File.separatorChar);
             System.out.format("Name: %s"
                     + "\nCycle: %d\n"
                     + "AreaKnown: %d%%\n"

@@ -43,7 +43,7 @@
  */
 package environment;
 
-import config.Constants;
+import config.SimConstants;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.geom.Line2D;
@@ -54,6 +54,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import javax.imageio.ImageIO;
 
 /**
@@ -113,7 +114,7 @@ public class OccupancyGrid implements IntGrid {
         cellsFreeNotKnownAtBaseNotRelayed = new HashMap<Point, Integer>();
         cellsChanged = new HashMap<Point, Integer>();
 
-        mapCellsChanged = Constants.MAP_CHANGED_THRESHOLD + 1;
+        mapCellsChanged = SimConstants.MAP_CHANGED_THRESHOLD + 1;
     }
 
     public OccupancyGrid copy() {
@@ -272,7 +273,7 @@ public class OccupancyGrid implements IntGrid {
                 assert (this.getByteNoRelay(i, j) == partnerOccGrid.getByteNoRelay(i, j));
             }
         }
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println("Cells transerred: " + totalCellsTransferred + ", set known at base: " + cellsSetKnownAtBase);
         }
         return cellsUpdated;
@@ -373,7 +374,7 @@ public class OccupancyGrid implements IntGrid {
     }
 
     public boolean hasMapChanged() {
-        return (mapCellsChanged > Constants.MAP_CHANGED_THRESHOLD);
+        return (mapCellsChanged > SimConstants.MAP_CHANGED_THRESHOLD);
     }
 
     public int getMapCellsChanged() {
@@ -404,7 +405,7 @@ public class OccupancyGrid implements IntGrid {
             } else if (freeSpaceAt(xCoord, yCoord)) {
                 Integer success = cellsFreeNotKnownAtBaseNotRelayed.remove(new Point(xCoord, yCoord));
                 if (success == null) {
-                    if (Constants.DEBUG_OUTPUT) {
+                    if (SimConstants.DEBUG_OUTPUT) {
                         System.out.println("@@@@@@@@@@ Tried to remove cellsFreeNotKnownAtBaseNotRelayed element "
                                 + "that is not in the list! xCoord = " + xCoord + ", yCoord = " + yCoord);
                     }
@@ -430,7 +431,7 @@ public class OccupancyGrid implements IntGrid {
             if (updateOwnedCellsList && freeSpaceAt(xCoord, yCoord) && !isKnownAtBase(xCoord, yCoord)) {
                 Integer success = cellsFreeNotKnownAtBaseNotRelayed.remove(new Point(xCoord, yCoord));
                 if (success == null) {
-                    if (Constants.DEBUG_OUTPUT) {
+                    if (SimConstants.DEBUG_OUTPUT) {
                         System.out.println("@@@@@@@@@@ Tried to remove cellsFreeNotKnownAtBaseNotRelayed element "
                                 + "that is not in the list! xCoord = " + xCoord + ", yCoord = " + yCoord);
                     }
@@ -496,7 +497,7 @@ public class OccupancyGrid implements IntGrid {
             } else {
                 Integer success = cellsFreeNotKnownAtBaseNotRelayed.remove(new Point(xCoord, yCoord));
                 if (success == null) {
-                    if (Constants.DEBUG_OUTPUT) {
+                    if (SimConstants.DEBUG_OUTPUT) {
                         System.out.println("@@@@@@@@@@ Tried to remove cellsFreeNotKnownAtBaseNotRelayed element "
                                 + "that is not in the list! xCoord = " + xCoord + ", yCoord = " + yCoord);
                     }
@@ -836,5 +837,13 @@ public class OccupancyGrid implements IntGrid {
             }
         }
         return intGrid;
+    }
+
+    public int[][] getSkeleton() {
+        return Skeleton.findSkeleton(this);
+    }
+
+    public List<Point> getSkeletonList() {
+        return Skeleton.gridToList(getSkeleton());
     }
 }

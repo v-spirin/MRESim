@@ -44,7 +44,7 @@
 package exploration;
 
 import agents.RealAgent;
-import config.Constants;
+import config.SimConstants;
 import config.RobotConfig.roletype;
 import config.SimulatorConfig;
 import exploration.Frontier.FrontierUtility;
@@ -189,7 +189,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         last_percentage_known = agent.getStats().getPercentageKnown();
 
         // If no frontiers found, return to ComStation
-        if (frontiers.isEmpty() || frontier_wipe_counter > 5 || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL)) {
+        if (frontiers.isEmpty() || frontier_wipe_counter > 5 || (agent.getStats().getPercentageKnown() >= SimConstants.TERRITORY_PERCENT_EXPLORED_GOAL)) {
             //System.out.println(agent.toString() + "No frontiers found, returning home.");
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
@@ -231,7 +231,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         // since this is the robot itself.
         agent.getPath().getPoints().remove(0);
         agent.getStats().setTimeSinceLastPlan(0);
-        //System.out.print(Constants.INDENT + "Chose frontier at " + agent.getLastFrontier().getCentre().x + "," + agent.getLastFrontier().getCentre().y + ". ");
+        //System.out.print(SimConstants.INDENT + "Chose frontier at " + agent.getLastFrontier().getCentre().x + "," + agent.getLastFrontier().getCentre().y + ". ");
         //System.out.println("Took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
         return agent.getNextPathPoint();
     }

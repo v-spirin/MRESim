@@ -43,7 +43,7 @@
  */
 package environment;
 
-import config.Constants;
+import config.SimConstants;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -321,11 +321,11 @@ public class ContourTracer {
 
             }
         }
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println("[findAllContours] contours processed: " + contourCounter);
             System.out.println("[findAllContours] main loop");
         }
-        //saveLabelsToPNG(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + "contours", labels);
+        //saveLabelsToPNG(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + "contours", labels);
         return contourList;
     }
 }

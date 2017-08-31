@@ -46,7 +46,7 @@ package exploration;
 import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
-import config.Constants;
+import config.SimConstants;
 import config.SimulatorConfig;
 import environment.ContourTracer;
 import environment.Frontier;
@@ -120,7 +120,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
             agent.setEnvError(false);
             agent.setExploreState(Agent.ExplorationState.EnvError);
         }
-        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
+        if (agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
             agent.getStats().setTimeLastDirectContactCS(1);
             agent.getStats().setLastContactAreaKnown(agent.getStats().getAreaKnown());
         } else {
@@ -132,12 +132,12 @@ public class FrontierExploration extends BasicExploration implements Exploration
             case Initial:
                 nextStep = RandomWalk.randomStep(agent);
                 agent.getStats().setTimeSinceLastPlan(0);
-                if (timeElapsed >= Constants.INIT_CYCLES - 1) {
+                if (timeElapsed >= SimConstants.INIT_CYCLES - 1) {
                     agent.setExploreState(Agent.ExplorationState.Explore);
                 }
                 break;
             case Explore:
-                if ((agent.getStats().getTimeSinceLastPlan() < Constants.REPLAN_INTERVAL)
+                if ((agent.getStats().getTimeSinceLastPlan() < SimConstants.REPLAN_INTERVAL)
                         && agent.getPath() != null && agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
                     nextStep = agent.getNextPathPoint();
                 } else {
@@ -156,7 +156,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         //postprocessing
         agent.getStats().incrementTimeSinceLastPlan();
-        if (agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
+        if (agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
             noReturnTimer = 0;
         } else {
             noReturnTimer++;
@@ -187,7 +187,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         calculateFrontiers();
 //        frontiers.forEach(f -> System.out.println(f));
         //If no frontiers found, or reached exploration goal, return to ComStation
-        if (((frontiers.isEmpty()) || no_change_counter > 20 || (agent.getStats().getPercentageKnown() >= Constants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
+        if (((frontiers.isEmpty()) || no_change_counter > 20 || (agent.getStats().getPercentageKnown() >= SimConstants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
             nextStep = agent.getNextPathPoint();
@@ -219,7 +219,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         //If no frontier could be assigned, then go back to base.">
         if (best == null) {
             // mission complete
-            if (Constants.DEBUG_OUTPUT) {
+            if (SimConstants.DEBUG_OUTPUT) {
                 System.out.println(agent.toString() + " could not find frontier, proceeding to BaseStation (Mission Complete).");
             }
             agent.setMissionComplete(true);
@@ -274,7 +274,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         int counter = 0;
         for (Frontier currFrontier : frontiers) {
-            if (counter >= Constants.MAX_NUM_FRONTIERS) {
+            if (counter >= SimConstants.MAX_NUM_FRONTIERS) {
                 break;
             }
             // To avoid oscillation, add last frontier to list (just in case it
@@ -283,10 +283,10 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 counter++;
                 continue;
             }
-            if (currFrontier.getArea() >= Constants.MIN_FRONTIER_SIZE
+            if (currFrontier.getArea() >= SimConstants.MIN_FRONTIER_SIZE
                     && currFrontier.hasUnknownBoundary(grid)) {//TODO Unneccessary!?!?
                 //ignore frontiers not reachable from base //TODO WHY??? Woudn't path from agent be better?
-                /*Path pathToFrontier = agent.calculatePath(agent.getTeammate(Constants.BASE_STATION_TEAMMATE_ID).getLocation(),
+                /*Path pathToFrontier = agent.calculatePath(agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).getLocation(),
                         currFrontier.getCentre(), false);*/
                 Path pathToFrontier = agent.calculatePath(agent.getLocation(), currFrontier.getCentre(), false);
                 if (!pathToFrontier.found) {
@@ -318,7 +318,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
             for (TeammateAgent teammate : agent.getAllTeammates().values()) {
                 if (considerOtherAgents
                         && teammate.isExplorer()
-                        && teammate.getTimeSinceLastComm() < Constants.REMEMBER_TEAMMATE_FRONTIER_PERIOD) {
+                        && teammate.getTimeSinceLastComm() < SimConstants.REMEMBER_TEAMMATE_FRONTIER_PERIOD) {
 
                     utilities.add(new FrontierUtility(teammate,
                             frontier));
@@ -408,7 +408,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
             //badFrontiers is a list the Agent keeps with Frontiers he already marked as unreachable
             if (!agent.isBadFrontier(currFrontier)) {
                 // only consider frontiers that are big enough and reachable
-                if (currFrontier.getArea() >= Constants.MIN_FRONTIER_SIZE) {
+                if (currFrontier.getArea() >= SimConstants.MIN_FRONTIER_SIZE) {
                     {
                         frontiers.add(currFrontier);
                         contourCounter++;
@@ -421,7 +421,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
             }
         }
 
-        if (Constants.DEBUG_OUTPUT) {
+        if (SimConstants.DEBUG_OUTPUT) {
             System.out.println("retained " + contourCounter + " of them, disregarded due to size " + contoursSmall
                     + ", disregarded as bad " + contoursBad + ".");
         }

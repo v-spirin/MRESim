@@ -1,5 +1,5 @@
-/* 
- *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca), 
+/*
+ *     Copyright 2010, 2015, 2017 Julian de Hoog (julian@dehoog.ca),
  *     Victor Spirin (victor.spirin@cs.ox.ac.uk),
  *     Christian Clausen (christian.clausen@uni-bremen.de
  *
@@ -13,7 +13,7 @@
  *         title = "Role-Based Autonomous Multi-Robot Exploration",
  *         author = "Julian de Hoog, Stephen Cameron and Arnoud Visser",
  *         year = "2009",
- *         booktitle = 
+ *         booktitle =
  *     "International Conference on Advanced Cognitive Technologies and Applications (COGNITIVE)",
  *         location = "Athens, Greece",
  *         month = "November",
@@ -44,6 +44,7 @@
 package exploration.rendezvous;
 
 import agents.RealAgent;
+import agents.TeammateAgent;
 import java.awt.Point;
 import path.Path;
 
@@ -53,26 +54,15 @@ import path.Path;
  */
 public interface IRendezvousStrategy {
 
-    /**
-     * Generally this method should not be called directly, and may even need to
-     * be private. This method must set the following agent parameters: -
-     * Rendezvous -- Parent rendezvous point -- Child rendezvous point -- Time
-     * at which rendezvous happens -- Wait time (time at which rendezvous is
-     * called off or backup rendezvous is used) -- Backup rendezvous location --
-     * Time at which backup rendezvous happens -- Time at which backup
-     * rendezvous is called off - Parent teammate rendezvous location
-     * (parentRenedzvous.parentsRVLocation) i.e., where our relay will
-     * communicate with base station
-     */
-    void calculateRendezvousExplorerWithRelay(int timeElapsed);
+    Rendezvous calculateRendezvous(int timeElapsed, TeammateAgent mate);
 
     //This method not currently implemented anywhere, as tree depth greater than 2 seems to be unnecessary
-    void calculateRendezvousRelayWithRelay();
+    Rendezvous calculateRendezvousRelayWithRelay(int timeElapsed, TeammateAgent mate);
 
     //This method is called at the time step when explorer stops exploring and goes back to RV
     void processExplorerStartsHeadingToRV();
 
-    //In the below two methods we can recompute our part of the rendezvous location, e.g. to attempt to intercept 
+    //In the below two methods we can recompute our part of the rendezvous location, e.g. to attempt to intercept
     //the other agent we are meeting, or to find a better location within comms range of where the other agent will
     //be waiting for us.
     //This method is called when we are replanning path to parent in ReturnToParent state
@@ -96,7 +86,7 @@ public interface IRendezvousStrategy {
 
     //This method is called when we just got into parent range and are in GiveParentInfo state.
     //Usually we would calculate next RV location here and communicate it to parent in the following timestep.
-    void processJustGotIntoParentRange(int timeElapsed);
+    void processJustGotIntoParentRange(int timeElapsed, TeammateAgent parent);
 
     void processAfterGiveParentInfoExplorer(int timeElapsed);
 

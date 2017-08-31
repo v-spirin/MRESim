@@ -45,7 +45,6 @@ package communication;
 
 import agents.RealAgent;
 import agents.TeammateAgent;
-import config.Constants;
 import exploration.rendezvous.Rendezvous;
 import exploration.rendezvous.RendezvousAgentData;
 
@@ -81,6 +80,7 @@ public class RendezvousDataMessage implements IDataMessage {
         } else {
             childBackupRendezvous = null;
         }
+
     }
 
     @Override
@@ -91,12 +91,12 @@ public class RendezvousDataMessage implements IDataMessage {
         teammate.getRendezvousAgentData().setParentRendezvous(parentRendezvous);
 
         //if the message is from our child
-        if (teammate.getID() == agent.getChild() && teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
+        /*if (teammate.getID() == agent.getChild() && teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
             rvd.setChildRendezvous(parentRendezvous);
             rvd.setChildBackupRendezvous(parentBackupRendezvous);
             if (parentRendezvous.parentsRVLocation != null) {
                 rvd.setParentRendezvous(parentRendezvous.parentsRVLocation);
             }
-        }
+        }*/
     }
 }

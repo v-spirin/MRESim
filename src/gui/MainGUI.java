@@ -278,6 +278,7 @@ public class MainGUI extends javax.swing.JFrame {
             }
             currRobotPanel.getLabelState().setText(state);
             currRobotPanel.getLabelPower().setText(Integer.toString(agent[i].getBatteryPower()));
+            currRobotPanel.getLabelDynamic().setText(agent[i].getDynamicInfoText());
 
             ArrayList<ComStation> comStations = agent[i].getComStations();
             String[] coms = new String[comStations.size()];

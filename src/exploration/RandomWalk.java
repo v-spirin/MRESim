@@ -45,7 +45,7 @@
 package exploration;
 
 import agents.RealAgent;
-import config.Constants;
+import config.SimConstants;
 import java.awt.Point;
 import java.util.Random;
 
@@ -55,7 +55,7 @@ import java.util.Random;
  */
 public class RandomWalk {
 
-    private static Random generator = new Random(Constants.RANDOM_SEED);
+    private static Random generator = new Random(SimConstants.RANDOM_SEED);
 
     public static Point randomStep(RealAgent agent) {
         int maxcounter = 100;
@@ -66,7 +66,7 @@ public class RandomWalk {
 
         boolean found = false;
 
-        int acceptableDistanceToWall = Constants.WALL_DISTANCE;
+        int acceptableDistanceToWall = SimConstants.WALL_DISTANCE;
         double speed = agent.getSpeed();
 
         while (!found && counter < maxcounter) {

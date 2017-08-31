@@ -44,7 +44,7 @@
 package exploration.rendezvous;
 
 import agents.RealAgent;
-import config.Constants;
+import config.SimConstants;
 import simulator.ExplorationImage;
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -105,7 +105,7 @@ public class MultiPointRendezvousStrategyDisplayData implements IRendezvousDispl
 
         //Erase text over agents
         for (int i = agent.getX(); i <= agent.getX() + 100; i++) {
-            for (int j = agent.getY() - Constants.AGENT_RADIUS - 25; j <= agent.getY() - Constants.AGENT_RADIUS; j++) {
+            for (int j = agent.getY() - SimConstants.AGENT_RADIUS - 25; j <= agent.getY() - SimConstants.AGENT_RADIUS; j++) {
                 if (agent.getOccupancyGrid().locationExists(i, j)) {
                     agent.getDirtyCells().add(new Point(i, j));
                 }
@@ -219,14 +219,14 @@ public class MultiPointRendezvousStrategyDisplayData implements IRendezvousDispl
         try {
             x = (int) rvd.getChildRendezvous().getParentLocation().getX();
             y = (int) rvd.getChildRendezvous().getParentLocation().getY();
-            image.drawPoint(x, y, Constants.MapColor.childRV());
+            image.drawPoint(x, y, SimConstants.MapColor.childRV());
             for (int i = Math.max(0, x - 4); i <= Math.min(x + 4, image.getWidth() - 1); i++) {
                 for (int j = Math.max(0, y - 4); j <= Math.min(y + 4, image.getHeight() - 1); j++) {
                     agent.getDirtyCells().add(new Point(i, j));
                 }
             }
             image.drawText("c:" + rvd.getChildRendezvous().getTimeMeeting() + ":" + rvd.getChildRendezvous().getTimeWait(),
-                    agent.getLocation().x, agent.getLocation().y - 10, Constants.MapColor.text());
+                    agent.getLocation().x, agent.getLocation().y - 10, SimConstants.MapColor.text());
 
         } catch (java.lang.NullPointerException e) {
         }
@@ -235,14 +235,14 @@ public class MultiPointRendezvousStrategyDisplayData implements IRendezvousDispl
         try {
             x = (int) rvd.getParentRendezvous().getChildLocation().getX();
             y = (int) rvd.getParentRendezvous().getChildLocation().getY();
-            image.drawPoint(x, y, Constants.MapColor.parentRV());
+            image.drawPoint(x, y, SimConstants.MapColor.parentRV());
             for (int i = Math.max(0, x - 4); i <= Math.min(x + 4, image.getWidth() - 1); i++) {
                 for (int j = Math.max(0, y - 4); j <= Math.min(y + 4, image.getHeight() - 1); j++) {
                     agent.getDirtyCells().add(new Point(i, j));
                 }
             }
             image.drawText("p:" + rvd.getParentRendezvous().getTimeMeeting() + ":" + rvd.getParentRendezvous().getTimeWait(),
-                    agent.getLocation().x, agent.getLocation().y - 20, Constants.MapColor.text());
+                    agent.getLocation().x, agent.getLocation().y - 20, SimConstants.MapColor.text());
         } catch (java.lang.NullPointerException e) {
         }
     }

@@ -44,7 +44,7 @@
 
 package batch;
 
-import config.Constants;
+import config.SimConstants;
 import config.RobotTeamConfig;
 import config.SimulatorConfig;
 import gui.MainConsole;
@@ -80,9 +80,9 @@ public class BatchExecution {
                 System.exit(1);
             }
         } else {
-            String[] co = {Constants.DEFAULT_SIMCONF_DIRECTORY + "frontierbased_periodicReturn",
-                Constants.DEFAULT_TEAMCONF_DIRECTORY + "frontierbased_1_maze1_100",
-                Constants.DEFAULT_ENV_DIRECTORY + "maze1.png"
+            String[] co = {SimConstants.DEFAULT_SIMCONF_DIRECTORY + "frontierbased_periodicReturn",
+                SimConstants.DEFAULT_TEAMCONF_DIRECTORY + "frontierbased_1_maze1_100",
+                SimConstants.DEFAULT_ENV_DIRECTORY + "maze1.png"
             };
             configFiles.add(co);
         }
@@ -108,7 +108,7 @@ public class BatchExecution {
                     continue;
                 }
 
-                new File(Constants.DEFAULT_IMAGE_LOG_DIRECTORY + name).mkdir();
+                new File(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + name).mkdir();
                 MainConsole console = new MainConsole(true, name);
                 console.setRobotTeamConfig(team);
                 console.loadConfig(conf);
@@ -155,9 +155,9 @@ public class BatchExecution {
                 num_threads = Integer.parseInt(inFile.readLine());
                 String line;
                 while (inFile.ready()) {
-                    String[] co = {Constants.DEFAULT_SIMCONF_DIRECTORY + String.valueOf(inFile.readLine()),
-                        Constants.DEFAULT_TEAMCONF_DIRECTORY + String.valueOf(inFile.readLine()),
-                        Constants.DEFAULT_ENV_DIRECTORY + String.valueOf(inFile.readLine())
+                    String[] co = {SimConstants.DEFAULT_SIMCONF_DIRECTORY + String.valueOf(inFile.readLine()),
+                        SimConstants.DEFAULT_TEAMCONF_DIRECTORY + String.valueOf(inFile.readLine()),
+                        SimConstants.DEFAULT_ENV_DIRECTORY + String.valueOf(inFile.readLine())
                     };
                     configFiles.add(co);
                 }

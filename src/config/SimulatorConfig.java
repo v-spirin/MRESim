@@ -159,7 +159,7 @@ public class SimulatorConfig {
 
         boolean oldWallConfigFound = loadOldWallConfig();
         if (!oldWallConfigFound) {
-            env = new Environment(Constants.MAX_ROWS, Constants.MAX_COLS);
+            env = new Environment(SimConstants.MAX_ROWS, SimConstants.MAX_COLS);
         }
     }
 

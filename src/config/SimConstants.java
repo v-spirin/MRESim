@@ -49,11 +49,11 @@ import java.io.File;
 import java.nio.file.Paths;
 
 /**
- * Constants used in the whole project.
+ * SimConstants used in the whole project.
  *
  * @author julh, cclausen
  */
-public class Constants {
+public class SimConstants {
 
     /**
      * Show messages on stdout. Remember to clean build if changed!

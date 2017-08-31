@@ -44,7 +44,7 @@
 package environment;
 
 import agents.RealAgent;
-import config.Constants;
+import config.SimConstants;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.util.LinkedList;
@@ -142,7 +142,7 @@ public class Frontier implements Comparable<Frontier> {
         Point closePointNearWall = new Point(0, 0);
         for (int i = 0; i < polygonOutline.size(); i++) {
             if (polygonOutline.get(i).distance(ref) < closestDist) {
-                if (!grid.obstacleWithinDistance(polygonOutline.get(i).x, polygonOutline.get(i).y, Constants.WALL_DISTANCE)) {
+                if (!grid.obstacleWithinDistance(polygonOutline.get(i).x, polygonOutline.get(i).y, SimConstants.WALL_DISTANCE)) {
                     closestPoint = polygonOutline.get(i);
                     closestDist = polygonOutline.get(i).distance(ref);
                 } else {
@@ -154,7 +154,7 @@ public class Frontier implements Comparable<Frontier> {
 
         //if can't find closest point as it's too close to wall, maybe we can return center
         if ((closestPoint.x == 0) && (closestPoint.y == 0)) {
-            if (!grid.obstacleWithinDistance(this.getCentre().x, this.getCentre().y, Constants.WALL_DISTANCE)) {
+            if (!grid.obstacleWithinDistance(this.getCentre().x, this.getCentre().y, SimConstants.WALL_DISTANCE)) {
                 return this.getCentre();
             }
         }
@@ -167,7 +167,7 @@ public class Frontier implements Comparable<Frontier> {
         Point closestPoint = new Point(0, 0);
         for (int i = 0; i < polygonOutline.size(); i++) {
             if (polygonOutline.get(i).distance(agent.getLocation()) < closestDist
-                    && !agent.getOccupancyGrid().obstacleWithinDistance(polygonOutline.get(i).x, polygonOutline.get(i).y, Constants.WALL_DISTANCE)
+                    && !agent.getOccupancyGrid().obstacleWithinDistance(polygonOutline.get(i).x, polygonOutline.get(i).y, SimConstants.WALL_DISTANCE)
                     && polygonOutline.get(i).distance(agent.getTeammate(1).getLocation()) < agent.getAllTeammates().size() * agent.getCommRange() - 5) {
                 closestPoint = polygonOutline.get(i);
                 closestDist = polygonOutline.get(i).distance(agent.getLocation());

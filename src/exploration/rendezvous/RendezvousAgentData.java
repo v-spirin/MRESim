@@ -44,7 +44,7 @@
 package exploration.rendezvous;
 
 import agents.Agent;
-import config.Constants;
+import config.SimConstants;
 
 /**
  *
@@ -66,7 +66,7 @@ public class RendezvousAgentData {
         parentRendezvous = new Rendezvous(agent.getLocation());
         parentBackupRendezvous = new Rendezvous(agent.getLocation());
         timeUntilRendezvous = 0;
-        timeSinceLastRVCalc = Constants.MAX_TIME;
+        timeSinceLastRVCalc = SimConstants.MAX_TIME;
         timeSinceLastRoleSwitch = 0;
     }
 
@@ -89,11 +89,7 @@ public class RendezvousAgentData {
     }
 
     public int getTimeUntilRendezvous() {
-        return timeUntilRendezvous;
-    }
-
-    public void setTimeUntilRendezvous(int n) {
-        timeUntilRendezvous = n;
+        return Math.min(childRendezvous.getTimeMeeting(), parentRendezvous.getTimeMeeting());
     }
 
     public int getTimeSinceLastRVCalc() {
@@ -117,9 +113,6 @@ public class RendezvousAgentData {
     }
 
     public void setChildRendezvous(Rendezvous r) {
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println("Setting child RV to " + r);
-        }
         childRendezvous = r;
     }
 
@@ -140,9 +133,6 @@ public class RendezvousAgentData {
     }
 
     public void setParentRendezvous(Rendezvous r) {
-        if (Constants.DEBUG_OUTPUT) {
-            System.out.println("Setting parent RV to " + r);
-        }
         parentRendezvous = r;
     }
 
@@ -152,9 +142,6 @@ public class RendezvousAgentData {
 
     public void setParentBackupRendezvous(Rendezvous r) {
         if (r != null) {
-            if (Constants.DEBUG_OUTPUT) {
-                System.out.println("Setting parent backupRV to " + r);
-            }
             parentBackupRendezvous = r.copy();
         } else {
             parentBackupRendezvous = null;
