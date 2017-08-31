@@ -128,10 +128,12 @@ public class RoleBasedExploration extends FrontierExploration {
                 rvd.setParentRendezvous(rendezvousStrategy.calculateRendezvous(timeElapsed1, agent.getParentTeammate()));
                 rvd.getParentRendezvous().setTimeMeeting(timeElapsed1 + 50);
             }
-            int meeting = Math.min(agent.getParentTeammate().getRendezvousAgentData().getChildRendezvous().getTimeMeeting(),
-                    agent.getChildTeammate().getRendezvousAgentData().getParentRendezvous().getTimeMeeting());
-            meeting = Math.min(prvd.getChildRendezvous().getTimeMeeting(), meeting);
-            agent.setDynamicInfoText("" + (meeting - timeElapsed));
+            /*int meeting = Math.min(prvd.getChildRendezvous().getTimeMeeting(),
+                    rvd.getParentRendezvous().getTimeMeeting());
+            meeting = Math.min(crvd.getParentRendezvous().getTimeMeeting(), meeting);
+            meeting = Math.min(crvd.getChildRendezvous().getTimeMeeting(), meeting);
+            agent.setDynamicInfoText("" + (meeting - timeElapsed));*/
+            agent.setDynamicInfoText("--");
         } else {
             agent.setDynamicInfoText("" + (agent.getParentTeammate().getRendezvousAgentData().getChildRendezvous().getTimeMeeting() - timeElapsed));
         }
@@ -185,20 +187,13 @@ public class RoleBasedExploration extends FrontierExploration {
 
         if (agent.getLocation().equals(prvd.getChildRendezvous().getChildLocation())) {
             agent.setExploreState(RealAgent.ExplorationState.WaitForParent);
+            return agent.getLocation();
         }
         if (agent.getStateTimer() <= 1) {
             //Just changed to this state so need to generate path
             agent.setPath(agent.calculatePath(prvd.getChildRendezvous().getChildLocation()));
         }
         return agent.getNextPathPoint();
-
-    }
-
-    public Point takeStep_WaitForChild() {
-        if (agent.getParentTeammate().hasCommunicationLink()) {
-            agent.setExploreState(RealAgent.ExplorationState.GoToParent);
-        }
-        return agent.getLocation();
 
     }
 

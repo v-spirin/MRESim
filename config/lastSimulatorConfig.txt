@@ -1,4 +1,4 @@
-RoleBasedExploration
+LeaderFollower
 PeriodicReturn
 Random
 null

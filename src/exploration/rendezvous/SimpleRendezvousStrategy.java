@@ -157,8 +157,8 @@ class SimpleRendezvousStrategy implements IRendezvousStrategy {
         } else {
             PriorityQueue<NearRVPoint> tempPoints = new PriorityQueue<>();
             for (Point p : pts) {
-
-                tempPoints.add(new NearRVPoint(p.x, p.y, p.distance(mate.getLocation())));
+                //Negative distance as a priorityQueue only gives the worst element
+                tempPoints.add(new NearRVPoint(p.x, p.y, p.distance(mate.getFrontierCentre()) * -1));
             }
             return tempPoints.peek().getLocation();
         }
