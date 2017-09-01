@@ -79,7 +79,7 @@ public class RoleBasedExploration extends FrontierExploration {
         this.timeElapsed = timeElapsed;
         this.rendezvousStrategy = rendezvousStrategy;
         this.relayType = simConfig.getRelayAlgorithm();
-        tmap = new TopologicalMap(agent.getOccupancyGrid());
+        tmap = agent.getTopologicalMap();
         this.rvd = agent.getRendezvousAgentData();
         this.prvd = agent.getParentTeammate().getRendezvousAgentData();
         if (agent.getChildTeammate() != null) {
@@ -258,6 +258,20 @@ public class RoleBasedExploration extends FrontierExploration {
         }
 
         // <editor-fold defaultstate="collapsed" desc="Relay-Handling">
+        HashMap<Integer, TopologicalNode> topoNodes = agent.getTopologicalMap().getJTopologicalNodes(true);
+        LinkedList<TopologicalNode> nodesWithRelay = new LinkedList<>();
+        int baseNodeId = agent.getTopologicalMap().getTopologicalJArea(agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).getLocation());
+        nodesWithRelay.add(topoNodes.get(baseNodeId));
+        for (TeammateAgent mate : agent.getAllTeammates().values()) {
+            if (mate.isStationary() && mate.getState() == Agent.AgentState.RELAY && mate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID) {
+                //Is a Relay
+                int nodeid = agent.getTopologicalMap().getTopologicalJArea(mate.getLocation());
+                nodesWithRelay.add(topoNodes.get(nodeid));
+
+            }
+
+        }
+
         switch (relayType) {
             case Random:
                 if (!agent.comStations.isEmpty() && (Math.random() < simConfig.getComStationDropChance())) {
@@ -275,16 +289,22 @@ public class RoleBasedExploration extends FrontierExploration {
                 if (!agent.comStations.isEmpty()) {
                     PriorityQueue<NearRVPoint> tempPoints = new PriorityQueue<>();
                     TeammateAgent base = agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID);
+                    tmap.update(false);
                     for (Point p : tmap.getJunctionPoints()) {
-                        //simulator.ExplorationImage.addErrorMarker(p, "", true);
-                        if (agent.getOccupancyGrid().directLinePossible(base.getLocation(), p, false, false)) {
-                            tempPoints.add(new NearRVPoint(p.x, p.y, base.getLocation().distance(p) * -1));
+                        for (TeammateAgent mate : agent.getAllTeammates().values()) {
+                            if (mate.isStationary() && mate.getState() == Agent.AgentState.RELAY) {
+                                if (agent.getOccupancyGrid().directLinePossible(mate.getLocation(), p, false, false)) {
+                                    tempPoints.add(new NearRVPoint(p.x, p.y, base.getLocation().distance(p)));
+                                }
+                            }
                         }
                     }
+
                     Iterator<NearRVPoint> keyP_iter = tempPoints.iterator();
                     while (keyP_iter.hasNext()) {
                         NearRVPoint keyP = keyP_iter.next();
-                        if (noRelay(keyP) && noNearRelay(keyP)) {
+                        TopologicalNode keyN = topoNodes.get(agent.getTopologicalMap().getTopologicalJArea(keyP));
+                        if (noRelay(keyP) && noNearRelay(keyP) && !keyN.isDeadEnd((LinkedList<TopologicalNode>) nodesWithRelay.clone())) {
                             agent.setPath(agent.calculatePath(keyP));
                             agent.setExploreState(Agent.ExplorationState.GoToRelay);
                             return agent.stay();
@@ -315,7 +335,8 @@ public class RoleBasedExploration extends FrontierExploration {
             default:
         }
 
-        PriorityQueue<Point> needlessRelays = checkForNeedlessRelays();
+        PriorityQueue<Point> needlessRelays = checkForNeedlessRelays(nodesWithRelay);
+
         if (false && !needlessRelays.isEmpty()) {
             agent.setPath(agent.calculatePath(needlessRelays.peek().getLocation()));
             agent.setExploreState(Agent.ExplorationState.GoToRelay);
@@ -326,29 +347,18 @@ public class RoleBasedExploration extends FrontierExploration {
         return agent.getNextPathPoint();
     }
 
-    private PriorityQueue<Point> checkForNeedlessRelays() {
+    private PriorityQueue<Point> checkForNeedlessRelays(LinkedList<TopologicalNode> nodesWithRelay) {
         PriorityQueue<Point> needless = new PriorityQueue<>();
-        HashMap<Integer, TopologicalNode> topoNodes = agent.getTopologicalMap().getTopologicalNodes(true);
-        LinkedList<TopologicalNode> nodesWithRelay = new LinkedList<>();
-        int baseId = agent.getTopologicalMap().getTopologicalArea(agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).getLocation());
-        nodesWithRelay.add(topoNodes.get(baseId));
-        for (TeammateAgent mate : agent.getAllTeammates().values()) {
-            if (mate.isStationary() && mate.getState() == Agent.AgentState.RELAY && mate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID) {
-                //Is a Relay
-                int nodeid = agent.getTopologicalMap().getTopologicalArea(mate.getLocation());
-                nodesWithRelay.add(topoNodes.get(nodeid));
+        int baseNodeId = agent.getTopologicalMap().getTopologicalJArea(agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).getLocation());
 
-            }
-
-        }
         for (TopologicalNode node : nodesWithRelay) {
-            if (node.getID() == baseId) {
+            if (node.getID() == baseNodeId) {
                 continue;
             }
             //check for dead ends with all areasWithRelays as borders except the own node
             LinkedList<TopologicalNode> tempBorder = (LinkedList<TopologicalNode>) nodesWithRelay.clone();
             tempBorder.remove(node);
-            boolean deadEnd = node.isDeadEnd(tempBorder);
+            boolean deadEnd = node.isDeadEnd((LinkedList<TopologicalNode>) tempBorder.clone());
             if (deadEnd) {
                 needless.add(new NearRVPoint(node.getPosition().x, node.getPosition().y, agent.getLocation().distance(node.getPosition()) * -1));
             }

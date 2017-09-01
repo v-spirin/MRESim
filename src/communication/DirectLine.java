@@ -45,7 +45,6 @@ package communication;
 
 import agents.RealAgent;
 import environment.Environment;
-import static java.lang.Math.floor;
 
 /**
  *
@@ -65,9 +64,9 @@ public class DirectLine {
                 } else {
                     smallRange = agent[j].getCommRange();
                 }
-                if (distance < smallRange
-                        && env.directLinePossible(agent[i].getX(), agent[i].getY(), agent[j].getX(), agent[j].getY(), 3)) {
-                    commTable[i][j] = (int) floor((1 - (distance / smallRange)) * 100);
+                if (//distance < smallRange &&
+                        env.directLinePossible(agent[i].getX(), agent[i].getY(), agent[j].getX(), agent[j].getY(), 3)) {
+                    commTable[i][j] = 100;//(int) floor((1 - (distance / smallRange)) * 100);
                     commTable[j][i] = commTable[i][j];
                 } else {
                     commTable[i][j] = 0;

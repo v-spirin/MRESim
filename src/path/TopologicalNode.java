@@ -66,11 +66,8 @@ public class TopologicalNode {
         neighbours = new LinkedList<TopologicalNode>();
         neighbour_paths = new LinkedList<Path>();
         cells = new LinkedList<Point>();
-        if (this.ID == SimConstants.UNEXPLORED_NODE_ID) {
-            deadEnd = true;
-        } else {
-            deadEnd = false;
-        }
+        deadEnd = false;
+
     }
 
     public int getID() {
@@ -124,15 +121,21 @@ public class TopologicalNode {
         if (deadEnd == true) {
             return true;
         }
+        if (this.getID() == SimConstants.UNEXPLORED_NODE_ID) {
+            return false;
+        }
         boolean noDeadEnd = false;
         LinkedList<TopologicalNode> pending = (LinkedList<TopologicalNode>) neighbours.clone();
         while (!pending.isEmpty()) {
             TopologicalNode current = pending.pop();
+            if (current.getID() == SimConstants.UNEXPLORED_NODE_ID) {
+                return false;
+            }
             if (border.contains(current)) {
                 continue;
             }
             border.add(current);
-            noDeadEnd = current.isDeadEnd(border);
+            noDeadEnd = !current.isDeadEnd(border);
         }
         return !noDeadEnd;
     }

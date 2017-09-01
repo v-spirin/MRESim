@@ -1033,7 +1033,7 @@ public class RealAgent extends Agent {
 
             // if two subsequent points are close and both hit an obstacle, assume there is a line between them.
             if (first.distance(x, y) < (sensRange - 2) && second.distance(x, y) < (sensRange - 2)
-                    && first.distance(second) < 5) { // used to be 10
+                    && first.distance(second) < 10) { // used to be 10
                 angle = Math.atan2(second.y - first.y, second.x - first.x);
                 for (int j = 0; j < first.distance(second); j++) {
                     currX = first.x + (int) (j * (Math.cos(angle)));

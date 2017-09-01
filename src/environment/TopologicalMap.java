@@ -301,7 +301,7 @@ public class TopologicalMap {
                 TopologicalNode node = jTopologicalNodes.get(curCell);
                 for (int i = -1; i < 2; i++) {
                     for (int j = -1; j < 2; j++) {
-                        if ((jAreaGrid[p.x + i][p.y + j] != curCell) && (jAreaGrid[p.x + i][p.y + j] > 0)) {
+                        if (i != j && (jAreaGrid[p.x + i][p.y + j] != curCell) && (jAreaGrid[p.x + i][p.y + j] > 0)) {
                             TopologicalNode neighbourNode = jTopologicalNodes.get(jAreaGrid[p.x + i][p.y + j]);
                             if (!node.getListOfNeighbours().contains(neighbourNode)) {
                                 if ((curCell != SimConstants.UNEXPLORED_NODE_ID)
@@ -386,7 +386,17 @@ public class TopologicalMap {
     }
 
     public int getTopologicalArea(Point p) {
+        if (areaGrid == null) {
+            generateKeyAreas();
+        }
         return areaGrid[p.x][p.y];
+    }
+
+    public int getTopologicalJArea(Point p) {
+        if (jAreaGrid == null) {
+            generateJunctionAreas();
+        }
+        return jAreaGrid[p.x][p.y];
     }
 
     public int[][] getJAreaGrid() {

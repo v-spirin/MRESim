@@ -44,6 +44,7 @@
 
 package simulator;
 
+import agents.Agent;
 import agents.ComStation;
 import agents.RealAgent;
 import agents.TeammateAgent;
@@ -181,6 +182,7 @@ public class SimulationFramework implements ActionListener {
 
         // Create BaseStation
         agent[0] = new ComStation(env.getColumns(), env.getRows(), robotTeamConfig.getRobotTeam().get(1), simConfig);
+        agent[0].setState(Agent.AgentState.RELAY);
         teammate[0] = new TeammateAgent(robotTeamConfig.getRobotTeam().get(1));
 
         for (int i = 1; i < numRobots; i++) {

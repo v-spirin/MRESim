@@ -871,6 +871,7 @@ public class Skeleton {
                 }
             }
         }*/
+        //writeToImg(areaGrid, null, "testing");
         return areaGrid;
     }
 
@@ -1133,11 +1134,20 @@ public class Skeleton {
         BufferedImage image = new BufferedImage(grid.length, grid[0].length, BufferedImage.TYPE_INT_RGB);
         for (int i = 0; i < grid.length; i++) {
             for (int j = 0; j < grid[0].length; j++) {
-                if (grid[i][j] == 1) {
+                /*if (grid[i][j] == 1) {
                     image.setRGB(i, j, Color.white.getRGB());
                 } else {
                     image.setRGB(i, j, Color.black.getRGB());
+                }*/
+
+                if (grid[i][j] > 0 && grid[i][j] != SimConstants.UNEXPLORED_NODE_ID) {
+                    image.setRGB(i, j, Color.white.getRGB());
+                } else if (grid[i][j] == SimConstants.UNEXPLORED_NODE_ID) {
+                    image.setRGB(i, j, Color.red.getRGB());
+                } else {
+                    image.setRGB(i, j, Color.black.getRGB());
                 }
+
             }
         }
         if (points != null) {

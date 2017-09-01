@@ -43,6 +43,7 @@
  */
 package simulator;
 
+import agents.Agent;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.RobotConfig;
@@ -528,10 +529,12 @@ public class ExplorationImage {
         //    setPixel(xCoord, yCoord, SimConstants.MapColor.safe());
         //}
         // Update obstacles
-         if (agentSettings.showFreeSpace
+        {
+            if (agentSettings.showFreeSpace
                     && agentGrid.obstacleAt(xCoord, yCoord)) {
                 setPixel(xCoord, yCoord, SimConstants.MapColor.agent_obstacle());
             }
+        }
     }
 
     public void redrawEnvAndAgents(MainGUI mainGUI, RobotTeamConfig rtc, SimulatorConfig simConfig) {
@@ -918,7 +921,7 @@ public class ExplorationImage {
     }
 
     public void drawAreas(RealAgent[] agent) {
-        agent[0].getTopologicalMap().update(true);
+        agent[0].getTopologicalMap().update(false);
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 int area = agent[0].getTopologicalMap().getJAreaGrid()[i][j];
@@ -973,9 +976,26 @@ public class ExplorationImage {
             setPixel(p.x + 1, p.y, Color.MAGENTA);
             setPixel(p.x, p.y + 1, Color.MAGENTA);
         }
-        for (TopologicalNode node : agent[0].getTopologicalMap().getJTopologicalNodes(true).values()) {
+
+        LinkedList<TopologicalNode> nodesWithRelay = new LinkedList<>();
+        nodesWithRelay.add(agent[0].getTopologicalMap().getJTopologicalNodes(false).get(agent[0].getTopologicalMap().getTopologicalJArea(agent[0].getLocation())));
+        for (TeammateAgent mate : agent[0].getAllTeammates().values()) {
+            if (mate.isStationary() && mate.getState() == Agent.AgentState.RELAY && mate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID) {
+                //Is a Relay
+                int nodeid = agent[0].getTopologicalMap().getTopologicalJArea(mate.getLocation());
+                nodesWithRelay.add(agent[0].getTopologicalMap().getJTopologicalNodes(false).get(nodeid));
+
+            }
+
+        }
+
+        for (TopologicalNode node : agent[0].getTopologicalMap().getJTopologicalNodes(false).values()) {
             Point p = node.getPosition();
-            g2D.drawString("" + node.getID(), p.x, p.y);
+            String end = "";
+            if (node.isDeadEnd((LinkedList<TopologicalNode>) nodesWithRelay.clone())) {
+                end = "#";
+            }
+            g2D.drawString(end + node.getID(), p.x, p.y);
         }
 
         /*
