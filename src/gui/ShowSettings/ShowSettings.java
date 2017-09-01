@@ -51,11 +51,11 @@ public class ShowSettings {
 
     public boolean showEnv;
     public boolean showHierarchy;
-    public boolean showConnections;
+    public boolean showAreas;
 
     public ShowSettings() {
         showEnv = false;
         showHierarchy = false;
-        showConnections = false;
+        showAreas = false;
     }
 }

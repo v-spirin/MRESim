@@ -101,8 +101,6 @@ public class MainGUI extends javax.swing.JFrame {
     protected ShowSettings showSettings;
     protected ShowSettingsAgent[] showSettingsAgents;
 
-    protected boolean showConnex;
-
     protected JFrame graphFrame;
     protected JPanel graphPanel;
     public Map<Integer, Double> jointKnowledge = new HashMap();
@@ -125,8 +123,6 @@ public class MainGUI extends javax.swing.JFrame {
         updateFromRobotTeamConfig();
         updateFromEnvConfig();
         //simulation = new SimulationFramework(this, robotTeamConfig, simConfig, explorationImage);
-
-        showConnex = true;
 
         initGraphFrame();
     }
@@ -184,13 +180,13 @@ public class MainGUI extends javax.swing.JFrame {
         return toggleHierarchy.isSelected();
     }
 
-    public void setShowConnections(boolean show) {
-        showConnex = show;
+    public void setShowAreas(boolean show) {
+        toggleAreas.setSelected(show);
 
     }
 
-    public boolean showConnections() {
-        return showConnex;
+    public boolean showAreas() {
+        return toggleAreas.isSelected();
     }
 
     public RobotPanel getRobotPanel(int i) {
@@ -297,9 +293,10 @@ public class MainGUI extends javax.swing.JFrame {
     }
 
     public void updateShowSettings() {
+        System.out.println("Set");
         showSettings = new ShowSettings();
         showSettings.showEnv = showEnv();
-        showSettings.showConnections = showConnections();
+        showSettings.showAreas = showAreas();
         showSettings.showHierarchy = showHierarchy();
     }
 
@@ -446,13 +443,13 @@ public class MainGUI extends javax.swing.JFrame {
         labelCycle = new javax.swing.JLabel();
         labelExploredUpdate = new javax.swing.JLabel();
         labelExplored = new javax.swing.JLabel();
-        buttonData = new javax.swing.JButton();
         labelSpeed = new javax.swing.JLabel();
         sliderSpeed = new javax.swing.JSlider();
         scrollPaneRobots = new javax.swing.JScrollPane();
         panelRobotInfo = new javax.swing.JPanel();
         labelAvgCycle = new javax.swing.JLabel();
         labelAvgCycleUpdate = new javax.swing.JLabel();
+        toggleAreas = new javax.swing.JToggleButton();
         MainMenu1 = new javax.swing.JMenuBar();
         menuExploration1 = new javax.swing.JMenu();
         menuCommunication1 = new javax.swing.JMenu();
@@ -572,18 +569,6 @@ public class MainGUI extends javax.swing.JFrame {
         labelExplored.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         labelExplored.setText("% Explored:");
 
-        buttonData.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonData.png"))); // NOI18N
-        buttonData.setBorderPainted(false);
-        buttonData.setContentAreaFilled(false);
-        buttonData.setMaximumSize(new java.awt.Dimension(36, 36));
-        buttonData.setMinimumSize(new java.awt.Dimension(36, 36));
-        buttonData.setPreferredSize(new java.awt.Dimension(36, 36));
-        buttonData.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonDataActionPerformed(evt);
-            }
-        });
-
         labelSpeed.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         labelSpeed.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         labelSpeed.setText("Speed:");
@@ -625,6 +610,19 @@ public class MainGUI extends javax.swing.JFrame {
         labelAvgCycleUpdate.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
         labelAvgCycleUpdate.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         labelAvgCycleUpdate.setText("0");
+
+        toggleAreas.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonData.png"))); // NOI18N
+        toggleAreas.setToolTipText("Toggle areas");
+        toggleAreas.setBorderPainted(false);
+        toggleAreas.setContentAreaFilled(false);
+        toggleAreas.setMaximumSize(new java.awt.Dimension(36, 36));
+        toggleAreas.setMinimumSize(new java.awt.Dimension(36, 36));
+        toggleAreas.setPreferredSize(new java.awt.Dimension(36, 36));
+        toggleAreas.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                toggleAreasActionPerformed(evt);
+            }
+        });
 
         MainMenu1.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
 
@@ -785,7 +783,7 @@ public class MainGUI extends javax.swing.JFrame {
                         .addGap(18, 18, 18)
                         .addComponent(toggleHierarchy, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(buttonData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(toggleAreas, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -818,9 +816,9 @@ public class MainGUI extends javax.swing.JFrame {
                                 .addComponent(buttonStart, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(labelSpeed)
                             .addComponent(sliderSpeed, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(buttonData, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(toggleHierarchy, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(toggleEnv, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(toggleEnv, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(toggleAreas, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -828,7 +826,6 @@ public class MainGUI extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    // <editor-fold defaultstate="collapsed" desc="GUI actions">
     private void buttonStartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonStartActionPerformed
         // Quick error check to make sure starting positions are within env bounds
         if (!robotStartsOK()) {
@@ -932,14 +929,8 @@ public class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_menuEnvironmentMouseClicked
 
     private void toggleEnvActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleEnvActionPerformed
-        try {
-            if (simulation != null) {
-                simulation.updateImage(true);
-            } else {
-                updateFromEnvConfig();
-            }
-        } catch (NullPointerException e) {
-            System.err.println("Error: toggle button pressed, no image to update.");
+        if (!toggleEnv.isSelected()) {
+            simulation.setForce_full_update(true);
         }
         updateShowSettings();
     }//GEN-LAST:event_toggleEnvActionPerformed
@@ -1004,36 +995,21 @@ public class MainGUI extends javax.swing.JFrame {
     }//GEN-LAST:event_menuExplorationMenuDragMouseReleased
 
     private void toggleHierarchyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleHierarchyActionPerformed
-        try {
-            if (simulation != null) {
-                simulation.updateImage(true);
-            } else {
-                updateFromEnvConfig();
-            }
-        } catch (NullPointerException e) {
-            System.err.println("Error: toggle button pressed, no image to update.");
+        if (!toggleHierarchy.isSelected()) {
+            simulation.setForce_full_update(true);
         }
         updateShowSettings();
     }//GEN-LAST:event_toggleHierarchyActionPerformed
 
-    private void buttonDataActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonDataActionPerformed
-        try {
-            if (simulation != null) {
-                simulation.updateImage(true);
-            } else {
-                updateFromEnvConfig();
-            }
-        } catch (NullPointerException e) {
-            System.err.println("Error: toggle button pressed, no image to update.");
+    private void toggleAreasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_toggleAreasActionPerformed
+        if (!toggleAreas.isSelected()) {
+            simulation.setForce_full_update(true);
         }
-        updateShowSettings();
-    }//GEN-LAST:event_buttonDataActionPerformed
-// </editor-fold>
+        updateShowSettings();// TODO add your handling code here:
+    }//GEN-LAST:event_toggleAreasActionPerformed
 
-    // <editor-fold defaultstate="collapsed" desc="Variables Declaration">
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuBar MainMenu1;
-    private javax.swing.JButton buttonData;
     private javax.swing.JButton buttonStart;
     private javax.swing.JButton buttonStep;
     private javax.swing.JButton buttonStop;
@@ -1055,10 +1031,10 @@ public class MainGUI extends javax.swing.JFrame {
     private javax.swing.JScrollPane scrollPaneImage;
     private javax.swing.JScrollPane scrollPaneRobots;
     private javax.swing.JSlider sliderSpeed;
+    private javax.swing.JToggleButton toggleAreas;
     private javax.swing.JToggleButton toggleEnv;
     private javax.swing.JToggleButton toggleHierarchy;
     // End of variables declaration//GEN-END:variables
-// </editor-fold>}
 
     @Override
     public String toString() {

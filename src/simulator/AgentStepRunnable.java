@@ -92,11 +92,6 @@ public class AgentStepRunnable implements Runnable {
                         + "distance_left is " + distance_left);
             }
             agent.flush();
-            if (SimConstants.PROFILING) {
-                System.out.println(agent.toString() + "Get next step (" + nextStep.x + ","
-                        + nextStep.y + ") took "
-                        + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
-            }
 
             //Check to make sure step is legal
             if (env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y, agent.ability)) {
@@ -105,7 +100,6 @@ public class AgentStepRunnable implements Runnable {
                 //If we don't have enough 'speed'
                 // left to reach nextPoint, go as far as we can and keep nextPoint in the path
                 if (dist > distance_left) {
-                    //System.out.println(agent.toString() + " exceeded speed. Distance left: " + distance_left + ", dist to next path point: " + dist);
                     //Add nextStep back to path, as we will not reach it yet
                     if ((agent.getPath() != null) && (agent.getPath().getPoints() != null)) {
                         agent.getPath().getPoints().add(0, nextStep);
@@ -116,11 +110,7 @@ public class AgentStepRunnable implements Runnable {
                     if (!env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y, agent.ability)) {
                         nextStep.x = agent.getX();
                         nextStep.y = agent.getY();
-                        if (SimConstants.DEBUG_OUTPUT) {
-                            System.out.println(agent.toString() + " directLinePossible returned wrong result!");
-                        }
                     }
-                    //System.out.println(agent.toString() + " speed corrected. Now is: " + agent.getLocation().distance(nextStep));
                     distance_left = 0;
                 } else {
                     distance_left = distance_left - dist;
@@ -170,7 +160,6 @@ public class AgentStepRunnable implements Runnable {
                 break;
             }
             if (agent.isStepFinished()) {
-                distance_left = 0;
                 agent.setStepFinished(false);
                 break;
             }

@@ -57,7 +57,7 @@ public class ComStation extends RealAgent {
     public ComStation(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig) {
         super(envWidth, envHeight, robot, simConfig, null);
         this.setChild(1);
-        this.setState(Agent.AgentState.RELAY);
+        this.setState(Agent.AgentState.INACTIVE);
         this.speed = 0;
     }
 

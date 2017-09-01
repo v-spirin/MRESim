@@ -43,6 +43,7 @@
  */
 package path;
 
+import config.SimConstants;
 import java.awt.Point;
 import java.util.LinkedList;
 
@@ -57,6 +58,7 @@ public class TopologicalNode {
     private LinkedList<TopologicalNode> neighbours;
     private LinkedList<Path> neighbour_paths;
     private LinkedList<Point> cells; //occupancy grid cells allocated to this node
+    private boolean deadEnd;
 
     public TopologicalNode(int ID, Point position) {
         this.ID = ID;
@@ -64,6 +66,11 @@ public class TopologicalNode {
         neighbours = new LinkedList<TopologicalNode>();
         neighbour_paths = new LinkedList<Path>();
         cells = new LinkedList<Point>();
+        if (this.ID == SimConstants.UNEXPLORED_NODE_ID) {
+            deadEnd = true;
+        } else {
+            deadEnd = false;
+        }
     }
 
     public int getID() {
@@ -106,6 +113,31 @@ public class TopologicalNode {
         return cells;
     }
 
+    /**
+     * tests is this node is a dead and, means it has no border to unexplored environment
+     *
+     * @param border border for the search and list of visited nodes in inner algoritmic usage
+     * @return true if this is the border itself or is a deasd end considering the given
+     * border-nodes
+     */
+    public boolean isDeadEnd(LinkedList<TopologicalNode> border) {
+        if (deadEnd == true) {
+            return true;
+        }
+        boolean noDeadEnd = false;
+        LinkedList<TopologicalNode> pending = (LinkedList<TopologicalNode>) neighbours.clone();
+        while (!pending.isEmpty()) {
+            TopologicalNode current = pending.pop();
+            if (border.contains(current)) {
+                continue;
+            }
+            border.add(current);
+            noDeadEnd = current.isDeadEnd(border);
+        }
+        return !noDeadEnd;
+    }
+
+    @Override
     public String toString() {
         return "TopoNode[" + this.ID + "] at Position " + this.position + " with " + this.neighbours.size() + " neighbors";
     }

@@ -269,7 +269,8 @@ public class Skeleton {
     }
 
     /**
-     * CHecks if the box 2*SimConstants.WIDE_OPEN_SPACE_VALUE (currently 2*50) around the given Point
+     * CHecks if the box 2*SimConstants.WIDE_OPEN_SPACE_VALUE (currently 2*50) around the given
+     * Point
      *
      * @param grid
      * @param x Point.x
@@ -292,10 +293,11 @@ public class Skeleton {
      * Find Skeleton, wide open spaces will be an obstacle (currently 100x100)
      *
      * @param grid
+     * @param treatWideOpenSpaceAsObstacle
      * @return
      */
-    public static int[][] findSkeleton(OccupancyGrid grid) {
-        return findSkeleton(grid, true, false);
+    public static int[][] findSkeleton(OccupancyGrid grid, boolean treatWideOpenSpaceAsObstacle) {
+        return findSkeleton(grid, treatWideOpenSpaceAsObstacle, false);
     }
 
     /**

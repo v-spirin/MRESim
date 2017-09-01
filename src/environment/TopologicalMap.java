@@ -293,4 +293,8 @@ public class TopologicalMap {
     private void findSecondKeyPointsBorder(Point goal, RealAgent agent) {
         secondKeyPointsBorder = Skeleton.findSecondBorderRVPoints(keyPointsBorder, agent, goal);
     }
+
+    public int getTopologicalArea(Point p) {
+        return areaGrid[p.x][p.y];
+    }
 }

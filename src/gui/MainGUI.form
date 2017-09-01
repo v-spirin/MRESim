@@ -144,7 +144,7 @@
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="toggleHierarchy" min="-2" pref="36" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="buttonData" min="-2" max="-2" attributes="0"/>
+                      <Component id="toggleAreas" min="-2" pref="36" max="-2" attributes="0"/>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
@@ -187,9 +187,9 @@
                           </Group>
                           <Component id="labelSpeed" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="sliderSpeed" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="buttonData" min="-2" max="-2" attributes="0"/>
                           <Component id="toggleHierarchy" min="-2" pref="36" max="-2" attributes="0"/>
                           <Component id="toggleEnv" min="-2" pref="36" max="-2" attributes="0"/>
+                          <Component id="toggleAreas" min="-2" pref="36" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
@@ -409,27 +409,6 @@
         <Property name="text" type="java.lang.String" value="% Explored:"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="buttonData">
-      <Properties>
-        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-          <Image iconType="3" name="/resources/buttonData.png"/>
-        </Property>
-        <Property name="borderPainted" type="boolean" value="false"/>
-        <Property name="contentAreaFilled" type="boolean" value="false"/>
-        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[36, 36]"/>
-        </Property>
-        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[36, 36]"/>
-        </Property>
-        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
-          <Dimension value="[36, 36]"/>
-        </Property>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="buttonDataActionPerformed"/>
-      </Events>
-    </Component>
     <Component class="javax.swing.JLabel" name="labelSpeed">
       <Properties>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
@@ -501,6 +480,28 @@
         <Property name="horizontalAlignment" type="int" value="0"/>
         <Property name="text" type="java.lang.String" value="0"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JToggleButton" name="toggleAreas">
+      <Properties>
+        <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+          <Image iconType="3" name="/resources/buttonData.png"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" value="Toggle areas"/>
+        <Property name="borderPainted" type="boolean" value="false"/>
+        <Property name="contentAreaFilled" type="boolean" value="false"/>
+        <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[36, 36]"/>
+        </Property>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[36, 36]"/>
+        </Property>
+        <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[36, 36]"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="toggleAreasActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

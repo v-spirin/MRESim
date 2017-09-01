@@ -51,9 +51,9 @@ import communication.DataMessage;
 import communication.DirectLine;
 import communication.PropModel1;
 import communication.StaticCircle;
-import config.SimConstants;
 import config.RobotConfig;
 import config.RobotTeamConfig;
+import config.SimConstants;
 import config.SimulatorConfig;
 import environment.Environment;
 import environment.Environment.Status;
@@ -124,6 +124,7 @@ public class SimulationFramework implements ActionListener {
     RobotTeamConfig robotTeamConfig;
 
     boolean logging_agent;
+    boolean force_full_update;
 
     public SimulationFramework(MainGUI maingui, RobotTeamConfig newRobotTeamConfig,
             SimulatorConfig newSimConfig, ExplorationImage img) {
@@ -135,6 +136,7 @@ public class SimulationFramework implements ActionListener {
         robotTeamConfig = newRobotTeamConfig;
 
         logging_agent = false;
+        force_full_update = false;
 
         reset();
     }
@@ -212,6 +214,10 @@ public class SimulationFramework implements ActionListener {
 
     public int getTotalArea() {
         return totalArea;
+    }
+
+    public void setForce_full_update(boolean force_full_update) {
+        this.force_full_update = force_full_update;
     }
 
     public int getTimeElapsed() {
@@ -876,7 +882,7 @@ public class SimulationFramework implements ActionListener {
     public void updateImage(boolean full) {
         long realtimeStart = System.currentTimeMillis();
 
-        if (full) {
+        if (full || this.force_full_update) {
             //System.out.print(this.toString() + "Full Image Update ... ");
             image.fullUpdate(mainGUI.getShowSettings(), mainGUI.getShowSettingsAgents(), env, agent, agentRange);
         } else {

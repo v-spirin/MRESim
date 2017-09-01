@@ -840,7 +840,7 @@ public class OccupancyGrid implements IntGrid {
     }
 
     public int[][] getSkeleton() {
-        return Skeleton.findSkeleton(this);
+        return Skeleton.findSkeleton(this, false);
     }
 
     public List<Point> getSkeletonList() {

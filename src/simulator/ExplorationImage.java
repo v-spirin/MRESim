@@ -45,9 +45,9 @@ package simulator;
 
 import agents.RealAgent;
 import agents.TeammateAgent;
-import config.SimConstants;
 import config.RobotConfig;
 import config.RobotTeamConfig;
+import config.SimConstants;
 import config.SimulatorConfig;
 import environment.Environment;
 import environment.Frontier;
@@ -82,6 +82,7 @@ import java.util.LinkedList;
 import java.util.PriorityQueue;
 import javax.imageio.ImageIO;
 import path.Path;
+import path.TopologicalNode;
 
 /**
  *
@@ -395,10 +396,6 @@ public class ExplorationImage {
                     });
                 }
             }
-            setPixel(1, 1, Color.MAGENTA);
-            setPixel(1, 2, Color.MAGENTA);
-            setPixel(2, 1, Color.MAGENTA);
-            setPixel(2, 2, Color.MAGENTA);
         }
 
         resetDirt(agents);
@@ -412,8 +409,9 @@ public class ExplorationImage {
             drawHierarchy(agents);
         }
 
-        if (settings.showConnections) {
-            drawConnections(agents);
+        if (settings.showAreas) {
+            System.out.println("Draw");
+            drawAreas(agents);
         }
 
         for (int i = 0; i < agents.length; i++) {
@@ -920,7 +918,59 @@ public class ExplorationImage {
         }*/
     }
 
-    public void drawConnections(RealAgent[] agent) {
+    public void drawAreas(RealAgent[] agent) {
+        agent[0].getTopologicalMap().update(true);
+        for (int i = 0; i < width; i++) {
+            for (int j = 0; j < height; j++) {
+                int area = agent[0].getTopologicalMap().getAreaGrid()[i][j];
+                if (area == SimConstants.UNEXPLORED_NODE_ID) {
+                    continue;
+                }
+                if (area % 10 == 0) {
+                    setPixel(i, j, Color.BLUE);
+                }
+                if (area % 10 == 1) {
+                    setPixel(i, j, Color.CYAN);
+                }
+                if (area % 10 == 2) {
+                    setPixel(i, j, new Color(255, 192, 203));
+                }
+                if (area % 10 == 3) {
+                    setPixel(i, j, Color.GRAY);
+                }
+                if (area % 10 == 4) {
+                    setPixel(i, j, Color.GREEN);
+                }
+                if (area % 10 == 5) {
+                    setPixel(i, j, Color.LIGHT_GRAY);
+                }
+                if (area % 10 == 6) {
+                    setPixel(i, j, Color.MAGENTA);
+                }
+                if (area % 10 == 7) {
+                    setPixel(i, j, new Color(255, 69, 0));
+                }
+                if (area % 10 == 8) {
+                    setPixel(i, j, Color.RED);
+                }
+                if (area % 10 == 9) {
+                    setPixel(i, j, Color.YELLOW);
+                }
+
+            }
+        }
+
+        for (Point p : agent[0].getTopologicalMap().getSkeletonPoints()) {
+            setPixel(p.x, p.y, Color.BLACK);
+        }
+        for (Point p : agent[0].getTopologicalMap().getJunctionPoints()) {
+            setPixel(p.x, p.y, Color.MAGENTA);
+        }
+        for (TopologicalNode node : agent[0].getTopologicalMap().getTopologicalNodes(true).values()) {
+            Point p = node.getPosition();
+            g2D.drawString("" + node.getID(), p.x, p.y);
+        }
+
         /*
             for(int i=0; i<agent.length; i++) {
 

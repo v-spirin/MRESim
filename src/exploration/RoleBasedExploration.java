@@ -54,8 +54,11 @@ import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.NearRVPoint;
 import exploration.rendezvous.RendezvousAgentData;
 import java.awt.Point;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
+import path.TopologicalNode;
 
 /**
  *
@@ -231,8 +234,8 @@ public class RoleBasedExploration extends FrontierExploration {
     public Point takeStep_GoToRelay() {
 
         if (agent.getLocation().equals(agent.getCurrentGoal())) {
-            //Setting state twice to get right previous state, sorry for this hack :-(
-            agent.setExploreState(RealAgent.ExplorationState.GoToChild);
+            //Setting state twice to get right previous state
+            agent.setExploreState(agent.getPrevExploreState());
             agent.setExploreState(RealAgent.ExplorationState.SettingRelay);
             return agent.getLocation();
         }
@@ -255,14 +258,12 @@ public class RoleBasedExploration extends FrontierExploration {
             agent.setPath(agent.calculatePath(rvd.getChildRendezvous().getParentLocation()));
         }
 
+        // <editor-fold defaultstate="collapsed" desc="Relay-Handling">
         switch (relayType) {
             case Random:
                 if (!agent.comStations.isEmpty() && (Math.random() < simConfig.getComStationDropChance())) {
-                    System.out.println("yes");
                     agent.setExploreState(Agent.ExplorationState.SettingRelay);
                     return agent.stay();
-                } else {
-                    System.out.println("nope");
                 }
 
                 TeammateAgent relay = agent.findNearComStation(agent.getSpeed());
@@ -315,7 +316,36 @@ public class RoleBasedExploration extends FrontierExploration {
             default:
         }
 
+        checkForNeedlessRelays();
+        // </editor-fold>
+
         return agent.getNextPathPoint();
+    }
+
+    private void checkForNeedlessRelays() {
+        HashMap<Integer, TopologicalNode> topoNodes = agent.getTopologicalMap().getTopologicalNodes(true);
+        LinkedList<TopologicalNode> nodesWithRelay = new LinkedList<>();
+        int baseId = agent.getTopologicalMap().getTopologicalArea(agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).getLocation());
+        nodesWithRelay.add(topoNodes.get(baseId));
+        for (TeammateAgent mate : agent.getAllTeammates().values()) {
+            if (mate.isStationary() && mate.getState() == Agent.AgentState.RELAY && mate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID) {
+                //Is a Relay
+                int nodeid = agent.getTopologicalMap().getTopologicalArea(mate.getLocation());
+                nodesWithRelay.add(topoNodes.get(nodeid));
+
+            }
+
+        }
+        for (TopologicalNode node : nodesWithRelay) {
+            if (node.getID() == baseId) {
+                continue;
+            }
+            //check for dead ends with all areasWithRelays as borders except the own node
+            LinkedList<TopologicalNode> tempBorder = (LinkedList<TopologicalNode>) nodesWithRelay.clone();
+            tempBorder.remove(node);
+            boolean deadEnd = node.isDeadEnd(tempBorder);
+            System.out.println(node.toString() + "is DeadEnd? " + deadEnd);
+        }
     }
 
 }
