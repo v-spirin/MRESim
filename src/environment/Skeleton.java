@@ -514,7 +514,7 @@ public class Skeleton {
      * @param nodes
      * @return
      */
-    public static int[][] fillKeyAreas(OccupancyGrid occGrid, LinkedList<Point> keyPoints, HashMap<Integer, TopologicalNode> nodes) {
+    public static int[][] fillAreas(OccupancyGrid occGrid, LinkedList<Point> keyPoints, HashMap<Integer, TopologicalNode> nodes) {
         int[][] areaGrid = new int[occGrid.width][occGrid.height];
         LinkedList<Point> pointsOfInterest = new LinkedList<Point>();
 
@@ -881,7 +881,7 @@ public class Skeleton {
      * @param areaGrid
      * @return
      */
-    public static LinkedList<Point> findKeyAreaBorders(int[][] areaGrid) {
+    public static LinkedList<Point> findAreaBorders(int[][] areaGrid) {
         LinkedList<Point> borderPts = new LinkedList<Point>();
         for (int i = 0; i < areaGrid.length; i++) {
             for (int j = 0; j < areaGrid[0].length; j++) {

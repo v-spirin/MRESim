@@ -921,7 +921,7 @@ public class ExplorationImage {
         agent[0].getTopologicalMap().update(true);
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                int area = agent[0].getTopologicalMap().getAreaGrid()[i][j];
+                int area = agent[0].getTopologicalMap().getJAreaGrid()[i][j];
                 if (area == SimConstants.UNEXPLORED_NODE_ID) {
                     continue;
                 }
@@ -932,7 +932,7 @@ public class ExplorationImage {
                     setPixel(i, j, Color.CYAN);
                 }
                 if (area % 10 == 2) {
-                    setPixel(i, j, new Color(255, 192, 203));
+                    setPixel(i, j, new Color(192, 192, 0));
                 }
                 if (area % 10 == 3) {
                     setPixel(i, j, Color.GRAY);
@@ -947,7 +947,7 @@ public class ExplorationImage {
                     setPixel(i, j, Color.MAGENTA);
                 }
                 if (area % 10 == 7) {
-                    setPixel(i, j, new Color(255, 69, 0));
+                    setPixel(i, j, new Color(0, 192, 192));
                 }
                 if (area % 10 == 8) {
                     setPixel(i, j, Color.RED);
@@ -958,22 +958,22 @@ public class ExplorationImage {
 
             }
         }
-        LinkedList<Point> borderPoints = agent[0].getTopologicalMap().getBorderPoints();
-            borderPoints.stream().forEach((p) -> {
-                setPixel(p.x, p.y, Color.BLACK);
-            });
+        LinkedList<Point> borderPoints = agent[0].getTopologicalMap().getJBorderPoints();
+        borderPoints.stream().forEach((p) -> {
+            setPixel(p.x, p.y, Color.BLACK);
+        });
 
         for (Point p : agent[0].getTopologicalMap().getSkeletonPoints()) {
             setPixel(p.x, p.y, Color.BLACK);
         }
         for (Point p : agent[0].getTopologicalMap().getJunctionPoints()) {
             setPixel(p.x, p.y, Color.MAGENTA);
-            setPixel(p.x-1, p.y, Color.MAGENTA);
-            setPixel(p.x, p.y-1, Color.MAGENTA);
-            setPixel(p.x+1, p.y, Color.MAGENTA);
-            setPixel(p.x, p.y+1, Color.MAGENTA);
+            setPixel(p.x - 1, p.y, Color.MAGENTA);
+            setPixel(p.x, p.y - 1, Color.MAGENTA);
+            setPixel(p.x + 1, p.y, Color.MAGENTA);
+            setPixel(p.x, p.y + 1, Color.MAGENTA);
         }
-        for (TopologicalNode node : agent[0].getTopologicalMap().getTopologicalNodes(true).values()) {
+        for (TopologicalNode node : agent[0].getTopologicalMap().getJTopologicalNodes(true).values()) {
             Point p = node.getPosition();
             g2D.drawString("" + node.getID(), p.x, p.y);
         }

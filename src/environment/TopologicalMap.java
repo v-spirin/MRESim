@@ -64,8 +64,11 @@ public class TopologicalMap {
     private LinkedList<Point> skeletonPoints;
     private LinkedList<Point> keyPoints;
     private LinkedList<Point> borderPoints;
+    private LinkedList<Point> jBorderPoints;
     private int areaGrid[][];
+    private int jAreaGrid[][];
     private HashMap<Integer, TopologicalNode> topologicalNodes;
+    private HashMap<Integer, TopologicalNode> jTopologicalNodes;
 
     private int skeletonGridBorder[][];
     private LinkedList<Point> skeletonPointsBorder;
@@ -90,6 +93,7 @@ public class TopologicalMap {
         keyPoints = null;
         borderPoints = null;
         areaGrid = null;
+        jAreaGrid = null;
         topologicalNodes = null;
 
         skeletonGridBorder = null;
@@ -165,8 +169,19 @@ public class TopologicalMap {
         return topologicalNodes;
     }
 
+    public HashMap<Integer, TopologicalNode> getJTopologicalNodes(boolean update) {
+        if (jTopologicalNodes == null || update) {
+            generateJunctionAreas();
+        }
+        return jTopologicalNodes;
+    }
+
     private void generateBorderPoints() {
-        borderPoints = Skeleton.findKeyAreaBorders(getAreaGrid());
+        borderPoints = Skeleton.findAreaBorders(getAreaGrid());
+    }
+
+    private void generateJBorderPoints() {
+        jBorderPoints = Skeleton.findAreaBorders(getJAreaGrid());
     }
 
     public LinkedList<Point> getBorderPoints() {
@@ -200,7 +215,7 @@ public class TopologicalMap {
         topologicalNodes.put(SimConstants.UNEXPLORED_NODE_ID, new TopologicalNode(SimConstants.UNEXPLORED_NODE_ID, new Point(-1, -1)));
 
         // calculate the areas for each node
-        areaGrid = Skeleton.fillKeyAreas(occGrid, getKeyPoints(), topologicalNodes);
+        areaGrid = Skeleton.fillAreas(occGrid, getKeyPoints(), topologicalNodes);
         //find node neighbours
         generateBorderPoints();
 
@@ -215,6 +230,82 @@ public class TopologicalMap {
                             if (!node.getListOfNeighbours().contains(neighbourNode)) {
                                 if ((curCell != SimConstants.UNEXPLORED_NODE_ID)
                                         && (areaGrid[p.x + i][p.y + j] != SimConstants.UNEXPLORED_NODE_ID)) {
+                                    Path pathToNode;
+                                    //check path cache
+                                    Rectangle pathCoords = new Rectangle(node.getPosition().x, node.getPosition().y,
+                                            neighbourNode.getPosition().x, neighbourNode.getPosition().y);
+                                    if (pathCache.containsKey(pathCoords)) {
+                                        pathToNode = pathCache.get(pathCoords);
+                                    } else {
+                                        pathToNode = new Path(occGrid, (Point) node.getPosition(), (Point) neighbourNode.getPosition(), false, true);
+                                        if (!pathToNode.getStartPoint().equals(node.getPosition())
+                                                || !pathToNode.getGoalPoint().equals(neighbourNode.getPosition())) {
+                                            System.err.println("CATASTROPHIC ERROR!! Path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")");
+                                        }
+                                        pathCache.put(pathCoords, pathToNode);
+                                        Path reversePath = pathToNode.getReversePath();
+                                        Rectangle reversePathCoords = new Rectangle(neighbourNode.getPosition().x, neighbourNode.getPosition().y,
+                                                node.getPosition().x, node.getPosition().y);
+                                        pathCache.put(reversePathCoords, reversePath);
+                                    }
+                                    node.addNeighbour(neighbourNode, pathToNode);
+                                    neighbourNode.addNeighbour(node, pathToNode.getReversePath());
+                                } else {
+
+                                    node.addNeighbour(neighbourNode, null);
+                                    neighbourNode.addNeighbour(node, null);
+                                    //Should not be neccessary!
+                                    /*if (areaGrid[p.x + i][p.y + j] == SimConstants.UNEXPLORED_NODE_ID) {
+                                        node.getCellList().stream().forEach((nodeCell) -> {
+                                            occGrid.unsetFinalTopologicalMapCell(nodeCell.x, nodeCell.y);
+                                        });
+                                    } else {
+                                        neighbourNode.getCellList().stream().forEach((nodeCell) -> {
+                                            occGrid.unsetFinalTopologicalMapCell(nodeCell.x, nodeCell.y);
+                                        });
+                                    }*/
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
+    private void generateJunctionAreas() {
+        // declare topological nodes (we will define relations between them later)
+        // each node has one keypoint which is rougly in the center of the node region
+        // this keypoint is used to pre-calculate occupancy grid paths between nodes.
+        jTopologicalNodes = new HashMap<Integer, TopologicalNode>();
+
+        int index = 500;
+        for (Point p : getJunctionPoints()) {
+            index++;
+            if (index == SimConstants.UNEXPLORED_NODE_ID) {
+                index++;
+            }
+            jTopologicalNodes.put(index, new TopologicalNode(index, p));
+        }
+        jTopologicalNodes.put(SimConstants.UNEXPLORED_NODE_ID, new TopologicalNode(SimConstants.UNEXPLORED_NODE_ID, new Point(-1, -1)));
+
+        // calculate the areas for each node
+        jAreaGrid = Skeleton.fillAreas(occGrid, getJunctionPoints(), jTopologicalNodes);
+        //find node neighbours
+        generateJBorderPoints();
+
+        for (Point p : jBorderPoints) {
+            if (jAreaGrid[p.x][p.y] > 0) {
+                int curCell = jAreaGrid[p.x][p.y];
+                TopologicalNode node = jTopologicalNodes.get(curCell);
+                for (int i = -1; i < 2; i++) {
+                    for (int j = -1; j < 2; j++) {
+                        if ((jAreaGrid[p.x + i][p.y + j] != curCell) && (jAreaGrid[p.x + i][p.y + j] > 0)) {
+                            TopologicalNode neighbourNode = jTopologicalNodes.get(jAreaGrid[p.x + i][p.y + j]);
+                            if (!node.getListOfNeighbours().contains(neighbourNode)) {
+                                if ((curCell != SimConstants.UNEXPLORED_NODE_ID)
+                                        && (jAreaGrid[p.x + i][p.y + j] != SimConstants.UNEXPLORED_NODE_ID)) {
                                     Path pathToNode;
                                     //check path cache
                                     Rectangle pathCoords = new Rectangle(node.getPosition().x, node.getPosition().y,
@@ -296,5 +387,19 @@ public class TopologicalMap {
 
     public int getTopologicalArea(Point p) {
         return areaGrid[p.x][p.y];
+    }
+
+    public int[][] getJAreaGrid() {
+        if (jAreaGrid == null) {
+            generateJunctionAreas();
+        }
+        return jAreaGrid;
+    }
+
+    public LinkedList<Point> getJBorderPoints() {
+        if (jBorderPoints == null) {
+            generateJBorderPoints();
+        }
+        return jBorderPoints;
     }
 }

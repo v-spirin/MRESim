@@ -151,11 +151,6 @@ public class RoleBasedExploration extends FrontierExploration {
                 rvd.setParentRendezvous(rendezvousStrategy.calculateRendezvous(timeElapsed1, agent.getParentTeammate()));
                 rvd.getParentRendezvous().setTimeMeeting(timeElapsed1 + 50);
             }
-            /*int meeting = Math.min(prvd.getChildRendezvous().getTimeMeeting(),
-                    rvd.getParentRendezvous().getTimeMeeting());
-            meeting = Math.min(crvd.getParentRendezvous().getTimeMeeting(), meeting);
-            meeting = Math.min(crvd.getChildRendezvous().getTimeMeeting(), meeting);
-            agent.setDynamicInfoText("" + (meeting - timeElapsed));*/
             agent.setDynamicInfoText("--");
         } else {
             agent.setDynamicInfoText("" + (agent.getParentTeammate().getRendezvousAgentData().getChildRendezvous().getTimeMeeting() - timeElapsed));
@@ -236,9 +231,9 @@ public class RoleBasedExploration extends FrontierExploration {
         if (agent.getLocation().equals(agent.getCurrentGoal())) {
             //Setting state twice to get right previous state
             agent.setExploreState(agent.getPrevExploreState());
-            if(noRelay(agent.getLocation())){
+            if (noRelay(agent.getLocation())) {
                 agent.setExploreState(RealAgent.ExplorationState.SettingRelay);
-            }else{
+            } else {
                 agent.setExploreState(RealAgent.ExplorationState.TakingRelay);
             }
             return agent.getLocation();
@@ -320,12 +315,11 @@ public class RoleBasedExploration extends FrontierExploration {
             default:
         }
 
-        
         PriorityQueue<Point> needlessRelays = checkForNeedlessRelays();
-        if(false && !needlessRelays.isEmpty()){
-                agent.setPath(agent.calculatePath(needlessRelays.peek().getLocation()));
-                agent.setExploreState(Agent.ExplorationState.GoToRelay);
-                return agent.stay();
+        if (false && !needlessRelays.isEmpty()) {
+            agent.setPath(agent.calculatePath(needlessRelays.peek().getLocation()));
+            agent.setExploreState(Agent.ExplorationState.GoToRelay);
+            return agent.stay();
         }
         // </editor-fold>
 
@@ -355,8 +349,8 @@ public class RoleBasedExploration extends FrontierExploration {
             LinkedList<TopologicalNode> tempBorder = (LinkedList<TopologicalNode>) nodesWithRelay.clone();
             tempBorder.remove(node);
             boolean deadEnd = node.isDeadEnd(tempBorder);
-            if(deadEnd){
-                needless.add(new NearRVPoint(node.getPosition().x, node.getPosition().y, agent.getLocation().distance(node.getPosition())*-1));
+            if (deadEnd) {
+                needless.add(new NearRVPoint(node.getPosition().x, node.getPosition().y, agent.getLocation().distance(node.getPosition()) * -1));
             }
             //System.out.println(node.toString() + "is DeadEnd? " + deadEnd);
         }
