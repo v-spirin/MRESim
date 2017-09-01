@@ -293,7 +293,6 @@ public class MainGUI extends javax.swing.JFrame {
     }
 
     public void updateShowSettings() {
-        System.out.println("Set");
         showSettings = new ShowSettings();
         showSettings.showEnv = showEnv();
         showSettings.showAreas = showAreas();

@@ -410,7 +410,6 @@ public class ExplorationImage {
         }
 
         if (settings.showAreas) {
-            System.out.println("Draw");
             drawAreas(agents);
         }
 
@@ -959,12 +958,20 @@ public class ExplorationImage {
 
             }
         }
+        LinkedList<Point> borderPoints = agent[0].getTopologicalMap().getBorderPoints();
+            borderPoints.stream().forEach((p) -> {
+                setPixel(p.x, p.y, Color.BLACK);
+            });
 
         for (Point p : agent[0].getTopologicalMap().getSkeletonPoints()) {
             setPixel(p.x, p.y, Color.BLACK);
         }
         for (Point p : agent[0].getTopologicalMap().getJunctionPoints()) {
             setPixel(p.x, p.y, Color.MAGENTA);
+            setPixel(p.x-1, p.y, Color.MAGENTA);
+            setPixel(p.x, p.y-1, Color.MAGENTA);
+            setPixel(p.x+1, p.y, Color.MAGENTA);
+            setPixel(p.x, p.y+1, Color.MAGENTA);
         }
         for (TopologicalNode node : agent[0].getTopologicalMap().getTopologicalNodes(true).values()) {
             Point p = node.getPosition();
