@@ -171,7 +171,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
         radioTesting = new javax.swing.JRadioButton();
         checkBoxUseComStations = new javax.swing.JCheckBox();
         comStationDropChanceField = new javax.swing.JTextField();
-        jLabel2 = new javax.swing.JLabel();
         radioWallFollow = new javax.swing.JRadioButton();
         radioRandom = new javax.swing.JRadioButton();
         radioRelay1 = new javax.swing.JRadioButton();
@@ -179,6 +178,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
         radioRelay3 = new javax.swing.JRadioButton();
         comStationTakeChanceField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
+        radioRelay4 = new javax.swing.JRadioButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Exploration");
@@ -533,8 +533,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel2.setText("ComStation-DropChance");
-
         groupExplorationAlgorithm.add(radioWallFollow);
         radioWallFollow.setMnemonic('7');
         radioWallFollow.setText("WallFollow");
@@ -587,6 +585,16 @@ public class ExplorationDialog extends javax.swing.JDialog {
 
         jLabel3.setText("Take:");
 
+        subgroupRelay.add(radioRelay4);
+        radioRelay4.setFont(new java.awt.Font("Arial", 0, 11)); // NOI18N
+        radioRelay4.setMnemonic('3');
+        radioRelay4.setText("BufferRelay");
+        radioRelay4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioRelay4ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
         jPanel6Layout.setHorizontalGroup(
@@ -598,21 +606,20 @@ public class ExplorationDialog extends javax.swing.JDialog {
                     .addComponent(radioTesting)
                     .addComponent(radioRandom))
                 .addGap(90, 90, 90)
-                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(checkBoxUseComStations)
-                    .addGroup(jPanel6Layout.createSequentialGroup()
-                        .addGap(23, 23, 23)
-                        .addComponent(jLabel2)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 94, Short.MAX_VALUE)
+                .addComponent(checkBoxUseComStations)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 149, Short.MAX_VALUE)
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(radioRelay1, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(radioRelay2, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel6Layout.createSequentialGroup()
-                        .addComponent(radioRelay3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(comStationDropChanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel3)
+                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(radioRelay4, javax.swing.GroupLayout.PREFERRED_SIZE, 200, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(jPanel6Layout.createSequentialGroup()
+                                .addComponent(radioRelay3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(comStationDropChanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel3)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(comStationTakeChanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGap(73, 73, 73))
@@ -623,19 +630,19 @@ public class ExplorationDialog extends javax.swing.JDialog {
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(checkBoxUseComStations)
-                            .addComponent(radioRelay1))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel2)
-                            .addComponent(radioRelay2))
+                            .addComponent(checkBoxUseComStations)
+                            .addComponent(radioRelay1, javax.swing.GroupLayout.Alignment.TRAILING))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(radioRelay2)
+                        .addGap(4, 4, 4)
+                        .addComponent(radioRelay4)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(radioRelay3)
                             .addComponent(comStationDropChanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(comStationTakeChanceField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel3)))
+                            .addComponent(jLabel3)
+                            .addComponent(radioRelay3)))
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addComponent(radioTesting)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -670,7 +677,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 97, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 71, Short.MAX_VALUE)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -814,12 +821,14 @@ public class ExplorationDialog extends javax.swing.JDialog {
             radioRelay1.setEnabled(true);
             radioRelay2.setEnabled(true);
             radioRelay3.setEnabled(true);
+            radioRelay4.setEnabled(true);
             comStationDropChanceField.setEnabled(true);
             comStationTakeChanceField.setEnabled(true);
         } else {
             radioRelay1.setEnabled(false);
             radioRelay2.setEnabled(false);
             radioRelay3.setEnabled(false);
+            radioRelay4.setEnabled(false);
             comStationDropChanceField.setEnabled(false);
             comStationTakeChanceField.setEnabled(false);
         }
@@ -828,6 +837,10 @@ public class ExplorationDialog extends javax.swing.JDialog {
     private void comStationTakeChanceFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comStationTakeChanceFieldActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_comStationTakeChanceFieldActionPerformed
+
+    private void radioRelay4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioRelay4ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_radioRelay4ActionPerformed
 
     WindowListener windowListener = new WindowAdapter() {
         @Override
@@ -849,7 +862,6 @@ public class ExplorationDialog extends javax.swing.JDialog {
     private javax.swing.JTextField comStationTakeChanceField;
     private javax.swing.ButtonGroup groupExplorationAlgorithm;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -874,6 +886,7 @@ public class ExplorationDialog extends javax.swing.JDialog {
     private javax.swing.JRadioButton radioRelay1;
     private javax.swing.JRadioButton radioRelay2;
     private javax.swing.JRadioButton radioRelay3;
+    private javax.swing.JRadioButton radioRelay4;
     private javax.swing.JRadioButton radioRole;
     private javax.swing.JRadioButton radioTesting;
     private javax.swing.JRadioButton radioWallFollow;
