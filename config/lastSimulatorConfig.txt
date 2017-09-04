@@ -1,8 +1,8 @@
 RoleBasedExploration
 PeriodicReturn
-KeyPoints
+BufferRelay
 null
-DirectLine
+StaticCircle
 false
 /home/christian/MRESim/logs/defaultAgentLog.txt
 false

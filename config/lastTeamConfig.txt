@@ -2,5 +2,3 @@
 2 Explorer 80 400 0.0 200 100 1000 Explorer 3 0 3 0 10 10
 3 Follower 120 400 3.14 200 100 1000 Relay 1 2 3 10 10 10
 4 Relay1 1 1 0.0 200 100 1000 RelayStation 3 0 0 0 0 0
-5 Relay2 1 1 0.0 200 100 1000 RelayStation 3 0 0 0 0 0
-6 Relay3 1 1 0.0 200 100 1000 RelayStation 3 0 0 0 0 0

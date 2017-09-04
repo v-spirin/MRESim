@@ -529,12 +529,10 @@ public class ExplorationImage {
         //    setPixel(xCoord, yCoord, SimConstants.MapColor.safe());
         //}
         // Update obstacles
-        {
-            if (agentSettings.showFreeSpace
+         if (agentSettings.showFreeSpace
                     && agentGrid.obstacleAt(xCoord, yCoord)) {
                 setPixel(xCoord, yCoord, SimConstants.MapColor.agent_obstacle());
             }
-        }
     }
 
     public void redrawEnvAndAgents(MainGUI mainGUI, RobotTeamConfig rtc, SimulatorConfig simConfig) {
@@ -921,10 +919,11 @@ public class ExplorationImage {
     }
 
     public void drawAreas(RealAgent[] agent) {
-        agent[0].getTopologicalMap().update(false);
+        RealAgent agt = agent[2];
+        agt.getTopologicalMap().update(false);
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                int area = agent[0].getTopologicalMap().getJAreaGrid()[i][j];
+                int area = agt.getTopologicalMap().getJAreaGrid()[i][j];
                 if (area == SimConstants.UNEXPLORED_NODE_ID) {
                     continue;
                 }
@@ -961,15 +960,15 @@ public class ExplorationImage {
 
             }
         }
-        LinkedList<Point> borderPoints = agent[0].getTopologicalMap().getJBorderPoints();
+        LinkedList<Point> borderPoints = agt.getTopologicalMap().getJBorderPoints();
         borderPoints.stream().forEach((p) -> {
             setPixel(p.x, p.y, Color.BLACK);
         });
 
-        for (Point p : agent[0].getTopologicalMap().getSkeletonPoints()) {
+        for (Point p : agt.getTopologicalMap().getSkeletonPoints()) {
             setPixel(p.x, p.y, Color.BLACK);
         }
-        for (Point p : agent[0].getTopologicalMap().getJunctionPoints()) {
+        for (Point p : agt.getTopologicalMap().getJunctionPoints()) {
             setPixel(p.x, p.y, Color.MAGENTA);
             setPixel(p.x - 1, p.y, Color.MAGENTA);
             setPixel(p.x, p.y - 1, Color.MAGENTA);
@@ -978,18 +977,18 @@ public class ExplorationImage {
         }
 
         LinkedList<TopologicalNode> nodesWithRelay = new LinkedList<>();
-        nodesWithRelay.add(agent[0].getTopologicalMap().getJTopologicalNodes(false).get(agent[0].getTopologicalMap().getTopologicalJArea(agent[0].getLocation())));
-        for (TeammateAgent mate : agent[0].getAllTeammates().values()) {
+        nodesWithRelay.add(agt.getTopologicalMap().getJTopologicalNodes(false).get(agt.getTopologicalMap().getTopologicalJArea(agt.getLocation())));
+        for (TeammateAgent mate : agt.getAllTeammates().values()) {
             if (mate.isStationary() && mate.getState() == Agent.AgentState.RELAY && mate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID) {
                 //Is a Relay
-                int nodeid = agent[0].getTopologicalMap().getTopologicalJArea(mate.getLocation());
-                nodesWithRelay.add(agent[0].getTopologicalMap().getJTopologicalNodes(false).get(nodeid));
+                int nodeid = agt.getTopologicalMap().getTopologicalJArea(mate.getLocation());
+                nodesWithRelay.add(agt.getTopologicalMap().getJTopologicalNodes(false).get(nodeid));
 
             }
 
         }
 
-        for (TopologicalNode node : agent[0].getTopologicalMap().getJTopologicalNodes(false).values()) {
+        for (TopologicalNode node : agt.getTopologicalMap().getJTopologicalNodes(false).values()) {
             Point p = node.getPosition();
             String end = "";
             if (node.isDeadEnd((LinkedList<TopologicalNode>) nodesWithRelay.clone())) {

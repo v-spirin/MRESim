@@ -87,7 +87,7 @@ public class SimulatorConfig {
     }
 
     public static enum relaytype {
-        KeyPoints, RangeBorder, Random, None
+        KeyPoints, RangeBorder, Random, BufferRelay, None
     }
 
     public double TARGET_INFO_RATIO;
