@@ -44,8 +44,8 @@
 package exploration;
 
 import agents.RealAgent;
-import config.SimConstants;
 import config.RobotConfig.roletype;
+import config.SimConstants;
 import config.SimulatorConfig;
 import exploration.Frontier.FrontierUtility;
 import java.awt.Point;
@@ -110,7 +110,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         else if (agent.getPath() != null && agent.getPath().found
                 && agent.getPath().getPoints().size() >= 2) {
             //System.out.println(agent.toString() + "LeaderFollower: Just go on.");
-            nextStep = agent.getNextPathPoint();
+            nextStep = agent.getPath().nextPoint();
         } // CHECK 4
         // Agent isn't stuck, not yet time to replan, but we have no points left
         else {
@@ -144,17 +144,17 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
             Path P2P = agent.calculatePath(agent.getLocation(), agent.getParentTeammate().getLocation(), false);
             agent.setPath(P2P);
             backtracking = true;
-            return agent.getNextPathPoint();
+            return agent.getPath().nextPoint();
         } else {
             Path P2C = agent.calculatePath(agent.getLocation(), agent.getChildTeammate().getLocation(), false);
             agent.setPath(P2C);
             backtracking = false;
-            return agent.getNextPathPoint();
+            return agent.getPath().nextPoint();
         }
         /*if (agent.getLocation().distance(agent.getParentTeammate().getLocation())
                 < agent.getCommRange() - 1 * agent.getSpeed()) {
             agent.setPath(P2C);
-            return agent.getNextPathPoint();
+            return agent.getPath().nextPoint();
         } else {
             return (new Point(agent.getPrevX(), agent.getPrevY()));
         }*/
@@ -174,7 +174,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
             Path P2P = agent.calculatePath(agent.getLocation(), agent.getParentTeammate().getLocation(), false);
             agent.setPath(P2P);
             backtracking = true;
-            return agent.getNextPathPoint();
+            return agent.getPath().nextPoint();
         }
         backtracking = false;
 
@@ -193,7 +193,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
             //System.out.println(agent.toString() + "No frontiers found, returning home.");
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
-            nextStep = agent.getNextPathPoint();
+            nextStep = agent.getPath().nextPoint();
             agent.getStats().setTimeSinceLastPlan(0);
             return nextStep;
         }
@@ -233,7 +233,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
         agent.getStats().setTimeSinceLastPlan(0);
         //System.out.print(SimConstants.INDENT + "Chose frontier at " + agent.getLastFrontier().getCentre().x + "," + agent.getLastFrontier().getCentre().y + ". ");
         //System.out.println("Took " + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        return agent.getNextPathPoint();
+        return agent.getPath().nextPoint();
     }
 
 }

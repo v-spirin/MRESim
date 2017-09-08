@@ -302,7 +302,7 @@ public class ContourTracer {
         for (int j = 0; j < occGrid.height; j++) {
             for (int i = 0; i < occGrid.width; i++) {
                 if (occGrid.frontierCellAt(i, j)
-                        && (!occGrid.locationExists(i, j - 1) || (!occGrid.frontierCellAt(i - 1, j - 1) && !occGrid.frontierCellAt(i, j - 1) && !occGrid.frontierCellAt(i + 1, j - 1)))
+                        //&& (!occGrid.locationExists(i, j - 1) || (!occGrid.frontierCellAt(i - 1, j - 1) && !occGrid.frontierCellAt(i, j - 1) && !occGrid.frontierCellAt(i + 1, j - 1)))
                         && labels[i][j] == 0) {
                     contourCounter++;
                     // We must have found external contour of new component

@@ -138,8 +138,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 break;
             case Explore:
                 if ((agent.getStats().getTimeSinceLastPlan() < SimConstants.REPLAN_INTERVAL)
-                        && agent.getPath() != null && agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
-                    nextStep = agent.getNextPathPoint();
+                        && agent.getPath() != null && !agent.getPath().isFinished() && agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
+                    nextStep = agent.getPath().nextPoint();
                 } else {
                     nextStep = replan(timeElapsed);
                 }
@@ -172,7 +172,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         if (frontierExpType.equals(SimulatorConfig.frontiertype.PeriodicReturn) && noReturnTimer > simConfig.PERIODIC_RETURN_PERIOD) {
             agent.setPathToBaseStation();
-            nextStep = agent.getNextPathPoint();
+            nextStep = agent.getPath().nextPoint();
             return nextStep;
         }
         if (frontierExpType.equals(SimulatorConfig.frontiertype.UtilReturn)) {
@@ -180,7 +180,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                     / (double) (agent.getStats().getCurrentBaseKnowledgeBelief() + agent.getStats().getNewInfo());
             if (infoRatio < simConfig.TARGET_INFO_RATIO) {
                 agent.setPathToBaseStation();
-                nextStep = agent.getNextPathPoint();
+                nextStep = agent.getPath().nextPoint();
                 return nextStep;
             }
         }
@@ -190,9 +190,9 @@ public class FrontierExploration extends BasicExploration implements Exploration
         if (((frontiers.isEmpty()) || no_change_counter > 20 || (agent.getStats().getPercentageKnown() >= SimConstants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
-            nextStep = agent.getNextPathPoint();
-            while ((nextStep != null) && (nextStep.equals(agent.getLocation()))) {
-                nextStep = agent.getNextPathPoint();
+            nextStep = agent.getPath().nextPoint();
+            while (agent.getPath().isFinished() && (nextStep != null) && (nextStep.equals(agent.getLocation()))) {
+                nextStep = agent.getPath().nextPoint();
             }
             return nextStep;
         } else {
@@ -224,9 +224,9 @@ public class FrontierExploration extends BasicExploration implements Exploration
             }
             agent.setMissionComplete(true);
             agent.setPathToBaseStation();
-            nextStep = agent.getNextPathPoint();
+            nextStep = agent.getPath().nextPoint();
             while ((nextStep != null) && (nextStep.equals(agent.getLocation()))) {
-                nextStep = agent.getNextPathPoint();
+                nextStep = agent.getPath().nextPoint();
             }
             agent.getStats().setTimeSinceLastPlan(0);
             return nextStep;
@@ -256,7 +256,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         // If we reach this point, we have a path.  Remove the first point
         // since this is the robot itself.
         agent.getPath().getPoints().remove(0);
-        nextStep = agent.getNextPathPoint();
+        nextStep = agent.getPath().nextPoint();
         return nextStep;
     }
 

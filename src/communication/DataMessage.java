@@ -117,6 +117,8 @@ public class DataMessage implements IDataMessage {
 
         messages = new LinkedList<IDataMessage>();
         RendezvousDataMessage rvDataMessage = new RendezvousDataMessage(agent.getRendezvousAgentData());
+        CommandDataMessage cmdDataMessage = new CommandDataMessage(agent.getCommand(), agent.getCommandData());
+        messages.add(cmdDataMessage);
         messages.add(rvDataMessage);
     }
 

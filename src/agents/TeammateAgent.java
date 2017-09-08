@@ -44,9 +44,9 @@
 
 package agents;
 
-import config.SimConstants;
 import config.RobotConfig;
 import config.RobotConfig.roletype;
+import config.SimConstants;
 import environment.OccupancyGrid;
 import exploration.rendezvous.Rendezvous;
 import exploration.rendezvous.RendezvousAgentData;
@@ -242,5 +242,4 @@ public class TeammateAgent extends Agent {
     public void setReference(ComStation reference) {
         this.reference = reference;
     }
-
 }

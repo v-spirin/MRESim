@@ -134,10 +134,14 @@ public class Path {
             }
         }
         if (startNode.getID() == SimConstants.UNEXPLORED_NODE_ID || goalNode.getID() == SimConstants.UNEXPLORED_NODE_ID) {
+            tMap.update(true);
             topologicalNodes = tMap.getTopologicalNodes(true);
             areaGrid = tMap.getAreaGrid();
             startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
             goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
+            if (startNode == null || goalNode == null) {
+                return;
+            }
             if (startNode.getID() == SimConstants.UNEXPLORED_NODE_ID || goalNode.getID() == SimConstants.UNEXPLORED_NODE_ID) {
                 System.err.println(this + "Error after TopoNodesUpdate: startNode: " + startNode + " , goalNode: " + goalNode);
                 return;
@@ -869,6 +873,9 @@ public class Path {
                 calculateAStarPath();
             } else {
                 calculateJumpPath();
+                if (pathPoints.isEmpty()) {
+                    calculateAStarPath();
+                }
             }
         }
         //currentPOint starts with 0 (startPoint) so we want to increment first!

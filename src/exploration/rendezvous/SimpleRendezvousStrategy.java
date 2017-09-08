@@ -74,7 +74,7 @@ class SimpleRendezvousStrategy implements IRendezvousStrategy {
 
     @Override
     public Rendezvous calculateRendezvousRelayWithRelay(int timeElapsed, TeammateAgent mate) {
-        return new Rendezvous(calculateRVPoint(agent, mate));
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

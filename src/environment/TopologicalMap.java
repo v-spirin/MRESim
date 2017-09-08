@@ -281,7 +281,12 @@ public class TopologicalMap {
         jTopologicalNodes = new HashMap<Integer, TopologicalNode>();
 
         int index = 500;
-        for (Point p : getJunctionPoints()) {
+        LinkedList<Point> junctions = getJunctionPoints();
+        if (junctions.isEmpty()) {
+            //If there are no junctions (just one connected area) use start and endpoint as junctions to avoid the lack of nodes
+            junctions = Skeleton.findJunctionPoints(getSkeletonGrid(), occGrid, true);
+        }
+        for (Point p : junctions) {
             index++;
             if (index == SimConstants.UNEXPLORED_NODE_ID) {
                 index++;

@@ -87,7 +87,7 @@ public class RealAgent extends Agent {
 
     int prevX, prevY;             // Previous position in environment
     int timeElapsed;
-    boolean envError;             // set to true by env when RealAgent's step is not legal
+    private boolean envError;             // set to true by env when RealAgent's step is not legal
     OccupancyGrid occGrid;
     // List of cells changed since last step (For faster update of image)
     LinkedList<Point> dirtyCells;
@@ -130,6 +130,11 @@ public class RealAgent extends Agent {
     private int occupied = 0;
     Exploration exploration;
     private String dynamicInfo;
+    private int originalChild;
+    private int originalParent;
+
+    public String command = "";
+    public Integer command_data = -1;
 
     public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, RealAgent baseStation) {
         super(robot);
@@ -169,6 +174,8 @@ public class RealAgent extends Agent {
         this.baseStation = baseStation;
         this.oldTimeElapsed = -1;
         this.timeElapsed = -1;
+        this.originalChild = this.child;
+        this.originalParent = this.parent;
     }
 
 // <editor-fold defaultstate="collapsed" desc="Get and Set">
@@ -267,7 +274,8 @@ public class RealAgent extends Agent {
     }
 
     public Point getNextPathPoint() {
-        if (path != null) {
+        return path.nextPoint();
+        /*if (path != null) {
             if (path.getPoints() != null) {
                 if (!path.getPoints().isEmpty()) {
                     return ((Point) path.getPoints().remove(0));
@@ -275,7 +283,7 @@ public class RealAgent extends Agent {
             }
         }
 
-        return null;
+        return null;*/
     }
 
     public void setPathToBaseStation() {
@@ -334,6 +342,10 @@ public class RealAgent extends Agent {
 
     public TeammateAgent getChildTeammate() {
         return getTeammate(child);
+    }
+
+    public TeammateAgent getOriginalChildTeammate() {
+        return getTeammate(originalChild);
     }
 
     public void setChild(int c) {
@@ -467,7 +479,6 @@ public class RealAgent extends Agent {
      */
     @Override
     public Point takeStep(int timeElapsed) {
-        long realtimeStartAgentStep = System.currentTimeMillis();
         Point nextStep = null;
 
         //previous time elapsed, used to check if we advanced to a new time cycle
@@ -566,12 +577,6 @@ public class RealAgent extends Agent {
                     break;
             }
         }
-
-        if (SimConstants.DEBUG_OUTPUT || SimConstants.PROFILING) {
-            String nxt = nextStep == null ? "NOTHING" : ((int) nextStep.getX() + "," + (int) nextStep.getY());
-            System.out.println(this.toString() + "Taking step complete, moving from (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") to (" + nxt + "), took " + (System.currentTimeMillis() - realtimeStartAgentStep) + "ms.");
-        }
-
         return nextStep;
     }
 
@@ -1139,7 +1144,7 @@ public class RealAgent extends Agent {
         }); //processRelayMarks();
     }
 
-    public void dropComStation() {
+    public int dropComStation() {
         if (comStations.size() > 0) {
             ComStation comStation = this.comStations.remove(0);
             comStation.setState(AgentState.RELAY);
@@ -1148,7 +1153,9 @@ public class RealAgent extends Agent {
             this.getStats().incrementDroppedComStations();
             baseStation.getStats().incrementDroppedComStations();
             occupied = SimConstants.COM_STATION_DROP_TIME; // use X cycles to drop ComStation (including current one
+            return comStation.getID();
         }
+        return -1;
     }
 
     /**
@@ -1200,4 +1207,37 @@ public class RealAgent extends Agent {
     public void setDynamicInfoText(String info) {
         this.dynamicInfo = info;
     }
+
+    public int getOriginalChild() {
+        return this.originalChild;
+    }
+
+    public void setCommand(String command) {
+        if (exploration != null) {
+            this.exploration.setCommand(command);
+        }
+    }
+
+    public void setCommandData(Integer command_data) {
+        if (exploration != null) {
+            this.exploration.setCommandData(command_data);
+        }
+    }
+
+    public Integer getCommandData() {
+        return this.command_data;
+    }
+
+    public String getCommand() {
+        return this.command;
+    }
+
+    public int getOriginalParent() {
+        return this.originalParent;
+    }
+
+    public TeammateAgent getOriginalParentTeammate() {
+        return this.getTeammate(this.originalParent);
+    }
+
 }

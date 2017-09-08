@@ -61,4 +61,8 @@ public interface Exploration {
      */
     public Point takeStep(int timeElapsed);
 
+    public void setCommand(String command);
+
+    public void setCommandData(Integer command_data);
+
 }

@@ -529,10 +529,12 @@ public class ExplorationImage {
         //    setPixel(xCoord, yCoord, SimConstants.MapColor.safe());
         //}
         // Update obstacles
-         if (agentSettings.showFreeSpace
+        {
+            if (agentSettings.showFreeSpace
                     && agentGrid.obstacleAt(xCoord, yCoord)) {
                 setPixel(xCoord, yCoord, SimConstants.MapColor.agent_obstacle());
             }
+        }
     }
 
     public void redrawEnvAndAgents(MainGUI mainGUI, RobotTeamConfig rtc, SimulatorConfig simConfig) {
@@ -919,7 +921,7 @@ public class ExplorationImage {
     }
 
     public void drawAreas(RealAgent[] agent) {
-        RealAgent agt = agent[2];
+        RealAgent agt = agent[0];
         agt.getTopologicalMap().update(false);
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {

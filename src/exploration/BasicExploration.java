@@ -74,6 +74,9 @@ abstract class BasicExploration {
 
     SimulatorConfig simConfig;
 
+    String command = "";
+    Integer command_data = -1;
+
     /**
      * Just builds the object and initializes the agent.
      *
@@ -119,7 +122,14 @@ abstract class BasicExploration {
         if (agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).isInHandoverRange(agent)) {
             agent.setExploreState(followUp);
         }
-        return agent.getNextPathPoint();
+        return agent.getPath().nextPoint();
     }
 
+    public void setCommand(String command) {
+        this.command = command;
+    }
+
+    public void setCommandData(Integer command_data) {
+        this.command_data = command_data;
+    }
 }

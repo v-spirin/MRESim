@@ -71,8 +71,10 @@ public class RoleBasedExploration extends FrontierExploration {
     RendezvousAgentData rvd;
     RendezvousAgentData prvd;
     RendezvousAgentData crvd;
+    RendezvousAgentData trvd; //temp rendezvous-data for switching childs
     SimulatorConfig.relaytype relayType = SimulatorConfig.relaytype.None;
     TopologicalMap tmap;
+    Boolean switchedChildAndNeedToTell = false;
 
     public RoleBasedExploration(int timeElapsed, RealAgent agent, SimulatorConfig simConfig, IRendezvousStrategy rendezvousStrategy, RealAgent baseStation) {
         super(agent, simConfig, baseStation, SimulatorConfig.frontiertype.ReturnWhenComplete);
@@ -97,6 +99,25 @@ public class RoleBasedExploration extends FrontierExploration {
     public Point takeStep(int timeElapsed) {
         this.timeElapsed = timeElapsed;
 
+        if (agent.getEnvError()) {
+            agent.setEnvError(false);
+            agent.resetPathToBaseStation();
+            agent.setExploreState(Agent.ExplorationState.EnvError);
+        }
+
+        if (command.equals("new_parent")) {
+            agent.setParent(command_data);
+            command = "";
+            rvd.setParentRendezvous(rendezvousStrategy.calculateRendezvous(timeElapsed, agent.getParentTeammate()));
+            int time_for_path = (int) agent.calculatePath(agent.getFrontier().getCentre()).getLength() / agent.getSpeed();
+            time_for_path = Math.max(30, (int) (time_for_path * 1.5));
+            rvd.getParentRendezvous().setTimeMeeting(timeElapsed + time_for_path);
+            agent.setDynamicInfoText("" + (rvd.getParentRendezvous().getTimeMeeting() - timeElapsed));
+        } else if (command.equals("reset_parent")) {
+            agent.setParent(agent.getOriginalParent());
+            command = "";
+        }
+
         calculateRendezvous(timeElapsed);
         Point nextStep;
         //Run correct takeStep function depending on agent state, set nextStep to output
@@ -119,17 +140,34 @@ public class RoleBasedExploration extends FrontierExploration {
                 nextStep = takeStep_ReturnToBase(Agent.ExplorationState.Finished);
                 break;
             case SettingRelay:
-                agent.dropComStation();
+                Integer relayId = agent.dropComStation();
+
+                if (relayType == SimulatorConfig.relaytype.BufferRelay && relayId >= 0) {
+                    trvd = new RendezvousAgentData(rvd);
+                    agent.setChild(relayId);
+                    agent.command = "new_parent";
+                    agent.command_data = relayId;
+                    switchedChildAndNeedToTell = true;
+                }
+
                 agent.setExploreState(agent.getPrevExploreState());
                 nextStep = agent.stay();
                 break;
             case TakingRelay:
                 agent.liftComStation();
+                if (relayType == SimulatorConfig.relaytype.BufferRelay) {
+                    agent.setChild(agent.getOriginalChild());
+                    agent.command = "reset_parent";
+                }
                 agent.setExploreState(agent.getPrevExploreState());
                 nextStep = agent.stay();
                 break;
             case GoToRelay:
                 nextStep = takeStep_GoToRelay();
+                break;
+            case EnvError:
+                nextStep = RandomWalk.randomStep(agent);
+                agent.setExploreState(agent.getPrevExploreState());
                 break;
             default:
                 nextStep = RandomWalk.randomStep(agent);
@@ -143,17 +181,25 @@ public class RoleBasedExploration extends FrontierExploration {
 
     private void calculateRendezvous(int timeElapsed1) {
         if (!agent.isExplorer()) {
-            if (agent.getChildTeammate().hasCommunicationLink()) {
-                rvd.setChildRendezvous(rendezvousStrategy.calculateRendezvous(timeElapsed1, agent.getChildTeammate()));
-                rvd.getChildRendezvous().setTimeMeeting(timeElapsed1 + 50);
-            }
             if (agent.getParentTeammate().hasCommunicationLink()) {
                 rvd.setParentRendezvous(rendezvousStrategy.calculateRendezvous(timeElapsed1, agent.getParentTeammate()));
                 rvd.getParentRendezvous().setTimeMeeting(timeElapsed1 + 50);
             }
+            if (agent.getChildTeammate().hasCommunicationLink()) {
+                rvd.setChildRendezvous(rendezvousStrategy.calculateRendezvous(timeElapsed1, agent.getChildTeammate()));
+                int time_for_path = (int) agent.calculatePath(rvd.getParentRendezvous().getChildLocation()).getLength() / agent.getSpeed();
+                time_for_path = Math.max(50, (int) (time_for_path * 1.5));
+                rvd.getChildRendezvous().setTimeMeeting(timeElapsed1 + time_for_path);
+            }
             agent.setDynamicInfoText("--");
+        } else if (agent.getParentTeammate().isStationary() && agent.getParentTeammate().hasCommunicationLink()) {
+            rvd.setParentRendezvous(rendezvousStrategy.calculateRendezvous(timeElapsed1, agent.getParentTeammate()));
+            int time_for_path = (int) agent.calculatePath(agent.getFrontier().getCentre()).getLength() / agent.getSpeed();
+            time_for_path = Math.max(30, (int) (time_for_path * 1.5));
+            rvd.getParentRendezvous().setTimeMeeting(timeElapsed1 + time_for_path);
+            agent.setDynamicInfoText("" + (rvd.getParentRendezvous().getTimeMeeting() - timeElapsed));
         } else {
-            agent.setDynamicInfoText("" + (agent.getParentTeammate().getRendezvousAgentData().getChildRendezvous().getTimeMeeting() - timeElapsed));
+            agent.setDynamicInfoText("" + (prvd.getChildRendezvous().getTimeMeeting() - timeElapsed));
         }
     }
 
@@ -176,15 +222,22 @@ public class RoleBasedExploration extends FrontierExploration {
             return replan(0);
         } else {
             agent.setExploreState(RealAgent.ExplorationState.GoToChild);
-            return agent.getLocation();
+            return agent.stay();
         }
     }
 
     public Point takeStep_Explore() {
-        if (agent.getParentTeammate().getRendezvousAgentData().getChildRendezvous().getTimeMeeting() <= timeElapsed) {
+        if (!agent.getParentTeammate().isStationary() && prvd.getChildRendezvous().getTimeMeeting() <= timeElapsed) {
+            agent.setExploreState(Agent.ExplorationState.GoToParent);
+            return agent.stay();
+        } else if (agent.getParentTeammate().isStationary() && (rvd.getParentRendezvous().getTimeMeeting() <= timeElapsed)) {
+            agent.setExploreState(Agent.ExplorationState.GoToParent);
+            return agent.stay();
+        }
+        /*if (agent.getParentTeammate().getRendezvousAgentData().getChildRendezvous().getTimeMeeting() - timeElapsed >= 500) {
             agent.setExploreState(Agent.ExplorationState.GoToParent);
             return agent.getLocation();
-        }
+        }*/
 
         if (agent.getStateTimer() <= 1) {
             super.replan(timeElapsed);
@@ -200,7 +253,6 @@ public class RoleBasedExploration extends FrontierExploration {
                 return relay.getLocation();
             }
         }
-
         return super.takeStep(timeElapsed);
     }
 
@@ -211,18 +263,23 @@ public class RoleBasedExploration extends FrontierExploration {
             } else {
                 agent.setExploreState(Agent.ExplorationState.GoToChild);
             }
-            return agent.getLocation();
+            return agent.stay();
         }
 
         if (agent.getLocation().equals(prvd.getChildRendezvous().getChildLocation())) {
             agent.setExploreState(RealAgent.ExplorationState.WaitForParent);
-            return agent.getLocation();
+            return agent.stay();
         }
+
         if (agent.getStateTimer() <= 1) {
             //Just changed to this state so need to generate path
-            agent.setPath(agent.calculatePath(prvd.getChildRendezvous().getChildLocation()));
+            if (agent.getParentTeammate().isStationary()) {
+                agent.setPath(agent.calculatePath(rvd.getParentRendezvous().getChildLocation()));
+            } else {
+                agent.setPath(agent.calculatePath(prvd.getChildRendezvous().getChildLocation()));
+            }
         }
-        return agent.getNextPathPoint();
+        return agent.getPath().nextPoint();
 
     }
 
@@ -238,23 +295,53 @@ public class RoleBasedExploration extends FrontierExploration {
             }
             return agent.getLocation();
         }
-        return agent.getNextPathPoint();
+        return agent.getPath().nextPoint();
     }
 
     public Point takeStep_GoToChild() {
-        //If child is in range
-        if (agent.getChildTeammate().hasCommunicationLink()) {
+        //If child is in range with exceptions (just switched child and need to tell old child, and if the parent is in range too, because this can leed to a deadlock)
+        if (agent.getChildTeammate().hasCommunicationLink() && !switchedChildAndNeedToTell && !agent.getParentTeammate().hasCommunicationLink()) {
             agent.setExploreState(Agent.ExplorationState.GoToParent);
-            return agent.getLocation();
+            return agent.stay();
+        }
+        //tell child about switch if we just switched child and are in comRange
+        if (!agent.getChildTeammate().equals(agent.getOriginalChildTeammate()) && agent.getOriginalChildTeammate().hasCommunicationLink() && switchedChildAndNeedToTell == true) {
+            switchedChildAndNeedToTell = false;
+            agent.setExploreState(Agent.ExplorationState.GoToParent);
+            return agent.stay();
         }
 
-        if (agent.getLocation().equals(rvd.getChildRendezvous().getParentLocation())) {
+        //Fill this variable here, because we need it in the next section, otherwise this is for relay-handling
+        LinkedList<TeammateAgent> relays = new LinkedList<>();
+        for (TeammateAgent mate : agent.getAllTeammates().values()) {
+            if (mate.isStationary() && mate.getState() == Agent.AgentState.RELAY) {
+                relays.add(mate);
+            }
+        }
+
+        //replace relay of BufferRelay?
+        if (relayType == SimulatorConfig.relaytype.BufferRelay) {
+            for (TeammateAgent mate : relays) {
+                if (mate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID && mate.getLocation().distance(agent.getOriginalChildTeammate().getFrontierCentre()) > mate.getLocation().distance(baseStation.getLocation())) {
+                    //relay is nearer to base than to explorer
+                    agent.setPath(agent.calculatePath(mate.getLocation()));
+                    agent.setExploreState(Agent.ExplorationState.GoToRelay);
+                    return agent.stay();
+                }
+            }
+        }
+
+        if (agent.getLocation().equals(rvd.getChildRendezvous().getParentLocation()) && !switchedChildAndNeedToTell && !agent.getParentTeammate().hasCommunicationLink()) {
             agent.setExploreState(RealAgent.ExplorationState.WaitForChild);
-            return agent.getLocation();
+            return agent.stay();
         }
         if (agent.getExploreState() != Agent.ExplorationState.WaitForChild && agent.getStateTimer() <= 1) {
             //Just changed to this state so need to generate path
-            agent.setPath(agent.calculatePath(rvd.getChildRendezvous().getParentLocation()));
+            if (switchedChildAndNeedToTell) {
+                agent.setPath(agent.calculatePath(trvd.getChildRendezvous().getParentLocation()));
+            } else {
+                agent.setPath(agent.calculatePath(rvd.getChildRendezvous().getParentLocation()));
+            }
         }
 
         // <editor-fold defaultstate="collapsed" desc="Relay-Handling">
@@ -271,13 +358,6 @@ public class RoleBasedExploration extends FrontierExploration {
 
             }
 
-        }
-
-        LinkedList<TeammateAgent> relays = new LinkedList<>();
-        for (TeammateAgent mate : agent.getAllTeammates().values()) {
-            if (mate.isStationary() && mate.getState() == Agent.AgentState.RELAY) {
-                relays.add(mate);
-            }
         }
 
         switch (relayType) {
@@ -304,6 +384,15 @@ public class RoleBasedExploration extends FrontierExploration {
                             }
                         }
                     }
+                    if (tempPoints.isEmpty()) {
+                        for (Point p : tmap.getKeyPoints()) {
+                            for (TeammateAgent mate : relays) {
+                                if (agent.getOccupancyGrid().directLinePossible(mate.getLocation(), p, false, false)) {
+                                    tempPoints.add(new NearRVPoint(p.x, p.y, base.getLocation().distance(p)));
+                                }
+                            }
+                        }
+                    }
 
                     Iterator<NearRVPoint> keyP_iter = tempPoints.iterator();
                     while (keyP_iter.hasNext()) {
@@ -321,9 +410,11 @@ public class RoleBasedExploration extends FrontierExploration {
                 if (!agent.comStations.isEmpty()) {
                     boolean useful = false;
                     for (TeammateAgent mate : relays) {
-                        if (mate.getDirectComLink() != 0 && mate.getDirectComLink() < agent.getSpeed() + 1) {
+                        if (mate.getDirectComLink() != 0 && mate.getDirectComLink() < (agent.getSpeed() * 1.5)) {
+                            //Is at range-border
                             useful = true;
                         } else if (mate.getDirectComLink() != 0) {
+                            //Is in strong comrange so don't drop! Stop iterating as this is a definit "not useful"
                             useful = false;
                             break;
                         }
@@ -335,21 +426,13 @@ public class RoleBasedExploration extends FrontierExploration {
                 }
                 break;
             case BufferRelay:
-
-                for (TeammateAgent mate : relays) {
-                    if (mate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID && mate.getLocation().distance(agent.getChildTeammate().getLocation()) > mate.getLocation().distance(baseStation.getLocation())) {
-                        agent.setPath(agent.calculatePath(mate.getLocation()));
-                        agent.setExploreState(Agent.ExplorationState.GoToRelay);
-                        return agent.stay();
-                    }
-                }
                 if (!agent.comStations.isEmpty()) {
                     PriorityQueue<NearRVPoint> tempPoints = new PriorityQueue<>();
                     for (Point p : tmap.getJunctionPoints()) {
                         TopologicalNode keyN = topoNodes.get(agent.getTopologicalMap().getTopologicalJArea(p));
                         for (TeammateAgent mate : relays) {
                             if (!keyN.isDeadEnd(nodesWithRelay)) {
-                                tempPoints.add(new NearRVPoint(p.x, p.y, agent.getChildTeammate().getLocation().distance(p) * -1));
+                                tempPoints.add(new NearRVPoint(p.x, p.y, agent.getChildTeammate().getFrontierCentre().distance(p) * -1));
                             }
 
                         }
@@ -370,7 +453,6 @@ public class RoleBasedExploration extends FrontierExploration {
         }
 
         PriorityQueue<Point> needlessRelays = checkForNeedlessRelays(topoNodes, nodesWithRelay, relays);
-
         if (!needlessRelays.isEmpty()) {
             agent.setPath(agent.calculatePath(needlessRelays.peek().getLocation()));
             agent.setExploreState(Agent.ExplorationState.GoToRelay);
@@ -378,7 +460,7 @@ public class RoleBasedExploration extends FrontierExploration {
         }
         // </editor-fold>
 
-        return agent.getNextPathPoint();
+        return agent.getPath().nextPoint();
     }
 
     private PriorityQueue<Point> checkForNeedlessRelays(HashMap<Integer, TopologicalNode> topoNodes, LinkedList<TopologicalNode> nodesWithRelay, LinkedList<TeammateAgent> relays) {
@@ -389,14 +471,13 @@ public class RoleBasedExploration extends FrontierExploration {
                 continue;
             }
             TopologicalNode node = topoNodes.get(agent.getTopologicalMap().getTopologicalJArea(mate.getLocation()));
-            //check for dead ends with all areasWithRelays as borders except the own node
+            //check for dead ends with all nodesWithRelays as borders except the own node
             LinkedList<TopologicalNode> tempBorder = (LinkedList<TopologicalNode>) nodesWithRelay.clone();
             tempBorder.remove(node);
             boolean deadEnd = node.isDeadEnd((LinkedList<TopologicalNode>) tempBorder.clone());
             if (deadEnd) {
                 needless.add(new NearRVPoint(mate.getLocation().x, mate.getLocation().y, agent.getLocation().distance(node.getPosition()) * -1));
             }
-            //System.out.println(node.toString() + "is DeadEnd? " + deadEnd);
         }
         return needless;
     }

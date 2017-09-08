@@ -847,7 +847,11 @@ public class MainGUI extends javax.swing.JFrame {
             case paused:
                 RUNMODE = runMode.running;
                 buttonStart.setIcon(new javax.swing.ImageIcon(getClass().getResource("/resources/buttonPause.png")));
-                simulation.start();
+                if (simulation == null) {
+                    startSimulation();
+                } else {
+                    simulation.start();
+                }
                 break;
             default:
                 break;

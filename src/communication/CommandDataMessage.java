@@ -45,58 +45,24 @@ package communication;
 
 import agents.RealAgent;
 import agents.TeammateAgent;
-import exploration.rendezvous.Rendezvous;
-import exploration.rendezvous.RendezvousAgentData;
 
 /**
  *
  * @author Victor
  */
-public class RendezvousDataMessage implements IDataMessage {
+public class CommandDataMessage implements IDataMessage {
 
-    public final Rendezvous parentRendezvous;
-    public final Rendezvous childRendezvous;
-    public final Rendezvous parentBackupRendezvous;
-    public final Rendezvous childBackupRendezvous;
+    public final String command;
+    public final Integer command_data;
 
-    public RendezvousDataMessage(RendezvousAgentData data) {
-        if (data.getParentRendezvous() != null) {
-            parentRendezvous = data.getParentRendezvous().copy();
-        } else {
-            parentRendezvous = null;
-        }
-        if (data.getChildRendezvous() != null) {
-            childRendezvous = data.getChildRendezvous().copy();
-        } else {
-            childRendezvous = null;
-        }
-        if (data.getParentBackupRendezvous() != null) {
-            parentBackupRendezvous = data.getParentBackupRendezvous().copy();
-        } else {
-            parentBackupRendezvous = null;
-        }
-        if (data.getChildBackupRendezvous() != null) {
-            childBackupRendezvous = data.getChildBackupRendezvous().copy();
-        } else {
-            childBackupRendezvous = null;
-        }
-
+    public CommandDataMessage(String command, Integer command_data) {
+        this.command = command;
+        this.command_data = command_data;
     }
 
     @Override
     public void receiveMessage(RealAgent agent, TeammateAgent teammate) {
-        //RendezvousAgentData rvd = agent.getRendezvousAgentData();
-
-        teammate.getRendezvousAgentData().setChildRendezvous(childRendezvous);
-        teammate.getRendezvousAgentData().setParentRendezvous(parentRendezvous);
-
-        //if the message is from our child
-        /*if (teammate.getID() == agent.getChild() && teammate.getID() != Constants.BASE_STATION_TEAMMATE_ID) {
-            rvd.setChildRendezvous(parentRendezvous);
-            rvd.setChildBackupRendezvous(parentBackupRendezvous);
-            if (parentRendezvous.parentsRVLocation != null) {
-                rvd.setParentRendezvous(parentRendezvous.parentsRVLocation);
-            }
-        }*/
+        agent.setCommand(command);
+        agent.setCommandData(command_data);
     }
 }

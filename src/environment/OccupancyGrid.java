@@ -171,6 +171,8 @@ public class OccupancyGrid implements IntGrid {
                 for (int j = 0; j < 600; j++) {
                     if (freeSpaceAt(i, j)) {
                         bi.setRGB(i, j, Color.WHITE.getRGB());
+                    } else if (obstacleAt(i, j)) {
+                        bi.setRGB(i, j, Color.BLUE.getRGB());
                     } else {
                         bi.setRGB(i, j, Color.BLACK.getRGB());
                     }

@@ -205,4 +205,14 @@ public class RunFromLog implements Exploration {
         return RobotConfig.roletype.BaseStation;
     }
 
+    @Override
+    public void setCommand(String command) {
+        //useless
+    }
+
+    @Override
+    public void setCommandData(Integer command_data) {
+        //useless
+    }
+
 }

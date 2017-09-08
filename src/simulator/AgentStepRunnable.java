@@ -143,7 +143,7 @@ public class AgentStepRunnable implements Runnable {
             }
 
             //Conditions for breaking even if we have 'speed' left
-            boolean canContinueOnPath = (agent.getPath() != null) && (agent.getPath().getPoints() != null)
+            boolean canContinueOnPath = (agent.getPath() != null) && !agent.getPath().isFinished() && (agent.getPath().getPoints() != null)
                     && (agent.getPath().getPoints().size() > 0) && (!agent.getEnvError());
             if (!canContinueOnPath) {
                 break;
