@@ -44,8 +44,8 @@
 
 package batch;
 
-import config.SimConstants;
 import config.RobotTeamConfig;
+import config.SimConstants;
 import config.SimulatorConfig;
 import gui.MainConsole;
 import java.io.BufferedReader;
@@ -99,25 +99,35 @@ public class BatchExecution {
                 String name = "Batch " + batch_counter;
 
                 SimulatorConfig conf = new SimulatorConfig();
-                conf.loadSimulatorConfig(confs[0]);
+                if (!conf.loadSimulatorConfig(confs[0])) {
+                    System.err.println("Could not load Config-file:" + confs[0]);
+                    continue;
+                }
                 RobotTeamConfig team = new RobotTeamConfig();
-                team.loadConfig(confs[1]);
+                if (!team.loadConfig(confs[1])) {
+                    System.err.println("Could not load Team-file:" + confs[1]);
+                    continue;
+                }
                 boolean loaded = conf.loadEnvironment(confs[2]);
                 if (!loaded) {
                     System.err.println(name + ": Could not load env: " + confs[2]);
                     continue;
                 }
 
-                new File(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + name).mkdir();
-                MainConsole console = new MainConsole(true, name);
-                console.setRobotTeamConfig(team);
-                console.loadConfig(conf);
-                console.load();
+                new File(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + name).mkdirs();
+                try {
+                    MainConsole console = new MainConsole(true, name);
+                    console.setRobotTeamConfig(team);
+                    console.loadConfig(conf);
+                    console.load();
 
-                Thread worker = new Thread(console, name);
-                worker.setName(name);
-                worker.start();
-                threads.add(worker);
+                    Thread worker = new Thread(console, name);
+                    worker.setName(name);
+                    worker.start();
+                    threads.add(worker);
+                } catch (Exception e) {
+                    System.err.println("Stop Execution of this Non-GUI run because:\n" + e.toString());
+                }
                 batch_counter++;
                 counter_threads++;
             }

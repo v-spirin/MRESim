@@ -46,8 +46,8 @@ package gui;
 
 import Logging.ExplorationLogger;
 import agents.RealAgent;
-import config.SimConstants;
 import config.RobotTeamConfig;
+import config.SimConstants;
 import config.SimulatorConfig;
 import java.io.File;
 import java.util.logging.Level;
@@ -114,7 +114,11 @@ public class MainConsole extends MainGUI implements Runnable {
      */
     public void start() throws InterruptedException {
         if (loaded) {
-            simulation.start();
+            try {
+                simulation.start();
+            } catch (Exception e) {
+                System.err.println("Stop Execution of this Non-GUI run because:\n" + e.toString());
+            }
         } else {
             throw new IllegalStateException("Need to call load() first!");
         }

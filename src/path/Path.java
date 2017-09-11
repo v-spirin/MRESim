@@ -101,7 +101,7 @@ public class Path {
     }
 
     public Path(OccupancyGrid agentGrid, TopologicalMap tMap,
-            Point startpoint, Point endpoint, boolean limit, boolean jump) {
+            Point startpoint, Point endpoint, boolean limit, boolean jump) throws IllegalStateException {
         this.startPoint = startpoint;
         this.goalPoint = endpoint;
         this.tMap = tMap;
@@ -129,8 +129,8 @@ public class Path {
             startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
             goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
             if ((startNode == null) || (goalNode == null)) {
-                System.err.println(this + "Error: startNode: " + startNode + " , goalNode: " + goalNode);
-                return;
+                //System.err.println(this + "Error: startNode: " + startNode + " , goalNode: " + goalNode);
+                throw new IllegalStateException(this + "Error: startNode: " + startNode + " , goalNode: " + goalNode);
             }
         }
         if (startNode.getID() == SimConstants.UNEXPLORED_NODE_ID || goalNode.getID() == SimConstants.UNEXPLORED_NODE_ID) {
@@ -143,18 +143,18 @@ public class Path {
                 return;
             }
             if (startNode.getID() == SimConstants.UNEXPLORED_NODE_ID || goalNode.getID() == SimConstants.UNEXPLORED_NODE_ID) {
-                System.err.println(this + "Error after TopoNodesUpdate: startNode: " + startNode + " , goalNode: " + goalNode);
-                return;
+                //System.err.println(this + "Error after TopoNodesUpdate: startNode: " + startNode + " , goalNode: " + goalNode);
+                throw new IllegalStateException(this + "Error after TopoNodesUpdate: startNode: " + startNode + " , goalNode: " + goalNode);
             }
         }
         if (!startNode.equals(goalNode) && (startNode.getListOfNeighbours().isEmpty())) {
-            System.err.println(this + "Error: startNode: " + startNode + " has no neighbors, but is not the only node");
-            return;
+            //System.err.println(this + "Error: startNode: " + startNode + " has no neighbors, but is not the only node");
+            throw new IllegalStateException(this + "Error: startNode: " + startNode + " has no neighbors, but is not the only node");
         }
 
         if (!startNode.equals(goalNode) && (goalNode.getListOfNeighbours().isEmpty())) {
-            System.err.println(this + "Error: goalNode: " + goalNode + " has no neighbors, but is not the only node");
-            return;
+            //System.err.println(this + "Error: goalNode: " + goalNode + " has no neighbors, but is not the only node");
+            throw new IllegalStateException(this + "Error: goalNode: " + goalNode + " has no neighbors, but is not the only node");
         }
 
         if (startNode.equals(goalNode)) {
@@ -878,7 +878,7 @@ public class Path {
                 }
             }
         }
-        //currentPOint starts with 0 (startPoint) so we want to increment first!
+        //currentPoint starts with 0 (startPoint) so we want to increment first!
         // pathPoints.size() - 1 is the goalPoint
         if (currentPoint >= pathPoints.size() - 1) {
             currentPoint = pathPoints.size() - 1;
@@ -893,5 +893,24 @@ public class Path {
 
     public boolean isFinished() {
         return currentPoint >= pathPoints.size() - 1;
+    }
+
+    public void resetStep() {
+        currentPoint--;
+    }
+
+    public void reset() {
+        this.found = false;
+        this.currentPoint = 0;
+        this.length = -1;
+        this.pathNodes.clear();
+        this.pathNodesReverse.clear();
+        this.pathPoints.clear();
+        this.reversePathPoints.clear();
+        this.allPathPixels.clear();
+    }
+
+    public void start() {
+        this.currentPoint = 0;
     }
 }

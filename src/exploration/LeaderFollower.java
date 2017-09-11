@@ -229,7 +229,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
 
         // If we reach this point, we have a path.  Remove the first point
         // since this is the robot itself.
-        agent.getPath().getPoints().remove(0);
+        //agent.getPath().getPoints().remove(0);
         agent.getStats().setTimeSinceLastPlan(0);
         //System.out.print(SimConstants.INDENT + "Chose frontier at " + agent.getLastFrontier().getCentre().x + "," + agent.getLastFrontier().getCentre().y + ". ");
         //System.out.println("Took " + (System.currentTimeMillis() - realtimeStart) + "ms.");

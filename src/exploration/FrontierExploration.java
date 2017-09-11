@@ -77,6 +77,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
     HashMap<Frontier, Boolean> badFrontiers;
     private double last_percentage_known = 0;
     private int no_change_counter = 0;
+    private int max_no_change_counter = 0;
 
     /**
      * Normal Constructor
@@ -145,6 +146,12 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 }
                 break;
             case ReturnToBase:
+                if (agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
+                    agent.setExploreState(Agent.ExplorationState.Explore);
+                }
+                agent.setPathToBaseStation();
+                nextStep = agent.getPath().nextPoint();
+                break;
             case Finished:
             case SettingRelay:
             case EnvError:
@@ -161,6 +168,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
         } else {
             noReturnTimer++;
         }
+        agent.setDynamicInfoText("" + noReturnTimer + "/" + (int) (simConfig.PERIODIC_RETURN_PERIOD * ((double) (max_no_change_counter + 10) / 10)));
+        max_no_change_counter = Math.max(max_no_change_counter, no_change_counter);
         return nextStep;
     }
 
@@ -170,18 +179,14 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         agent.getStats().setTimeSinceLastPlan(0);
 
-        if (frontierExpType.equals(SimulatorConfig.frontiertype.PeriodicReturn) && noReturnTimer > simConfig.PERIODIC_RETURN_PERIOD) {
-            agent.setPathToBaseStation();
-            nextStep = agent.getPath().nextPoint();
-            return nextStep;
+        if (frontierExpType.equals(SimulatorConfig.frontiertype.PeriodicReturn) && noReturnTimer > (int) (simConfig.PERIODIC_RETURN_PERIOD * ((double) (max_no_change_counter + 10) / 10))) {
+            agent.setExploreState(Agent.ExplorationState.ReturnToBase);
         }
         if (frontierExpType.equals(SimulatorConfig.frontiertype.UtilReturn)) {
             double infoRatio = (double) agent.getStats().getCurrentBaseKnowledgeBelief()
                     / (double) (agent.getStats().getCurrentBaseKnowledgeBelief() + agent.getStats().getNewInfo());
             if (infoRatio < simConfig.TARGET_INFO_RATIO) {
-                agent.setPathToBaseStation();
-                nextStep = agent.getPath().nextPoint();
-                return nextStep;
+                agent.setExploreState(Agent.ExplorationState.ReturnToBase);
             }
         }
         calculateFrontiers();
@@ -189,12 +194,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         //If no frontiers found, or reached exploration goal, return to ComStation
         if (((frontiers.isEmpty()) || no_change_counter > 20 || (agent.getStats().getPercentageKnown() >= SimConstants.TERRITORY_PERCENT_EXPLORED_GOAL))) {
             agent.setMissionComplete(true);
-            agent.setPathToBaseStation();
-            nextStep = agent.getPath().nextPoint();
-            while (agent.getPath().isFinished() && (nextStep != null) && (nextStep.equals(agent.getLocation()))) {
-                nextStep = agent.getPath().nextPoint();
-            }
-            return nextStep;
+            agent.setExploreState(Agent.ExplorationState.ReturnToBase);
         } else {
             if (last_percentage_known == agent.getStats().getPercentageKnown()) {
                 no_change_counter++;
@@ -219,17 +219,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
         //If no frontier could be assigned, then go back to base.">
         if (best == null) {
             // mission complete
-            if (SimConstants.DEBUG_OUTPUT) {
-                System.out.println(agent.toString() + " could not find frontier, proceeding to BaseStation (Mission Complete).");
-            }
             agent.setMissionComplete(true);
-            agent.setPathToBaseStation();
-            nextStep = agent.getPath().nextPoint();
-            while ((nextStep != null) && (nextStep.equals(agent.getLocation()))) {
-                nextStep = agent.getPath().nextPoint();
-            }
-            agent.getStats().setTimeSinceLastPlan(0);
-            return nextStep;
+            agent.setExploreState(Agent.ExplorationState.ReturnToBase);
         }
 
         //If overlapping another agent, take random step
@@ -255,7 +246,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         }
         // If we reach this point, we have a path.  Remove the first point
         // since this is the robot itself.
-        agent.getPath().getPoints().remove(0);
+        //agent.getPath().getPoints().remove(0);
         nextStep = agent.getPath().nextPoint();
         return nextStep;
     }

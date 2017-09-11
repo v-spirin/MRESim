@@ -94,20 +94,20 @@ public class AgentStepRunnable implements Runnable {
             agent.flush();
 
             //Check to make sure step is legal
-            if (env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y, agent.ability)) {
+            if (env.legalMove(agent.getLocation(), nextStep, agent.ability)) {
                 //check here we don't 'teleport'
                 double dist = agent.getLocation().distance(nextStep);
                 //If we don't have enough 'speed'
                 // left to reach nextPoint, go as far as we can and keep nextPoint in the path
                 if (dist > distance_left) {
-                    //Add nextStep back to path, as we will not reach it yet
-                    if ((agent.getPath() != null) && (agent.getPath().getPoints() != null)) {
-                        agent.getPath().getPoints().add(0, nextStep);
+                    //Could not do last step, set this back on step
+                    if (agent.getPath() != null) {
+                        agent.getPath().resetStep();
                     }
                     double ratio = distance_left / dist;
                     nextStep.x = agent.getX() + (int) Math.round((nextStep.x - agent.getX()) * ratio);
                     nextStep.y = agent.getY() + (int) Math.round((nextStep.y - agent.getY()) * ratio);
-                    if (!env.legalMove(agent.getX(), agent.getY(), nextStep.x, nextStep.y, agent.ability)) {
+                    if (!env.legalMove(agent.getLocation(), nextStep, agent.ability)) {
                         nextStep.x = agent.getX();
                         nextStep.y = agent.getY();
                     }
@@ -139,6 +139,7 @@ public class AgentStepRunnable implements Runnable {
                 }
                 nextStep.x = agent.getX();
                 nextStep.y = agent.getY();
+                agent.getPath().resetStep();
                 agent.setEnvError(true);
             }
 

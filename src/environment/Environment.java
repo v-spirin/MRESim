@@ -234,26 +234,26 @@ public class Environment implements IntGrid{
         return true;
     }
 
-    public boolean legalMove(int sourceX, int sourceY, int destX, int destY) {
-        return legalMove(sourceX, sourceY, destX, destY, 2);
+    public boolean legalMove(Point source, Point dest) {
+        return legalMove(source, dest, 2);
     }
 
-    public boolean legalMove(int sourceX, int sourceY, int destX, int destY, int ability) {
-        int dx = destX - sourceX;
-        int dy = destY - sourceY;
+    public boolean legalMove(Point source, Point dest, int ability) {
+        int dx = dest.x - source.x;
+        int dy = dest.y - source.y;
 
         if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-            return directLinePossible(sourceX, sourceY, destX, destY, ability);
+            return directLinePossible(source.x, source.y, dest.x, dest.y, ability);
         }
 
         if (dx != 0 && dy != 0) {
             //diagonal move (one diagonal pixel must be free)
-            return ((locationExists(sourceX + dx, sourceY) && !obstacleAt(sourceX + dx, sourceY, ability))
-                    || (locationExists(sourceX, sourceY + dy) && !obstacleAt(sourceX, sourceY + dy, ability)))
-                    && locationExists(destX, destY) && !obstacleAt(destX, destY, ability);
+            return ((locationExists(source.x + dx, source.y) && !obstacleAt(source.x + dx, source.y, ability))
+                    || (locationExists(source.x, source.y + dy) && !obstacleAt(source.x, source.y + dy, ability)))
+                    && locationExists(dest.x, dest.y) && !obstacleAt(dest.x, dest.y, ability);
         } else {
             //horizontal or vertical move
-            return locationExists(destX, destY) && !obstacleAt(destX, destY, ability);
+            return locationExists(dest.x, dest.y) && !obstacleAt(dest.x, dest.y, ability);
         }
 
     }

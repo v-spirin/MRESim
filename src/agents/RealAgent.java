@@ -100,7 +100,7 @@ public class RealAgent extends Agent {
     HashMap<Frontier, Boolean> badFrontiers;
     public int totalSpareTime; //total time this agent was not used for exploration
 
-    Path path;
+    private Path path;
     Path pathToBase;
     //location in range of base station that is nearest to us
     private Point nearestBaseCommunicationPoint;
@@ -234,12 +234,12 @@ public class RealAgent extends Agent {
         return dirtyCells;
     }
 
-    public void setDirtyCells(LinkedList<Point> list) {
-        dirtyCells = list;
+    public void resetDirtyCells() {
+        dirtyCells = new LinkedList<Point>();
     }
 
     public void addDirtyCells(LinkedList<Point> newDirt) {
-        setDirtyCells(mergeLists(getDirtyCells(), newDirt));
+        dirtyCells = mergeLists(getDirtyCells(), newDirt);
     }
 
     public PriorityQueue<Frontier> getFrontiers() {
@@ -263,10 +263,14 @@ public class RealAgent extends Agent {
     }
 
     public void setPath(Path newPath) {
+        if (getPathToBaseStation() != newPath) {
+            resetPathToBaseStation();
+        }
         if (path != null) {
-            this.setDirtyCells(mergeLists(dirtyCells, path.getAllPathPixels()));
+            this.addDirtyCells(path.getAllPathPixels());
         }
         path = newPath;
+        path.start();
     }
 
     public void setSimFramework(SimulationFramework simFramework) {
@@ -275,19 +279,12 @@ public class RealAgent extends Agent {
 
     public Point getNextPathPoint() {
         return path.nextPoint();
-        /*if (path != null) {
-            if (path.getPoints() != null) {
-                if (!path.getPoints().isEmpty()) {
-                    return ((Point) path.getPoints().remove(0));
-                }
-            }
-        }
-
-        return null;*/
     }
 
     public void setPathToBaseStation() {
-        setPath(getPathToBaseStation());
+        if (getPathToBaseStation() != getPath()) {
+            setPath(getPathToBaseStation());
+        }
     }
 
     public void resetPathToBaseStation() {
@@ -625,11 +622,6 @@ public class RealAgent extends Agent {
         //updateGrid(sensorData);
         batteryPower -= energyCunsumption;
         this.getStats().incrementEnergyConsumption(energyCunsumption);
-
-        if (SimConstants.PROFILING) {
-            System.out.println(this.toString() + "WriteStep complete, took "
-                    + (System.currentTimeMillis() - realtimeStart) + "ms.");
-        }
     }
 
     /**
@@ -651,7 +643,12 @@ public class RealAgent extends Agent {
             }
         }
 
-        Path tpath = new Path(occGrid, topologicalMap, startPoint, goalPoint, false, !pureAStar);
+        Path tpath;
+        try {
+            tpath = new Path(occGrid, topologicalMap, startPoint, goalPoint, false, !pureAStar);
+        } catch (IllegalStateException e) {
+            tpath = new Path(occGrid, startPoint, goalPoint, false, !pureAStar);
+        }
 
         if (!tpath.found && !(timeTopologicalMapUpdated == timeElapsed)) {
             //Update topological map and retry

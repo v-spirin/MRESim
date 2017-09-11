@@ -243,7 +243,7 @@ public class ExplorationImage {
 
     private void resetDirt(RealAgent[] agent) {
         for (RealAgent currAgent : agent) {
-            currAgent.setDirtyCells(new LinkedList<Point>());
+            currAgent.resetDirtyCells();
         }
     }
 
@@ -529,12 +529,10 @@ public class ExplorationImage {
         //    setPixel(xCoord, yCoord, SimConstants.MapColor.safe());
         //}
         // Update obstacles
-        {
-            if (agentSettings.showFreeSpace
+         if (agentSettings.showFreeSpace
                     && agentGrid.obstacleAt(xCoord, yCoord)) {
                 setPixel(xCoord, yCoord, SimConstants.MapColor.agent_obstacle());
             }
-        }
     }
 
     public void redrawEnvAndAgents(MainGUI mainGUI, RobotTeamConfig rtc, SimulatorConfig simConfig) {
@@ -1021,6 +1019,9 @@ public class ExplorationImage {
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Helper functions">
     public void drawRange(Environment env, RealAgent agent, Polygon range, Color color) {
+        if (agent.getState() == Agent.AgentState.INACTIVE || agent.getState() == Agent.AgentState.OutOfService) {
+            return;
+        }
         for (Point p : polygonPoints(range)) {
             if (env.locationExists(p.x, p.y)) {
                 setPixel(p.x, p.y, color);
@@ -1030,6 +1031,9 @@ public class ExplorationImage {
     }
 
     public void drawCircle(RealAgent agent, Color color) {
+        if (agent.getState() == Agent.AgentState.INACTIVE || agent.getState() == Agent.AgentState.OutOfService) {
+            return;
+        }
         for (Point p : circlePoints(agent.getX(), agent.getY(), agent.getCommRange())) {
             if (agent.getOccupancyGrid().locationExists(p.x, p.y)) {
                 setPixel(p.x, p.y, color);
