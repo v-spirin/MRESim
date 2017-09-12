@@ -161,7 +161,6 @@ public class Path {
             if (startpoint.equals(goalPoint)) {
                 this.pathPoints.add(endpoint);
                 this.length = 1;
-                this.found = true;
             }
             //Path inside an area, normal planning
             if (!jump) {
@@ -433,6 +432,9 @@ public class Path {
             }
         }
         recalcLength();
+        if (this.length == 0) {
+            return false;
+        }
 
         return !limit_hit;
     }
@@ -699,6 +701,38 @@ public class Path {
         return allPathPixels;
     }
 
+    public LinkedList<Point> getTakenPathPixels() {
+        int c = 0;
+        LinkedList<Point> pathPixels = new LinkedList<>();
+        Iterator<Point> i = pathPoints.iterator();
+        Point curr, prev = startPoint;
+        while (i.hasNext() && c <= this.currentPoint) {
+            curr = i.next();
+            pathPixels = mergeLists(pathPixels, pointsAlongSegment(prev, curr));
+            prev = curr;
+            c++;
+        }
+
+        return pathPixels;
+    }
+
+    public LinkedList<Point> getCommingPathPixels() {
+        int c = 0;
+        LinkedList<Point> pathPixels = new LinkedList<>();
+        Iterator<Point> i = pathPoints.iterator();
+        Point curr, prev = startPoint;
+        while (i.hasNext()) {
+            curr = i.next();
+            if (c > this.currentPoint) {
+                pathPixels = mergeLists(pathPixels, pointsAlongSegment(prev, curr));
+            }
+            prev = curr;
+            c++;
+        }
+
+        return pathPixels;
+    }
+
     public void reverse() {
         List<Point> t = pathPoints;
         pathPoints = reversePathPoints;
@@ -902,7 +936,7 @@ public class Path {
     public void reset() {
         this.found = false;
         this.currentPoint = 0;
-        this.length = -1;
+        this.length = 0;
         this.pathNodes.clear();
         this.pathNodesReverse.clear();
         this.pathPoints.clear();

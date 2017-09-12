@@ -82,7 +82,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 import javax.imageio.ImageIO;
-import path.Path;
 import path.TopologicalNode;
 
 /**
@@ -438,7 +437,7 @@ public class ExplorationImage {
 
             //Draw paths
             if (agentSettings[i].showPath) {
-                drawPath(agents[i].getPath(), agents[i].pathTaken);
+                drawPath(agents[i].getPathComming(), agents[i].getPathTaken());
                 agents[i].updatePathDirt();
             }
             //Draw skeleton
@@ -695,13 +694,17 @@ public class ExplorationImage {
         }
     }
 
-    public void drawPath(Path futurePath, LinkedList<Point> pastPath) {
+    public void drawPath(LinkedList<Point> futurePath, LinkedList<Point> pastPath) {
         try {
             // part 1: future path
-            g2D.setPaint(Color.RED);
-            java.util.List pts = futurePath.getPoints();
-            for (int i = 0; i < pts.size() - 1; i++) {
-                g2D.drawLine(((Point) pts.get(i)).x, ((Point) pts.get(i)).y, ((Point) pts.get(i + 1)).x, ((Point) pts.get(i + 1)).y);
+            //g2D.setPaint(Color.RED);
+            for (int i = 0; i < futurePath.size() - 1; i++) {
+                setPixel(futurePath.get(i).x, futurePath.get(i).y, Color.RED);
+                //g2D.drawLine(((Point) pts.get(i)).x, ((Point) pts.get(i)).y, ((Point) pts.get(i + 1)).x, ((Point) pts.get(i + 1)).y);
+            }
+            for (int i = 0; i < pastPath.size() - 1; i++) {
+                setPixel(pastPath.get(i).x, pastPath.get(i).y, Color.black);
+                //g2D.drawLine(((Point) pts.get(i)).x, ((Point) pts.get(i)).y, ((Point) pts.get(i + 1)).x, ((Point) pts.get(i + 1)).y);
             }
 
             //part 2:  past path

@@ -175,7 +175,6 @@ public class RoleBasedExploration extends FrontierExploration {
         }
 
         calculateRendezvous(timeElapsed);
-        agent.incrementStateTimer();
         return nextStep;
     }
 

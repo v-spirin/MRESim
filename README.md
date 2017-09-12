@@ -14,7 +14,6 @@ Build normally
 > java -cp dist/MRESim.jar batch.BatchExecution [batchfile]
 The batchfile is formatet as following:
 ```
-3 #Number of Simulations
 2 #Number of threads
 sim-conf #Filename of simulation-configfile in default-directory (simconf)
 team-conf #Filename of team-configfile in default-directory (teamconf)

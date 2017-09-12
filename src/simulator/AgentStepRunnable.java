@@ -120,7 +120,7 @@ public class AgentStepRunnable implements Runnable {
                 sensorData = simFramework.findSensorData(agent, nextStep);
                 agent.writeStep(nextStep, sensorData, true);
             } else {
-                System.err.println(agent + " !!! setting envError because direct line not possible between ("
+                System.err.println(agent + " at cycle " + timeElapsed + ": setting envError because direct line not possible between ("
                         + (int) agent.getLocation().getX() + "," + (int) agent.getLocation().getY() + ") and (" + nextStep.x + "," + nextStep.y + ")");
                 //Remove safe space status for the points along the line, so that obstacles can be sensed there
                 if (nextStep.distance(agent.getLocation()) == 1) {

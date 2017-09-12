@@ -213,7 +213,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
             return nextStep;
         } else {
             agent.setFrontier(frontierUtil.getFrontier());
-            agent.setPath(frontierUtil.getPath());
+            agent.setPath(frontierUtil.getPath(agent));
 
         }
 

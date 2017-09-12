@@ -91,7 +91,6 @@ public class RealAgent extends Agent {
     OccupancyGrid occGrid;
     // List of cells changed since last step (For faster update of image)
     LinkedList<Point> dirtyCells;
-    public LinkedList<Point> pathTaken;    // For display where robot has gone
 
     // Frontiers
     PriorityQueue<Frontier> frontiers;
@@ -154,7 +153,6 @@ public class RealAgent extends Agent {
         occGrid = new OccupancyGrid(envWidth, envHeight);
         topologicalMap = new TopologicalMap(occGrid);
         dirtyCells = new LinkedList<Point>();
-        pathTaken = new LinkedList<Point>();
         badFrontiers = new HashMap<Frontier, Boolean>();
 
         frontiers = new PriorityQueue();
@@ -258,6 +256,20 @@ public class RealAgent extends Agent {
         this.frontier = f;
     }
 
+    public LinkedList<Point> getPathTaken() {
+        if (this.path == null) {
+            return new LinkedList<Point>();
+        }
+        return this.path.getTakenPathPixels();
+    }
+
+    public LinkedList<Point> getPathComming() {
+        if (this.path == null) {
+            return new LinkedList<Point>();
+        }
+        return this.path.getCommingPathPixels();
+    }
+
     public Path getPath() {
         return path;
     }
@@ -270,7 +282,11 @@ public class RealAgent extends Agent {
             this.addDirtyCells(path.getAllPathPixels());
         }
         path = newPath;
-        path.start();
+        if (path == null) {
+            System.err.println("Path is null");
+        } else {
+            path.start();
+        }
     }
 
     public void setSimFramework(SimulationFramework simFramework) {
@@ -505,74 +521,84 @@ public class RealAgent extends Agent {
             return getLocation();
         }
 
-        /*if (timeElapsed == 0) {
+        try {
+            /*if (timeElapsed == 0) {
             oldTimeElapsed = -1; //hack for initial time step
         }*/ //Not necessary anymore I think
-        if (oldTimeElapsed != timeElapsed) {
-            // First call in cycle
-            if (exploration == null) {
-                switch (simConfig.getExpAlgorithm()) {
-                    case RunFromLog:
-                        exploration = new RunFromLog(simConfig.getRunFromLogFilename(), this.robotNumber);
-                        setState(((RunFromLog) exploration).getState(timeElapsed));
-                        setRole(((RunFromLog) exploration).getRole(timeElapsed));
-                        break;
+            if (oldTimeElapsed != timeElapsed) {
+                // First call in cycle
+                if (exploration == null) {
+                    switch (simConfig.getExpAlgorithm()) {
+                        case RunFromLog:
+                            exploration = new RunFromLog(simConfig.getRunFromLogFilename(), this.robotNumber);
+                            setState(((RunFromLog) exploration).getState(timeElapsed));
+                            setRole(((RunFromLog) exploration).getRole(timeElapsed));
+                            break;
 
-                    case LeaderFollower:
-                        exploration = new LeaderFollower(this, simConfig, baseStation);
-                        break;
-                    case FrontierExploration:
-                        exploration = new FrontierExploration(this, simConfig, baseStation);
-                        break;
-                    case RoleBasedExploration:
-                        exploration = new RoleBasedExploration(timeElapsed, this, simConfig, this.getRendezvousStrategy(), baseStation);
-                        break;
-                    case Testing:
-                    case Random:
-                        exploration = new RandomExploration(this, simConfig);
-                        break;
-                    case WallFollow:
-                        exploration = new WallFollowExploration(this, simConfig, occGrid);
-                        break;
-                    default:
-                        exploration = new RandomExploration(this, simConfig);
-                        break;
+                        case LeaderFollower:
+                            exploration = new LeaderFollower(this, simConfig, baseStation);
+                            break;
+                        case FrontierExploration:
+                            exploration = new FrontierExploration(this, simConfig, baseStation);
+                            break;
+                        case RoleBasedExploration:
+                            exploration = new RoleBasedExploration(timeElapsed, this, simConfig, this.getRendezvousStrategy(), baseStation);
+                            break;
+                        case Testing:
+                        case Random:
+                            exploration = new RandomExploration(this, simConfig);
+                            break;
+                        case WallFollow:
+                            exploration = new WallFollowExploration(this, simConfig, occGrid);
+                            break;
+                        default:
+                            exploration = new RandomExploration(this, simConfig);
+                            break;
+                    }
+                }
+
+                nextStep = exploration.takeStep(timeElapsed);
+                if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
+                    //Make sure the GUI can display a path estimate
+                    Path straightLine = new Path(occGrid, getLocation(), ((RunFromLog) exploration).getGoal(timeElapsed), true, true);
+                    setPath(straightLine);
+                }
+                incrementStateTimer();
+            } else // further call in cycle, just give next points of path
+            {
+                if (getEnvError()) {
+                    stay();
+                } else {
+                    switch (simConfig.getExpAlgorithm()) {
+                        case RunFromLog:
+                            break;
+                        case LeaderFollower:
+                            nextStep = this.getNextPathPoint();
+                            break;
+                        case FrontierExploration:
+                            nextStep = this.getNextPathPoint();
+                            break;
+                        case RoleBasedExploration:
+                            nextStep = this.getNextPathPoint();
+                            break;
+                        case Testing:
+                            nextStep = this.getNextPathPoint();
+                            break;
+                        case Random:
+                            nextStep = exploration.takeStep(timeElapsed);
+                            break;
+                        case WallFollow:
+                            ((WallFollowExploration) exploration).updateGrid(occGrid);
+                            nextStep = exploration.takeStep(timeElapsed);
+
+                        default:
+                            break;
+                    }
                 }
             }
-
-            nextStep = exploration.takeStep(timeElapsed);
-            if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
-                //Make sure the GUI can display a path estimate
-                Path straightLine = new Path(occGrid, getLocation(), ((RunFromLog) exploration).getGoal(timeElapsed), true, true);
-                setPath(straightLine);
-            }
-        } else {
-            // further call in cycle, just give next points of path
-            switch (simConfig.getExpAlgorithm()) {
-                case RunFromLog:
-                    break;
-                case LeaderFollower:
-                    nextStep = this.getNextPathPoint();
-                    break;
-                case FrontierExploration:
-                    nextStep = this.getNextPathPoint();
-                    break;
-                case RoleBasedExploration:
-                    nextStep = this.getNextPathPoint();
-                    break;
-                case Testing:
-                    nextStep = this.getNextPathPoint();
-                    break;
-                case Random:
-                    nextStep = exploration.takeStep(timeElapsed);
-                    break;
-                case WallFollow:
-                    ((WallFollowExploration) exploration).updateGrid(occGrid);
-                    nextStep = exploration.takeStep(timeElapsed);
-
-                default:
-                    break;
-            }
+        } catch (RuntimeException e) {
+            //Path gave Path is size 0
+            setEnvError(true);
         }
         return nextStep;
     }
@@ -600,8 +626,6 @@ public class RealAgent extends Agent {
         }*/
         this.x = nextLoc.x;
         this.y = nextLoc.y;
-
-        pathTaken.add(new Point(x, y));
 
         if (!(prevX == x && prevY == y)) {
             heading = Math.atan2(y - prevY, x - prevX);
@@ -1035,7 +1059,7 @@ public class RealAgent extends Agent {
 
             // if two subsequent points are close and both hit an obstacle, assume there is a line between them.
             if (first.distance(x, y) < (sensRange - 2) && second.distance(x, y) < (sensRange - 2)
-                    && first.distance(second) < 10) { // used to be 10
+                    && first.distance(second) < 7) { // used to be 10 then 5
                 angle = Math.atan2(second.y - first.y, second.x - first.x);
                 for (int j = 0; j < first.distance(second); j++) {
                     currX = first.x + (int) (j * (Math.cos(angle)));

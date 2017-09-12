@@ -81,7 +81,10 @@ public class FrontierUtility implements Comparable<FrontierUtility> {
         }
     }
 
-    public Path getPath() {
+    public Path getPath(RealAgent calcAgent) {
+        if (path == null) {
+            calculateUtilityExact(calcAgent);
+        }
         return path;
     }
 
@@ -131,6 +134,9 @@ public class FrontierUtility implements Comparable<FrontierUtility> {
         path = calcAgent.calculatePath(agent.getLocation(), frontier.getCentre(), false/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
 
         if (path.found) {
+            if (path.getLength() == 0) {
+                path = calcAgent.calculatePath(agent.getLocation(), frontier.getCentre(), false/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
+            }
             utility = (frontier.getArea() * 100000000) / Math.pow(path.getLength(), 4);
         } else {
             utility = -1000;

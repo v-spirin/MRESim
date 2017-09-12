@@ -138,7 +138,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 }
                 break;
             case Explore:
-                if ((agent.getStats().getTimeSinceLastPlan() < SimConstants.REPLAN_INTERVAL)
+                if ((agent.getStats().getTimeSinceLastPlan() < SimConstants.REPLAN_INTERVAL && agent.getStateTimer() > 1)
                         && agent.getPath() != null && !agent.getPath().isFinished() && agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
                     nextStep = agent.getPath().nextPoint();
                 } else {
@@ -213,7 +213,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         if (best != null) {
             agent.setFrontier(best.getFrontier());
-            agent.setPath(best.getPath());
+            agent.setPath(best.getPath(agent));
         }
 
         //If no frontier could be assigned, then go back to base.">
@@ -326,7 +326,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         // Step 2:  Create utility estimates
         PriorityQueue<FrontierUtility> utilities = initializeUtilities(considerOtherAgents);
         // Step 3
-        FrontierUtility best;
+        FrontierUtility best = null;
 
         ArrayList<FrontierUtility> badUtilities = new ArrayList<>();
         Iterator<FrontierUtility> util_iter = utilities.iterator();
@@ -352,7 +352,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
             } else if (utilities.isEmpty() || (best.getUtility() >= utilities.peek().getUtility())) {
                 //as the utility estimate is an optimistic heuristic if the best.utility is better as the peek-utility... go and get it
-                if (!considerOtherAgents || best.getAgent() == agent) {
+                //if (!considerOtherAgents || best.getAgent() == agent) {
+                if (best.getAgent() == agent) {
                     return best;
                 } else {
                     // This robot is assigned to this frontier, so remove all remaining associated utilities (for the agent and for the frontier)
@@ -368,7 +369,19 @@ public class FrontierExploration extends BasicExploration implements Exploration
         }
         utilities.removeAll(badUtilities);
 
-        return utilities.peek();  // give the best Utility
+        //Return best Frontier (utility) that is calculated for me
+        util_iter = utilities.iterator();
+        while (util_iter.hasNext()) {
+            best = util_iter.next();
+            if (best.getAgent() == agent) {
+                return best;
+            }
+        }
+
+        if (best == null) {
+            best = utilities.peek();
+        }
+        return new FrontierUtility(agent, best.getFrontier());  // give the worst Utility for all other agents, as there is no one for me
     }
 
     /**

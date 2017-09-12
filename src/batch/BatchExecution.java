@@ -70,7 +70,6 @@ public class BatchExecution {
     //private List<SimulatorConfig> configs;
     private List<String[]> configFiles;
     //private RobotTeamConfig team;
-    int num_sims = 1;
     int num_threads = 2;
 
     public BatchExecution(String batchfile) {
@@ -160,10 +159,7 @@ public class BatchExecution {
 
         if (file.exists()) {
             try (BufferedReader inFile = new BufferedReader(new FileReader(file))) {
-
-                num_sims = Integer.parseInt(inFile.readLine());
                 num_threads = Integer.parseInt(inFile.readLine());
-                String line;
                 while (inFile.ready()) {
                     String[] co = {SimConstants.DEFAULT_SIMCONF_DIRECTORY + String.valueOf(inFile.readLine()),
                         SimConstants.DEFAULT_TEAMCONF_DIRECTORY + String.valueOf(inFile.readLine()),
