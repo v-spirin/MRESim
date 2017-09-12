@@ -53,6 +53,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -88,7 +89,7 @@ public class BatchExecution {
     }
 
     public void run() {
-        List<Thread> threads = new ArrayList<Thread>();
+        HashMap<Integer, Thread> threads = new HashMap<>();
         int batch_counter = 0;
         int counter_threads = 0;
         Iterator<String[]> c_it = configFiles.iterator();
@@ -123,7 +124,7 @@ public class BatchExecution {
                     Thread worker = new Thread(console, name);
                     worker.setName(name);
                     worker.start();
-                    threads.add(worker);
+                    threads.put(batch_counter, worker);
                 } catch (Exception e) {
                     System.err.println("Stop Execution of this Non-GUI run because:\n" + e.toString());
                 }
@@ -133,6 +134,7 @@ public class BatchExecution {
             for (int i = batch_counter - counter_threads; i < batch_counter; i++) {
                 try {
                     threads.get(i).join();
+                    threads.remove(i);
                     LOGGER.log(Level.INFO, "Thread {0} joined", i);
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Thread {0} threw exception {1}: {2}", new Object[]{i, e.getMessage(), e});
@@ -148,6 +150,8 @@ public class BatchExecution {
         if (args.length >= 1) {
             batchfile = args[0];
             System.out.println(batchfile);
+        } else {
+            batchfile = "batch";
         }
         BatchExecution batch = new BatchExecution(batchfile);
         batch.run();

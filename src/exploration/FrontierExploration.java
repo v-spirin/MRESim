@@ -377,11 +377,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 return best;
             }
         }
-
-        if (best == null) {
-            best = utilities.peek();
-        }
-        return new FrontierUtility(agent, best.getFrontier());  // give the worst Utility for all other agents, as there is no one for me
+        return null;
     }
 
     /**

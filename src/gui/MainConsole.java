@@ -155,6 +155,7 @@ public class MainConsole extends MainGUI implements Runnable {
         if (!batch) {
             System.exit(0);
         } else {
+            this.dispose();
             synchronized (this) {
                 this.notify();
             }
