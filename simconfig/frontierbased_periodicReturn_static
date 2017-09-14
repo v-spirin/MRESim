@@ -2,7 +2,7 @@ FrontierExploration
 PeriodicReturn
 KeyPoints
 null
-PropModel1
+StaticCircle
 false
 /home/christian/MRESim/logs/defaultAgentLog.txt
 false
@@ -30,4 +30,4 @@ false
 true
 0.02
 0.2
-50
+100
