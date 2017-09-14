@@ -214,7 +214,7 @@ public class Path {
             this.pathPoints.addAll(startPath.getPoints());
             pathSections.add(startPath);
             //Second add path from StartNode to goalNode, this is just adding precomputed pathes
-            for (int i = 2; i < pathNodes.size() - 1; i++) {
+            for (int i = 1; i < pathNodes.size() - 1; i++) {
                 Path tempPath = pathNodes.get(i).getPathToNeighbour(pathNodes.get(i + 1));
                 if (!tempPath.isValid()) {
                     tempPath.repairPath();
@@ -338,9 +338,6 @@ public class Path {
 
                 outputPathError();
                 limit_hit = true;
-                if (exact) {
-                    System.err.println("In exact");
-                }
                 break;
             }
             int current_index = getLowestScoreInList(openSet, f_score);

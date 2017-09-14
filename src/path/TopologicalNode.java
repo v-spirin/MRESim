@@ -90,7 +90,7 @@ public class TopologicalNode {
                     path.repairPath();
                 }
                 if (ID != SimConstants.UNEXPLORED_NODE_ID && neighbour.getID() != SimConstants.UNEXPLORED_NODE_ID && (path == null || path.getStartPoint().distance(this.position) > 10 || !path.testPath(true))) {
-                    System.err.println("STOP");
+                    System.err.println("Added invalid path to node, already tried repair");
                 }
             }
             neighbour_paths.add(path);
