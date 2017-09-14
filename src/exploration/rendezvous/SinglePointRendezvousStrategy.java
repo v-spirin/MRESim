@@ -193,7 +193,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
         for (int i = 0; i < POINTS_NEAR_FRONTIER_TO_CONSIDER; i++) {
             if (pts.size() > 0) {
                 tempPoint = pts.remove();
-                Path p = agent.calculatePath(tempPoint, frontierCentre, false);
+                Path p = agent.calculatePath(tempPoint, frontierCentre, false, false);
                 if (p.found) {
                     pathCost = p.getLength();
                     degree = Skeleton.neighborTraversal(skeletonGrid, tempPoint.x, tempPoint.y);
@@ -213,8 +213,8 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
         RendezvousAgentData rvd = agent.getRendezvousAgentData();
         Point baseLoc = agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).getLocation();
         Point relayLoc = agent.getParentTeammate().getLocation();
-        Path pathParentToCS = agent.calculatePath(relayLoc, baseLoc, false);
-        Path pathCSToRendezvous = agent.calculatePath(baseLoc, rvd.getParentRendezvous().getParentLocation(), false);
+        Path pathParentToCS = agent.calculatePath(relayLoc, baseLoc, false, false);
+        Path pathCSToRendezvous = agent.calculatePath(baseLoc, rvd.getParentRendezvous().getParentLocation(), false, false);
         //Couldn't find pathCSToRV - approximate
         if ((pathCSToRendezvous.getLength() == 0)
                 && (!rvd.getParentRendezvous().getParentLocation().equals(agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).getLocation()))) {
@@ -236,8 +236,8 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
                 frontierLoc = agent.getLocation();
             }
             if (frontierLoc != null) {
-                Path here2Frontier = agent.calculatePath(agent.getLocation(), frontierLoc, false);
-                Path front2rv = agent.calculatePath(frontierLoc, rvd.getParentRendezvous().getChildLocation(), false);
+                Path here2Frontier = agent.calculatePath(agent.getLocation(), frontierLoc, false, false);
+                Path front2rv = agent.calculatePath(frontierLoc, rvd.getParentRendezvous().getChildLocation(), false, false);
                 int expTime = (int) (here2Frontier.getLength() + front2rv.getLength()) / SimConstants.DEFAULT_SPEED;
                 expTime += SimConstants.FRONTIER_MIN_EXPLORE_TIME;
                 //rvd.setTimeUntilRendezvous(Math.max(rvd.getTimeUntilRendezvous(), expTime));
@@ -256,10 +256,10 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
         int timeAtStart = rvd.getParentRendezvous().getTimeMeeting() + rvd.getParentRendezvous().getTimeWait();
 
         Path pathMeToRV2 = agent.calculatePath(rvd.getParentRendezvous().getChildLocation(),
-                rvd.getParentBackupRendezvous().getChildLocation(), false);
+                rvd.getParentBackupRendezvous().getChildLocation(), false, false);
 
         Path pathParentToRV2 = agent.calculatePath(rvd.getParentRendezvous().getParentLocation(),
-                rvd.getParentBackupRendezvous().getParentLocation(), false);
+                rvd.getParentBackupRendezvous().getParentLocation(), false, false);
 
         if (pathMeToRV2.found && pathParentToRV2.found) {
             rvd.getParentBackupRendezvous().setTimeMeeting(timeAtStart
@@ -424,7 +424,7 @@ public class SinglePointRendezvousStrategy implements IRendezvousStrategy {
         //if exploration by relay enabled
         if (settings.attemptExplorationByRelay) {
             RendezvousAgentData rvd = agent.getRendezvousAgentData();
-            Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation(), false);
+            Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation(), false, false);
             //Check if we have at least T=15 timesteps to spare.
             int timeMeeting = rvd.getChildRendezvous().getTimeMeeting();
             if ((path.getLength() / SimConstants.DEFAULT_SPEED) + agent.getTimeElapsed() <= (timeMeeting - 15)) {

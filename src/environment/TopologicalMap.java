@@ -101,6 +101,11 @@ public class TopologicalMap {
         keyPointsBorder = null;
         secondKeyPointsBorder = null;
         junctionPoints = null;
+        ((HashMap<Rectangle, Path>) pathCache.clone()).forEach((Rectangle key, Path path) -> {
+            if (!(key.x == path.getStartPoint().x && key.y == path.getStartPoint().y && key.width == path.getGoalPoint().x && key.height == path.getGoalPoint().y) || !path.isValid()) {
+                pathCache.remove(key);
+            }
+        });
 
     }
 
@@ -228,8 +233,8 @@ public class TopologicalMap {
                         if ((areaGrid[p.x + i][p.y + j] != curCell) && (areaGrid[p.x + i][p.y + j] > 0)) {
                             TopologicalNode neighbourNode = topologicalNodes.get(areaGrid[p.x + i][p.y + j]);
                             if (!node.getListOfNeighbours().contains(neighbourNode)) {
-                                if ((curCell != SimConstants.UNEXPLORED_NODE_ID)
-                                        && (areaGrid[p.x + i][p.y + j] != SimConstants.UNEXPLORED_NODE_ID)) {
+
+                                if (curCell != SimConstants.UNEXPLORED_NODE_ID && (areaGrid[p.x + i][p.y + j] != SimConstants.UNEXPLORED_NODE_ID)) {
                                     Path pathToNode;
                                     //check path cache
                                     Rectangle pathCoords = new Rectangle(node.getPosition().x, node.getPosition().y,
@@ -237,7 +242,8 @@ public class TopologicalMap {
                                     if (pathCache.containsKey(pathCoords)) {
                                         pathToNode = pathCache.get(pathCoords);
                                     } else {
-                                        pathToNode = new Path(occGrid, (Point) node.getPosition(), (Point) neighbourNode.getPosition(), false, true);
+                                        pathToNode = new Path(occGrid, node.getPosition(), neighbourNode.getPosition(), false, true, false);
+                                        pathToNode.testPath(true);
                                         if (!pathToNode.getStartPoint().equals(node.getPosition())
                                                 || !pathToNode.getGoalPoint().equals(neighbourNode.getPosition())) {
                                             System.err.println("CATASTROPHIC ERROR!! Path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")");
@@ -250,21 +256,16 @@ public class TopologicalMap {
                                     }
                                     node.addNeighbour(neighbourNode, pathToNode);
                                     neighbourNode.addNeighbour(node, pathToNode.getReversePath());
-                                } else {
-
+                                } else if (areaGrid[p.x + i][p.y + j] == SimConstants.UNEXPLORED_NODE_ID) {
+                                    //neighbor is unexplored
                                     node.addNeighbour(neighbourNode, null);
                                     neighbourNode.addNeighbour(node, null);
-                                    //Should not be neccessary!
-                                    /*if (areaGrid[p.x + i][p.y + j] == SimConstants.UNEXPLORED_NODE_ID) {
-                                        node.getCellList().stream().forEach((nodeCell) -> {
-                                            occGrid.unsetFinalTopologicalMapCell(nodeCell.x, nodeCell.y);
-                                        });
-                                    } else {
-                                        neighbourNode.getCellList().stream().forEach((nodeCell) -> {
-                                            occGrid.unsetFinalTopologicalMapCell(nodeCell.x, nodeCell.y);
-                                        });
-                                    }*/
+                                } else {
+                                    //current is unexplored
+                                    node.addNeighbour(neighbourNode, null);
+                                    neighbourNode.addNeighbour(node, null);
                                 }
+
                             }
                         }
                     }
@@ -318,7 +319,7 @@ public class TopologicalMap {
                                     if (pathCache.containsKey(pathCoords)) {
                                         pathToNode = pathCache.get(pathCoords);
                                     } else {
-                                        pathToNode = new Path(occGrid, (Point) node.getPosition(), (Point) neighbourNode.getPosition(), false, true);
+                                        pathToNode = new Path(occGrid, (Point) node.getPosition(), (Point) neighbourNode.getPosition(), false, true, true);
                                         if (!pathToNode.getStartPoint().equals(node.getPosition())
                                                 || !pathToNode.getGoalPoint().equals(neighbourNode.getPosition())) {
                                             System.err.println("CATASTROPHIC ERROR!! Path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")");

@@ -160,7 +160,7 @@ public class SimConstants {
      * Number of frontiers (closest ones and biggest) to be evaluated when choosing a frontier.
      * Default 6
      */
-    public static final int MAX_NUM_FRONTIERS = 6;
+    public static final int MAX_NUM_FRONTIERS = 15;
 
     /**
      * Minimum size a frontier must have to be considered as part of exploration. Default 20 or 3 or

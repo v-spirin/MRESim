@@ -43,7 +43,6 @@
  */
 package environment;
 
-import config.SimConstants;
 import java.awt.Color;
 import java.awt.Point;
 import java.awt.image.BufferedImage;
@@ -208,7 +207,7 @@ public class ContourTracer {
         return null;
     }
 
-    private static LinkedList<Point> traceContour(OccupancyGrid occGrid, int[][] label, int startX, int startY, direction startDir, int componentIndex) {
+    private static LinkedList<Point> traceContour(OccupancyGrid occGrid, int startX, int startY, direction startDir) {
         if (!occGrid.frontierCellAt(startX, startY)) {
             System.err.println("This cannot happen!");
         }
@@ -217,7 +216,6 @@ public class ContourTracer {
         direction searchStart;
         LinkedList<Point> pts = new LinkedList<Point>();
 
-        label[startX][startY] = componentIndex;
         Point firstPixel = new Point(startX, startY);
         pts.add(firstPixel);
         Point secondPixel = findNextPixelOnContour(occGrid, firstPixel, startDir);
@@ -244,7 +242,6 @@ public class ContourTracer {
                 break;
             }
             pts.add(currPixel);
-            label[currPixel.x][currPixel.y] = componentIndex;
             searchStart = searchDir(nextPixel, currPixel);
             //System.out.println("SS: " + searchStart.toString());
             currPixel = nextPixel;
@@ -252,7 +249,6 @@ public class ContourTracer {
             nextPixel = findNextPixelOnContour(occGrid, currPixel, searchStart);
             //System.out.println("NP: " + nextPixel.x + " " + nextPixel.y);
         }
-
         return pts;
     }
 
@@ -273,8 +269,10 @@ public class ContourTracer {
                 for (int j = 0; j < 600; j++) {
                     if (labels[i][j] == 1) {
                         bi.setRGB(i, j, Color.WHITE.getRGB());
-                    } else {
+                    } else if (labels[i][j] == 0) {
                         bi.setRGB(i, j, Color.BLACK.getRGB());
+                    } else {
+                        bi.setRGB(i, j, Color.RED.getRGB());
                     }
                 }
             }
@@ -290,7 +288,6 @@ public class ContourTracer {
         LinkedList<Point> currContour;
 
         int[][] labels = new int[occGrid.width][occGrid.height];
-        int componentIndex = 1;
 
         for (int[] label : labels) {
             for (int j = 0; j < labels[0].length; j++) {
@@ -298,34 +295,41 @@ public class ContourTracer {
             }
         }
 
-        int contourCounter = 0;
         for (int j = 0; j < occGrid.height; j++) {
             for (int i = 0; i < occGrid.width; i++) {
-                if (occGrid.frontierCellAt(i, j)
-                        //&& (!occGrid.locationExists(i, j - 1) || (!occGrid.frontierCellAt(i - 1, j - 1) && !occGrid.frontierCellAt(i, j - 1) && !occGrid.frontierCellAt(i + 1, j - 1)))
-                        && labels[i][j] == 0) {
-                    contourCounter++;
-                    // We must have found external contour of new component
-                    currContour = traceContour(occGrid, labels, i, j, direction.NE, componentIndex);
+                if (occGrid.frontierCellAt(i, j) && labels[i][j] == 0) {
+                    //&& (!occGrid.locationExists(i, j - 1) || (!occGrid.frontierCellAt(i - 1, j - 1) && !occGrid.frontierCellAt(i, j - 1) && !occGrid.frontierCellAt(i + 1, j - 1)))
 
+                    //saveLabelsToPNG("contours", labels);
+                    // We must have found external contour of new component
+                    currContour = traceContour(occGrid, i, j, direction.NE);
+
+                    if (currContour.size() <= 1) {
+                        continue;
+                    }
+                    boolean interesting = false;
                     for (Point p : currContour) {
-                        if (occGrid.frontierBorderCellAt(p.x, p.y)) {
-                            // this contour should be added
-                            labels = updateLabels(labels, currContour);
-                            contourList.add(currContour);
-                            componentIndex++;
+                        if (labels[p.x][p.y] == 1) {
+                            interesting = false;
                             break;
                         }
+                        if (occGrid.frontierBorderCellAt(p.x, p.y)) {
+                            interesting = true;
+                            // this contour should be added
+                            //labels = updateLabels(labels, currContour);
+                            //contourList.add(currContour);
+                            //break;
+                        }
+                    }
+                    if (interesting) {
+                        labels = updateLabels(labels, currContour);
+                        contourList.add(currContour);
                     }
                 }
 
             }
         }
-        if (SimConstants.DEBUG_OUTPUT) {
-            System.out.println("[findAllContours] contours processed: " + contourCounter);
-            System.out.println("[findAllContours] main loop");
-        }
-        //saveLabelsToPNG(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + "contours", labels);
+        //saveLabelsToPNG("contours", labels);
         return contourList;
     }
 }

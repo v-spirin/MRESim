@@ -101,7 +101,6 @@ public class RoleBasedExploration extends FrontierExploration {
 
         if (agent.getEnvError()) {
             agent.setEnvError(false);
-            agent.resetPathToBaseStation();
             agent.setExploreState(Agent.ExplorationState.EnvError);
         }
 
@@ -109,7 +108,7 @@ public class RoleBasedExploration extends FrontierExploration {
             agent.setParent(command_data);
             command = "";
             rvd.setParentRendezvous(rendezvousStrategy.calculateRendezvous(timeElapsed, agent.getParentTeammate()));
-            int time_for_path = (int) agent.calculatePath(agent.getFrontier().getCentre()).getLength() / agent.getSpeed();
+            int time_for_path = (int) agent.calculatePath(agent.getFrontier().getCentre(), false).getLength() / agent.getSpeed();
             time_for_path = Math.max(30, (int) (time_for_path * 1.5));
             rvd.getParentRendezvous().setTimeMeeting(timeElapsed + time_for_path);
             agent.setDynamicInfoText("" + (rvd.getParentRendezvous().getTimeMeeting() - timeElapsed));
@@ -166,11 +165,11 @@ public class RoleBasedExploration extends FrontierExploration {
                 nextStep = takeStep_GoToRelay();
                 break;
             case EnvError:
-                nextStep = RandomWalk.randomStep(agent);
+                nextStep = RandomWalk.randomStep(agent, 4);
                 agent.setExploreState(agent.getPrevExploreState());
                 break;
             default:
-                nextStep = RandomWalk.randomStep(agent);
+                nextStep = RandomWalk.randomStep(agent, 10);
                 break;
         }
 
@@ -186,14 +185,14 @@ public class RoleBasedExploration extends FrontierExploration {
             }
             if (agent.getChildTeammate().hasCommunicationLink()) {
                 rvd.setChildRendezvous(rendezvousStrategy.calculateRendezvous(timeElapsed1, agent.getChildTeammate()));
-                int time_for_path = (int) agent.calculatePath(rvd.getParentRendezvous().getChildLocation()).getLength() / agent.getSpeed();
+                int time_for_path = (int) agent.calculatePath(rvd.getParentRendezvous().getChildLocation(), false).getLength() / agent.getSpeed();
                 time_for_path = Math.max(50, (int) (time_for_path * 1.5));
                 rvd.getChildRendezvous().setTimeMeeting(timeElapsed1 + time_for_path);
             }
             agent.setDynamicInfoText("--");
         } else if (agent.getParentTeammate().isStationary() && agent.getParentTeammate().hasCommunicationLink()) {
             rvd.setParentRendezvous(rendezvousStrategy.calculateRendezvous(timeElapsed1, agent.getParentTeammate()));
-            int time_for_path = (int) agent.calculatePath(agent.getFrontier().getCentre()).getLength() / agent.getSpeed();
+            int time_for_path = (int) agent.calculatePath(agent.getFrontier().getCentre(), false).getLength() / agent.getSpeed();
             time_for_path = Math.max(30, (int) (time_for_path * 1.5));
             rvd.getParentRendezvous().setTimeMeeting(timeElapsed1 + time_for_path);
             agent.setDynamicInfoText("" + (rvd.getParentRendezvous().getTimeMeeting() - timeElapsed));
@@ -208,12 +207,12 @@ public class RoleBasedExploration extends FrontierExploration {
         // First 3 steps? Explorers take 2 random steps while others wait, then everyone takes a random step
         if (agent.getStateTimer() < 2) {
             if (agent.isExplorer()) {
-                return RandomWalk.randomStep(agent);
+                return RandomWalk.randomStep(agent, 10);
             } else {
                 return agent.getLocation();
             }
         } else if (agent.getStateTimer() < 3) {
-            return RandomWalk.randomStep(agent);
+            return RandomWalk.randomStep(agent, 10);
         } // Otherwise? Explorers go into Explore state, others go into GoToChild state. Explorers replan using FrontierExploration, others do nothing.
         else if (agent.isExplorer()) {
             agent.setExploreState(RealAgent.ExplorationState.Explore);
@@ -273,9 +272,9 @@ public class RoleBasedExploration extends FrontierExploration {
         if (agent.getStateTimer() <= 1) {
             //Just changed to this state so need to generate path
             if (agent.getParentTeammate().isStationary()) {
-                agent.setPath(agent.calculatePath(rvd.getParentRendezvous().getChildLocation()));
+                agent.setPath(agent.calculatePath(rvd.getParentRendezvous().getChildLocation(), false));
             } else {
-                agent.setPath(agent.calculatePath(prvd.getChildRendezvous().getChildLocation()));
+                agent.setPath(agent.calculatePath(prvd.getChildRendezvous().getChildLocation(), false));
             }
         }
         return agent.getPath().nextPoint();
@@ -323,7 +322,7 @@ public class RoleBasedExploration extends FrontierExploration {
             for (TeammateAgent mate : relays) {
                 if (mate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID && mate.getLocation().distance(agent.getOriginalChildTeammate().getFrontierCentre()) > mate.getLocation().distance(baseStation.getLocation())) {
                     //relay is nearer to base than to explorer
-                    agent.setPath(agent.calculatePath(mate.getLocation()));
+                    agent.setPath(agent.calculatePath(mate.getLocation(), false));
                     agent.setExploreState(Agent.ExplorationState.GoToRelay);
                     return agent.stay();
                 }
@@ -337,9 +336,9 @@ public class RoleBasedExploration extends FrontierExploration {
         if (agent.getExploreState() != Agent.ExplorationState.WaitForChild && agent.getStateTimer() <= 1) {
             //Just changed to this state so need to generate path
             if (switchedChildAndNeedToTell) {
-                agent.setPath(agent.calculatePath(trvd.getChildRendezvous().getParentLocation()));
+                agent.setPath(agent.calculatePath(trvd.getChildRendezvous().getParentLocation(), false));
             } else {
-                agent.setPath(agent.calculatePath(rvd.getChildRendezvous().getParentLocation()));
+                agent.setPath(agent.calculatePath(rvd.getChildRendezvous().getParentLocation(), false));
             }
         }
 
@@ -398,7 +397,7 @@ public class RoleBasedExploration extends FrontierExploration {
                         NearRVPoint keyP = keyP_iter.next();
                         TopologicalNode keyN = topoNodes.get(agent.getTopologicalMap().getTopologicalJArea(keyP));
                         if (noRelay(keyP) && noNearRelay(keyP) && !keyN.isDeadEnd((LinkedList<TopologicalNode>) nodesWithRelay.clone())) {
-                            agent.setPath(agent.calculatePath(keyP));
+                            agent.setPath(agent.calculatePath(keyP, false));
                             agent.setExploreState(Agent.ExplorationState.GoToRelay);
                             return agent.stay();
                         }
@@ -441,7 +440,7 @@ public class RoleBasedExploration extends FrontierExploration {
                         NearRVPoint keyP = keyP_iter.next();
                         TopologicalNode keyN = topoNodes.get(agent.getTopologicalMap().getTopologicalJArea(keyP));
                         if (noRelay(keyP) && noNearRelay(keyP)) {
-                            agent.setPath(agent.calculatePath(keyP));
+                            agent.setPath(agent.calculatePath(keyP, false));
                             agent.setExploreState(Agent.ExplorationState.GoToRelay);
                             return agent.stay();
                         }
@@ -453,7 +452,7 @@ public class RoleBasedExploration extends FrontierExploration {
 
         PriorityQueue<Point> needlessRelays = checkForNeedlessRelays(topoNodes, nodesWithRelay, relays);
         if (!needlessRelays.isEmpty()) {
-            agent.setPath(agent.calculatePath(needlessRelays.peek().getLocation()));
+            agent.setPath(agent.calculatePath(needlessRelays.peek().getLocation(), false));
             agent.setExploreState(Agent.ExplorationState.GoToRelay);
             return agent.stay();
         }

@@ -57,7 +57,7 @@ public class RandomWalk {
 
     private static Random generator = new Random(SimConstants.RANDOM_SEED);
 
-    public static Point randomStep(RealAgent agent) {
+    public static Point randomStep(RealAgent agent, double speed) {
         int maxcounter = 100;
         int ranVar;
         int newX = agent.getX();
@@ -67,10 +67,10 @@ public class RandomWalk {
         boolean found = false;
 
         int acceptableDistanceToWall = SimConstants.WALL_DISTANCE;
-        double speed = agent.getSpeed();
+        speed = Math.min(speed, agent.getSpeed());
 
         while (!found && counter < maxcounter) {
-            // if after 50 iterations, we couldn't find new location, relax the condition about min distance to nearest wall
+            // if after max iterations, we couldn't find new location, relax the condition about min distance to nearest wall
             if (counter > (maxcounter / 2)) {
                 acceptableDistanceToWall = 1;
             }

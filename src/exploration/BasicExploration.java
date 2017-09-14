@@ -76,6 +76,7 @@ abstract class BasicExploration {
 
     String command = "";
     Integer command_data = -1;
+    boolean recentEnvError = false;
 
     /**
      * Just builds the object and initializes the agent.
@@ -118,7 +119,7 @@ abstract class BasicExploration {
     }
 
     protected Point takeStep_ReturnToBase(Agent.ExplorationState followUp) {
-        agent.setPathToBaseStation();
+        agent.setPathToBaseStation(false);
         if (agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).isInHandoverRange(agent)) {
             agent.setExploreState(followUp);
         }

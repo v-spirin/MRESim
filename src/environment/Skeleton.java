@@ -428,7 +428,7 @@ public class Skeleton {
         }
 
         // Pass 3:  prune points too close to another rv point or too close to an obstacle
-        Point p;
+        /*Point p;
         for (int i = junctions.size() - 1; i >= 0; i--) {
             p = junctions.get(i);
             if (grid.obstacleWithinDistance(p.x, p.y, SimConstants.WALL_DISTANCE)) {
@@ -441,8 +441,7 @@ public class Skeleton {
                     break;
                 }
             }
-        }
-
+        }*/
         return junctions;
     }
 
@@ -495,7 +494,7 @@ public class Skeleton {
                 continue;
             }
             for (int j = rvPts.size() - 1; j >= 0; j--) {
-                if (p.distance(rvPts.get(j)) < 20 && i != j) {
+                if (i != j && p.distance(rvPts.get(j)) < SimConstants.KEY_POINT_DISTANCE) {
                     rvPts.remove(i);
                     break;
                 }
@@ -1091,10 +1090,10 @@ public class Skeleton {
         Point secondRV = firstRV;
 
         if (candidatePoints.size() > 0) {
-            double minDistance = agent.calculatePath(firstRV, goal, false).getLength();
+            double minDistance = agent.calculatePath(firstRV, goal, false, false).getLength();
 
             for (Point p : candidatePoints) {
-                double distance = agent.calculatePath(p, goal, false).getLength();
+                double distance = agent.calculatePath(p, goal, false, false).getLength();
                 if (distance < minDistance) {
                     minDistance = distance;
                     secondRV = p;
@@ -1102,7 +1101,7 @@ public class Skeleton {
             }
 
             double minDistanceDirect;
-            minDistanceDirect = agent.calculatePath(firstRV, goal, false).getLength() - (agent.getCommRange() / SimConstants.DEFAULT_SPEED);
+            minDistanceDirect = agent.calculatePath(firstRV, goal, false, false).getLength() - (agent.getCommRange() / SimConstants.DEFAULT_SPEED);
 
             //communication through the wall gives no advantage
             if ((minDistanceDirect < 0) || ((minDistance / minDistanceDirect) > minAcceptableRatio)) {

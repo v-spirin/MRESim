@@ -922,11 +922,11 @@ public class ExplorationImage {
     }
 
     public void drawAreas(RealAgent[] agent) {
-        RealAgent agt = agent[0];
+        RealAgent agt = agent[1];
         agt.getTopologicalMap().update(false);
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                int area = agt.getTopologicalMap().getJAreaGrid()[i][j];
+                int area = agt.getTopologicalMap().getAreaGrid()[i][j];
                 if (area == SimConstants.UNEXPLORED_NODE_ID) {
                     continue;
                 }

@@ -126,7 +126,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             for (CommLink link : relayRVPoint.commLinks) {
                 NearRVPoint connectedPoint = link.getRemotePoint();
 
-                double dist = agent.calculatePath(connectedPoint.getLocation(), agent.getLocation(), false).getLength();
+                double dist = agent.calculatePath(connectedPoint.getLocation(), agent.getLocation(), false, false).getLength();
                 if (dist < minDistToExplorer) {
                     bestRVPoint = connectedPoint;
                     minDistToExplorer = dist;
@@ -183,7 +183,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             RendezvousAgentData rvd = agent.getRendezvousAgentData();
             //if we have enough time, we should actually just go to childLocation - this way the child may travel less
             //as it is more likely it will enter our comms range sooner. This only really makes a difference with multipoint RV
-            Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getChildLocation(), false);
+            Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getChildLocation(), false, false);
             boolean pathWorked = false;
             if (path.found) {
                 double timeToChild = path.getLength() / agent.getSpeed() + agent.getTimeElapsed();
@@ -218,7 +218,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
                     meetingLocation.setChildLocation(agent.getParentTeammate().getLocation());
                     meetingLocation.setParentLocation(agent.getParentTeammate().getLocation());
                     rvd.setParentRendezvous(meetingLocation);
-                    Path newPath = agent.calculatePath(point1, agent.getParentTeammate().getLocation(), false);
+                    Path newPath = agent.calculatePath(point1, agent.getParentTeammate().getLocation(), false, false);
                     agent.setPath(newPath);
 
                     agent.setExploreState(Agent.ExplorationState.ReturnToBase);
@@ -312,7 +312,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         //if exploration by relay enabled
         if (settings.attemptExplorationByRelay) {
             RendezvousAgentData rvd = agent.getRendezvousAgentData();
-            Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation(), false);
+            Path path = agent.calculatePath(agent.getLocation(), rvd.getChildRendezvous().getParentLocation(), false, false);
             //Check if we have at least T=15 timesteps to spare.
             int timeMeeting = rvd.getChildRendezvous().getTimeMeeting();
             if ((path.getLength() / SimConstants.DEFAULT_SPEED) + agent.getTimeElapsed() <= (timeMeeting - 15)) {
@@ -348,10 +348,10 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
         int timeAtStart = rvd.getParentRendezvous().getTimeMeeting() + rvd.getParentRendezvous().getTimeWait();
 
         Path pathMeToRV2 = agent.calculatePath(rvd.getParentRendezvous().getChildLocation(),
-                rvd.getParentBackupRendezvous().getChildLocation(), false);
+                rvd.getParentBackupRendezvous().getChildLocation(), false, false);
 
         Path pathParentToRV2 = agent.calculatePath(rvd.getParentRendezvous().getParentLocation(),
-                rvd.getParentBackupRendezvous().getParentLocation(), false);
+                rvd.getParentBackupRendezvous().getParentLocation(), false, false);
 
         if (pathMeToRV2.found && pathParentToRV2.found) {
             if (SimConstants.DEBUG_OUTPUT) {
@@ -409,10 +409,10 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             parentPoint = childPoint;
         }
 
-        double timeRelayToBase = agent.calculatePath(relay.getLocation(), basePoint, false).getLength();
-        double timeBaseToRV = agent.calculatePath(basePoint, parentPoint, false).getLength();
-        double timeExpToFrontier = agent.calculatePath(agent.getLocation(), frontierCentre, false).getLength();
-        double timeFrontierToRV = agent.calculatePath(frontierCentre, childPoint, false).getLength();
+        double timeRelayToBase = agent.calculatePath(relay.getLocation(), basePoint, false, false).getLength();
+        double timeBaseToRV = agent.calculatePath(basePoint, parentPoint, false, false).getLength();
+        double timeExpToFrontier = agent.calculatePath(agent.getLocation(), frontierCentre, false, false).getLength();
+        double timeFrontierToRV = agent.calculatePath(frontierCentre, childPoint, false, false).getLength();
 
         double timeToMeetingR = timeRelayToBase + timeBaseToRV;
         timeToMeetingR = timeElapsed + timeToMeetingR / SimConstants.DEFAULT_SPEED;
@@ -588,7 +588,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
 
             for (NearRVPoint basePoint : pointsConnectedToBase) {
                 pathsCalculated++;
-                Path pathToBase = ag.calculatePath(origPoint, basePoint, false);
+                Path pathToBase = ag.calculatePath(origPoint, basePoint, false, false);
                 double pathLen = Double.MAX_VALUE;
                 if (pathToBase.found) {
                     pathLen = pathToBase.getLength();
@@ -663,8 +663,8 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             if (!f.equals(agent.getFrontier())) { //potential frontier for the relay to explore
                 //can relay even get to frontier in time, if the meeting point was at frontier centre?
                 double timeToFrontier = 0;
-                timeToFrontier += agent.calculatePath(relay.getLocation(), currentRelayBasePoint, false).getLength();
-                timeToFrontier += agent.calculatePath(currentRelayBasePoint, f.getCentre(), false).getLength();
+                timeToFrontier += agent.calculatePath(relay.getLocation(), currentRelayBasePoint, false, false).getLength();
+                timeToFrontier += agent.calculatePath(currentRelayBasePoint, f.getCentre(), false, false).getLength();
                 double hereToFrontier = timeToFrontier;
                 double delta = explorerPoint.distance(f.getCentre()) - agent.getCommRange();
                 if (delta < 0) {
@@ -690,7 +690,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
                 for (CommLink link : explorerRVPoint.commLinks) {
                     NearRVPoint connectedPoint = link.getRemotePoint();
 
-                    Path frontierToMeeting = agent.calculatePath(f.getCentre(), connectedPoint.getLocation(), false);
+                    Path frontierToMeeting = agent.calculatePath(f.getCentre(), connectedPoint.getLocation(), false, false);
                     double totalTime = (hereToFrontier + frontierToMeeting.getLength()) / agent.getSpeed();
                     totalTime += agent.getTimeElapsed();
 
@@ -922,7 +922,7 @@ public class MultiPointRendezvousStrategy implements IRendezvousStrategy {
             //where explorer will be at the time, to calculate regret accurately.
 
             //For now, just calculate accurate distance to next frontier:
-            Path pathToFrontier = agent.calculatePath(p, getExplorerFrontier(), false);
+            Path pathToFrontier = agent.calculatePath(p, getExplorerFrontier(), false, false);
             double distToFrontier = Double.MAX_VALUE;
             if (pathToFrontier.found) {
                 distToFrontier = pathToFrontier.getLength();

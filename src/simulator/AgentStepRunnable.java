@@ -45,7 +45,6 @@
 package simulator;
 
 import agents.RealAgent;
-import config.SimConstants;
 import config.SimulatorConfig;
 import environment.Environment;
 import java.awt.Point;
@@ -76,14 +75,18 @@ public class AgentStepRunnable implements Runnable {
         Point nextStep;
         double[] sensorData;
         double distance_left = agent.getSpeed();
-        //profiling
-        long realtimeStartAgentCycle = System.currentTimeMillis();
 
         //Continue along the path,
         //until we have exhausted agent 'speed' per cycle or run out of path
         while (distance_left > 0) {
             //Get next step
-            nextStep = agent.takeStep(timeElapsed);
+            try {
+                nextStep = agent.takeStep(timeElapsed);
+            } catch (RuntimeException e) {
+                System.err.println(e.getMessage());
+                agent.setEnvError(true);
+                nextStep = new Point(agent.getLocation());
+            }
             if (nextStep == null) {
                 nextStep = agent.getLocation();
                 agent.setEnvError(true);
@@ -91,7 +94,6 @@ public class AgentStepRunnable implements Runnable {
                 System.err.println(agent + " !!! setting envError because nextStep is null, "
                         + "distance_left is " + distance_left);
             }
-            agent.flush();
 
             //Check to make sure step is legal
             if (env.legalMove(agent.getLocation(), nextStep, agent.ability)) {
@@ -120,28 +122,33 @@ public class AgentStepRunnable implements Runnable {
                 sensorData = simFramework.findSensorData(agent, nextStep);
                 agent.writeStep(nextStep, sensorData, true);
             } else {
-                System.err.println(agent + " at cycle " + timeElapsed + ": setting envError because direct line not possible between ("
-                        + (int) agent.getLocation().getX() + "," + (int) agent.getLocation().getY() + ") and (" + nextStep.x + "," + nextStep.y + ")");
+                System.err.println(agent + " at cycle " + timeElapsed + ": setting envError because direct line not possible from ("
+                        + (int) agent.getLocation().getX() + "," + (int) agent.getLocation().getY() + ") to (" + nextStep.x + "," + nextStep.y + "), distance: " + nextStep.distance(agent.getLocation()));
                 //Remove safe space status for the points along the line, so that obstacles can be sensed there
-                if (nextStep.distance(agent.getLocation()) == 1) {
-                    //We are bordering next step, and because we cannot move there it must be an obstacle
-                    agent.getOccupancyGrid().setObstacleAt(nextStep.x, nextStep.y);
-                    agent.getOccupancyGrid().setNoFreeSpaceAt(nextStep.x, nextStep.y);
+                //if (nextStep.distance(agent.getLocation()) <= 4) {
+                //We are bordering next step, and because we cannot move there it must be an obstacle
+                int deltaX = agent.getLocation().x - nextStep.x;
+                int deltaY = agent.getLocation().y - nextStep.y;
+                if (deltaX <= 2 && deltaX >= -2 && deltaY <= 2 && deltaY >= -2) {
+                    agent.getOccupancyGrid().setObstacleAt(agent.getLocation().x + (int) Math.ceil(deltaX / 2.0), agent.getLocation().y + (int) Math.ceil(deltaY / 2.0));
+                    agent.getOccupancyGrid().setNoFreeSpaceAt(agent.getLocation().x + (int) Math.ceil(deltaX / 2.0), agent.getLocation().y + (int) Math.ceil(deltaY / 2.0));
+                }
+                //agent.getOccupancyGrid().setObstacleAt(nextStep.x, nextStep.y);
+                //agent.getOccupancyGrid().setNoFreeSpaceAt(nextStep.x, nextStep.y);
 //                    agent.getOccupancyGrid().setSafeSpaceAt(nextStep.x, nextStep.y);
-                } else {
-                    //there are several points between us and nextStep, so we don't know which one exactly has obstacle
+                //} else {
+                //there are several points between us and nextStep, so we don't know which one exactly has obstacle
 //                    LinkedList<Point> ptsNonSafe
 //                            = agent.getOccupancyGrid().pointsAlongSegment(agent.getLocation().x, agent.getLocation().y,
 //                                    nextStep.x, nextStep.y);
 //                    ptsNonSafe.stream().filter((p) -> (!p.equals(agent.getLocation()))).forEach((p) -> {
 //                        agent.getOccupancyGrid().setNoSafeSpaceAt(p.x, p.y);
 //                    });
-                }
-                nextStep.x = agent.getX();
-                nextStep.y = agent.getY();
+                //}
                 agent.getPath().resetStep();
                 agent.setEnvError(true);
             }
+            agent.flush();
 
             //Conditions for breaking even if we have 'speed' left
             boolean canContinueOnPath = (agent.getPath() != null) && !agent.getPath().isFinished() && (agent.getPath().getPoints() != null)
@@ -170,9 +177,6 @@ public class AgentStepRunnable implements Runnable {
             agent.updateTrueAreaKnown(env);*/
         //benchmark
         agent.getStats().incrementTimeLastCentralCommand();
-        if (SimConstants.DEBUG_OUTPUT) {
-            System.out.println(agent.toString() + "Agent cycle complete, took " + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
-        }
     }
 
 }

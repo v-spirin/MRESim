@@ -73,35 +73,39 @@ public class Path {
     LinkedList<TopologicalNode> pathNodesReverse;
     LinkedList<TopologicalNode> pathNodes;
     LinkedList<Point> allPathPixels;
+    LinkedList<Path> pathSections;
     double length;
     private TopologicalMap tMap;
     private int currentPoint = 0;
     private boolean jump;
+    private boolean valid = true;
+    private boolean exact;
 
-    public Path(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit, boolean jump) {
+    public Path(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit, boolean jump, boolean exact) {
         this.startPoint = startpoint;
         this.goalPoint = endpoint;
         this.limit = limit;
         this.grid = agentGrid;
-        this.jump = jump;
+        this.jump = jump = false;
         this.tMap = null;
         this.pathPoints = new LinkedList<Point>();
         this.reversePathPoints = null;
         this.length = 0;
         this.found = false;
         this.allPathPixels = null;
+        this.exact = exact;
         if (!jump) {
-            this.found = calculateAStarPath();
+            this.found = calculateAStarPath(exact);
         } else {
             this.found = calculateJumpPath();
             if (!this.found) {
-                this.found = calculateAStarPath();
+                this.found = calculateAStarPath(exact);
             }
         }
     }
 
     public Path(OccupancyGrid agentGrid, TopologicalMap tMap,
-            Point startpoint, Point endpoint, boolean limit, boolean jump) throws IllegalStateException {
+            Point startpoint, Point endpoint, boolean limit, boolean jump, boolean exact) throws IllegalStateException {
         this.startPoint = startpoint;
         this.goalPoint = endpoint;
         this.tMap = tMap;
@@ -109,23 +113,28 @@ public class Path {
         this.pathPoints = new LinkedList<Point>();
         this.pathNodes = new LinkedList<TopologicalNode>();
         this.pathNodesReverse = new LinkedList<TopologicalNode>();
+        this.pathSections = new LinkedList<>();
 
-        this.limit = false;
-        this.jump = true;
+        this.limit = limit;
+        this.jump = jump = false;
         this.found = false;
         this.reversePathPoints = null;
         this.allPathPixels = null;
         this.length = 0;
+        this.exact = exact;
 
+        calcuateTopoPath(tMap, startpoint, endpoint, jump, exact, agentGrid, limit);
+    }
+
+    private boolean calcuateTopoPath(TopologicalMap tMap1, Point startpoint, Point endpoint, boolean jump1, boolean exact1, OccupancyGrid agentGrid, boolean limit1) throws IllegalStateException {
         //Find which area the agent starts from/want to go to
-        int[][] areaGrid = tMap.getAreaGrid();
-        HashMap<Integer, TopologicalNode> topologicalNodes = tMap.getTopologicalNodes(false);
+        int[][] areaGrid = tMap1.getAreaGrid();
+        HashMap<Integer, TopologicalNode> topologicalNodes = tMap1.getTopologicalNodes(false);
         TopologicalNode startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
         TopologicalNode goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
-
         if ((startNode == null) || (goalNode == null)) {
-            topologicalNodes = tMap.getTopologicalNodes(true);
-            areaGrid = tMap.getAreaGrid();
+            topologicalNodes = tMap1.getTopologicalNodes(true);
+            areaGrid = tMap1.getAreaGrid();
             startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
             goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
             if ((startNode == null) || (goalNode == null)) {
@@ -134,13 +143,13 @@ public class Path {
             }
         }
         if (startNode.getID() == SimConstants.UNEXPLORED_NODE_ID || goalNode.getID() == SimConstants.UNEXPLORED_NODE_ID) {
-            tMap.update(true);
-            topologicalNodes = tMap.getTopologicalNodes(true);
-            areaGrid = tMap.getAreaGrid();
+            tMap1.update(true);
+            topologicalNodes = tMap1.getTopologicalNodes(true);
+            areaGrid = tMap1.getAreaGrid();
             startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
             goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
             if (startNode == null || goalNode == null) {
-                return;
+                return true;
             }
             if (startNode.getID() == SimConstants.UNEXPLORED_NODE_ID || goalNode.getID() == SimConstants.UNEXPLORED_NODE_ID) {
                 //System.err.println(this + "Error after TopoNodesUpdate: startNode: " + startNode + " , goalNode: " + goalNode);
@@ -151,58 +160,77 @@ public class Path {
             //System.err.println(this + "Error: startNode: " + startNode + " has no neighbors, but is not the only node");
             throw new IllegalStateException(this + "Error: startNode: " + startNode + " has no neighbors, but is not the only node");
         }
-
         if (!startNode.equals(goalNode) && (goalNode.getListOfNeighbours().isEmpty())) {
             //System.err.println(this + "Error: goalNode: " + goalNode + " has no neighbors, but is not the only node");
             throw new IllegalStateException(this + "Error: goalNode: " + goalNode + " has no neighbors, but is not the only node");
         }
-
         if (startNode.equals(goalNode)) {
             if (startpoint.equals(goalPoint)) {
                 this.pathPoints.add(endpoint);
                 this.length = 1;
             }
             //Path inside an area, normal planning
-            if (!jump) {
-                this.found = calculateAStarPath();
+            if (!jump1) {
+                this.found = calculateAStarPath(exact1);
             } else {
                 this.found = calculateJumpPath();
                 if (!this.found) {
-                    this.found = calculateAStarPath();
+                    this.found = calculateAStarPath(exact1);
                 }
             }
-            return;
+            return true;
         }
-
         // This is the standard-case:
         boolean foundNodePath = calculateAStarNodePath(startNode, goalNode);
         if (!foundNodePath) {
             //Again normal planning as there was no path found using nodes
-            if (!jump) {
-                this.found = calculateAStarPath();
+            if (!jump1) {
+                this.found = calculateAStarPath(exact1);
             } else {
                 this.found = calculateJumpPath();
                 if (!this.found) {
-                    this.found = calculateAStarPath();
+                    this.found = calculateAStarPath(exact1);
                 }
             }
         } else {
             //First find path from startPoint to startNode
-            Path startPath = new Path(agentGrid, startPoint, startNode.getPosition(), limit, jump);
+            // OLD: get to current node-middle:
+            /*Path startPath = new Path(agentGrid, startPoint, startNode.getPosition(), limit, jump, exact);
             this.pathPoints.addAll(startPath.getPoints());
+            pathSections.add(startPath);
             //Second add path from StartNode to goalNode, this is just adding precomputed pathes
             for (int i = 0; i < pathNodes.size() - 1; i++) {
-                Path tempPath = pathNodes.get(i).getPathToNeighbour(pathNodes.get(i + 1));
-                this.pathPoints.addAll(tempPath.getPoints());
+            Path tempPath = pathNodes.get(i).getPathToNeighbour(pathNodes.get(i + 1));
+            this.pathPoints.addAll(tempPath.getPoints());
+            pathSections.add(tempPath);
             }
             //Third find path from goalNode to goalPoint
-            Path goalPath = new Path(agentGrid, goalNode.getPosition(), goalPoint, limit, jump);
+            Path goalPath = new Path(agentGrid, goalNode.getPosition(), goalPoint, limit, jump, exact);
             this.pathPoints.addAll(goalPath.getPoints());
+            pathSections.add(goalPath);*/
+
+            //NEW: plan path to first neighbor, should reduce starting in the wrong direction
+            Path startPath = new Path(agentGrid, startPoint, pathNodes.get(1).getPosition(), limit, jump, exact);
+            this.pathPoints.addAll(startPath.getPoints());
+            pathSections.add(startPath);
+            //Second add path from StartNode to goalNode, this is just adding precomputed pathes
+            for (int i = 2; i < pathNodes.size() - 1; i++) {
+                Path tempPath = pathNodes.get(i).getPathToNeighbour(pathNodes.get(i + 1));
+                if (!tempPath.isValid()) {
+                    tempPath.repairPath();
+                }
+                this.pathPoints.addAll(tempPath.getPoints());
+                pathSections.add(tempPath);
+            }
+            //Third find path from goalNode to goalPoint
+            Path goalPath = new Path(agentGrid, goalNode.getPosition(), goalPoint, limit, jump, exact);
+            this.pathPoints.addAll(goalPath.getPoints());
+            pathSections.add(goalPath);
             if (startPath.found && goalPath.found) {
                 this.found = true;
             }
         }
-
+        return false;
     }
 
     final public boolean calculateAStarNodePath(TopologicalNode startNode, TopologicalNode goalNode) {
@@ -267,17 +295,14 @@ public class Path {
         }
     }
 
-    final public boolean calculateAStarPath() {
+    final public boolean calculateAStarPath(boolean exact) {
+        int stepSize = SimConstants.STEP_SIZE;
+        if (exact) {
+            stepSize = 1;
+        }
         pathPoints = new LinkedList<Point>();
         reversePathPoints = new LinkedList<Point>();
 
-        /*if (startPoint == goalPoint)
-        {
-            pathPoints.add(goalPoint);
-            found = true;
-            length = 0;
-            return;
-        }*/
         long realtimeStart = System.currentTimeMillis();
         if ((goalPoint.x == 0) && (goalPoint.y == 0)) //something went really wrong and it takes forever to calculate/fail
         {
@@ -303,17 +328,24 @@ public class Path {
 
         while (!openSet.isEmpty()) {
             long time_elapsed = System.currentTimeMillis() - realtimeStart;
-            if ((time_elapsed > SimConstants.MAX_PATH_SEARCH_TIME) /*&& (limit)*/) {
+            int maxTime = SimConstants.MAX_PATH_SEARCH_TIME;
+            if (exact) {
+                maxTime = 5 * SimConstants.MAX_PATH_SEARCH_TIME;
+            }
+            if ((time_elapsed > maxTime) /*&& (limit)*/) {
                 System.err.println("Took too long (A*), startpoint is " + startPoint.toString()
                         + ", endpoint is " + goalPoint.toString() + "time elapsed: " + time_elapsed + "ms.");
 
                 outputPathError();
                 limit_hit = true;
+                if (exact) {
+                    System.err.println("In exact");
+                }
                 break;
             }
             int current_index = getLowestScoreInList(openSet, f_score);
             current = openSet.get(current_index);
-            if (current.distance(goalPoint) < SimConstants.STEP_SIZE * 2) {
+            if (current.distance(goalPoint) <= SimConstants.STEP_SIZE * 2) {
                 came_from.put(goalPoint, current);
                 reconstructPath(came_from, goalPoint);
                 break;
@@ -322,7 +354,7 @@ public class Path {
             openSet.remove(current_index);
             closedSet.add(current);
 
-            for (Point neighbour : neighbours(current)) {
+            for (Point neighbour : neighbours(current, stepSize)) {
                 if (closedSet.contains(neighbour)) {
                     continue;
                 }
@@ -340,7 +372,7 @@ public class Path {
         }
         recalcLength();
 
-        return !limit_hit;
+        return !limit_hit && testPath(true);
     }
 
     private void reconstructPath(HashMap<Point, Point> came_from, Point current_node) {
@@ -355,6 +387,7 @@ public class Path {
         reverse();
         found = true;
         recalcLength();
+        testPath(true);
     }
 
     final public boolean calculateJumpPath() {
@@ -740,7 +773,7 @@ public class Path {
     }
 
     public Path getReversePath() {
-        Path p = new Path(grid, goalPoint, startPoint, limit, jump);
+        Path p = new Path(grid, goalPoint, startPoint, limit, jump, false);
         p.pathPoints = reversePathPoints;
         p.reversePathPoints = pathPoints;
         p.found = found;
@@ -762,14 +795,9 @@ public class Path {
         }
     }
 
-    private LinkedList<Point> neighbours(Point pt) {
-        return neighbours(pt, SimConstants.STEP_SIZE);
-    }
-
     private LinkedList<Point> neighbours(Point pt, int stepSize) {
         LinkedList<Point> validNeighbours = new LinkedList<Point>();
         int neighbourX, neighbourY;
-        boolean teammateCollision;
 
         for (neighbourX = pt.x - stepSize; neighbourX <= pt.x + stepSize; neighbourX += stepSize) {
             for (neighbourY = pt.y - stepSize; neighbourY <= pt.y + stepSize; neighbourY += stepSize) {
@@ -785,8 +813,8 @@ public class Path {
                 }
 
                 // Check 2: is it free space (or at least not an obstacle, choose which line to comment)
-                //if(!grid.freeSpaceAt(neighbourX, neighbourY))
-                if (grid.obstacleAt(neighbourX, neighbourY)) {
+                if (!grid.freeSpaceAt(neighbourX, neighbourY)) {
+                    //if (grid.obstacleAt(neighbourX, neighbourY)) {
                     continue;
                 }
 
@@ -807,10 +835,11 @@ public class Path {
                 }
 
                 // Check 4: is it not too close to wall (unless it's a goalPoint)
-                /*if(grid.obstacleWithinDistance(neighbourX, neighbourY, SimConstants.WALL_DISTANCE) &&
-                   !(goalPoint.distance(neighbourX, neighbourY) <= SimConstants.WALL_DISTANCE ) &&
-                   !(startPoint.distance(neighbourX, neighbourY) <= SimConstants.WALL_DISTANCE))
-                    continue;*/
+                if (exact && grid.obstacleWithinDistance(neighbourX, neighbourY, 2)
+                        && !(goalPoint.distance(neighbourX, neighbourY) <= 2)
+                        && !(startPoint.distance(neighbourX, neighbourY) <= 2)) {
+                    continue;
+                }
                 // Check 5: avoid running into teammates
                 /*teammateCollision = false;
                 for(TeammateAgent t: agent.getAllTeammates().values())
@@ -904,11 +933,11 @@ public class Path {
     public Point nextPoint() {
         if (pathPoints.isEmpty()) {
             if (!jump) {
-                calculateAStarPath();
+                calculateAStarPath(false);
             } else {
                 calculateJumpPath();
                 if (pathPoints.isEmpty()) {
-                    calculateAStarPath();
+                    calculateAStarPath(false);
                 }
             }
         }
@@ -946,5 +975,49 @@ public class Path {
 
     public void start() {
         this.currentPoint = 0;
+    }
+
+    public boolean isValid() {
+        return this.found && this.valid && !this.pathPoints.isEmpty() && !this.isFinished();
+    }
+
+    public void setInvalid() {
+        if (this.pathSections != null) {
+            pathSections.stream().forEach(p -> {
+                p.setInvalid();
+            });
+        }
+        this.found = false;
+        this.valid = false;
+    }
+
+    public boolean testPath(boolean complete) {
+        if (complete && (pathPoints == null || pathPoints.isEmpty() || !pathPoints.get(0).equals(this.startPoint) || !pathPoints.get(pathPoints.size() - 1).equals(this.goalPoint))) {
+            this.found = false;
+            this.setInvalid();
+            return false;
+        }
+        for (int i = 1; i < pathPoints.size(); i++) {
+            if (pathPoints.get(i).distance(pathPoints.get(i - 1)) > 30) {
+                System.err.println("Mist");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean repairPath() {
+        this.pathPoints = new LinkedList<Point>();
+        this.reversePathPoints = null;
+        this.length = 0;
+        this.allPathPixels = null;
+        this.exact = true;
+        this.valid = true;
+        if (this.tMap == null) {
+            this.found = calculateAStarPath(exact);
+        } else {
+            calcuateTopoPath(tMap, startPoint, goalPoint, jump, exact, grid, limit);
+        }
+        return this.found;
     }
 }

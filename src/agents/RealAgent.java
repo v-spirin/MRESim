@@ -45,7 +45,6 @@
 package agents;
 
 import Logging.AgentStats;
-import communication.CommLink;
 import communication.DataMessage;
 import config.RobotConfig;
 import config.RobotConfig.roletype;
@@ -62,15 +61,12 @@ import exploration.RoleBasedExploration;
 import exploration.RunFromLog;
 import exploration.WallFollowExploration;
 import exploration.rendezvous.IRendezvousStrategy;
-import exploration.rendezvous.MultiPointRendezvousStrategy;
-import exploration.rendezvous.NearRVPoint;
 import exploration.rendezvous.RendezvousAgentData;
 import exploration.rendezvous.RendezvousStrategyFactory;
 import java.awt.Point;
 import java.awt.Polygon;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Set;
 import path.Path;
@@ -100,7 +96,6 @@ public class RealAgent extends Agent {
     public int totalSpareTime; //total time this agent was not used for exploration
 
     private Path path;
-    Path pathToBase;
     //location in range of base station that is nearest to us
     private Point nearestBaseCommunicationPoint;
 
@@ -275,13 +270,22 @@ public class RealAgent extends Agent {
     }
 
     public void setPath(Path newPath) {
-        if (getPathToBaseStation() != newPath) {
-            resetPathToBaseStation();
-        }
         if (path != null) {
             this.addDirtyCells(path.getAllPathPixels());
         }
         path = newPath;
+        if (path == null) {
+            System.err.println("Path is null");
+        } else {
+            path.start();
+        }
+    }
+
+    public void setExactPath(Path newPath) {
+        if (path != null) {
+            this.addDirtyCells(path.getAllPathPixels());
+        }
+        path = calculatePath(newPath.getGoalPoint(), true);
         if (path == null) {
             System.err.println("Path is null");
         } else {
@@ -297,21 +301,8 @@ public class RealAgent extends Agent {
         return path.nextPoint();
     }
 
-    public void setPathToBaseStation() {
-        if (getPathToBaseStation() != getPath()) {
-            setPath(getPathToBaseStation());
-        }
-    }
-
-    public void resetPathToBaseStation() {
-        pathToBase = null;
-    }
-
-    public Path getPathToBaseStation() {
-        if ((pathToBase == null)) {
-            computePathToBaseStation(true);
-        }
-        return pathToBase;
+    public void setPathToBaseStation(boolean exact) {
+        setPath(calculatePath(this.getAllTeammates().get(SimConstants.BASE_STATION_TEAMMATE_ID).getLocation(), exact));
     }
 
     public boolean isMissionComplete() {
@@ -425,29 +416,6 @@ public class RealAgent extends Agent {
         }*/
     }
 
-    public void computePathToBaseStation(boolean comRangeSufficient) {
-        long realtimeStartAgentCycle = System.currentTimeMillis();
-        Point baseLocation = baseStation.getLocation();
-        if (nearestBaseCommunicationPoint == null || !comRangeSufficient) {
-            nearestBaseCommunicationPoint = baseLocation;
-        }
-        if (simConfig.getBaseRange() && (this.getTimeElapsed() % 10 == 1)) {
-            List<NearRVPoint> generatedPoints
-                    = MultiPointRendezvousStrategy.SampleEnvironmentPoints(this, simConfig.getSamplingDensity());
-            NearRVPoint agentPoint = new NearRVPoint(this.getLocation().x, this.getLocation().y);
-            List<CommLink> connectionsToBase = MultiPointRendezvousStrategy.FindCommLinks(generatedPoints, this);
-            MultiPointRendezvousStrategy.findNearestPointInBaseCommRange(agentPoint, connectionsToBase, this);
-            if (agentPoint.parentPoint != null) {
-                baseLocation = agentPoint.parentPoint.getLocation();
-                nearestBaseCommunicationPoint = baseLocation;
-            }
-        }
-        pathToBase = calculatePath(getLocation(), nearestBaseCommunicationPoint, false);
-        if (SimConstants.DEBUG_OUTPUT || SimConstants.PROFILING) {
-            System.out.println(this.toString() + "Path to base computation took " + (System.currentTimeMillis() - realtimeStartAgentCycle) + "ms.");
-        }
-    }
-
     /**
      * This method checks if occupancy grid has changed since last update of topological map, and
      * rebuilds the map if necessary.
@@ -521,85 +489,77 @@ public class RealAgent extends Agent {
             return getLocation();
         }
 
-        try {
-            /*if (timeElapsed == 0) {
-            oldTimeElapsed = -1; //hack for initial time step
-        }*/ //Not necessary anymore I think
-            if (oldTimeElapsed != timeElapsed) {
-                // First call in cycle
-                if (exploration == null) {
-                    switch (simConfig.getExpAlgorithm()) {
-                        case RunFromLog:
-                            exploration = new RunFromLog(simConfig.getRunFromLogFilename(), this.robotNumber);
-                            setState(((RunFromLog) exploration).getState(timeElapsed));
-                            setRole(((RunFromLog) exploration).getRole(timeElapsed));
-                            break;
+        if (oldTimeElapsed != timeElapsed) {
+            // First call in cycle
+            if (exploration == null) {
+                switch (simConfig.getExpAlgorithm()) {
+                    case RunFromLog:
+                        exploration = new RunFromLog(simConfig.getRunFromLogFilename(), this.robotNumber);
+                        setState(((RunFromLog) exploration).getState(timeElapsed));
+                        setRole(((RunFromLog) exploration).getRole(timeElapsed));
+                        break;
 
-                        case LeaderFollower:
-                            exploration = new LeaderFollower(this, simConfig, baseStation);
-                            break;
-                        case FrontierExploration:
-                            exploration = new FrontierExploration(this, simConfig, baseStation);
-                            break;
-                        case RoleBasedExploration:
-                            exploration = new RoleBasedExploration(timeElapsed, this, simConfig, this.getRendezvousStrategy(), baseStation);
-                            break;
-                        case Testing:
-                        case Random:
-                            exploration = new RandomExploration(this, simConfig);
-                            break;
-                        case WallFollow:
-                            exploration = new WallFollowExploration(this, simConfig, occGrid);
-                            break;
-                        default:
-                            exploration = new RandomExploration(this, simConfig);
-                            break;
-                    }
-                }
-
-                nextStep = exploration.takeStep(timeElapsed);
-                if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
-                    //Make sure the GUI can display a path estimate
-                    Path straightLine = new Path(occGrid, getLocation(), ((RunFromLog) exploration).getGoal(timeElapsed), true, true);
-                    setPath(straightLine);
-                }
-                incrementStateTimer();
-            } else // further call in cycle, just give next points of path
-            {
-                if (getEnvError()) {
-                    stay();
-                } else {
-                    switch (simConfig.getExpAlgorithm()) {
-                        case RunFromLog:
-                            break;
-                        case LeaderFollower:
-                            nextStep = this.getNextPathPoint();
-                            break;
-                        case FrontierExploration:
-                            nextStep = this.getNextPathPoint();
-                            break;
-                        case RoleBasedExploration:
-                            nextStep = this.getNextPathPoint();
-                            break;
-                        case Testing:
-                            nextStep = this.getNextPathPoint();
-                            break;
-                        case Random:
-                            nextStep = exploration.takeStep(timeElapsed);
-                            break;
-                        case WallFollow:
-                            ((WallFollowExploration) exploration).updateGrid(occGrid);
-                            nextStep = exploration.takeStep(timeElapsed);
-
-                        default:
-                            break;
-                    }
+                    case LeaderFollower:
+                        exploration = new LeaderFollower(this, simConfig, baseStation);
+                        break;
+                    case FrontierExploration:
+                        exploration = new FrontierExploration(this, simConfig, baseStation);
+                        break;
+                    case RoleBasedExploration:
+                        exploration = new RoleBasedExploration(timeElapsed, this, simConfig, this.getRendezvousStrategy(), baseStation);
+                        break;
+                    case Testing:
+                    case Random:
+                        exploration = new RandomExploration(this, simConfig);
+                        break;
+                    case WallFollow:
+                        exploration = new WallFollowExploration(this, simConfig, occGrid);
+                        break;
+                    default:
+                        exploration = new RandomExploration(this, simConfig);
+                        break;
                 }
             }
-        } catch (RuntimeException e) {
-            //Path gave Path is size 0
-            setEnvError(true);
+
+            nextStep = exploration.takeStep(timeElapsed);
+            if (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RunFromLog) {
+                //Make sure the GUI can display a path estimate
+                Path straightLine = new Path(occGrid, getLocation(), ((RunFromLog) exploration).getGoal(timeElapsed), true, true, false);
+                setPath(straightLine);
+            }
+            incrementStateTimer();
+        } else if (getEnvError() || path == null || !path.isValid()) {
+            //enverror handling, just stay
+            nextStep = stay();
+        } else {
+            // further call in cycle, just give next points of path
+            switch (simConfig.getExpAlgorithm()) {
+                case RunFromLog:
+                    break;
+                case LeaderFollower:
+                    nextStep = this.getNextPathPoint();
+                    break;
+                case FrontierExploration:
+                    nextStep = this.getNextPathPoint();
+                    break;
+                case RoleBasedExploration:
+                    nextStep = this.getNextPathPoint();
+                    break;
+                case Testing:
+                    nextStep = this.getNextPathPoint();
+                    break;
+                case Random:
+                    nextStep = exploration.takeStep(timeElapsed);
+                    break;
+                case WallFollow:
+                    ((WallFollowExploration) exploration).updateGrid(occGrid);
+                    nextStep = exploration.takeStep(timeElapsed);
+
+                default:
+                    break;
+            }
         }
+
         return nextStep;
     }
 
@@ -611,7 +571,8 @@ public class RealAgent extends Agent {
      * @param updateSensorData should the sensordata be updated?
      */
     @Override
-    public void writeStep(Point nextLoc, double[] sensorData, boolean updateSensorData) {
+    public void writeStep(Point nextLoc, double[] sensorData, boolean updateSensorData
+    ) {
         long realtimeStart = System.currentTimeMillis();
 
         //int safeRange = (int) (sensRange * SimConstants.SAFE_RANGE / 100);
@@ -652,13 +613,14 @@ public class RealAgent extends Agent {
      * Calculates the standard-path from where the agent is to the given goal with optimizations
      *
      * @param goalPoint
+     * @param exact
      * @return
      */
-    public Path calculatePath(Point goalPoint) {
-        return calculatePath(this.getLocation(), goalPoint, false);
+    public Path calculatePath(Point goalPoint, boolean exact) {
+        return calculatePath(this.getLocation(), goalPoint, false, exact);
     }
 
-    public Path calculatePath(Point startPoint, Point goalPoint, boolean pureAStar) {
+    public Path calculatePath(Point startPoint, Point goalPoint, boolean pureAStar, boolean exact) {
         if (timeElapsed - timeTopologicalMapUpdated >= SimConstants.REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
             if (timeElapsed - timeTopologicalMapUpdated >= SimConstants.MUST_REBUILD_TOPOLOGICAL_MAP_INTERVAL) {
                 updateTopologicalMap(true);
@@ -669,15 +631,15 @@ public class RealAgent extends Agent {
 
         Path tpath;
         try {
-            tpath = new Path(occGrid, topologicalMap, startPoint, goalPoint, false, !pureAStar);
+            tpath = new Path(occGrid, topologicalMap, startPoint, goalPoint, false, !pureAStar, exact);
         } catch (IllegalStateException e) {
-            tpath = new Path(occGrid, startPoint, goalPoint, false, !pureAStar);
+            tpath = new Path(occGrid, startPoint, goalPoint, false, !pureAStar, exact);
         }
 
         if (!tpath.found && !(timeTopologicalMapUpdated == timeElapsed)) {
             //Update topological map and retry
             updateTopologicalMap(true);
-            return calculatePath(startPoint, goalPoint, false);
+            return calculatePath(startPoint, goalPoint, false, exact);
         } else if (!tpath.found) {
             System.out.println(this + "at location (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") failed to plan path (" + (int) startPoint.getX() + "," + (int) startPoint.getY() + ") to (" + (int) goalPoint.getX() + "," + (int) goalPoint.getY() + "), not retrying; "
                     + "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed
@@ -986,62 +948,28 @@ public class RealAgent extends Agent {
     protected void updateFreeAndSafeSpace(Polygon newFreeSpace, Polygon newSafeSpace) {
         // May be possible to do some optimization here, I think a lot of cells are checked unnecessarily
         boolean sensedNew = false;
-        boolean doubleSensed = false;
-        for (int i = newFreeSpace.getBounds().x; i <= newFreeSpace.getBounds().x + newFreeSpace.getBounds().width; i++) {
-            //innerloop:
-            for (int j = newFreeSpace.getBounds().y; j <= newFreeSpace.getBounds().y + newFreeSpace.getBounds().height; j++) {
-                if (occGrid.locationExists(i, j)) {
+        int width = Math.min(newFreeSpace.getBounds().x + newFreeSpace.getBounds().width, occGrid.width - 1);
+        int height = Math.min(newFreeSpace.getBounds().y + newFreeSpace.getBounds().height, occGrid.height - 1);
+        for (int i = Math.max(newFreeSpace.getBounds().x, 0); i <= width; i++) {
+            for (int j = Math.max(newFreeSpace.getBounds().y, 0); j <= height; j++) {
+                try {
                     if (newFreeSpace.contains(i, j) && !occGrid.freeSpaceAt(i, j)) {
                         if (!occGrid.obstacleAt(i, j)) {
                             sensedNew = true;
-                            //need to check if it was new sensing or double-sensing
-                            //note that agent itself has no way of knowing this. So we do a dirty hack here and check the
-                            //occupancy grids of other agents directly. This is fine though as we only do this for logging.
-                            if (simFramework.hasCellBeenSensedByAnyAgent(i, j)) {
-                                doubleSensed = true;
-                            }
                             occGrid.setFreeSpaceAt(i, j);
                             dirtyCells.add(new Point(i, j));
                         }
                     }
-                    /*if (newSafeSpace != null && newSafeSpace.contains(i, j)) {
-                        // double for loop to prevent empty-safe boundary (which
-                        // would not qualify as a frontier)
-                        for (int m = i - 1; m <= i + 1; m++) {
-                            for (int n = j - 1; n <= j + 1; n++) {
-                                if (occGrid.locationExists(m, n) && occGrid.emptyAt(m, n)) {
-                                    continue innerloop;
-                                }
-                            }
-                        }
-                        if (!occGrid.safeSpaceAt(i, j)) {
-                            occGrid.setSafeSpaceAt(i, j);
-                            occGrid.setNoObstacleAt(i, j);
-                            dirtyCells.add(new Point(i, j));
-                        }
-                    }*/
+                } catch (ArrayIndexOutOfBoundsException e) {
+                    //not interresting... but should not happen (at least not often)
                 }
             }
         }
 
         //update stats for reporting/logging
         if (sensedNew) {
-            if (!doubleSensed) {
-                stats.incrementTimeSensing(timeElapsed);
-            } else {
-                stats.incrementTimeDoubleSensing(timeElapsed);
-            }
+            stats.incrementTimeSensing(timeElapsed);
         }
-        /*        if (getState().equals(AgentState.ReturnToBaseStation)
-                || getState().equals(AgentState.WaitForParent)
-                || getState().equals(AgentState.WaitForChild)
-                || //getState().equals(AgentState.GetInfoFromChild) ||
-                getState().equals(AgentState.GiveParentInfo)) //don't include GoToChild here, as in UtilityExploration
-        //agents end up going to child in Explore state as
-        //they don't know they are going to child at the time!
-        {
-            stats.incrementTimeReturning(timeElapsed);
-        }*/
     }
 
     protected void updateObstacles(Polygon newFreeSpace) {
@@ -1074,33 +1002,12 @@ public class RealAgent extends Agent {
                         if (newY < 0) {
                             newY = 0;
                         }
-                        //free space is final,
-                        //otherwise, we can get inaccessible pockets of free space in our map that are actually
-                        //accessible. This can lead to frontiers or RV points we cannot plan a path to, which can lead
-                        //to all sorts of tricky problems.
-//                        if (!occGrid.safeSpaceAt(newX, newY)) {
                         occGrid.setObstacleAt(newX, newY);
-                        //mark obstacles that we know for sure are there
-                        //if (k == 0) occGrid.setSafeSpaceAt(newX, newY);
                         dirtyCells.add(new Point(newX, newY));
-//                        }
                     }
                 }
             }
-            if (first.distance(x, y) < (sensRange - 2)) {
-                if (!occGrid.safeSpaceAt(first.x, first.y)) {
-                    occGrid.setObstacleAt(first.x, first.y);
-                    //occGrid.setSafeSpaceAt(first.x, first.y);
-                    dirtyCells.add(new Point(first.x, first.y));
-                }
-            }
         }
-        /*if (second.distance(x,y) < (sensRange-2)) {
-            if (!occGrid.safeSpaceAt(second.x, second.y)) {
-                occGrid.setObstacleAt(second.x, second.y);
-                dirtyCells.add(new Point(second.x, second.y));
-            }
-        }*/
     }
 
     protected Polygon findRadialPolygon(double sensorData[], int maxRange, int startAngle, int finishAngle) {

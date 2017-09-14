@@ -131,11 +131,11 @@ public class FrontierUtility implements Comparable<FrontierUtility> {
             exact = true;
             return;
         }
-        path = calcAgent.calculatePath(agent.getLocation(), frontier.getCentre(), false/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
+        path = calcAgent.calculatePath(agent.getLocation(), frontier.getCentre(), false, false/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
 
         if (path.found) {
             if (path.getLength() == 0) {
-                path = calcAgent.calculatePath(agent.getLocation(), frontier.getCentre(), false/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
+                path = calcAgent.calculatePath(agent.getLocation(), frontier.getCentre(), false, false/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
             }
             utility = (frontier.getArea() * 100000000) / Math.pow(path.getLength(), 4);
         } else {

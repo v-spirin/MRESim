@@ -104,7 +104,7 @@ public class WallFollowExploration extends BasicExploration implements Explorati
         }
 
         simulator.ExplorationImage.addErrorMarker(nextPoint, "->", true);
-        path = new Path(grid, agent.getLocation(), nextPoint, true, false);
+        path = new Path(grid, agent.getLocation(), nextPoint, true, false, false);
         agent.setPath(path);
         //}
         return path.getPoints().get(1);

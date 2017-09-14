@@ -89,7 +89,7 @@ public class RandomExploration extends BasicExploration implements Exploration {
             case Finished:
             case EnvError:
             default:
-                nextStep = RandomWalk.randomStep(agent);
+                nextStep = RandomWalk.randomStep(agent, 4);
 
         }
 
@@ -156,7 +156,7 @@ public class RandomExploration extends BasicExploration implements Exploration {
 
         //If the stati stil is exploring, we explore, if it changed we stay still (state must be setting relay)
         if (state == Agent.ExplorationState.Explore) {
-            return RandomWalk.randomStep(agent);
+            return RandomWalk.randomStep(agent, 10);
         } else {
             agent.setStepFinished(true);
             if (nextStep == null) {

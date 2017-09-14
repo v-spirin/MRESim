@@ -119,7 +119,9 @@ public class FrontierExploration extends BasicExploration implements Exploration
         //Preprocessing
         if (agent.getEnvError()) {
             agent.setEnvError(false);
-            agent.setExploreState(Agent.ExplorationState.EnvError);
+            agent.getPath().setInvalid();
+            this.recentEnvError = true;
+            //agent.setExploreState(Agent.ExplorationState.EnvError);
         }
         if (agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
             agent.getStats().setTimeLastDirectContactCS(1);
@@ -131,7 +133,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         //Statemachine
         switch (agent.getExploreState()) {
             case Initial:
-                nextStep = RandomWalk.randomStep(agent);
+                nextStep = RandomWalk.randomStep(agent, 10);
                 agent.getStats().setTimeSinceLastPlan(0);
                 if (timeElapsed >= SimConstants.INIT_CYCLES - 1) {
                     agent.setExploreState(Agent.ExplorationState.Explore);
@@ -139,7 +141,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 break;
             case Explore:
                 if ((agent.getStats().getTimeSinceLastPlan() < SimConstants.REPLAN_INTERVAL && agent.getStateTimer() > 1)
-                        && agent.getPath() != null && !agent.getPath().isFinished() && agent.getPath().found && agent.getPath().getPoints().size() >= 2) {
+                        && agent.getPath() != null && agent.getPath().isValid()) {
                     nextStep = agent.getPath().nextPoint();
                 } else {
                     nextStep = replan(timeElapsed);
@@ -149,15 +151,22 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 if (agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
                     agent.setExploreState(Agent.ExplorationState.Explore);
                 }
-                agent.setPathToBaseStation();
+                if (agent.getStateTimer() <= 1 || agent.getPath() == null || !agent.getPath().isValid()) {
+                    agent.setPathToBaseStation(recentEnvError);
+                    recentEnvError = false;
+                }
                 nextStep = agent.getPath().nextPoint();
                 break;
             case Finished:
             case SettingRelay:
             case EnvError:
+                if (agent.getPath() != null) {
+                    agent.getPath().setInvalid();
+                }
                 agent.setExploreState(Agent.ExplorationState.Explore);
             default:
-                nextStep = RandomWalk.randomStep(agent);
+                nextStep = agent.stay();
+            //nextStep = RandomWalk.randomStep(agent, 4);
 
         }
 
@@ -168,6 +177,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         } else {
             noReturnTimer++;
         }
+        this.recentEnvError = false;
         agent.setDynamicInfoText("" + noReturnTimer + "/" + (int) (simConfig.PERIODIC_RETURN_PERIOD * ((double) (max_no_change_counter + 10) / 10)));
         max_no_change_counter = Math.max(max_no_change_counter, no_change_counter);
         return nextStep;
@@ -209,11 +219,13 @@ public class FrontierExploration extends BasicExploration implements Exploration
         //If could not find frontier, try to disregard other agents when planning
         if (best == null) {
             best = chooseFrontier(false);
-        }
-
-        if (best != null) {
+        } else {
             agent.setFrontier(best.getFrontier());
-            agent.setPath(best.getPath(agent));
+            if (this.recentEnvError) {
+                agent.setExactPath(best.getPath(agent));
+            } else {
+                agent.setPath(best.getPath(agent));
+            }
         }
 
         //If no frontier could be assigned, then go back to base.">
@@ -226,7 +238,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         //If overlapping another agent, take random step
         for (TeammateAgent teammate : agent.getAllTeammates().values()) {
             if (agent.getLocation().equals(teammate.getLocation())) {
-                nextStep = RandomWalk.randomStep(agent);
+                nextStep = RandomWalk.randomStep(agent, 4);
                 agent.getStats().setTimeSinceLastPlan(0);
                 return nextStep;
             }
@@ -236,10 +248,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
         // utility, no need to recalculate
         // Check that we have a path, otherwise take random step
         if ((agent.getPath() == null)
-                || agent.getPath().getPoints() == null
-                || agent.getPath().getPoints().isEmpty()
-                || agent.getPath().getPoints().size() == 1) {
-            nextStep = RandomWalk.randomStep(agent);
+                || !agent.getPath().isValid()) {
+            nextStep = RandomWalk.randomStep(agent, 4);
             agent.getStats().setTimeSinceLastPlan(0);
             agent.setEnvError(false);
             return nextStep;
@@ -260,18 +270,18 @@ public class FrontierExploration extends BasicExploration implements Exploration
      * @param grid current agents occupancygrid to see if a frontier is still interresting because
      * next to unknown
      */
-    private void frontiersOfInterest(Frontier lastFrontier, OccupancyGrid grid) {
+    private PriorityQueue<Frontier> frontiersOfInterest(PriorityQueue<Frontier> frontierlist, Frontier lastFrontier, OccupancyGrid grid) {
         PriorityQueue<Frontier> list = new PriorityQueue<>();
 
         int counter = 0;
-        for (Frontier currFrontier : frontiers) {
-            if (counter >= SimConstants.MAX_NUM_FRONTIERS) {
-                break;
-            }
+        for (Frontier currFrontier : frontierlist) {
             // To avoid oscillation, add last frontier to list (just in case it
             // still is the best, but is not one of the closest)
             if (currFrontier == lastFrontier) {
                 counter++;
+                continue;
+            }
+            if (counter >= SimConstants.MAX_NUM_FRONTIERS) {
                 continue;
             }
             if (currFrontier.getArea() >= SimConstants.MIN_FRONTIER_SIZE
@@ -279,7 +289,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 //ignore frontiers not reachable from base //TODO WHY??? Woudn't path from agent be better?
                 /*Path pathToFrontier = agent.calculatePath(agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).getLocation(),
                         currFrontier.getCentre(), false);*/
-                Path pathToFrontier = agent.calculatePath(agent.getLocation(), currFrontier.getCentre(), false);
+                Path pathToFrontier = agent.calculatePath(agent.getLocation(), currFrontier.getCentre(), false, false);
                 if (!pathToFrontier.found) {
                     agent.addBadFrontier(currFrontier);
                 } else {
@@ -292,17 +302,17 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
         }
 
-        frontiers = list;
+        return list;
     }
 
     /**
      * Calculates Euclidean distance from all known teammates and self to frontiers of interest
      */
-    private PriorityQueue initializeUtilities(boolean considerOtherAgents) {
+    private PriorityQueue initializeUtilities(PriorityQueue<Frontier> frontierlist, boolean considerOtherAgents) {
         PriorityQueue<FrontierUtility> utilities = new PriorityQueue<FrontierUtility>();
 
         // For each frontier of interest
-        for (Frontier frontier : frontiers) {
+        for (Frontier frontier : frontierlist) {
             // Add own utilities
             utilities.add(new FrontierUtility(agent, frontier));
             // Add teammates' utilities
@@ -322,11 +332,11 @@ public class FrontierExploration extends BasicExploration implements Exploration
 
     protected FrontierUtility chooseFrontier(boolean considerOtherAgents) {
         // Step 1:  Create list of frontiers of interest
-        frontiersOfInterest(agent.getFrontier(), agent.getOccupancyGrid());
+        PriorityQueue<Frontier> frontiersOfInterest = frontiersOfInterest(frontiers, agent.getFrontier(), agent.getOccupancyGrid());
         // Step 2:  Create utility estimates
-        PriorityQueue<FrontierUtility> utilities = initializeUtilities(considerOtherAgents);
+        PriorityQueue<FrontierUtility> utilities = initializeUtilities(frontiersOfInterest, considerOtherAgents);
         // Step 3
-        FrontierUtility best = null;
+        FrontierUtility best;
 
         ArrayList<FrontierUtility> badUtilities = new ArrayList<>();
         Iterator<FrontierUtility> util_iter = utilities.iterator();
