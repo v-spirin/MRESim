@@ -46,12 +46,15 @@ package environment;
 
 import agents.RealAgent;
 import config.SimConstants;
+import gui.ShowSettings.ShowSettingsAgent;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import path.Path;
 import path.TopologicalNode;
+import simulator.ExplorationImage;
 
 /**
  *
@@ -235,6 +238,10 @@ public class TopologicalMap {
                             if (!node.getListOfNeighbours().contains(neighbourNode)) {
 
                                 if (curCell != SimConstants.UNEXPLORED_NODE_ID && (areaGrid[p.x + i][p.y + j] != SimConstants.UNEXPLORED_NODE_ID)) {
+                                    if (node.getCellList().size() < 150 || neighbourNode.getCellList().size() < 150) {
+                                        //Tiny areas make problems in path planning!
+                                        continue;
+                                    }
                                     Path pathToNode;
                                     //check path cache
                                     Rectangle pathCoords = new Rectangle(node.getPosition().x, node.getPosition().y,
@@ -254,7 +261,10 @@ public class TopologicalMap {
                                                 node.getPosition().x, node.getPosition().y);
                                         pathCache.put(reversePathCoords, reversePath);
                                     }
-                                    node.addNeighbour(neighbourNode, pathToNode);
+                                    boolean success = node.addNeighbour(neighbourNode, pathToNode);
+                                    if (!success) {
+                                        saveToImage(node, neighbourNode);
+                                    }
                                     neighbourNode.addNeighbour(node, pathToNode.getReversePath());
                                 } else if (areaGrid[p.x + i][p.y + j] == SimConstants.UNEXPLORED_NODE_ID) {
                                     //neighbor is unexplored
@@ -418,4 +428,24 @@ public class TopologicalMap {
         }
         return jBorderPoints;
     }
+
+    public void saveToImage(TopologicalNode node, TopologicalNode node2) {
+        if (SimConstants.OUTPUT_PATH_ERROR) {
+            try {
+                ExplorationImage img = new ExplorationImage(new Environment(occGrid.height, occGrid.width));
+                ShowSettingsAgent agentSettings = new ShowSettingsAgent();
+                agentSettings.showFreeSpace = true;
+                agentSettings.showTopologicalMap = true;
+                img.fullUpdateTopo(occGrid, this, node, node2, agentSettings);
+
+                new File(SimConstants.DEFAULT_PATH_LOG_DIRECTORY).mkdirs();
+                img.saveScreenshot(SimConstants.DEFAULT_PATH_LOG_DIRECTORY, "");
+                System.out.println("Outputting path debug screens to: " + SimConstants.DEFAULT_PATH_LOG_DIRECTORY);
+
+            } catch (Exception e) {
+                System.err.println("Couldn't save path error screenshot, reason: " + e.getMessage());
+            }
+        }
+    }
+
 }

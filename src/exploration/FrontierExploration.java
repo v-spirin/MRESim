@@ -186,6 +186,9 @@ public class FrontierExploration extends BasicExploration implements Exploration
     @Override
     protected Point replan(int timeElapsed) {
         Point nextStep;
+        if (last_percentage_known == agent.getStats().getPercentageKnown() && agent.getStateTimer() == 1) {
+            no_change_counter++;
+        }
 
         agent.getStats().setTimeSinceLastPlan(0);
 
@@ -206,11 +209,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
             agent.setMissionComplete(true);
             agent.setExploreState(Agent.ExplorationState.ReturnToBase);
         } else {
-            if (last_percentage_known == agent.getStats().getPercentageKnown()) {
-                no_change_counter++;
-            } else {
-                no_change_counter = 0;
-            }
             last_percentage_known = agent.getStats().getPercentageKnown();
         }
 

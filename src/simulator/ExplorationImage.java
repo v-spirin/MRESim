@@ -283,7 +283,15 @@ public class ExplorationImage {
 
         //drawLine(startpoint, endpoint, Color.yellow);
         setPixel(startpoint.x, startpoint.y, Color.GREEN);
+        setPixel(startpoint.x + 1, startpoint.y, Color.GREEN);
+        setPixel(startpoint.x, startpoint.y + 1, Color.GREEN);
+        setPixel(startpoint.x, startpoint.y - 1, Color.GREEN);
+        setPixel(startpoint.x - 1, startpoint.y, Color.GREEN);
         setPixel(endpoint.x, endpoint.y, Color.RED);
+        setPixel(endpoint.x + 1, endpoint.y, Color.RED);
+        setPixel(endpoint.x - 1, endpoint.y, Color.RED);
+        setPixel(endpoint.x, endpoint.y + 1, Color.RED);
+        setPixel(endpoint.x, endpoint.y - 1, Color.RED);
     }
     //draw RV generation process
 /*public void fullUpdateRVPoints(OccupancyGrid agentGrid, PriorityQueue<NearRVPoint> rvPoints,
@@ -347,6 +355,26 @@ public class ExplorationImage {
         drawLine(startpoint, endpoint, Color.yellow);
         setPixel(startpoint.x, startpoint.y, Color.GREEN);
         setPixel(endpoint.x, endpoint.y, Color.RED);
+    }
+
+    public void fullUpdateTopo(OccupancyGrid agentGrid, TopologicalMap map, TopologicalNode node, TopologicalNode node2, ShowSettingsAgent agentSettings) {
+        setG2D();
+
+        //Draw agent grid according nearPoint agentSettings
+        for (int i = 0; i < agentGrid.width; i++) {
+            for (int j = 0; j < agentGrid.height; j++) {
+                setPixel(i, j, SimConstants.MapColor.background());
+                updatePixelAgent(agentSettings, agentGrid, i, j);
+            }
+        }
+
+        //drawKeyAreas(map);
+        for (Point p : node.getCellList()) {
+            setPixel(p.x, p.y, Color.RED);
+        }
+        for (Point p : node2.getCellList()) {
+            setPixel(p.x, p.y, Color.MAGENTA);
+        }
     }
 
     private void Update(ShowSettings settings, ShowSettingsAgent[] agentSettings,
@@ -478,11 +506,13 @@ public class ExplorationImage {
         }
     }
 
-    public void saveScreenshot(String dirName) {
+    public void saveScreenshot(String dirName, String filename) {
         SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd_HHmmssS8");
-        String filename = fmt.format(new Date());
+        if (filename == null || filename.equals("")) {
+            filename = fmt.format(new Date());
+        }
         try {
-            ImageIO.write(image, "png", new File(dirName + "\\" + filename + ".png"));
+            ImageIO.write(image, "png", new File(dirName + File.pathSeparatorChar + filename + ".png"));
             if (SimConstants.DEBUG_OUTPUT) {
                 System.out.println("Filename is: " + filename + ".png");
             }

@@ -50,6 +50,7 @@ import environment.OccupancyGrid;
 import environment.TopologicalMap;
 import gui.ShowSettings.ShowSettingsAgent;
 import java.awt.Point;
+import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -80,6 +81,10 @@ public class Path {
     private boolean jump;
     private boolean valid = true;
     private boolean exact;
+
+    private Path() {
+
+    }
 
     public Path(OccupancyGrid agentGrid, Point startpoint, Point endpoint, boolean limit, boolean jump, boolean exact) {
         this.startPoint = startpoint;
@@ -261,7 +266,7 @@ public class Path {
             closedSet.add(current);
 
             for (TopologicalNode neighbour : current.getListOfNeighbours()) {
-                if (neighbour.getID() == SimConstants.UNEXPLORED_NODE_ID || closedSet.contains(neighbour)) {
+                if (neighbour.getID() == SimConstants.UNEXPLORED_NODE_ID || current.getPathToNeighbour(neighbour) == null || closedSet.contains(neighbour)) {
                     continue;
                 }
                 tentative_g_score = g_score.get(current) + current.getPathToNeighbour(neighbour).getLength();
@@ -770,11 +775,26 @@ public class Path {
     }
 
     public Path getReversePath() {
-        Path p = new Path(grid, goalPoint, startPoint, limit, jump, false);
+        //Path p = new Path(grid, goalPoint, startPoint, limit, jump, false);
+        Path p = new Path();
         p.pathPoints = reversePathPoints;
         p.reversePathPoints = pathPoints;
         p.found = found;
         p.length = length;
+        p.valid = valid;
+        p.goalPoint = startPoint;
+        p.startPoint = goalPoint;
+        p.tMap = tMap;
+        p.currentPoint = 0;
+        p.exact = exact;
+        p.grid = grid;
+        if (pathSections != null) {
+            p.pathSections = new LinkedList<>();
+            for (int i = pathSections.size() - 1; i >= 0; i--) {
+                p.pathSections.add(pathSections.get(i));
+            }
+        }
+
         return p;
     }
 
@@ -913,7 +933,8 @@ public class Path {
                     agentSettings.showTopologicalMap = true;
                     img.fullUpdatePath(grid, tMap, startPoint, goalPoint, agentSettings);
                 }
-                img.saveScreenshot(SimConstants.DEFAULT_PATH_LOG_DIRECTORY);
+                new File(SimConstants.DEFAULT_PATH_LOG_DIRECTORY).mkdirs();
+                img.saveScreenshot(SimConstants.DEFAULT_PATH_LOG_DIRECTORY, "");
                 System.out.println("Outputting path debug screens to: " + SimConstants.DEFAULT_PATH_LOG_DIRECTORY);
 
             } catch (Exception e) {
@@ -1016,5 +1037,9 @@ public class Path {
             calcuateTopoPath(tMap, startPoint, goalPoint, jump, exact, grid, limit);
         }
         return this.found;
+    }
+
+    public boolean getExact() {
+        return this.exact;
     }
 }

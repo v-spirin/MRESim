@@ -82,19 +82,21 @@ public class TopologicalNode {
         return position;
     }
 
-    public void addNeighbour(TopologicalNode neighbour, Path path) {
+    public boolean addNeighbour(TopologicalNode neighbour, Path path) {
         if (!neighbours.contains(neighbour)) {
             neighbours.add(neighbour);
             if (ID != SimConstants.UNEXPLORED_NODE_ID && neighbour.getID() != SimConstants.UNEXPLORED_NODE_ID && (path == null || path.getStartPoint().distance(this.position) > 10 || !path.testPath(true))) {
-                if (path != null) {
+                if (path != null && !path.getExact()) {
                     path.repairPath();
                 }
                 if (ID != SimConstants.UNEXPLORED_NODE_ID && neighbour.getID() != SimConstants.UNEXPLORED_NODE_ID && (path == null || path.getStartPoint().distance(this.position) > 10 || !path.testPath(true))) {
                     System.err.println("Added invalid path to node, already tried repair");
+                    return false;
                 }
             }
             neighbour_paths.add(path);
         }
+        return true;
     }
 
     public LinkedList<TopologicalNode> getListOfNeighbours() {
@@ -152,4 +154,5 @@ public class TopologicalNode {
     public String toString() {
         return "TopoNode[" + this.ID + "] at Position " + this.position + " with " + this.neighbours.size() + " neighbors";
     }
+
 }
