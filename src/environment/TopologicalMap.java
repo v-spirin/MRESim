@@ -51,6 +51,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.File;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import path.Path;
 import path.TopologicalNode;
@@ -104,12 +105,14 @@ public class TopologicalMap {
         keyPointsBorder = null;
         secondKeyPointsBorder = null;
         junctionPoints = null;
-        ((HashMap<Rectangle, Path>) pathCache.clone()).forEach((Rectangle key, Path path) -> {
-            if (!(key.x == path.getStartPoint().x && key.y == path.getStartPoint().y && key.width == path.getGoalPoint().x && key.height == path.getGoalPoint().y) || !path.isValid()) {
-                pathCache.remove(key);
-            }
-        });
 
+        Iterator<HashMap.Entry<Rectangle, Path>> iterator = pathCache.entrySet().iterator();
+        while (iterator.hasNext()) {
+            HashMap.Entry<Rectangle, Path> entry = iterator.next();
+            if (!(entry.getKey().x == entry.getValue().getStartPoint().x && entry.getKey().y == entry.getValue().getStartPoint().y && entry.getKey().width == entry.getValue().getGoalPoint().x && entry.getKey().height == entry.getValue().getGoalPoint().y) || !entry.getValue().isValid()) {
+                iterator.remove();
+            }
+        }
     }
 
     public final void setGrid(OccupancyGrid occGrid) {
