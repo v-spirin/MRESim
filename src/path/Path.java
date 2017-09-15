@@ -128,31 +128,31 @@ public class Path {
         this.length = 0;
         this.exact = exact;
 
-        calcuateTopoPath(tMap, startpoint, endpoint, jump, exact, agentGrid, limit);
+        calcuateTopoPath();
     }
 
-    private boolean calcuateTopoPath(TopologicalMap tMap1, Point startpoint, Point endpoint, boolean jump1, boolean exact1, OccupancyGrid agentGrid, boolean limit1) throws IllegalStateException {
+    private boolean calcuateTopoPath() throws IllegalStateException {
         //Find which area the agent starts from/want to go to
-        int[][] areaGrid = tMap1.getAreaGrid();
-        HashMap<Integer, TopologicalNode> topologicalNodes = tMap1.getTopologicalNodes(false);
-        TopologicalNode startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
-        TopologicalNode goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
+        int[][] areaGrid = tMap.getAreaGrid();
+        HashMap<Integer, TopologicalNode> topologicalNodes = tMap.getTopologicalNodes(false);
+        TopologicalNode startNode = topologicalNodes.get(areaGrid[startPoint.x][startPoint.y]);
+        TopologicalNode goalNode = topologicalNodes.get(areaGrid[goalPoint.x][goalPoint.y]);
         if ((startNode == null) || (goalNode == null)) {
-            topologicalNodes = tMap1.getTopologicalNodes(true);
-            areaGrid = tMap1.getAreaGrid();
-            startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
-            goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
+            topologicalNodes = tMap.getTopologicalNodes(true);
+            areaGrid = tMap.getAreaGrid();
+            startNode = topologicalNodes.get(areaGrid[startPoint.x][startPoint.y]);
+            goalNode = topologicalNodes.get(areaGrid[goalPoint.x][goalPoint.y]);
             if ((startNode == null) || (goalNode == null)) {
                 //System.err.println(this + "Error: startNode: " + startNode + " , goalNode: " + goalNode);
                 throw new IllegalStateException(this + "Error: startNode: " + startNode + " , goalNode: " + goalNode);
             }
         }
         if (startNode.getID() == SimConstants.UNEXPLORED_NODE_ID || goalNode.getID() == SimConstants.UNEXPLORED_NODE_ID) {
-            tMap1.update(true);
-            topologicalNodes = tMap1.getTopologicalNodes(true);
-            areaGrid = tMap1.getAreaGrid();
-            startNode = topologicalNodes.get(areaGrid[startpoint.x][startpoint.y]);
-            goalNode = topologicalNodes.get(areaGrid[endpoint.x][endpoint.y]);
+            tMap.update(true);
+            topologicalNodes = tMap.getTopologicalNodes(true);
+            areaGrid = tMap.getAreaGrid();
+            startNode = topologicalNodes.get(areaGrid[startPoint.x][startPoint.y]);
+            goalNode = topologicalNodes.get(areaGrid[goalPoint.x][goalPoint.y]);
             if (startNode == null || goalNode == null) {
                 return true;
             }
@@ -170,17 +170,17 @@ public class Path {
             throw new IllegalStateException(this + "Error: goalNode: " + goalNode + " has no neighbors, but is not the only node");
         }
         if (startNode.equals(goalNode)) {
-            if (startpoint.equals(goalPoint)) {
-                this.pathPoints.add(endpoint);
+            if (startPoint.equals(goalPoint)) {
+                this.pathPoints.add(goalPoint);
                 this.length = 1;
             }
             //Path inside an area, normal planning
-            if (!jump1) {
-                this.found = calculateAStarPath(exact1);
+            if (!jump) {
+                this.found = calculateAStarPath(exact);
             } else {
                 this.found = calculateJumpPath();
                 if (!this.found) {
-                    this.found = calculateAStarPath(exact1);
+                    this.found = calculateAStarPath(exact);
                 }
             }
             return true;
@@ -189,12 +189,12 @@ public class Path {
         boolean foundNodePath = calculateAStarNodePath(startNode, goalNode);
         if (!foundNodePath) {
             //Again normal planning as there was no path found using nodes
-            if (!jump1) {
-                this.found = calculateAStarPath(exact1);
+            if (!jump) {
+                this.found = calculateAStarPath(exact);
             } else {
                 this.found = calculateJumpPath();
                 if (!this.found) {
-                    this.found = calculateAStarPath(exact1);
+                    this.found = calculateAStarPath(exact);
                 }
             }
         } else {
@@ -215,7 +215,7 @@ public class Path {
             pathSections.add(goalPath);*/
 
             //NEW: plan path to first neighbor, should reduce starting in the wrong direction
-            Path startPath = new Path(agentGrid, startPoint, pathNodes.get(1).getPosition(), limit, jump, exact);
+            Path startPath = new Path(grid, startPoint, pathNodes.get(1).getPosition(), limit, jump, exact);
             this.pathPoints.addAll(startPath.getPoints());
             pathSections.add(startPath);
             //Second add path from StartNode to goalNode, this is just adding precomputed pathes
@@ -228,7 +228,7 @@ public class Path {
                 pathSections.add(tempPath);
             }
             //Third find path from goalNode to goalPoint
-            Path goalPath = new Path(agentGrid, goalNode.getPosition(), goalPoint, limit, jump, exact);
+            Path goalPath = new Path(grid, goalNode.getPosition(), goalPoint, limit, jump, exact);
             this.pathPoints.addAll(goalPath.getPoints());
             pathSections.add(goalPath);
             if (startPath.found && goalPath.found) {
@@ -921,7 +921,7 @@ public class Path {
     }
 
     private void outputPathError() {
-        if (SimConstants.OUTPUT_PATH_ERROR) {
+        if (SimConstants.OUTPUT_PATH_ERROR || true) {
             try {
                 ExplorationImage img = new ExplorationImage(new Environment(grid.height, grid.width));
                 ShowSettingsAgent agentSettings = new ShowSettingsAgent();
@@ -1034,7 +1034,7 @@ public class Path {
         if (this.tMap == null) {
             this.found = calculateAStarPath(exact);
         } else {
-            calcuateTopoPath(tMap, startPoint, goalPoint, jump, exact, grid, limit);
+            calcuateTopoPath();
         }
         return this.found;
     }

@@ -69,7 +69,6 @@ import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
-import java.util.Set;
 import path.Path;
 import simulator.SimulationFramework;
 
@@ -93,7 +92,7 @@ public class RealAgent extends Agent {
     PriorityQueue<Frontier> frontiers;
     Frontier frontier;          // Keep track of last frontier of interest
     //Frontiers that are impossible to reach, so should be discarded
-    HashMap<Frontier, Boolean> badFrontiers;
+    LinkedList<Frontier> badFrontiers;
     public int totalSpareTime; //total time this agent was not used for exploration
 
     private Path path;
@@ -149,7 +148,7 @@ public class RealAgent extends Agent {
         occGrid = new OccupancyGrid(envWidth, envHeight);
         topologicalMap = new TopologicalMap(occGrid);
         dirtyCells = new LinkedList<Point>();
-        badFrontiers = new HashMap<Frontier, Boolean>();
+        badFrontiers = new LinkedList<Frontier>();
 
         frontiers = new PriorityQueue();
 
@@ -185,16 +184,16 @@ public class RealAgent extends Agent {
         badFrontiers.clear();
     }
 
-    public Set<Frontier> getBadFrontiers() {
-        return badFrontiers.keySet();
+    public LinkedList<Frontier> getBadFrontiers() {
+        return badFrontiers;
     }
 
     public void addBadFrontier(Frontier f) {
-        badFrontiers.put(f, true);
+        badFrontiers.add(f);
     }
 
     public boolean isBadFrontier(Frontier f) {
-        return badFrontiers.containsKey(f);
+        return badFrontiers.contains(f);
     }
 
     public int getPrevX() {
@@ -431,6 +430,8 @@ public class RealAgent extends Agent {
             timeTopologicalMapUpdated = timeElapsed;
             occGrid.setMapHasChangedToFalse();
         }
+        //In this situation it might be a good idea to reset bad frontiers
+        resetBadFrontiers();
     }
 
 // Flush, take step, write step

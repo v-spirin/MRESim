@@ -153,7 +153,11 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 if (agent.getStateTimer() <= 1 || agent.getPath() == null || !agent.getPath().isValid()) {
                     agent.setPathToBaseStation(recentEnvError);
                 }
-                nextStep = agent.getPath().nextPoint();
+                if (agent.getPath().isValid()) {
+                    nextStep = agent.getPath().nextPoint();
+                } else {
+                    nextStep = RandomWalk.randomStep(agent, 4);
+                }
                 break;
             case Finished:
             case SettingRelay:

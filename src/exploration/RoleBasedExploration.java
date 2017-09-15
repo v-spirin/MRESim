@@ -103,6 +103,12 @@ public class RoleBasedExploration extends FrontierExploration {
             agent.setEnvError(false);
             agent.getPath().setInvalid();
             this.recentEnvError = true;
+            this.envErrorCounter++;
+        } else {
+            this.envErrorCounter = 0;
+        }
+        if (envErrorCounter > 5) {
+            agent.setExploreState(Agent.ExplorationState.EnvError);
         }
 
         if (command.equals("new_parent")) {
@@ -165,8 +171,14 @@ public class RoleBasedExploration extends FrontierExploration {
             case GoToRelay:
                 nextStep = takeStep_GoToRelay();
                 break;
+            case Finished:
+                super.takeStep_explore(timeElapsed);
+                nextStep = agent.stay();
+                break;
+            case EnvError:
+                agent.setExploreState(agent.getPrevExploreState());
             default:
-                nextStep = RandomWalk.randomStep(agent, 10);
+                nextStep = RandomWalk.randomStep(agent, 4);
                 break;
         }
 
@@ -276,7 +288,11 @@ public class RoleBasedExploration extends FrontierExploration {
                 agent.setPath(agent.calculatePath(prvd.getChildRendezvous().getChildLocation(), recentEnvError));
             }
         }
-        return agent.getPath().nextPoint();
+        if (agent.getPath().isValid()) {
+            return agent.getPath().nextPoint();
+        } else {
+            return RandomWalk.randomStep(agent, 4);
+        }
 
     }
 
@@ -292,7 +308,11 @@ public class RoleBasedExploration extends FrontierExploration {
             }
             return agent.getLocation();
         }
-        return agent.getPath().nextPoint();
+        if (agent.getPath().isValid()) {
+            return agent.getPath().nextPoint();
+        } else {
+            return RandomWalk.randomStep(agent, 4);
+        }
     }
 
     public Point takeStep_GoToChild() {
@@ -459,7 +479,11 @@ public class RoleBasedExploration extends FrontierExploration {
         }
         // </editor-fold>
 
-        return agent.getPath().nextPoint();
+        if (agent.getPath().isValid()) {
+            return agent.getPath().nextPoint();
+        } else {
+            return RandomWalk.randomStep(agent, 4);
+        }
     }
 
     private PriorityQueue<Point> checkForNeedlessRelays(HashMap<Integer, TopologicalNode> topoNodes, LinkedList<TopologicalNode> nodesWithRelay, LinkedList<TeammateAgent> relays) {

@@ -77,6 +77,7 @@ abstract class BasicExploration {
     String command = "";
     Integer command_data = -1;
     boolean recentEnvError = false;
+    int envErrorCounter = 0;
 
     /**
      * Just builds the object and initializes the agent.

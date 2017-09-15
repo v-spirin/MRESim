@@ -47,13 +47,11 @@ import agents.Agent.AgentState;
 import agents.RealAgent;
 import agents.TeammateAgent;
 import config.SimConstants;
-import environment.Frontier;
 import environment.OccupancyGrid;
 import java.awt.Point;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 /**
  *
@@ -77,7 +75,6 @@ public class DataMessage implements IDataMessage {
     public int relayID;
     public double maxRateOfInfoGatheringBelief;
     public Point frontierCentre;
-    public Set<Frontier> badFrontiers;
     public Collection<TeammateAgent> teammates;
     //TODO: the above need to be encapsulated into ...DataMessage classes by group, and made final, like below
     public final List<IDataMessage> messages;
@@ -104,7 +101,6 @@ public class DataMessage implements IDataMessage {
         speed = agent.getSpeed();
         relayID = agent.getID();
         maxRateOfInfoGatheringBelief = agent.getStats().getMaxRateOfInfoGatheringBelief();
-        badFrontiers = agent.getBadFrontiers();
         teammates = agent.getAllTeammates().values();
         timeBaseMessageListSize = agent.getStats().getTimeBaseMessageListSize();
         newInfo = agent.getStats().getNewInfo();
@@ -166,7 +162,7 @@ public class DataMessage implements IDataMessage {
         }
 
         //Merge bad frontier information
-        badFrontiers.stream().filter((badFrontier) -> (!agent.isBadFrontier(badFrontier))).forEach((badFrontier) -> {
+        agent.getBadFrontiers().stream().filter((badFrontier) -> (!agent.isBadFrontier(badFrontier))).forEach((badFrontier) -> {
             agent.addBadFrontier(badFrontier);
         });
 
