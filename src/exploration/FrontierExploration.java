@@ -121,7 +121,6 @@ public class FrontierExploration extends BasicExploration implements Exploration
             agent.setEnvError(false);
             agent.getPath().setInvalid();
             this.recentEnvError = true;
-            //agent.setExploreState(Agent.ExplorationState.EnvError);
         }
         if (agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).hasCommunicationLink()) {
             agent.getStats().setTimeLastDirectContactCS(1);
@@ -144,7 +143,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
                         && agent.getPath() != null && agent.getPath().isValid()) {
                     nextStep = agent.getPath().nextPoint();
                 } else {
-                    nextStep = replan(timeElapsed);
+                    nextStep = takeStep_explore(timeElapsed);
                 }
                 break;
             case ReturnToBase:
@@ -153,17 +152,11 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 }
                 if (agent.getStateTimer() <= 1 || agent.getPath() == null || !agent.getPath().isValid()) {
                     agent.setPathToBaseStation(recentEnvError);
-                    recentEnvError = false;
                 }
                 nextStep = agent.getPath().nextPoint();
                 break;
             case Finished:
             case SettingRelay:
-            case EnvError:
-                if (agent.getPath() != null) {
-                    agent.getPath().setInvalid();
-                }
-                agent.setExploreState(Agent.ExplorationState.Explore);
             default:
                 nextStep = agent.stay();
             //nextStep = RandomWalk.randomStep(agent, 4);
@@ -184,7 +177,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
     }
 
     @Override
-    protected Point replan(int timeElapsed) {
+    protected Point takeStep_explore(int timeElapsed) {
         Point nextStep;
         if (last_percentage_known == agent.getStats().getPercentageKnown() && agent.getStateTimer() == 1) {
             no_change_counter++;

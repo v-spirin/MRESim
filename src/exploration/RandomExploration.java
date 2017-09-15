@@ -97,12 +97,7 @@ public class RandomExploration extends BasicExploration implements Exploration {
     }
 
     @Override
-    protected Point replan(int timeElapsed
-    ) {
-        throw new UnsupportedOperationException("Not supported, this does not need a plan.");
-    }
-
-    private Point takeStep_explore(int timeElapsed) {
+    protected Point takeStep_explore(int timeElapsed) {
         Point nextStep = null;
         switch (relayType) {
             case Random:

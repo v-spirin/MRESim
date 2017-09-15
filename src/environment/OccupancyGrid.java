@@ -96,6 +96,8 @@ public class OccupancyGrid implements IntGrid {
     //used primarily to decide if we need to rebuild topological map
     private int mapCellsChanged;
     private int hashCode = 0;
+    private int[][] skeleton;
+    private LinkedList<Point> skeletonList;
 
     public OccupancyGrid(int newWidth, int newHeight) {
         width = newWidth;
@@ -115,6 +117,7 @@ public class OccupancyGrid implements IntGrid {
         cellsChanged = new HashMap<Point, Integer>();
 
         mapCellsChanged = SimConstants.MAP_CHANGED_THRESHOLD + 1;
+        skeletonList = new LinkedList<>();
     }
 
     public OccupancyGrid copy() {
@@ -191,6 +194,8 @@ public class OccupancyGrid implements IntGrid {
         if (this.hashCode() == partnerOccGrid.hashCode()) {
             return cellsUpdated;
         }
+        this.skeleton = null;
+        this.skeletonList.clear();
         this.hashCode = 0;
         int totalCellsTransferred = 0;
         int cellsSetKnownAtBase = 0;
@@ -807,6 +812,8 @@ public class OccupancyGrid implements IntGrid {
 
     private void setBit(int xCoord, int yCoord, int bit, int value) {
         hashCode = 0; // something changed, so delete hashcode
+        this.skeleton = null; // and cached stuff
+        this.skeletonList.clear();
         int bitValue = grid[xCoord][yCoord] & (byte) (Math.pow(2, bit));
         if (bitValue == 0) {
             if (value == 0) {
@@ -842,10 +849,17 @@ public class OccupancyGrid implements IntGrid {
     }
 
     public int[][] getSkeleton() {
-        return Skeleton.findSkeleton(this, false);
+        if (this.skeleton == null) {
+            this.skeleton = Skeleton.findSkeleton(this, false);
+        }
+        return this.skeleton;
     }
 
     public List<Point> getSkeletonList() {
-        return Skeleton.gridToList(getSkeleton());
+        if (this.skeletonList.isEmpty()) {
+            this.skeletonList = Skeleton.gridToList(getSkeleton());
+        }
+        return this.skeletonList;
+
     }
 }

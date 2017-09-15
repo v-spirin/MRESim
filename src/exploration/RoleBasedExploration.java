@@ -101,7 +101,8 @@ public class RoleBasedExploration extends FrontierExploration {
 
         if (agent.getEnvError()) {
             agent.setEnvError(false);
-            agent.setExploreState(Agent.ExplorationState.EnvError);
+            agent.getPath().setInvalid();
+            this.recentEnvError = true;
         }
 
         if (command.equals("new_parent")) {
@@ -164,16 +165,13 @@ public class RoleBasedExploration extends FrontierExploration {
             case GoToRelay:
                 nextStep = takeStep_GoToRelay();
                 break;
-            case EnvError:
-                nextStep = RandomWalk.randomStep(agent, 4);
-                agent.setExploreState(agent.getPrevExploreState());
-                break;
             default:
                 nextStep = RandomWalk.randomStep(agent, 10);
                 break;
         }
 
-        calculateRendezvous(timeElapsed);
+        this.recentEnvError = false;
+        //calculateRendezvous(timeElapsed);
         return nextStep;
     }
 
@@ -209,15 +207,16 @@ public class RoleBasedExploration extends FrontierExploration {
             if (agent.isExplorer()) {
                 return RandomWalk.randomStep(agent, 10);
             } else {
+                agent.setHeading(agent.getHeading() + Math.PI);
                 return agent.getLocation();
             }
         } else if (agent.getStateTimer() < 3) {
             return RandomWalk.randomStep(agent, 10);
-        } // Otherwise? Explorers go into Explore state, others go into GoToChild state. Explorers replan using FrontierExploration, others do nothing.
+        } // Otherwise? Explorers go into Explore state, others go into GoToChild state. Explorers takeStep_explore using FrontierExploration, others do nothing.
         else if (agent.isExplorer()) {
             agent.setExploreState(RealAgent.ExplorationState.Explore);
             agent.getStats().setTimeSinceLastPlan(0);
-            return replan(0);
+            return takeStep_explore(0);
         } else {
             agent.setExploreState(RealAgent.ExplorationState.GoToChild);
             return agent.stay();
@@ -238,7 +237,7 @@ public class RoleBasedExploration extends FrontierExploration {
         }*/
 
         if (agent.getStateTimer() <= 1) {
-            super.replan(timeElapsed);
+            super.takeStep_explore(timeElapsed);
         }
 
         if (relayType == SimulatorConfig.relaytype.Random) {
@@ -269,12 +268,12 @@ public class RoleBasedExploration extends FrontierExploration {
             return agent.stay();
         }
 
-        if (agent.getStateTimer() <= 1) {
+        if (agent.getStateTimer() <= 1 || !agent.getPath().isValid()) {
             //Just changed to this state so need to generate path
             if (agent.getParentTeammate().isStationary()) {
-                agent.setPath(agent.calculatePath(rvd.getParentRendezvous().getChildLocation(), false));
+                agent.setPath(agent.calculatePath(rvd.getParentRendezvous().getChildLocation(), recentEnvError));
             } else {
-                agent.setPath(agent.calculatePath(prvd.getChildRendezvous().getChildLocation(), false));
+                agent.setPath(agent.calculatePath(prvd.getChildRendezvous().getChildLocation(), recentEnvError));
             }
         }
         return agent.getPath().nextPoint();
@@ -322,7 +321,7 @@ public class RoleBasedExploration extends FrontierExploration {
             for (TeammateAgent mate : relays) {
                 if (mate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID && mate.getLocation().distance(agent.getOriginalChildTeammate().getFrontierCentre()) > mate.getLocation().distance(baseStation.getLocation())) {
                     //relay is nearer to base than to explorer
-                    agent.setPath(agent.calculatePath(mate.getLocation(), false));
+                    agent.setPath(agent.calculatePath(mate.getLocation(), recentEnvError));
                     agent.setExploreState(Agent.ExplorationState.GoToRelay);
                     return agent.stay();
                 }
@@ -333,128 +332,130 @@ public class RoleBasedExploration extends FrontierExploration {
             agent.setExploreState(RealAgent.ExplorationState.WaitForChild);
             return agent.stay();
         }
-        if (agent.getExploreState() != Agent.ExplorationState.WaitForChild && agent.getStateTimer() <= 1) {
+        if (agent.getExploreState() != Agent.ExplorationState.WaitForChild && (agent.getStateTimer() <= 1 || !agent.getPath().isValid())) {
             //Just changed to this state so need to generate path
             if (switchedChildAndNeedToTell) {
-                agent.setPath(agent.calculatePath(trvd.getChildRendezvous().getParentLocation(), false));
+                agent.setPath(agent.calculatePath(trvd.getChildRendezvous().getParentLocation(), recentEnvError));
             } else {
-                agent.setPath(agent.calculatePath(rvd.getChildRendezvous().getParentLocation(), false));
+                agent.setPath(agent.calculatePath(rvd.getChildRendezvous().getParentLocation(), recentEnvError));
             }
         }
 
         // <editor-fold defaultstate="collapsed" desc="Relay-Handling">
-        tmap.update(false);
-        HashMap<Integer, TopologicalNode> topoNodes = agent.getTopologicalMap().getJTopologicalNodes(true);
-        LinkedList<TopologicalNode> nodesWithRelay = new LinkedList<>();
-        int baseNodeId = agent.getTopologicalMap().getTopologicalJArea(agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).getLocation());
-        nodesWithRelay.add(topoNodes.get(baseNodeId));
-        for (TeammateAgent mate : agent.getAllTeammates().values()) {
-            if (mate.isStationary() && mate.getState() == Agent.AgentState.RELAY && mate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID) {
-                //Is a Relay
-                int nodeid = agent.getTopologicalMap().getTopologicalJArea(mate.getLocation());
-                nodesWithRelay.add(topoNodes.get(nodeid));
+        if (simConfig.useComStations()) {
+            tmap.update(false);
+            HashMap<Integer, TopologicalNode> topoNodes = agent.getTopologicalMap().getJTopologicalNodes(true);
+            LinkedList<TopologicalNode> nodesWithRelay = new LinkedList<>();
+            int baseNodeId = agent.getTopologicalMap().getTopologicalJArea(agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID).getLocation());
+            nodesWithRelay.add(topoNodes.get(baseNodeId));
+            for (TeammateAgent mate : agent.getAllTeammates().values()) {
+                if (mate.isStationary() && mate.getState() == Agent.AgentState.RELAY && mate.getID() != SimConstants.BASE_STATION_TEAMMATE_ID) {
+                    //Is a Relay
+                    int nodeid = agent.getTopologicalMap().getTopologicalJArea(mate.getLocation());
+                    nodesWithRelay.add(topoNodes.get(nodeid));
+
+                }
 
             }
 
-        }
-
-        switch (relayType) {
-            case Random:
-                if (!agent.comStations.isEmpty() && (Math.random() < simConfig.getComStationDropChance())) {
-                    agent.setExploreState(Agent.ExplorationState.SettingRelay);
-                    return agent.stay();
-                }
-
-                TeammateAgent relay = agent.findNearComStation(agent.getSpeed());
-                if (agent.comStations.size() < agent.getComStationLimit() && relay != null && Math.random() < simConfig.getComStationTakeChance()) {
-                    agent.setExploreState(Agent.ExplorationState.TakingRelay);
-                    return relay.getLocation();
-                }
-                break;
-            case KeyPoints:
-                if (!agent.comStations.isEmpty()) {
-                    PriorityQueue<NearRVPoint> tempPoints = new PriorityQueue<>();
-                    TeammateAgent base = agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID);
-                    for (Point p : tmap.getJunctionPoints()) {
-                        for (TeammateAgent mate : relays) {
-                            if (agent.getOccupancyGrid().directLinePossible(mate.getLocation(), p, false, false)) {
-                                tempPoints.add(new NearRVPoint(p.x, p.y, base.getLocation().distance(p)));
-                            }
-                        }
+            switch (relayType) {
+                case Random:
+                    if (!agent.comStations.isEmpty() && (Math.random() < simConfig.getComStationDropChance())) {
+                        agent.setExploreState(Agent.ExplorationState.SettingRelay);
+                        return agent.stay();
                     }
-                    if (tempPoints.isEmpty()) {
-                        for (Point p : tmap.getKeyPoints()) {
+
+                    TeammateAgent relay = agent.findNearComStation(agent.getSpeed());
+                    if (agent.comStations.size() < agent.getComStationLimit() && relay != null && Math.random() < simConfig.getComStationTakeChance()) {
+                        agent.setExploreState(Agent.ExplorationState.TakingRelay);
+                        return relay.getLocation();
+                    }
+                    break;
+                case KeyPoints:
+                    if (!agent.comStations.isEmpty()) {
+                        PriorityQueue<NearRVPoint> tempPoints = new PriorityQueue<>();
+                        TeammateAgent base = agent.getTeammate(SimConstants.BASE_STATION_TEAMMATE_ID);
+                        for (Point p : tmap.getJunctionPoints()) {
                             for (TeammateAgent mate : relays) {
                                 if (agent.getOccupancyGrid().directLinePossible(mate.getLocation(), p, false, false)) {
                                     tempPoints.add(new NearRVPoint(p.x, p.y, base.getLocation().distance(p)));
                                 }
                             }
                         }
-                    }
-
-                    Iterator<NearRVPoint> keyP_iter = tempPoints.iterator();
-                    while (keyP_iter.hasNext()) {
-                        NearRVPoint keyP = keyP_iter.next();
-                        TopologicalNode keyN = topoNodes.get(agent.getTopologicalMap().getTopologicalJArea(keyP));
-                        if (noRelay(keyP) && noNearRelay(keyP) && !keyN.isDeadEnd((LinkedList<TopologicalNode>) nodesWithRelay.clone())) {
-                            agent.setPath(agent.calculatePath(keyP, false));
-                            agent.setExploreState(Agent.ExplorationState.GoToRelay);
-                            return agent.stay();
-                        }
-                    }
-                }
-                break;
-            case RangeBorder:
-                if (!agent.comStations.isEmpty()) {
-                    boolean useful = false;
-                    for (TeammateAgent mate : relays) {
-                        if (mate.getDirectComLink() != 0 && mate.getDirectComLink() < (agent.getSpeed() * 1.5)) {
-                            //Is at range-border
-                            useful = true;
-                        } else if (mate.getDirectComLink() != 0) {
-                            //Is in strong comrange so don't drop! Stop iterating as this is a definit "not useful"
-                            useful = false;
-                            break;
-                        }
-                    }
-                    if (useful) {
-                        agent.setExploreState(Agent.ExplorationState.SettingRelay);
-                        return agent.stay();
-                    }
-                }
-                break;
-            case BufferRelay:
-                if (!agent.comStations.isEmpty()) {
-                    PriorityQueue<NearRVPoint> tempPoints = new PriorityQueue<>();
-                    for (Point p : tmap.getJunctionPoints()) {
-                        TopologicalNode keyN = topoNodes.get(agent.getTopologicalMap().getTopologicalJArea(p));
-                        for (TeammateAgent mate : relays) {
-                            if (!keyN.isDeadEnd(nodesWithRelay)) {
-                                tempPoints.add(new NearRVPoint(p.x, p.y, agent.getChildTeammate().getFrontierCentre().distance(p) * -1));
+                        if (tempPoints.isEmpty()) {
+                            for (Point p : tmap.getKeyPoints()) {
+                                for (TeammateAgent mate : relays) {
+                                    if (agent.getOccupancyGrid().directLinePossible(mate.getLocation(), p, false, false)) {
+                                        tempPoints.add(new NearRVPoint(p.x, p.y, base.getLocation().distance(p)));
+                                    }
+                                }
                             }
+                        }
 
+                        Iterator<NearRVPoint> keyP_iter = tempPoints.iterator();
+                        while (keyP_iter.hasNext()) {
+                            NearRVPoint keyP = keyP_iter.next();
+                            TopologicalNode keyN = topoNodes.get(agent.getTopologicalMap().getTopologicalJArea(keyP));
+                            if (noRelay(keyP) && noNearRelay(keyP) && !keyN.isDeadEnd((LinkedList<TopologicalNode>) nodesWithRelay.clone())) {
+                                agent.setPath(agent.calculatePath(keyP, recentEnvError));
+                                agent.setExploreState(Agent.ExplorationState.GoToRelay);
+                                return agent.stay();
+                            }
                         }
                     }
-                    Iterator<NearRVPoint> keyP_iter = tempPoints.iterator();
-                    while (keyP_iter.hasNext()) {
-                        NearRVPoint keyP = keyP_iter.next();
-                        TopologicalNode keyN = topoNodes.get(agent.getTopologicalMap().getTopologicalJArea(keyP));
-                        if (noRelay(keyP) && noNearRelay(keyP)) {
-                            agent.setPath(agent.calculatePath(keyP, false));
-                            agent.setExploreState(Agent.ExplorationState.GoToRelay);
+                    break;
+                case RangeBorder:
+                    if (!agent.comStations.isEmpty()) {
+                        boolean useful = false;
+                        for (TeammateAgent mate : relays) {
+                            if (mate.getDirectComLink() != 0 && mate.getDirectComLink() < (agent.getSpeed() * 1.5)) {
+                                //Is at range-border
+                                useful = true;
+                            } else if (mate.getDirectComLink() != 0) {
+                                //Is in strong comrange so don't drop! Stop iterating as this is a definit "not useful"
+                                useful = false;
+                                break;
+                            }
+                        }
+                        if (useful) {
+                            agent.setExploreState(Agent.ExplorationState.SettingRelay);
                             return agent.stay();
                         }
                     }
-                }
-            case None:
-            default:
-        }
+                    break;
+                case BufferRelay:
+                    if (!agent.comStations.isEmpty()) {
+                        PriorityQueue<NearRVPoint> tempPoints = new PriorityQueue<>();
+                        for (Point p : tmap.getJunctionPoints()) {
+                            TopologicalNode keyN = topoNodes.get(agent.getTopologicalMap().getTopologicalJArea(p));
+                            for (TeammateAgent mate : relays) {
+                                if (!keyN.isDeadEnd(nodesWithRelay)) {
+                                    tempPoints.add(new NearRVPoint(p.x, p.y, agent.getChildTeammate().getFrontierCentre().distance(p) * -1));
+                                }
 
-        PriorityQueue<Point> needlessRelays = checkForNeedlessRelays(topoNodes, nodesWithRelay, relays);
-        if (!needlessRelays.isEmpty()) {
-            agent.setPath(agent.calculatePath(needlessRelays.peek().getLocation(), false));
-            agent.setExploreState(Agent.ExplorationState.GoToRelay);
-            return agent.stay();
+                            }
+                        }
+                        Iterator<NearRVPoint> keyP_iter = tempPoints.iterator();
+                        while (keyP_iter.hasNext()) {
+                            NearRVPoint keyP = keyP_iter.next();
+                            TopologicalNode keyN = topoNodes.get(agent.getTopologicalMap().getTopologicalJArea(keyP));
+                            if (noRelay(keyP) && noNearRelay(keyP)) {
+                                agent.setPath(agent.calculatePath(keyP, recentEnvError));
+                                agent.setExploreState(Agent.ExplorationState.GoToRelay);
+                                return agent.stay();
+                            }
+                        }
+                    }
+                case None:
+                default:
+            }
+
+            PriorityQueue<Point> needlessRelays = checkForNeedlessRelays(topoNodes, nodesWithRelay, relays);
+            if (!needlessRelays.isEmpty()) {
+                agent.setPath(agent.calculatePath(needlessRelays.peek().getLocation(), recentEnvError));
+                agent.setExploreState(Agent.ExplorationState.GoToRelay);
+                return agent.stay();
+            }
         }
         // </editor-fold>
 

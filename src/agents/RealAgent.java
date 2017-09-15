@@ -65,6 +65,7 @@ import exploration.rendezvous.RendezvousAgentData;
 import exploration.rendezvous.RendezvousStrategyFactory;
 import java.awt.Point;
 import java.awt.Polygon;
+import java.awt.Rectangle;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
@@ -948,10 +949,11 @@ public class RealAgent extends Agent {
     protected void updateFreeAndSafeSpace(Polygon newFreeSpace, Polygon newSafeSpace) {
         // May be possible to do some optimization here, I think a lot of cells are checked unnecessarily
         boolean sensedNew = false;
-        int width = Math.min(newFreeSpace.getBounds().x + newFreeSpace.getBounds().width, occGrid.width - 1);
-        int height = Math.min(newFreeSpace.getBounds().y + newFreeSpace.getBounds().height, occGrid.height - 1);
-        for (int i = Math.max(newFreeSpace.getBounds().x, 0); i <= width; i++) {
-            for (int j = Math.max(newFreeSpace.getBounds().y, 0); j <= height; j++) {
+        Rectangle bounds = newFreeSpace.getBounds();
+        int width = Math.min(bounds.x + bounds.width, occGrid.width - 1);
+        int height = Math.min(bounds.y + bounds.height, occGrid.height - 1);
+        for (int i = Math.max(bounds.x, 0); i <= width; i++) {
+            for (int j = Math.max(bounds.y, 0); j <= height; j++) {
                 try {
                     if (newFreeSpace.contains(i, j) && !occGrid.freeSpaceAt(i, j)) {
                         if (!occGrid.obstacleAt(i, j)) {

@@ -66,7 +66,7 @@ abstract class BasicExploration {
     RealAgent agent;
 
     /**
-     * The planned path, null if no replan called.
+     * The planned path, null if no takeStep_explore called.
      */
     Path path;
 
@@ -96,7 +96,7 @@ abstract class BasicExploration {
      * @param timeElapsed Cycle we are in currently
      * @return Nothing ASAP! //TODO no return!
      */
-    abstract protected Point replan(int timeElapsed);
+    abstract protected Point takeStep_explore(int timeElapsed);
 
     protected boolean noRelay(Point p) {
 

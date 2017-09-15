@@ -419,7 +419,7 @@ public class ExplorationImage {
                 if (agentSettings[i].hasMapInfo) {
                     final OccupancyGrid grid = agents[i].getOccupancyGrid();
                     ShowSettingsAgent asettings = agentSettings[i];
-                    allDirt.parallelStream().forEach((currCell) -> {
+                    allDirt.stream().forEach((currCell) -> {
                         updatePixelAgent(asettings, grid, currCell.x, currCell.y);
                     });
                 }

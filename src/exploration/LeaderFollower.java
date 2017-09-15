@@ -95,7 +95,7 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
             //last_com_point = prelast_com_point;
         } // CHECK 2
         // Agent isn't stuck.
-        // Is it time to replan?
+        // Is it time to takeStep_explore?
         else if (agent.getStats().getTimeSinceLastPlan() > TIME_BETWEEN_PLANS || backtracking) {
             //System.out.println(agent.toString() + "LeaderFollower: Timed replanning.");
             if (agent.getRole().equals(roletype.Relay)) {
@@ -105,14 +105,14 @@ public class LeaderFollower extends FrontierExploration implements Exploration {
             }
             agent.getStats().setTimeSinceLastPlan(0);
         } // CHECK 3
-        // Agent isn't stuck, not yet time to replan.
+        // Agent isn't stuck, not yet time to takeStep_explore.
         // Do we have points left in the previously planned path?
         else if (agent.getPath() != null && agent.getPath().found
                 && agent.getPath().getPoints().size() >= 2) {
             //System.out.println(agent.toString() + "LeaderFollower: Just go on.");
             nextStep = agent.getPath().nextPoint();
         } // CHECK 4
-        // Agent isn't stuck, not yet time to replan, but we have no points left
+        // Agent isn't stuck, not yet time to takeStep_explore, but we have no points left
         else {
             //System.out.println(agent.toString() + "LeaderFollower: Replanning.");
             if (agent.getRole().equals(roletype.Relay)) {

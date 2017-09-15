@@ -111,7 +111,7 @@ public class WallFollowExploration extends BasicExploration implements Explorati
     }
 
     @Override
-    protected Point replan(int timeElapsed) {
+    protected Point takeStep_explore(int timeElapsed) {
         throw new UnsupportedOperationException("Not supported, this dows not need a plan");
     }
 

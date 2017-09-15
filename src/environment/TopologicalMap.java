@@ -326,26 +326,26 @@ public class TopologicalMap {
                             if (!node.getListOfNeighbours().contains(neighbourNode)) {
                                 if ((curCell != SimConstants.UNEXPLORED_NODE_ID)
                                         && (jAreaGrid[p.x + i][p.y + j] != SimConstants.UNEXPLORED_NODE_ID)) {
-                                    Path pathToNode;
+                                    //Path pathToNode;
                                     //check path cache
-                                    Rectangle pathCoords = new Rectangle(node.getPosition().x, node.getPosition().y,
-                                            neighbourNode.getPosition().x, neighbourNode.getPosition().y);
-                                    if (pathCache.containsKey(pathCoords)) {
-                                        pathToNode = pathCache.get(pathCoords);
-                                    } else {
-                                        pathToNode = new Path(occGrid, (Point) node.getPosition(), (Point) neighbourNode.getPosition(), false, true, true);
-                                        if (!pathToNode.getStartPoint().equals(node.getPosition())
-                                                || !pathToNode.getGoalPoint().equals(neighbourNode.getPosition())) {
-                                            System.err.println("CATASTROPHIC ERROR!! Path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")");
-                                        }
-                                        pathCache.put(pathCoords, pathToNode);
-                                        Path reversePath = pathToNode.getReversePath();
-                                        Rectangle reversePathCoords = new Rectangle(neighbourNode.getPosition().x, neighbourNode.getPosition().y,
-                                                node.getPosition().x, node.getPosition().y);
-                                        pathCache.put(reversePathCoords, reversePath);
-                                    }
-                                    node.addNeighbour(neighbourNode, pathToNode);
-                                    neighbourNode.addNeighbour(node, pathToNode.getReversePath());
+                                    //Rectangle pathCoords = new Rectangle(node.getPosition().x, node.getPosition().y,
+                                    //        neighbourNode.getPosition().x, neighbourNode.getPosition().y);
+                                    //if (pathCache.containsKey(pathCoords)) {
+                                    //    pathToNode = pathCache.get(pathCoords);
+                                    //} else {
+                                    //pathToNode = new Path(occGrid, (Point) node.getPosition(), (Point) neighbourNode.getPosition(), false, true, true);
+                                    //if (!pathToNode.getStartPoint().equals(node.getPosition())
+                                    //        || !pathToNode.getGoalPoint().equals(neighbourNode.getPosition())) {
+                                    //    System.err.println("CATASTROPHIC ERROR!! Path from (" + node.getPosition().x + "," + node.getPosition().y + ") to (" + neighbourNode.getPosition().x + "," + neighbourNode.getPosition().y + "). Path start = (" + pathToNode.getStartPoint().x + "," + pathToNode.getStartPoint().y + "), path goal = (" + pathToNode.getGoalPoint().x + "," + pathToNode.getGoalPoint().y + ")");
+                                    //}
+                                    //pathCache.put(pathCoords, pathToNode);
+                                    //Path reversePath = pathToNode.getReversePath();
+                                    //Rectangle reversePathCoords = new Rectangle(neighbourNode.getPosition().x, neighbourNode.getPosition().y,
+                                    //        node.getPosition().x, node.getPosition().y);
+                                    //pathCache.put(reversePathCoords, reversePath);
+                                    //}
+                                    node.addNeighbour(neighbourNode, null);
+                                    neighbourNode.addNeighbour(node, null);
                                 } else {
 
                                     node.addNeighbour(neighbourNode, null);
