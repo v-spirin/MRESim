@@ -146,7 +146,9 @@ public class AgentStepRunnable implements Runnable {
 //                        agent.getOccupancyGrid().setNoSafeSpaceAt(p.x, p.y);
 //                    });
                 //}
-                agent.getPath().resetStep();
+                if (agent.getPath() != null) {
+                    agent.getPath().resetStep();
+                }
                 agent.setEnvError(true);
             }
             agent.flush();

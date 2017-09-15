@@ -53,6 +53,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import path.Path;
 import path.TopologicalNode;
 import simulator.ExplorationImage;
@@ -106,9 +107,9 @@ public class TopologicalMap {
         secondKeyPointsBorder = null;
         junctionPoints = null;
 
-        Iterator<HashMap.Entry<Rectangle, Path>> iterator = pathCache.entrySet().iterator();
+        Iterator<Map.Entry<Rectangle, Path>> iterator = pathCache.entrySet().iterator();
         while (iterator.hasNext()) {
-            HashMap.Entry<Rectangle, Path> entry = iterator.next();
+            Map.Entry<Rectangle, Path> entry = iterator.next();
             if (!(entry.getKey().x == entry.getValue().getStartPoint().x && entry.getKey().y == entry.getValue().getStartPoint().y && entry.getKey().width == entry.getValue().getGoalPoint().x && entry.getKey().height == entry.getValue().getGoalPoint().y) || !entry.getValue().isValid()) {
                 iterator.remove();
             }
