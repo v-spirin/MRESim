@@ -563,12 +563,10 @@ public class ExplorationImage {
         //    setPixel(xCoord, yCoord, SimConstants.MapColor.safe());
         //}
         // Update obstacles
-        {
-            if (agentSettings.showFreeSpace
+         if (agentSettings.showFreeSpace
                     && agentGrid.obstacleAt(xCoord, yCoord)) {
                 setPixel(xCoord, yCoord, SimConstants.MapColor.agent_obstacle());
             }
-        }
     }
 
     public void redrawEnvAndAgents(MainGUI mainGUI, RobotTeamConfig rtc, SimulatorConfig simConfig) {
@@ -676,8 +674,8 @@ public class ExplorationImage {
 
         //drawRange(env, agent, range, SimConstants.MapColor.comm());
         for (TeammateAgent teammate : agent.getAllTeammates().values()) {
-            if (teammate.hasCommunicationLink()) {
-                //if (teammate.getDirectComLink() > 0) {
+            //if (teammate.hasCommunicationLink()) {
+            if (teammate.getDirectComLink() > 0) {
                 for (Point p : pointsAlongSegment(agent.getLocation(), teammate.getLocation())) {
                     for (int i = p.x - 1; i <= p.x + 1; i++) {
                         for (int j = p.y - 1; j <= p.y + 1; j++) {
@@ -1030,15 +1028,18 @@ public class ExplorationImage {
         }
 
         int baseNodeId = agt.getTopologicalMap().getTopologicalJArea(agent[0].getLocation());
-        agt.getTopologicalMap().getJTopologicalNodes(false).get(baseNodeId).calculateDeadEnd(null);
-        for (TopologicalNode node : agt.getTopologicalMap().getJTopologicalNodes(false).values()) {
-            Point p = node.getPosition();
-            String end = "";
-            //if (node.calculateDeadEnd((LinkedList<TopologicalNode>) nodesWithRelay.clone())) {
-            if (node.isDeadEnd()) {
-                end = "#";
+        TopologicalNode baseNode = agt.getTopologicalMap().getJTopologicalNodes(false).get(baseNodeId);
+        if (baseNode != null) {
+            baseNode.calculateDeadEnd(null);
+            for (TopologicalNode node : agt.getTopologicalMap().getJTopologicalNodes(false).values()) {
+                Point p = node.getPosition();
+                String end = "";
+                //if (node.calculateDeadEnd((LinkedList<TopologicalNode>) nodesWithRelay.clone())) {
+                if (node.isDeadEnd()) {
+                    end = "#";
+                }
+                g2D.drawString(end + node.getID(), p.x, p.y);
             }
-            g2D.drawString(end + node.getID(), p.x, p.y);
         }
 
         /*

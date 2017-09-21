@@ -187,7 +187,7 @@ public class Path {
         }
         // This is the standard-case:
         boolean foundNodePath = calculateAStarNodePath(startNode, goalNode);
-        if (!foundNodePath) {
+        if (!foundNodePath || pathNodes.size() < 3) {
             //Again normal planning as there was no path found using nodes
             if (!jump) {
                 this.found = calculateAStarPath(exact);
@@ -199,27 +199,13 @@ public class Path {
             }
         } else {
             //First find path from startPoint to startNode
-            // OLD: get to current node-middle:
-            /*Path startPath = new Path(agentGrid, startPoint, startNode.getPosition(), limit, jump, exact);
-            this.pathPoints.addAll(startPath.getPoints());
-            pathSections.add(startPath);
-            //Second add path from StartNode to goalNode, this is just adding precomputed pathes
-            for (int i = 0; i < pathNodes.size() - 1; i++) {
-            Path tempPath = pathNodes.get(i).getPathToNeighbour(pathNodes.get(i + 1));
-            this.pathPoints.addAll(tempPath.getPoints());
-            pathSections.add(tempPath);
-            }
-            //Third find path from goalNode to goalPoint
-            Path goalPath = new Path(agentGrid, goalNode.getPosition(), goalPoint, limit, jump, exact);
-            this.pathPoints.addAll(goalPath.getPoints());
-            pathSections.add(goalPath);*/
 
-            //NEW: plan path to first neighbor, should reduce starting in the wrong direction
+            //plan path to first neighbor, should reduce starting in the wrong direction
             Path startPath = new Path(grid, startPoint, pathNodes.get(1).getPosition(), limit, jump, exact);
             this.pathPoints.addAll(startPath.getPoints());
             pathSections.add(startPath);
             //Second add path from StartNode to goalNode, this is just adding precomputed pathes
-            for (int i = 1; i < pathNodes.size() - 1; i++) {
+            for (int i = 1; i < pathNodes.size() - 2; i++) {
                 Path tempPath = pathNodes.get(i).getPathToNeighbour(pathNodes.get(i + 1));
                 if (!tempPath.isValid()) {
                     tempPath.repairPath();
@@ -227,8 +213,8 @@ public class Path {
                 this.pathPoints.addAll(tempPath.getPoints());
                 pathSections.add(tempPath);
             }
-            //Third find path from goalNode to goalPoint
-            Path goalPath = new Path(grid, goalNode.getPosition(), goalPoint, limit, jump, exact);
+            //Third find path from goalNode-1 to goalPoint (otherwise the agend might go to the goal-node-center and backwards to the goalPoint
+            Path goalPath = new Path(grid, pathNodes.get(pathNodes.size() - 2).getPosition(), goalPoint, limit, jump, exact);
             this.pathPoints.addAll(goalPath.getPoints());
             pathSections.add(goalPath);
             if (startPath.found && goalPath.found) {

@@ -432,7 +432,7 @@ public class RoleBasedExploration extends FrontierExploration {
                         if (!agent.comStations.isEmpty()) {
                             boolean useful = false;
                             for (TeammateAgent mate : relays) {
-                                if (mate.getDirectComLink() != 0 && mate.getDirectComLink() < (agent.getSpeed() * 1.7)) {
+                                if (mate.getDirectComLink() >= 5 && mate.getDirectComLink() < (agent.getSpeed() * 2.1)) {
                                     //Is at range-border
                                     useful = true;
                                 } else if (mate.getDirectComLink() != 0) {
@@ -499,7 +499,7 @@ public class RoleBasedExploration extends FrontierExploration {
             if (mate.getID() == SimConstants.BASE_STATION_TEAMMATE_ID) {
                 continue;
             }
-            if (!mate.hasBaseComLink()) {
+            if (!mate.hasCommunicationLink() && mate.hasBaseComLink()) {
                 needless.add(new NearRVPoint(mate.getLocation().x, mate.getLocation().y, agent.getLocation().distance(mate.getLocation()) * -1));
                 continue;
             }

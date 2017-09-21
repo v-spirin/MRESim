@@ -251,4 +251,13 @@ public class TeammateAgent extends Agent {
     public void setReference(ComStation reference) {
         this.reference = reference;
     }
+
+    private boolean insideMethod(String methodName) {
+        for (StackTraceElement stackTrace : Thread.currentThread().getStackTrace()) {
+            if (stackTrace.getMethodName().equals(methodName)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -465,6 +465,9 @@ public class Skeleton {
         LinkedList<Point> pts = gridToList(skeleton);
         boolean addToRVlist;
         for (Point p : pts) {
+            if (p.x <= 1 || p.y <= 1 || p.x >= SimConstants.MAX_COLS - 2 || p.y >= SimConstants.MAX_ROWS - 2) {
+                continue;
+            }
             // First check if it's an endpoint
             if (numNonzeroNeighbors(skeleton, p.x, p.y) < 2) {
                 rvPts.add(p);
