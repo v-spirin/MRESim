@@ -83,7 +83,7 @@ public class AgentStepRunnable implements Runnable {
             try {
                 nextStep = agent.takeStep(timeElapsed);
             } catch (RuntimeException e) {
-                System.err.println(e.toString());
+                System.err.println("AgentStepRunnable: " + e.toString());
                 e.printStackTrace();
                 agent.setEnvError(true);
                 nextStep = new Point(agent.getLocation());

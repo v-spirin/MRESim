@@ -119,7 +119,7 @@ public class RobotConfig {
 
         if (tokens.length != 3) {
             if (SimConstants.DEBUG_OUTPUT) {
-                System.out.println("Error: incorrect number of data for start location of robot " + newName);
+                System.err.println("Error: incorrect number of data for start location of robot " + newName);
             }
             return;
         }

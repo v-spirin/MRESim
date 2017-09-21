@@ -921,7 +921,7 @@ public class Path {
     }
 
     private void outputPathError() {
-        if (SimConstants.OUTPUT_PATH_ERROR || true) {
+        if (SimConstants.OUTPUT_PATH_ERROR) {
             try {
                 ExplorationImage img = new ExplorationImage(new Environment(grid.height, grid.width));
                 ShowSettingsAgent agentSettings = new ShowSettingsAgent();
@@ -1017,7 +1017,6 @@ public class Path {
         }
         for (int i = 1; i < pathPoints.size(); i++) {
             if (pathPoints.get(i).distance(pathPoints.get(i - 1)) > 30) {
-                System.err.println("Mist");
                 return false;
             }
         }

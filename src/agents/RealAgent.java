@@ -130,6 +130,8 @@ public class RealAgent extends Agent {
     public String command = "";
     public Integer command_data = -1;
 
+    private boolean hasDualComLink = false;
+
     public RealAgent(int envWidth, int envHeight, RobotConfig robot, SimulatorConfig simConfig, RealAgent baseStation) {
         super(robot);
 
@@ -438,6 +440,8 @@ public class RealAgent extends Agent {
     public void flushComms() {
         teammates.values().stream().forEach((teammate) -> {
             teammate.setCommunicationLink(false);
+            teammate.setDirectComLink(0);
+            teammate.setBaseComLink(false);
         });
     }
 
@@ -643,7 +647,7 @@ public class RealAgent extends Agent {
             updateTopologicalMap(true);
             return calculatePath(startPoint, goalPoint, false, exact);
         } else if (!tpath.found) {
-            System.out.println(this + "at location (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") failed to plan path (" + (int) startPoint.getX() + "," + (int) startPoint.getY() + ") to (" + (int) goalPoint.getX() + "," + (int) goalPoint.getY() + "), not retrying; "
+            System.err.println(this + "at location (" + (int) getLocation().getX() + "," + (int) getLocation().getY() + ") failed to plan path (" + (int) startPoint.getX() + "," + (int) startPoint.getY() + ") to (" + (int) goalPoint.getX() + "," + (int) goalPoint.getY() + "), not retrying; "
                     + "time topologicalMapUpdated: " + timeTopologicalMapUpdated + ", curTime: " + timeElapsed
                     + ", mapCellsChanged: " + occGrid.getMapCellsChanged() + "/" + SimConstants.MAP_CHANGED_THRESHOLD);
 
@@ -1072,7 +1076,7 @@ public class RealAgent extends Agent {
     public void updateAfterCommunication() {
         teammates.values().stream().filter((teammate) -> (!teammate.hasCommunicationLink())).forEach((teammate) -> {
             teammate.setTimeSinceLastComm(teammate.getTimeSinceLastComm() + 1);
-        }); //processRelayMarks();
+        });
     }
 
     public int dropComStation() {
@@ -1169,6 +1173,14 @@ public class RealAgent extends Agent {
 
     public TeammateAgent getOriginalParentTeammate() {
         return this.getTeammate(this.originalParent);
+    }
+
+    public boolean hasDualComLink() {
+        return this.hasDualComLink;
+    }
+
+    public void setHasDualComLink(boolean hasDualComLink) {
+        this.hasDualComLink = hasDualComLink;
     }
 
 }

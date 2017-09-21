@@ -184,7 +184,7 @@ public class OccupancyGrid implements IntGrid {
             File outputfile = new File(filename);
             ImageIO.write(bi, "png", outputfile);
         } catch (IOException e) {
-            System.err.println(e);
+            System.err.println(this + ": " + e);
         }
     }
 

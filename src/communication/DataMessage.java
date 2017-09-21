@@ -79,8 +79,9 @@ public class DataMessage implements IDataMessage {
     //TODO: the above need to be encapsulated into ...DataMessage classes by group, and made final, like below
     public final List<IDataMessage> messages;
     public int newInfo;
+    private final boolean baseCom;
 
-    public DataMessage(RealAgent agent, int direct) {
+    public DataMessage(RealAgent agent, int direct, boolean baseCom) {
         ID = agent.getRobotNumber();
         x = agent.getX();
         y = agent.getY();
@@ -97,6 +98,7 @@ public class DataMessage implements IDataMessage {
         missionComplete = agent.isMissionComplete();
         state = agent.getState();
         directComm = direct;
+        this.baseCom = baseCom;
         distToBase = agent.distanceToBase();
         speed = agent.getSpeed();
         relayID = agent.getID();
@@ -122,6 +124,7 @@ public class DataMessage implements IDataMessage {
     public void receiveMessage(RealAgent agent, TeammateAgent teammate) {
         teammate.setCommunicationLink(true);
         teammate.setDirectComLink(directComm);
+        teammate.setBaseComLink(baseCom);
         teammate.setX(x);
         teammate.setY(y);
         teammate.setOccupancyGrid(occGrid);
@@ -143,10 +146,6 @@ public class DataMessage implements IDataMessage {
         if (agent.getSimConfig().timeStampTeammateDataEnabled()) {
             for (TeammateAgent remoteTeammateInfo : teammates) {
                 TeammateAgent localTeammateInfo = agent.getTeammateByNumber(remoteTeammateInfo.getRobotNumber());
-                if (SimConstants.DEBUG_OUTPUT) {
-                    System.out.println(agent + "remoteTeammate: " + remoteTeammateInfo
-                            + ", localTeammate: " + localTeammateInfo);
-                }
                 if (localTeammateInfo != null) {
                     if (localTeammateInfo.getTimeSinceLastComm() > remoteTeammateInfo.getTimeSinceLastComm()) {
                         localTeammateInfo.setX(remoteTeammateInfo.getX());

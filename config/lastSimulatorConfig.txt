@@ -1,6 +1,6 @@
 RoleBasedExploration
 PeriodicReturn
-KeyPoints
+RangeBorder
 null
 StaticCircle
 false
@@ -27,7 +27,7 @@ false
 false
 false
 false
-false
+true
 0.02
 0.5
 100

@@ -45,6 +45,7 @@ package path;
 
 import config.SimConstants;
 import java.awt.Point;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 
 /**
@@ -120,22 +121,30 @@ public class TopologicalNode {
         return cells;
     }
 
+    public boolean isDeadEnd() {
+        return this.deadEnd;
+    }
+
     /**
      * tests is this node is a dead and, means it has no border to unexplored environment
      *
      * @param border border for the search and list of visited nodes in inner algoritmic usage
-     * @return true if this is the border itself or is a deasd end considering the given
-     * border-nodes
+     * @return true if this is the border itself or is a dead end considering the given border-nodes
      */
-    public boolean isDeadEnd(LinkedList<TopologicalNode> border) {
-        if (deadEnd == true) {
-            return true;
+    public boolean calculateDeadEnd(LinkedHashSet<TopologicalNode> border) {
+        if (border == null) {
+            border = new LinkedHashSet<>();
         }
+        border.add(this);
         if (this.getID() == SimConstants.UNEXPLORED_NODE_ID) {
             return false;
         }
-        boolean noDeadEnd = false;
+        if (this.deadEnd) {
+            return true;
+        }
         LinkedList<TopologicalNode> pending = (LinkedList<TopologicalNode>) neighbours.clone();
+
+        // iterate all neighbors
         while (!pending.isEmpty()) {
             TopologicalNode current = pending.pop();
             if (current.getID() == SimConstants.UNEXPLORED_NODE_ID) {
@@ -144,10 +153,15 @@ public class TopologicalNode {
             if (border.contains(current)) {
                 continue;
             }
-            border.add(current);
-            noDeadEnd = !current.isDeadEnd(border);
+            border.add(current); //Add this node to checked neighbors without dead end
+            if (!current.calculateDeadEnd((LinkedHashSet<TopologicalNode>) border.clone())) {//check if neighbor is no dead end, too
+                //If one of these return false there is a way to unexplored node and we need to stop it
+                return false;
+            }
         }
-        return !noDeadEnd;
+        //This is not a dead ent itself, no neighbor returned to be a dead end
+        deadEnd = true;
+        return true;
     }
 
     @Override

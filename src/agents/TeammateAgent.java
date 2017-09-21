@@ -66,6 +66,7 @@ public class TeammateAgent extends Agent {
     int lastContactAreaKnown;
     private boolean communicationLink;
     private int directComLink;
+    private boolean baseComLink;
 
     private int timeSinceLastComm;
     OccupancyGrid occGrid;
@@ -125,6 +126,14 @@ public class TeammateAgent extends Agent {
 
     public boolean hasCommunicationLink() {
         return communicationLink;
+    }
+
+    public boolean hasBaseComLink() {
+        return baseComLink;
+    }
+
+    public void setBaseComLink(boolean baseComLink) {
+        this.baseComLink = baseComLink;
     }
 
     public boolean isInHandoverRange(Agent agent) {

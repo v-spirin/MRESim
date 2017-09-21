@@ -108,11 +108,18 @@ public class TopologicalMap {
         junctionPoints = null;
 
         Iterator<Map.Entry<Rectangle, Path>> iterator = pathCache.entrySet().iterator();
+        LinkedList<Rectangle> toRemove = new LinkedList<>();
         while (iterator.hasNext()) {
             Map.Entry<Rectangle, Path> entry = iterator.next();
             if (!(entry.getKey().x == entry.getValue().getStartPoint().x && entry.getKey().y == entry.getValue().getStartPoint().y && entry.getKey().width == entry.getValue().getGoalPoint().x && entry.getKey().height == entry.getValue().getGoalPoint().y) || !entry.getValue().isValid()) {
-                iterator.remove();
+                //iterator.remove(); //This gives a concurrendModException!?!? (Should never be known in different Threads!)
+                toRemove.add(entry.getKey());
             }
+        }
+
+        //Only necessary because of strange concurrentMod
+        for (Rectangle r : toRemove) {
+            pathCache.remove(r);
         }
     }
 

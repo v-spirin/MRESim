@@ -146,7 +146,6 @@ public class ExplorationLogger {
             exploration.close();
         } catch (FileNotFoundException ex) {
             LOGGER.log(Level.SEVERE, null, ex);
-            System.out.println("Mist");
         }
 
     }

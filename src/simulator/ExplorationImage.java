@@ -102,6 +102,7 @@ public class ExplorationImage {
 
     private BufferedImage image;
     HashSet gridHashBuffer;
+    boolean forceFullUpdate = false;
 
     public ExplorationImage(Environment env) {
         width = env.getColumns();
@@ -394,6 +395,10 @@ public class ExplorationImage {
         }
         //if(settings.showEnv)
         //    drawEnvironment(env.getFullStatus());
+        if (this.forceFullUpdate) {
+            dirtOnly = false;
+            this.forceFullUpdate = false;
+        }
         if (!dirtOnly) {
             if (settings.showEnv) {
                 drawEnvironment(env.getFullStatus());
@@ -558,10 +563,12 @@ public class ExplorationImage {
         //    setPixel(xCoord, yCoord, SimConstants.MapColor.safe());
         //}
         // Update obstacles
-         if (agentSettings.showFreeSpace
+        {
+            if (agentSettings.showFreeSpace
                     && agentGrid.obstacleAt(xCoord, yCoord)) {
                 setPixel(xCoord, yCoord, SimConstants.MapColor.agent_obstacle());
             }
+        }
     }
 
     public void redrawEnvAndAgents(MainGUI mainGUI, RobotTeamConfig rtc, SimulatorConfig simConfig) {
@@ -952,11 +959,12 @@ public class ExplorationImage {
     }
 
     public void drawAreas(RealAgent[] agent) {
+        this.forceFullUpdate = true;//this sets a lot of pixels that cannot be added to dirt
         RealAgent agt = agent[1];
-        agt.getTopologicalMap().update(false);
+        //agt.getTopologicalMap().update(false);
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                int area = agt.getTopologicalMap().getAreaGrid()[i][j];
+                int area = agt.getTopologicalMap().getJAreaGrid()[i][j];
                 if (area == SimConstants.UNEXPLORED_NODE_ID) {
                     continue;
                 }
@@ -1021,10 +1029,13 @@ public class ExplorationImage {
 
         }
 
+        int baseNodeId = agt.getTopologicalMap().getTopologicalJArea(agent[0].getLocation());
+        agt.getTopologicalMap().getJTopologicalNodes(false).get(baseNodeId).calculateDeadEnd(null);
         for (TopologicalNode node : agt.getTopologicalMap().getJTopologicalNodes(false).values()) {
             Point p = node.getPosition();
             String end = "";
-            if (node.isDeadEnd((LinkedList<TopologicalNode>) nodesWithRelay.clone())) {
+            //if (node.calculateDeadEnd((LinkedList<TopologicalNode>) nodesWithRelay.clone())) {
+            if (node.isDeadEnd()) {
                 end = "#";
             }
             g2D.drawString(end + node.getID(), p.x, p.y);

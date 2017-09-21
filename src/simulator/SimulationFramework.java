@@ -120,7 +120,6 @@ public class SimulationFramework implements ActionListener {
     double avgTimeLastCommand;
     double totalDistanceTraveled;
     int numSwaps;
-    long time1 = 0, time2 = 0, time3 = 0, time4 = 0, time5 = 0;
 
     RobotTeamConfig robotTeamConfig;
 
@@ -236,24 +235,15 @@ public class SimulationFramework implements ActionListener {
         return false;
     }
 
-// <editor-fold defaultstate="collapsed" desc="Simulation Cycle">
     public boolean simulationCycle() {
-        long realtimeStartCycle;
-        realtimeStartCycle = System.currentTimeMillis();
         if (timeElapsed == 1) {
             simStartTime = System.currentTimeMillis();
-        }
-        if (SimConstants.DEBUG_OUTPUT) {
-            System.out.println("\n" + this.toString() + "************** CYCLE " + timeElapsed + " ******************\n");
         }
         //set exploration goals at the start of the mission
         if (timeElapsed == 0) {
             for (int i = 0; i < numRobots; i++) {
                 agent[i].getStats().setGoalArea(env.getTotalFreeSpace());
             }
-        }
-        for (int i = 0; i < numRobots; i++) {
-            agent[i].flushComms();
         }
 
         detectCommunication();
@@ -268,75 +258,17 @@ public class SimulationFramework implements ActionListener {
         }
 
         agentSteps();               // move agents, simulate sensor data
-        if (SimConstants.DEBUG_OUTPUT) {
-            System.out.println(this.toString() + "agentSteps took " + (System.currentTimeMillis() - realtimeStartCycle) + "ms.\n");
+        for (int i = 0; i < numRobots; i++) {
+            agent[i].flushComms();
         }
-        time1 += (System.currentTimeMillis() - realtimeStartCycle);
-        //if(timeElapsed % 7 == 0 || timeElapsed % 7 == 1) {
-        long localTimer = System.currentTimeMillis();
         simulateCommunication();    // simulate communication
-        if (SimConstants.DEBUG_OUTPUT) {
-            System.out.println(this.toString() + "simulateCommunication took " + (System.currentTimeMillis() - localTimer) + "ms.\n");
-        }
-        time2 += (System.currentTimeMillis() - localTimer);
-        //timer = System.currentTimeMillis();
-//        if ((simConfig != null) && (simConfig.getExpAlgorithm() == SimulatorConfig.exptype.RoleBasedExploration)
-//                && (simConfig.roleSwitchAllowed())) {
-//            //Role switch should ideally be done by individual agents as they communicate, rather than here.
-//            switchRoles();              // switch roles
-//            //System.out.println(this.toString() + "switchRoles took " + (System.currentTimeMillis()-timer) + "ms.\n");
-//            //timer = System.currentTimeMillis();
-//            // second role switch check (to avoid duplicate relays)
-//            for (int i = 1; i < numRobots; i++) {
-//                for (int j = 1; j < numRobots; j++) {
-//                    if (i != j && agent[i].getState() == Agent.AgentState.ReturnToBaseStation
-//                            && !agent[i].isExplorer()
-//                            && agent[j].getState() == Agent.AgentState.ReturnToBaseStation
-//                            && !agent[j].isExplorer()
-//                            && agent[i].getTeammate(agent[j].getID()).hasCommunicationLink()
-//                            && agent[i].getPath().getLength() < agent[j].getPath().getLength()) {
-//                        agent[i].setState(Agent.AgentState.GoToChild);
-//                        agent[i].setStateTimer(0);
-//                        agent[i].addDirtyCells(agent[i].getPath().getAllPathPixels());
-//                        if (SimConstants.DEBUG_OUTPUT) {
-//                            System.out.println("\nSecondary switch: " + agent[i].getName()
-//                                    + " and " + agent[j].getName() + "\n");
-//                        }
-//                        Path path = agent[i].calculatePath(agent[i].getLocation(),
-//                                agent[i].getRendezvousAgentData().getChildRendezvous().getParentLocation(), false);
-//                        agent[i].setPath(path);
-//
-//                    }
-//                }
-//            }
-//            //System.out.println(this.toString() + "Second switch roles check took " + (System.currentTimeMillis()-timer) + "ms.\n");
 
-        //}
-        //timer = System.currentTimeMillis();
-        //simulateDebris();           // simulate dynamic environment
-        //System.out.println(this.toString() + "simulateDebris took " + (System.currentTimeMillis()-timer) + "ms.\n");
-        localTimer = System.currentTimeMillis();
         if (timeElapsed % SimConstants.UPDATE_AGENT_KNOWLEDGE_INTERVAL == 0) {
             updateAgentKnowledgeData();
         }
         updateGlobalData();         // update data
-        //System.out.println(this.toString() + "updateGlobalData took " + (System.currentTimeMillis()-realtimeStartCycle) + "ms.\n");
-
-        if (SimConstants.DEBUG_OUTPUT) {
-            System.out.println(this.toString() + "updateGlobalData took " + (System.currentTimeMillis() - localTimer) + "ms.\n");
-        }
-        time3 += (System.currentTimeMillis() - localTimer);
-        //timer = System.currentTimeMillis();
-
-        //System.out.println(this.toString() + "updateAgentKnowledgeData took " + (System.currentTimeMillis()-timer) + "ms.\n");
-        localTimer = System.currentTimeMillis();
         updateGUI();                // update GUI
 
-        if (SimConstants.DEBUG_OUTPUT) {
-            System.out.println(this.toString() + "updateGUI took " + (System.currentTimeMillis() - localTimer) + "ms.\n");
-        }
-        time4 += (System.currentTimeMillis() - localTimer);
-        //timer = System.currentTimeMillis();
         mainGUI.updateRobotConfig();
         logging();                  // perform logging as required
 
@@ -346,28 +278,15 @@ public class SimulationFramework implements ActionListener {
             logging_agent = true; //There is a logging-wish
         });
         if (logging_agent) {  //do non-agent-based logging if there is a wish to log for any robot
-            //EnvLoader.saveWallConfig(env, SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + "environment " + timeElapsed + ".png");
             image.saveScreenshot(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY, timeElapsed);
         }
         logging_agent = false; //reset logging-wish for next cycle
 
-        //if ((timeElapsed % 10) == 0) verifyNoInfoGotLost(); //verify relaying works fine
-        //System.out.println(this.toString() + "logging took " + (System.currentTimeMillis()-timer) + "ms.\n");
-        int currentCycleTime = (int) (System.currentTimeMillis() - realtimeStartCycle);
-        if (SimConstants.DEBUG_OUTPUT) {
-            System.out.println(this.toString() + "Cycle complete, took " + currentCycleTime + "ms.\n");
-        }
-        //avgCycleTime = (((timeElapsed - 1) * avgCycleTime) + currentCycleTime) / timeElapsed;
         checkPause();               // check whether user wanted to pause
         avgCycleTime = (int) (System.currentTimeMillis() - simStartTime) / timeElapsed;
-        if (SimConstants.DEBUG_OUTPUT) {
-            System.out.println("Time1 = " + time1 + ", time2 = " + time2 + ", time3 = " + time3 + ", time4 = " + time4);
-        }
         return checkRunFinish(agent, timeElapsed, pctAreaKnownTeam, avgCycleTime);           // for scripting multiple runs, to max number of cycles
     }
 
-// </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Start, Run and Stop">
     private String readFile(String pathname) throws IOException {
         File file = new File(pathname);
         StringBuilder fileContents = new StringBuilder((int) file.length());
@@ -533,10 +452,6 @@ public class SimulationFramework implements ActionListener {
             updateRunConfig(); //this should set runNumMax;
             reset();
         }
-        //simConfig.TARGET_INFO_RATIO = 0.90;
-        if (SimConstants.DEBUG_OUTPUT) {
-            System.out.println(this.toString() + "Starting exploration!");
-        }
         timer.start();
         simStartTime = System.currentTimeMillis();
     }
@@ -546,9 +461,6 @@ public class SimulationFramework implements ActionListener {
             updateRunConfig();
         }
         reset();
-        if (SimConstants.DEBUG_OUTPUT) {
-            System.out.println(this.toString() + "Restarting exploration!");
-        }
         simStartTime = System.currentTimeMillis();
         timer.start();
     }
@@ -584,9 +496,6 @@ public class SimulationFramework implements ActionListener {
             if (!agent[i].getTeammate(1).hasCommunicationLink() || !agent[i].isMissionComplete()) {
                 allAgentsAtBase = false;
             }
-            /*if (!agent[0].getLocation().equals(agent[i].getLocation())) {
-                allAgentsAtBase = false;
-            }*/
         }
 
         if (timeElapsed >= SimConstants.MAXIMUM_TIME || baseStationDone() || allAgentsAtBase) {
@@ -620,14 +529,8 @@ public class SimulationFramework implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         simulationCycle();
     }
-// </editor-fold>
 
-// Agent Steps, Sensor Data
     private void agentSteps() {
-        //long realtimeStartAgentCycle;
-        //Point nextStep = new Point(0,0);         // The next location that an agent wants to go to
-        //double[] sensorData;    // Sensor data for an agent at its next location
-
         agent[0].flush();
 
         List<Thread> threads = new ArrayList<Thread>();
@@ -713,43 +616,25 @@ public class SimulationFramework implements ActionListener {
         }
 
     }
-// </editor-fold>
 
-// <editor-fold defaultstate="collapsed" desc="Communication">
     private void simulateCommunication() {
-        //long realtimeStart = System.currentTimeMillis();
-        //long realtimeStart2;
-        //System.out.println(this.toString() + "Simulating communication ... ");
-
-        //System.out.println(SimConstants.INDENT + "detectCommunication took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
         // Exchange data
         for (int i = 0; i < numRobots - 1; i++) {
             for (int j = i + 1; j < numRobots; j++) {
                 if (multihopCommTable[i][j] >= 1) {
-                    long realtimeStart2 = System.currentTimeMillis();
-                    DataMessage msgFromFirst = new DataMessage(agent[i], directCommTable[i][j]);
-                    DataMessage msgFromSecond = new DataMessage(agent[j], directCommTable[i][j]);
+                    DataMessage msgFromFirst = new DataMessage(agent[i], directCommTable[i][j], multihopCommTable[0][i] > 0);
+                    DataMessage msgFromSecond = new DataMessage(agent[j], directCommTable[j][i], multihopCommTable[0][j] > 0);
 
                     agent[i].receiveMessage(msgFromSecond);
                     agent[j].receiveMessage(msgFromFirst);
-
-                    if (SimConstants.DEBUG_OUTPUT) {
-                        System.out.println(SimConstants.INDENT + "Communication between "
-                                + agent[i].getName() + " and "
-                                + agent[j].getName() + " took "
-                                + (System.currentTimeMillis() - realtimeStart2) + "ms.");
-                    }
                 }
             }
         }
 
-        //realtimeStart = System.currentTimeMillis();
         // Update post comm
         for (int q = 0; q < numRobots; q++) {
             agent[q].updateAfterCommunication();
         }
-
-        //System.out.println(SimConstants.INDENT + "Communication complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
     private void detectMultiHopLinks() {
@@ -807,8 +692,6 @@ public class SimulationFramework implements ActionListener {
         detectMultiHopLinks();
     }
 
-    // </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="Logging">
     private void logging() {
         // Note, logging of data is performed in updateGlobalData, should change to here when i have the time
 
@@ -856,8 +739,6 @@ public class SimulationFramework implements ActionListener {
         image.saveScreenshot(dirname, timeElapsed);
     }
 
-// </editor-fold>
-// <editor-fold defaultstate="collapsed" desc="GUI Interaction">
     public void simRateChanged(int newSimRate, MainGUI.runMode runmode) {
         if (newSimRate == 0) {
             timer.stop();
@@ -872,28 +753,20 @@ public class SimulationFramework implements ActionListener {
     }
 
     private void updateGUI() {
-        //long realtimeStart = System.currentTimeMillis();
-        //System.out.print(this.toString() + "Updating GUI ... ");
         mainGUI.updateFromData(agent, timeElapsed, pctAreaKnownTeam, avgCycleTime);
-        //if (timeElapsed % 10 == 1)
         updateImage(false); //was false
 
-        //System.out.println(this.toString() + "GUI Update complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
     public void updateImage(boolean full) {
-        long realtimeStart = System.currentTimeMillis();
 
         if (full || this.force_full_update) {
-            //System.out.print(this.toString() + "Full Image Update ... ");
             image.fullUpdate(mainGUI.getShowSettings(), mainGUI.getShowSettingsAgents(), env, agent, agentRange);
         } else {
-            //System.out.print(this.toString() + "Dirty Image Update ... ");
             image.dirtyUpdate(mainGUI.getShowSettings(), mainGUI.getShowSettingsAgents(), env, agent, agentRange);
         }
         mainGUI.getLabelImageHolder().setIcon(new ImageIcon(image.getImage()));
 
-        //System.out.println("Complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
 
     public int getTrueJointAreaKnown() {
@@ -913,8 +786,6 @@ public class SimulationFramework implements ActionListener {
     }
 
     private void updateGlobalData() {
-        long realtimeStart = System.currentTimeMillis();
-        //System.out.print(this.toString() + "Updating Global Data ... ");
         timeElapsed++;
         double pctAreaKnownBase = 100 * (double) agent[SimConstants.BASE_STATION_AGENT_ID].getStats().getAreaKnown() / (double) totalArea;
         pctAreaKnownTeam = pctAreaKnownBase;
@@ -928,10 +799,6 @@ public class SimulationFramework implements ActionListener {
             double avgTeamLatency = 0;
             //todo: same per robot
 
-            int maxTimeOutsideBaseRange = 0;
-
-            //double avgLatencyAmongRobots = 0;
-            //double maxLatencyAmongRobots = 0;
             //stats below also per agent
             int totalTeamTimeSpentSensing = 0; //sum of individual agent time spent sensing new areas
             int totalTeamTimeSpentDoubleSensing = 0; //sum of individual agent time spent re-sensing areas known by other agents
@@ -1016,9 +883,7 @@ public class SimulationFramework implements ActionListener {
                 System.err.println(this.toString() + "Error writing data to file!" + e);
             }
         }
-        //System.out.println("Complete, took " + (System.currentTimeMillis()-realtimeStart) + "ms.");
     }
-// </editor-fold>
 
     @Override
     public String toString() {
