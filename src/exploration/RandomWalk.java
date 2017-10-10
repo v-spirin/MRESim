@@ -57,6 +57,10 @@ public class RandomWalk {
 
     private static Random generator = new Random(SimConstants.RANDOM_SEED);
 
+    public static void resetSeed() {
+        generator = new Random(SimConstants.RANDOM_SEED);
+    }
+
     public static Point randomStep(RealAgent agent, double speed) {
         int maxcounter = 100;
         int ranVar;

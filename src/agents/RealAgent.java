@@ -441,7 +441,7 @@ public class RealAgent extends Agent {
         teammates.values().stream().forEach((teammate) -> {
             teammate.setCommunicationLink(false);
             teammate.setDirectComLink(0);
-            teammate.setBaseComLink(false);
+            //teammate.setBaseComLink(false);
         });
     }
 

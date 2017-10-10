@@ -49,7 +49,6 @@ import agents.RealAgent;
 import agents.TeammateAgent;
 import config.SimConstants;
 import config.SimulatorConfig;
-import environment.TopologicalMap;
 import exploration.rendezvous.IRendezvousStrategy;
 import exploration.rendezvous.NearRVPoint;
 import exploration.rendezvous.RendezvousAgentData;
@@ -72,16 +71,12 @@ public class RoleBasedExploration extends FrontierExploration {
     RendezvousAgentData prvd;
     RendezvousAgentData crvd;
     RendezvousAgentData trvd; //temp rendezvous-data for switching childs
-    SimulatorConfig.relaytype relayType = SimulatorConfig.relaytype.None;
-    TopologicalMap tmap;
     Boolean switchedChildAndNeedToTell = false;
 
     public RoleBasedExploration(int timeElapsed, RealAgent agent, SimulatorConfig simConfig, IRendezvousStrategy rendezvousStrategy, RealAgent baseStation) {
         super(agent, simConfig, baseStation, SimulatorConfig.frontiertype.ReturnWhenComplete);
         this.timeElapsed = timeElapsed;
         this.rendezvousStrategy = rendezvousStrategy;
-        this.relayType = simConfig.getRelayAlgorithm();
-        tmap = agent.getTopologicalMap();
         this.rvd = agent.getRendezvousAgentData();
         this.prvd = agent.getParentTeammate().getRendezvousAgentData();
         if (agent.getChildTeammate() != null) {
@@ -298,25 +293,6 @@ public class RoleBasedExploration extends FrontierExploration {
 
     }
 
-    public Point takeStep_GoToRelay() {
-
-        if (agent.getLocation().equals(agent.getCurrentGoal())) {
-            //Setting state twice to get right previous state
-            agent.setExploreState(agent.getPrevExploreState());
-            if (noRelay(agent.getLocation())) {
-                agent.setExploreState(RealAgent.ExplorationState.SettingRelay);
-            } else {
-                agent.setExploreState(RealAgent.ExplorationState.TakingRelay);
-            }
-            return agent.getLocation();
-        }
-        if (agent.getPath().isValid()) {
-            return agent.getPath().nextPoint();
-        } else {
-            return RandomWalk.randomStep(agent, 4);
-        }
-    }
-
     public Point takeStep_GoToChild() {
         //If child is in range with exceptions (just switched child and need to tell old child, and if the parent is in range too, because this can leed to a deadlock)
         if (agent.getChildTeammate().hasCommunicationLink() && !switchedChildAndNeedToTell && !agent.getParentTeammate().hasCommunicationLink()) {
@@ -365,6 +341,9 @@ public class RoleBasedExploration extends FrontierExploration {
 
         // <editor-fold defaultstate="collapsed" desc="Relay-Handling">
         if (simConfig.useComStations()) {
+            if (tmap == null) {
+                System.err.println("WHAT");
+            }
             tmap.update(false);
             HashMap<Integer, TopologicalNode> topoNodes = agent.getTopologicalMap().getJTopologicalNodes(true);
             LinkedList<TopologicalNode> nodesWithRelay = new LinkedList<>();
@@ -499,7 +478,8 @@ public class RoleBasedExploration extends FrontierExploration {
             if (mate.getID() == SimConstants.BASE_STATION_TEAMMATE_ID) {
                 continue;
             }
-            if (!mate.hasCommunicationLink() && mate.hasBaseComLink()) {
+            //if (!mate.hasCommunicationLink() && mate.hasBaseComLink()) {
+            if (!mate.hasBaseComLink()) {
                 needless.add(new NearRVPoint(mate.getLocation().x, mate.getLocation().y, agent.getLocation().distance(mate.getLocation()) * -1));
                 continue;
             }
@@ -528,10 +508,9 @@ public class RoleBasedExploration extends FrontierExploration {
         if (node == null) {
             return true;
         }
-//check for dead ends with all nodesWithRelays as borders except the own node
+        //check for dead ends with all nodesWithRelays as borders except the own node
         LinkedList<TopologicalNode> tempBorder = (LinkedList<TopologicalNode>) nodesWithRelay.clone();
         tempBorder.remove(node);
-        //return node.calculateDeadEnd((LinkedList<TopologicalNode>) tempBorder.clone());
         return node.isDeadEnd();
     }
 

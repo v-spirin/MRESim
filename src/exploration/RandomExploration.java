@@ -113,10 +113,9 @@ public class RandomExploration extends BasicExploration implements Exploration {
                 break;
             case KeyPoints:
                 if (!agent.comStations.isEmpty()) {
-                    if (timeElapsed % 5 == 0) {
-                    }
+                    tmap.update(false);
                     for (Point p : tmap.getJunctionPoints()) {
-                        simulator.ExplorationImage.addErrorMarker(p, "", true);
+//                        simulator.ExplorationImage.addErrorMarker(p, "", true);
                         if (agent.getLocation().distance(p) < SimConstants.KEY_POINT_RELAY_DISTANCE) {
                             if (noRelay(p) && noNearRelay(p)) {
                                 state = Agent.ExplorationState.SettingRelay;
@@ -132,7 +131,7 @@ public class RandomExploration extends BasicExploration implements Exploration {
                     boolean useful = false;
                     for (TeammateAgent mate : agent.getAllTeammates().values()) {
                         if (mate.isStationary()) {
-                            if (mate.getDirectComLink() != 0 && mate.getDirectComLink() < agent.getSpeed() + 1) {
+                            if (mate.getDirectComLink() >= 5 && mate.getDirectComLink() < (agent.getSpeed() * 2.1)) {
                                 useful = true;
                             } else if (mate.getDirectComLink() != 0) {
                                 useful = false;

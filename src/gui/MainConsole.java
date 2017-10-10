@@ -49,6 +49,7 @@ import agents.RealAgent;
 import config.RobotTeamConfig;
 import config.SimConstants;
 import config.SimulatorConfig;
+import exploration.RandomWalk;
 import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -95,6 +96,7 @@ public class MainConsole extends MainGUI implements Runnable {
         robotTeamConfig = new RobotTeamConfig();
         simConfig = new SimulatorConfig();
         explorationImage = new ExplorationImage(simConfig.getEnvironment());
+        RandomWalk.resetSeed();
         new File(SimConstants.DEFAULT_IMAGE_LOG_DIRECTORY + this.threadName).mkdir();
     }
 

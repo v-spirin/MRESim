@@ -2,7 +2,3 @@
 2 Relay 80 400 4.6 200 100 1000 Relay 1 3 3 5 10 10
 3 Explorer 120 400 4.5 200 100 1000 Explorer 2 0 3 5 10 10
 4 Relay_1 1 1 0.0 200 100 1000 RelayStation 2 1 0 0 0 0
-5 Relay_2 1 1 0.0 200 100 1000 RelayStation 2 1 0 0 0 0
-6 Relay_3 1 1 0.0 200 100 1000 RelayStation 2 1 0 0 0 0
-7 Relay_4 1 1 0.0 200 100 1000 RelayStation 2 1 0 0 0 0
-8 Relay_5 1 1 0.0 200 100 1000 RelayStation 2 1 0 0 0 0

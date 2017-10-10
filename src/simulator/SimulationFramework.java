@@ -623,7 +623,7 @@ public class SimulationFramework implements ActionListener {
             for (int j = i + 1; j < numRobots; j++) {
                 if (multihopCommTable[i][j] >= 1) {
                     DataMessage msgFromFirst = new DataMessage(agent[i], directCommTable[i][j], multihopCommTable[0][i] > 0);
-                    DataMessage msgFromSecond = new DataMessage(agent[j], directCommTable[j][i], multihopCommTable[0][j] > 0);
+                    DataMessage msgFromSecond = new DataMessage(agent[j], directCommTable[j][i], multihopCommTable[j][0] > 0);
 
                     agent[i].receiveMessage(msgFromSecond);
                     agent[j].receiveMessage(msgFromFirst);
