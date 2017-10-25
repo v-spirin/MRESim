@@ -131,6 +131,10 @@ public class Frontier implements Comparable<Frontier> {
         return area;
     }
 
+    public double getSize() {
+        return polygonOutline.size();
+    }
+
     public LinkedList<Point> getPolygonOutline() {
         return polygonOutline;
     }

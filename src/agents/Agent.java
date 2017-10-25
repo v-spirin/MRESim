@@ -44,8 +44,8 @@
 
 package agents;
 
-import config.SimConstants;
 import config.RobotConfig;
+import config.SimConstants;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -81,7 +81,7 @@ abstract public class Agent {
     }
 
     public static enum ExplorationState {
-        Initial, Explore, GoToParent, WaitForParent,
+        Initial, Explore, GoToParent, WaitForParent, ReturnToBaseForMeeting,
         GoToChild, WaitForChild, ReturnToBase, SettingRelay, TakingRelay, EnvError, Finished, GoToRelay
     }
     private AgentState state;

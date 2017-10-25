@@ -122,7 +122,7 @@ public class FrontierUtility implements Comparable<FrontierUtility> {
                 && agentLoc.getY() == frontier.getCentre().y) {
             return -1001;
         }
-        return ((frontier.getArea() * 100000000) / Math.pow(agentLoc.distance(frontier.getCentre()), 4));
+        return ((frontier.getSize() * 100000000) / Math.pow(agentLoc.distance(frontier.getCentre()), 4));
     }
 
     private void calculateUtilityExact(RealAgent calcAgent) {
@@ -137,7 +137,7 @@ public class FrontierUtility implements Comparable<FrontierUtility> {
             if (path.getLength() == 0) {
                 path = calcAgent.calculatePath(agent.getLocation(), frontier.getCentre(), false, false/*ute.frontier.getClosestPoint(start, agent.getOccupancyGrid())*/);
             }
-            utility = (frontier.getArea() * 100000000) / Math.pow(path.getLength(), 4);
+            utility = (frontier.getSize() * 100000000) / Math.pow(path.getLength(), 4);
         } else {
             utility = -1000;
         }

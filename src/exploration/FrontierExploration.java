@@ -83,6 +83,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
     private int max_no_change_counter = 0;
     SimulatorConfig.relaytype relayType = SimulatorConfig.relaytype.None;
     TopologicalMap tmap;
+    private boolean relay_handling = true;
 
     /**
      * Normal Constructor
@@ -98,7 +99,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         this.baseStation = baseStation;
         this.noReturnTimer = 0;
         this.frontiers = new PriorityQueue<>();
-        this.relayType = SimulatorConfig.relaytype.None;
+        this.relayType = simConfig.getRelayAlgorithm();
         this.tmap = agent.getTopologicalMap();
     }
 
@@ -119,6 +120,7 @@ public class FrontierExploration extends BasicExploration implements Exploration
         this.noReturnTimer = 0;
         this.frontiers = new PriorityQueue<>();
         this.tmap = agent.getTopologicalMap();
+        this.relay_handling = false;
     }
 
     @Override
@@ -148,8 +150,8 @@ public class FrontierExploration extends BasicExploration implements Exploration
                 }
                 break;
             case Explore:
-                if ((agent.getStats().getTimeSinceLastPlan() < SimConstants.REPLAN_INTERVAL && agent.getStateTimer() > 1)
-                        && agent.getPath() != null && agent.getPath().isValid()) {
+                if (((agent.getStats().getTimeSinceLastPlan() < SimConstants.REPLAN_INTERVAL && agent.getStateTimer() > 1)
+                        && agent.getPath() != null && agent.getPath().isValid())) {
                     nextStep = processRelay();
                     //nextStep = agent.getPath().nextPoint();
                 } else {
@@ -344,6 +346,9 @@ public class FrontierExploration extends BasicExploration implements Exploration
             }
         }
 
+        utilities.forEach((FrontierUtility u) -> {
+            u.getEcaxtUtility(agent);
+        });
         return utilities;
     }
 
@@ -464,6 +469,9 @@ public class FrontierExploration extends BasicExploration implements Exploration
     }
 
     private Point processRelay() {
+        if (!relay_handling) {
+            return agent.getPath().nextPoint();
+        }
         if (simConfig.useComStations()) {
             LinkedList<TeammateAgent> relays = new LinkedList<>();
             for (TeammateAgent mate : agent.getAllTeammates().values()) {

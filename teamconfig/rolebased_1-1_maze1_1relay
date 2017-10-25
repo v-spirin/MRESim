@@ -1,0 +1,4 @@
+1 BaseStation 100 400 0.0 200 100 1000 BaseStation 1 3 0 0 0 1
+2 Relay 80 400 4.6 200 100 1000 Relay 1 3 3 5 10 5
+3 Explorer 120 400 4.5 200 100 1000 Explorer 2 0 3 5 10 5
+4 Relay_1 1 1 0.0 200 100 1000 RelayStation 2 1 0 0 0 1
